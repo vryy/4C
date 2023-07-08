@@ -223,7 +223,7 @@ namespace DRT::ELEMENTS
     /** \brief get unit tangent vector in reference configuration at i-th node of beam element
      * (element-internal numbering)
      */
-    inline void GetRefTangentAtNode(LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
+    inline void GetRefTangentAtNode(CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
     {
       Tref_i = Tref()[i];
     }
@@ -269,15 +269,15 @@ namespace DRT::ELEMENTS
     }
 
     //! \brief get centerline position at xi \in [-1,1] (element parameter space)
-    void GetPosAtXi(LINALG::Matrix<3, 1>& pos, const double& xi,
+    void GetPosAtXi(CORE::LINALG::Matrix<3, 1>& pos, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief get triad at xi \in [-1,1] (element parameter space)
-    void GetTriadAtXi(LINALG::Matrix<3, 3>& triad, const double& xi,
+    void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
         const std::vector<double>& disp) const override;
 
     //! \brief Get axial strain at xi for given nodal displacements
-    double GetAxialStrain(double& xi, const LINALG::Matrix<12, 1>& disp_totlag) const;
+    double GetAxialStrain(double& xi, const CORE::LINALG::Matrix<12, 1>& disp_totlag) const;
 
     //! get internal (elastic) energy of element
     double GetInternalEnergy() const override { return Eint_; };
@@ -316,7 +316,7 @@ namespace DRT::ELEMENTS
     void Print(std::ostream& os) const override;
 
     //! \brief get reference triad i.e. Tref_
-    std::vector<LINALG::Matrix<3, 1>> Tref() const;
+    std::vector<CORE::LINALG::Matrix<3, 1>> Tref() const;
 
     //! \brief get jacobi factor jacobi_
     double jacobi() const;
@@ -533,13 +533,13 @@ namespace DRT::ELEMENTS
     double Eint_axial_;
 
     //! angular momentum of the element
-    LINALG::Matrix<3, 1> L_;
+    CORE::LINALG::Matrix<3, 1> L_;
     //! linear momentum of the element
-    LINALG::Matrix<3, 1> P_;
+    CORE::LINALG::Matrix<3, 1> P_;
     //! nodal tangents of last time step (necessary for PTC scheme)
-    LINALG::Matrix<3, 2> t0_;
+    CORE::LINALG::Matrix<3, 2> t0_;
     //! nodal tangents of current time step (necessary for PTC scheme)
-    LINALG::Matrix<3, 2> t_;
+    CORE::LINALG::Matrix<3, 2> t_;
     //! norm of maximal curvature occuring in this element
     double kappa_max_;
     //! norm of maximal axial tension occuring in this element
@@ -555,7 +555,7 @@ namespace DRT::ELEMENTS
 
 #if NODALDOFS == 3
     //! Matrix holding the derivatives of the tangents at each node in reference configuration
-    std::vector<LINALG::Matrix<3, 1>> Kref_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> Kref_;
 #endif
 
     //! @name Internal calculation methods
@@ -567,7 +567,7 @@ namespace DRT::ELEMENTS
 
     template <unsigned int nnode, unsigned int dofpn>
     void UpdateDispTotlag(
-        const std::vector<double>& disp, LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
+        const std::vector<double>& disp, CORE::LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
 
     //! lump mass matrix
     void lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -575,8 +575,8 @@ namespace DRT::ELEMENTS
     //! computes translational damping forces and stiffness
     template <unsigned int nnode, unsigned int vpernode, int ndim>
     void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-        const LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
-        const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
+        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
         Epetra_SerialDenseVector* force);       //!< element internal force vector
 
@@ -585,7 +585,7 @@ namespace DRT::ELEMENTS
     template <unsigned int nnode, unsigned int vpernode, unsigned int ndim,
         unsigned int randompergauss>
     void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
-        const LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
+        const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
         Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
         Epetra_SerialDenseVector* force);       //!< element internal force vector
 

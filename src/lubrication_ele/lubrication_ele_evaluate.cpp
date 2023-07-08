@@ -84,9 +84,10 @@ int DRT::ELEMENTS::Lubrication::EvaluateNeumann(Teuchos::ParameterList& params,
 |  Call the element to set all basic parameter             wirtz 10/15 |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(p, "action");
 

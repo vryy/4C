@@ -51,10 +51,11 @@ namespace XFEM
 
     virtual void SetCouplingStates();
 
-    virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    virtual void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
 
     virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling);
+        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
 
     //! Update (Perform after Each Timestep)
     virtual void Update(double scaling);

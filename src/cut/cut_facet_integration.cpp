@@ -88,7 +88,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
 
         std::vector<double> pt_local(3);
 #ifdef LOCAL
-        LINALG::Matrix<3, 1> glo, loc;
+        CORE::LINALG::Matrix<3, 1> glo, loc;
 
         for (int nodno = 0; nodno < 3; nodno++) glo(nodno, 0) = x1[nodno];
         elem1_->LocalCoordinates(glo, loc);
@@ -119,7 +119,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     {
       std::vector<double> phi_deriv1;
 
-      LINALG::Matrix<3, 1> coord;
+      CORE::LINALG::Matrix<3, 1> coord;
 
       // First entry is midpoint of triangulation!!
       // Third entry could possibly be a concave poin (take care of in Triangulation of Facet).
@@ -172,7 +172,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     //-----
     // STEP 1: Get centroid of the parent element
     //-----
-    LINALG::Matrix<3, 1> elecen;
+    CORE::LINALG::Matrix<3, 1> elecen;
 #ifdef LOCAL
     switch (elem1_->Shape())
     {
@@ -200,7 +200,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     // STEP 2: Get geometric centre point of the facet
     // For concave facets, this is not the actual centre, but it does not matter
     //-----
-    LINALG::Matrix<3, 1> facecen;
+    CORE::LINALG::Matrix<3, 1> facecen;
     unsigned npts = cornersLocal.size();
     for (std::vector<std::vector<double>>::const_iterator fit = cornersLocal.begin();
          fit != cornersLocal.end(); fit++)
@@ -215,7 +215,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     // STEP 3: Construct a unit vector that points FROM element centre TO the facet centre
     // This reference vector is in the correct normal direction
     //-----
-    LINALG::Matrix<3, 1> ref_vec;
+    CORE::LINALG::Matrix<3, 1> ref_vec;
     ref_vec.Update(1.0, facecen, -1.0, elecen);
     double l2_ref_vec = ref_vec.Norm2();
     ref_vec.Scale(1.0 / l2_ref_vec);
@@ -224,7 +224,7 @@ void CORE::GEO::CUT::FacetIntegration::IsClockwise(
     // STEP 4: Take dot product with the normal of facet
     // If both are in the opposite direction, then the facet nodes are arranged clockwise
     //-----
-    LINALG::Matrix<3, 1> norm_fac;
+    CORE::LINALG::Matrix<3, 1> norm_fac;
     for (unsigned dim = 0; dim < 3; dim++) norm_fac(dim, 0) = eqn_plane[dim];
 
     double dotProduct = ref_vec.Dot(norm_fac);
@@ -368,7 +368,7 @@ double CORE::GEO::CUT::FacetIntegration::integrate_facet()
 
       // first index decides the x or y coordinate, second index decides the start point or end
       // point
-      LINALG::Matrix<2, 2> coordLine;
+      CORE::LINALG::Matrix<2, 2> coordLine;
 
       // The facet is projected over y-z plane and then the integration is performed
       // so only y- and z-coordinates are passed to make the lines
@@ -474,7 +474,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
       coords2 = *(cornersLocal.begin());
 
     // first index decides the x or y coordinate, second index decides the start point or end point
-    LINALG::Matrix<2, 2> coordLine;
+    CORE::LINALG::Matrix<2, 2> coordLine;
     if (intType == CORE::GEO::CUT::proj_x)
     {
       if (k == cornersLocal.begin())
@@ -590,7 +590,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
     else
       GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
 
-    LINALG::Matrix<3, 1> midpt;
+    CORE::LINALG::Matrix<3, 1> midpt;
     bcell->ElementCenter(midpt);
     GEO::CUT::OUTPUT::GmshVector(
         file, midpt, GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
@@ -605,8 +605,8 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
          iquad != gi_temp.end(); ++iquad)
     {
       double drs = 0.0;
-      LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);
-      const LINALG::Matrix<2, 1> eta(iquad.Point());
+      CORE::LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);
+      const CORE::LINALG::Matrix<2, 1> eta(iquad.Point());
 
       switch (bcell->Shape())
       {
@@ -1026,7 +1026,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
       for (std::vector<std::vector<Point *>>::iterator k = facetSplit.begin();
            k != facetSplit.end(); k++)
       {
-        LINALG::Matrix<3, 1> midpt(true);
+        CORE::LINALG::Matrix<3, 1> midpt(true);
 
         std::vector<std::vector<double>> corners_split;
         for (std::vector<Point *>::iterator l = (*k).begin(); l != (*k).end(); l++)
@@ -1046,7 +1046,7 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     }
     else
     {
-      LINALG::Matrix<3, 1> midpt(true);
+      CORE::LINALG::Matrix<3, 1> midpt(true);
       bcell->ElementCenter(midpt);
       GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
       GEO::CUT::OUTPUT::GmshVector(
@@ -1063,8 +1063,8 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
          iquad != gi_temp.end(); ++iquad)
     {
       double drs = 0.0;
-      LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);
-      const LINALG::Matrix<2, 1> eta(iquad.Point());
+      CORE::LINALG::Matrix<3, 1> x_gp_loc(true), normal(true);
+      const CORE::LINALG::Matrix<2, 1> eta(iquad.Point());
 
       switch (bcell->Shape())
       {
@@ -1116,8 +1116,8 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
   for (std::vector<Point *>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end();
        ++j)
   {
-    LINALG::Matrix<3, 1> cornersLocMatrix;
-    LINALG::Matrix<3, 1> cornersGloMatrix((*j)->X());
+    CORE::LINALG::Matrix<3, 1> cornersLocMatrix;
+    CORE::LINALG::Matrix<3, 1> cornersGloMatrix((*j)->X());
 
     elem1_->LocalCoordinates(cornersGloMatrix, cornersLocMatrix);
 
@@ -1142,7 +1142,7 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCellsNew(bool divergenc
   for (std::vector<Point *>::const_iterator j = cornersGlobal.begin(); j != cornersGlobal.end();
        ++j)
   {
-    LINALG::Matrix<3, 1> cornersGloMatrix((*j)->X());
+    CORE::LINALG::Matrix<3, 1> cornersGloMatrix((*j)->X());
 
     std::vector<double> cornerGlobal(3);
     cornerGlobal[0] = cornersGloMatrix(0, 0);

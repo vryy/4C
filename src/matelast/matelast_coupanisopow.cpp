@@ -48,7 +48,7 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* li
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    LINALG::Matrix<3, 3> Id(true);
+    CORE::LINALG::Matrix<3, 3> Id(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
     SetFiberVecs(-1.0, Id, Id);
   }
@@ -63,9 +63,9 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* li
     if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
     {
       // Read in of data
-      LINALG::Matrix<3, 3> locsys(true);
+      CORE::LINALG::Matrix<3, 3> locsys(true);
       ReadRadAxiCir(linedef, locsys);
-      LINALG::Matrix<3, 3> Id(true);
+      CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
       SetFiberVecs(0.0, locsys, Id);
@@ -88,9 +88,9 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* li
     dserror("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
-    LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-    const int gp, const int eleGID)
+void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
+    CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // load params
   double k = params_->k_;
@@ -147,14 +147,14 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const LINALG::Matrix<6,
 }
 
 void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
   // convert
@@ -168,15 +168,15 @@ void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
       gamma = newgamma;
   }
 
-  LINALG::Matrix<3, 1> ca(true);
+  CORE::LINALG::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
     ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
   }
   // pull back in reference configuration
-  LINALG::Matrix<3, 1> a_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
+  CORE::LINALG::Matrix<3, 1> a_0(true);
+  CORE::LINALG::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
   a_0.Multiply(idefgrd, ca);

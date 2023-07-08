@@ -30,14 +30,14 @@
  |                                                           dano 11/10 |
  *----------------------------------------------------------------------*/
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MultiMapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -123,7 +123,7 @@ namespace TSI
     void SetupSystemMatrix();
 
     //! composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear TSI system
     void LinearSolve();
@@ -133,17 +133,17 @@ namespace TSI
 
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
-        Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
     );
 
     //! Evaluate thermal-mechanical system matrix
     void ApplyThrCouplMatrix(
-        Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
     void ApplyThrCouplMatrix_ConvBC(
-        Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
     );
 
     //@}
@@ -204,11 +204,11 @@ namespace TSI
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -251,7 +251,7 @@ namespace TSI
     Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void SetDefaultParameters();
@@ -265,9 +265,9 @@ namespace TSI
     //! @name General purpose algorithm members
     //@{
 
-    bool solveradapttol_;                  //!< adapt solver tolerance
-    double solveradaptolbetter_;           //!< tolerance to which is adpated ????
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                        //!< adapt solver tolerance
+    double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -310,7 +310,7 @@ namespace TSI
     const Teuchos::ParameterList& tsidynmono_;  //!< monolithic TSI dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
@@ -322,11 +322,11 @@ namespace TSI
     bool LSadmissible();
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<LINALG::SparseMatrix> k_st_;
-    Teuchos::RCP<LINALG::SparseMatrix> k_ts_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts_;
 
     bool merge_tsi_blockmatrix_;  //!< bool whether TSI block matrix is merged
 

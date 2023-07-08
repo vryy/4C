@@ -110,7 +110,7 @@ namespace XFEM
               itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second, time_);
 
           double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
-          LINALG::Matrix<3, 1> tmp_itraction(true);
+          CORE::LINALG::Matrix<3, 1> tmp_itraction(true);
           tmp_itraction.MultiplyTN(proj_matrix, itraction);
           // Project this into tangential direction!!!
 
@@ -122,7 +122,7 @@ namespace XFEM
 
       if (force_tangvel_map_.find(cond->Id())->second)
       {
-        LINALG::Matrix<3, 1> tmp_ivel(true);
+        CORE::LINALG::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.MultiplyTN(
             proj_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
         ivel.Update(1.0, tmp_ivel, 0.0);
@@ -154,18 +154,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -179,8 +179,8 @@ namespace XFEM
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
-        LINALG::Matrix<nen, 1> funct_(funct, true);
-        LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
+        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex8>(sliplength, eid, cond, funct_, derxy_);
       }
       else if (ele->Shape() == DRT::Element::hex27)
@@ -189,8 +189,8 @@ namespace XFEM
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
-        LINALG::Matrix<nen, 1> funct_(funct, true);
-        LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
+        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex27>(sliplength, eid, cond, funct_, derxy_);
       }
       else if (ele->Shape() == DRT::Element::hex20)
@@ -199,8 +199,8 @@ namespace XFEM
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
-        LINALG::Matrix<nen, 1> funct_(funct, true);
-        LINALG::Matrix<nen, nsd> derxy_(derxy, true);
+        CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
+        CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
         GetSliplengthAtGP<DRT::Element::hex20>(sliplength, eid, cond, funct_, derxy_);
       }
       else

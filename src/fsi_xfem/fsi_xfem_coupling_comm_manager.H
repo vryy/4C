@@ -21,7 +21,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class SparseMatrix;
@@ -29,7 +29,7 @@ namespace LINALG
   class MatrixColTransform;
   class MatrixRowColTransform;
   class MatrixLogicalSplitAndTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CORE::ADAPTER
 {
@@ -101,20 +101,20 @@ namespace XFEM
     bool InsertMatrix(
         int transform_id,  // Unique Id to be set for this transformation object (to be save use
                            // different one, for different matrix transformation)
-        int idxA, const LINALG::SparseMatrix& matA, int idxB, LINALG::SparseMatrix& matB,
-        const Coupling_Comm_Manager::matrix_transfer_type mttype, double scale = 1.0,
-        bool exactmatch = true, bool addmatrix = false);
+        int idxA, const CORE::LINALG::SparseMatrix& matA, int idxB,
+        CORE::LINALG::SparseMatrix& matB, const Coupling_Comm_Manager::matrix_transfer_type mttype,
+        double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
-    Teuchos::RCP<LINALG::MultiMapExtractor> GetMapExtractor(int idx);
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetMapExtractor(int idx);
 
    protected:
     Teuchos::RCP<CORE::ADAPTER::CouplingConverter> GetCouplingConverter(int idxA, int idxB);
 
     Teuchos::RCP<CORE::ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
 
-    Teuchos::RCP<LINALG::MultiMapExtractor> GetFullMapExtractor() { return fullextractor_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> GetFullMapExtractor() { return fullextractor_; }
 
-    Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> GetTransform(int transform_id);
+    Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform> GetTransform(int transform_id);
 
     void DebugOut(
         std::string str1, std::string str2 = "", std::string str3 = "", std::string str4 = "");
@@ -137,15 +137,15 @@ namespace XFEM
     int enddim_;
 
     // All MultiMapExtractors
-    std::map<int, Teuchos::RCP<LINALG::MultiMapExtractor>> mme_;
+    std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> mme_;
 
     // Couling Objects will just be initizalized in case we have more discretizations!
     std::map<std::pair<int, int>, Teuchos::RCP<CORE::ADAPTER::Coupling>> coup_;
 
     // Transformation Objects will just be initizalized in case we use matrix transformations!
-    std::map<int, Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform>> transform_;
+    std::map<int, Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>> transform_;
 
-    Teuchos::RCP<LINALG::MultiMapExtractor> fullextractor_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> fullextractor_;
   };
 }  // namespace XFEM
 

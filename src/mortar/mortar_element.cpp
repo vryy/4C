@@ -686,8 +686,8 @@ double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, do
   if (!n) dserror("ComputeUnitNormalAtXi called with n=NULL");
 
   int nnodes = NumPoint();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes, false);
@@ -724,8 +724,8 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("DerivUnitNormalAtXi: Null pointer!");
 
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   double gxi[3];
   double geta[3];
@@ -771,7 +771,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
     int ndof = mymrtrnode->NumDof();
 
     // derivative weighting matrix for current node
-    LINALG::Matrix<3, 3> F;
+    CORE::LINALG::Matrix<3, 3> F;
     F(0, 0) = 0.0;
     F(1, 1) = 0.0;
     F(2, 2) = 0.0;
@@ -829,7 +829,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
+void MORTAR::MortarElement::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coord)
 {
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
@@ -851,7 +851,7 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
 /*----------------------------------------------------------------------*
  |  Get old nodal coordinates of the element               gitterle 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord, bool isinit)
+void MORTAR::MortarElement::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& coord, bool isinit)
 {
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
@@ -874,7 +874,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord, 
 /*----------------------------------------------------------------------*
  |  Get lagrange multipliers of the element                gitterle 08/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult, bool isinit)
+void MORTAR::MortarElement::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lagmult, bool isinit)
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
@@ -933,14 +933,14 @@ void MORTAR::MortarElement::Metrics(const double* xi, double* gxi, double* geta)
       exit(EXIT_FAILURE);
   }
 
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes, false);
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3, nnodes);
+  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
   GetNodalCoords(coord);
 
   // build basis vectors gxi and geta
@@ -1031,8 +1031,8 @@ void MORTAR::MortarElement::DerivJacobian(
   double geta[3];
 
   // evaluate shape functions
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
   EvaluateShape(xi, val, deriv, nnodes, false);
 
   // metrics routine gives local basis vectors
@@ -1133,7 +1133,7 @@ double MORTAR::MortarElement::ComputeArea()
   if (dt == line2)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3, NumPoint());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vector between the two nodes
@@ -1149,7 +1149,7 @@ double MORTAR::MortarElement::ComputeArea()
   else if (dt == tri3)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3, NumPoint());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
@@ -1210,7 +1210,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
   if (dt == line2)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3, NumPoint());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vector between the two nodes
@@ -1226,7 +1226,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
   else if (dt == tri3)
   {
     // no integration necessary (constant Jacobian)
-    LINALG::SerialDenseMatrix coord(3, NumPoint());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
     GetNodalCoords(coord);
 
     // build vectors between the three nodes
@@ -1295,9 +1295,9 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord, i
 
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("LocalToGlobal: Null pointer!");
-  LINALG::SerialDenseMatrix coord(3, nnodes);
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // Evaluate shape, get nodal coords  and interpolate global coords
   EvaluateShape(xi, val, deriv, nnodes, false);
@@ -1345,7 +1345,7 @@ double MORTAR::MortarElement::MinEdgeSize()
   DRT::Element::DiscretizationType discretizationType = Shape();
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3, NumPoint());
+  CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
   switch (discretizationType)
@@ -1409,9 +1409,9 @@ double MORTAR::MortarElement::MinEdgeSize()
       double sxi0[2] = {-1.0, 0.0};
       double sxi1[2] = {1.0, 0.0};
       const int nrow = NumNode();
-      LINALG::SerialDenseVector sval0(nrow);
-      LINALG::SerialDenseVector sval1(nrow);
-      LINALG::SerialDenseMatrix sderiv(nrow, 1);
+      CORE::LINALG::SerialDenseVector sval0(nrow);
+      CORE::LINALG::SerialDenseVector sval1(nrow);
+      CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
       EvaluateShape(sxi0, sval0, sderiv, nrow);
       EvaluateShape(sxi1, sval1, sderiv, nrow);
 
@@ -1438,7 +1438,7 @@ double MORTAR::MortarElement::MinEdgeSize()
       const int nrow = NumNode();
 
       // get real point data
-      LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
+      CORE::LINALG::SerialDenseMatrix coordnurbs(3, nrow, true);
 
       // parameter space coordinates
       double sxi0[2] = {-1.0, -1.0};
@@ -1447,11 +1447,11 @@ double MORTAR::MortarElement::MinEdgeSize()
       double sxi3[2] = {-1.0, 1.0};
 
       // evaluate shape functions at these coordinates
-      LINALG::SerialDenseVector sval0(nrow);
-      LINALG::SerialDenseVector sval1(nrow);
-      LINALG::SerialDenseVector sval2(nrow);
-      LINALG::SerialDenseVector sval3(nrow);
-      LINALG::SerialDenseMatrix sderiv(nrow, 2);
+      CORE::LINALG::SerialDenseVector sval0(nrow);
+      CORE::LINALG::SerialDenseVector sval1(nrow);
+      CORE::LINALG::SerialDenseVector sval2(nrow);
+      CORE::LINALG::SerialDenseVector sval3(nrow);
+      CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2);
       EvaluateShape(sxi0, sval0, sderiv, nrow);
       EvaluateShape(sxi1, sval1, sderiv, nrow);
       EvaluateShape(sxi2, sval2, sderiv, nrow);
@@ -1514,7 +1514,7 @@ double MORTAR::MortarElement::MaxEdgeSize()
   DRT::Element::DiscretizationType discretizationType = Shape();
 
   // get coordinates of element nodes
-  LINALG::SerialDenseMatrix coord(3, NumPoint());
+  CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
   GetNodalCoords(coord);
 
   switch (discretizationType)

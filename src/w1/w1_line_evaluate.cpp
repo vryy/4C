@@ -90,12 +90,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
-  LINALG::SerialDenseVector shapefcts(numnod);
-  LINALG::SerialDenseMatrix deriv(1, numnod);
+  CORE::LINALG::SerialDenseVector shapefcts(numnod);
+  CORE::LINALG::SerialDenseMatrix deriv(1, numnod);
 
   // prepare element geometry 1
   // --> we always need the material configuration
-  LINALG::SerialDenseMatrix xye(Wall1::numdim_, numnod);
+  CORE::LINALG::SerialDenseMatrix xye(Wall1::numdim_, numnod);
   for (int i = 0; i < numnod; ++i)
   {
     xye(0, i) = Nodes()[i]->X()[0];
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // --> depending on the type of Neumann condition, we might not need a spatial
   // configuration at all (standard Neumann), we might need the last converged
   // spatial position (pseudo-orthopressure) or the true current geometry (orthopressure).
-  LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_, numnod);
+  CORE::LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_, numnod);
 
   // (1) standard Neumann --> we need only material configuration
   if (ltype == neum_live)
@@ -209,7 +209,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
             if (functnum > 0)
             {
               // calculate reference position of GP
-              LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+              CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
               gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
 
               // write coordinates in another datatype
@@ -265,7 +265,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         if (functnum > 0)
         {
           // calculate reference position of GP
-          LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
+          CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
           gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
 
           // write coordinates in another datatype
@@ -577,8 +577,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);  //
 
         // allocate vector for shape functions and for derivatives
-        LINALG::SerialDenseVector funct(numnod);
-        LINALG::SerialDenseMatrix deriv(1, numnod);
+        CORE::LINALG::SerialDenseVector funct(numnod);
+        CORE::LINALG::SerialDenseMatrix deriv(1, numnod);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
         std::vector<double> edispincr(lm.size());
@@ -742,7 +742,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         (mypres)(inode, 0) = myvelpres[numdim + (inode * numdofpernode)];
       }
 
-      LINALG::SerialDenseMatrix pqxg;
+      CORE::LINALG::SerialDenseMatrix pqxg;
       Epetra_SerialDenseMatrix derivtrafo;
 
       CORE::DRT::UTILS::BoundaryGPToParentGP<2>(
@@ -751,13 +751,13 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       for (int gp = 0; gp < ngp; ++gp)
       {
         // get shape functions and derivatives in the plane of the element
-        LINALG::SerialDenseVector funct(nenparent);
-        LINALG::SerialDenseMatrix deriv(2, nenparent);
+        CORE::LINALG::SerialDenseVector funct(nenparent);
+        CORE::LINALG::SerialDenseMatrix deriv(2, nenparent);
         CORE::DRT::UTILS::shape_function_2D(funct, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
         CORE::DRT::UTILS::shape_function_2D_deriv1(
             deriv, pqxg(gp, 0), pqxg(gp, 1), parentele->Shape());
 
-        LINALG::SerialDenseVector funct1D(numnode);
+        CORE::LINALG::SerialDenseVector funct1D(numnode);
         CORE::DRT::UTILS::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
 
         // pressure at integration point
@@ -765,9 +765,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
-        LINALG::SerialDenseMatrix xjm(numdim, numdim);
+        CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
         xjm.Multiply('N', 'T', 1.0, deriv, xcurr, 0.0);
-        LINALG::SerialDenseMatrix Jmat(numdim, numdim);
+        CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
         Jmat.Multiply('N', 'T', 1.0, deriv, xrefe, 0.0);
 
         double det = 0.0;

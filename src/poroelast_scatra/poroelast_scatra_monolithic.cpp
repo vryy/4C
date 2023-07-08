@@ -61,7 +61,7 @@ POROELASTSCATRA::PoroScatraMono::PoroScatraMono(
   solveradapttol_ = (DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1);
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
-  blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 }
 
 /*----------------------------------------------------------------------*
@@ -206,11 +206,11 @@ void POROELASTSCATRA::PoroScatraMono::Solve()
   norminc_ = 0.0;
 
   // incremental solution vector with length of all dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
   //---------------------------------------------- iteration loop
@@ -364,16 +364,18 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
   {
     const Teuchos::RCP<const Epetra_Map> porocondmap = PoroField()->CombinedDBCMap();
     const Teuchos::RCP<const Epetra_Map> scatracondmap = ScaTraField()->DirichMaps()->CondMap();
-    Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MergeMap(porocondmap, scatracondmap, false);
+    Teuchos::RCP<const Epetra_Map> dbcmap =
+        CORE::LINALG::MergeMap(porocondmap, scatracondmap, false);
 
     // Finally, create the global FSI Dirichlet map extractor
-    dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
+    dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
     if (dbcmaps_ == Teuchos::null) dserror("Creation of Dirichlet map extractor failed.");
   }
 
   // initialize Poroscatra-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *Extractor(), *Extractor(), 81, false, true));
+  systemmatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *Extractor(), *Extractor(), 81, false, true));
 
   {
     std::vector<Teuchos::RCP<const Epetra_Map>> scatravecSpaces;
@@ -382,17 +384,18 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystem()
     scatrarowdofmap_.Setup(*dofrowmapscatra, scatravecSpaces);
   }
 
-  k_pss_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*(PoroField()->DofRowMapStructure()), 81, true, true));
-  k_pfs_ = Teuchos::rcp(new LINALG::SparseMatrix(*(PoroField()->DofRowMapFluid()),
+  k_pss_ = Teuchos::rcp(
+      new CORE::LINALG::SparseMatrix(*(PoroField()->DofRowMapStructure()), 81, true, true));
+  k_pfs_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(PoroField()->DofRowMapFluid()),
       //*(FluidField()->DofRowMap()),
       81, true, true));
 
-  k_sps_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(ScaTraField()->Discretization()->DofRowMap()), 81, true, true));
-  k_spf_ = Teuchos::rcp(new LINALG::SparseMatrix(*(ScaTraField()->Discretization()->DofRowMap()),
-      //*(FluidField()->DofRowMap()),
-      81, true, true));
+  k_sps_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(ScaTraField()->Discretization()->DofRowMap()), 81, true, true));
+  k_spf_ =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(ScaTraField()->Discretization()->DofRowMap()),
+          //*(FluidField()->DofRowMap()),
+          81, true, true));
 }
 
 /*----------------------------------------------------------------------*
@@ -437,28 +440,28 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   // 1st diagonal block (upper left): poro weighting - poro solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->BlockSystemMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mat_pp = PoroField()->BlockSystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_pp->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(0, 0, LINALG::View, mat_pp->Matrix(0, 0));
-  systemmatrix_->Assign(0, 1, LINALG::View, mat_pp->Matrix(0, 1));
-  systemmatrix_->Assign(1, 0, LINALG::View, mat_pp->Matrix(1, 0));
-  systemmatrix_->Assign(1, 1, LINALG::View, mat_pp->Matrix(1, 1));
+  systemmatrix_->Assign(0, 0, CORE::LINALG::View, mat_pp->Matrix(0, 0));
+  systemmatrix_->Assign(0, 1, CORE::LINALG::View, mat_pp->Matrix(0, 1));
+  systemmatrix_->Assign(1, 0, CORE::LINALG::View, mat_pp->Matrix(1, 0));
+  systemmatrix_->Assign(1, 1, CORE::LINALG::View, mat_pp->Matrix(1, 1));
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScaTraField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ss = ScaTraField()->SystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(2, 2, LINALG::View, *mat_ss);
+  systemmatrix_->Assign(2, 2, CORE::LINALG::View, *mat_ss);
 
   // complete scatra block matrix
   systemmatrix_->Complete();
@@ -473,7 +476,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   // k_ps_->Complete(mat_pp->DomainMap(),mat_ss->RangeMap());
   //  k_ps_->Complete();
   //
-  //  Teuchos::RCP<LINALG::SparseMatrix> k_ps_sparse = k_ps_->Merge();
+  //  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ps_sparse = k_ps_->Merge();
 
   // uncomplete matrix block (appears to be required in certain cases)
   // k_ps_sparse->UnComplete();
@@ -481,8 +484,8 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   k_pfs_->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(0, 2, LINALG::View, *(k_pss_));
-  systemmatrix_->Assign(1, 2, LINALG::View, *(k_pfs_));
+  systemmatrix_->Assign(0, 2, CORE::LINALG::View, *(k_pss_));
+  systemmatrix_->Assign(1, 2, CORE::LINALG::View, *(k_pfs_));
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block (lower left): scatra weighting - poro solution
@@ -493,7 +496,7 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
 
   //  k_sp_->Complete();
   //
-  //  Teuchos::RCP<LINALG::SparseMatrix> k_sp_sparse = k_sp_->Merge();
+  //  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sp_sparse = k_sp_->Merge();
 
   // uncomplete matrix block (appears to be required in certain cases)
   // k_sp_sparse->UnComplete();
@@ -501,8 +504,8 @@ void POROELASTSCATRA::PoroScatraMono::SetupSystemMatrix()
   k_spf_->UnComplete();
 
   // assign matrix block
-  systemmatrix_->Assign(2, 0, LINALG::View, *(k_sps_));
-  systemmatrix_->Assign(2, 1, LINALG::View, *(k_spf_));
+  systemmatrix_->Assign(2, 0, CORE::LINALG::View, *(k_sps_));
+  systemmatrix_->Assign(2, 1, CORE::LINALG::View, *(k_spf_));
 
   // complete block matrix
   systemmatrix_->Complete();
@@ -528,9 +531,9 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
   if (directsolve_)
   {
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
     //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
@@ -542,7 +545,7 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
   {
     // in case of inclined boundary conditions
     // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -574,8 +577,8 @@ bool POROELASTSCATRA::PoroScatraMono::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   }
   else
     // create a linear solver
@@ -1029,7 +1032,7 @@ Teuchos::RCP<const Epetra_Map> POROELASTSCATRA::PoroScatraMono::CombinedDBCMap()
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> POROELASTSCATRA::PoroScatraMono::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELASTSCATRA::PoroScatraMono::SystemMatrix()
 {
   return systemmatrix_->Merge();
 }
@@ -1041,7 +1044,7 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELASTSCATRA::PoroScatraMono::SystemMatrix
 void POROELASTSCATRA::PoroScatraMono::SetDofRowMaps(
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
 
   // full monolithic-blockmap
   blockrowdofmap_->Setup(*fullmap, maps);
@@ -1223,7 +1226,7 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
   std::cout << "scatra field has " << dof_scatra << " DOFs" << std::endl;
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
-  iterinc = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1234,15 +1237,15 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
+  stiff_approx = CORE::LINALG::CreateMatrix(*DofRowMap(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sparse->EpetraMatrix(), CORE::LINALG::Copy));
 
   if (false)
   {
@@ -1275,7 +1278,7 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
 
 
@@ -1338,8 +1341,9 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
 
   stiff_approx->FillComplete();
 
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
+  stiff_approx_sparse =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 

@@ -24,8 +24,8 @@ STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams,
     // const Teuchos::ParameterList& ab2params,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<LINALG::Solver> contactsolver, Teuchos::RCP<IO::DiscretizationWriter> output)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
+    Teuchos::RCP<CORE::LINALG::Solver> contactsolver, Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fextn_(Teuchos::null),
       fintn_(Teuchos::null),
@@ -46,7 +46,7 @@ STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntAB2::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -77,11 +77,11 @@ void STR::TimIntAB2::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fcmtn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fviscn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  frimpn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   return;
 }
@@ -219,7 +219,7 @@ int STR::TimIntAB2::IntegrateStep()
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
     if (lumpmass_ == false ||
-        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_) == Teuchos::null)
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_) == Teuchos::null)
     {
       // linear solver call
       // refactor==false: This is not necessary, because we always
@@ -231,9 +231,9 @@ int STR::TimIntAB2::IntegrateStep()
     // direct inversion based on lumped mass matrix
     else
     {
-      Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
-          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-      Teuchos::RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
+          Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_);
+      Teuchos::RCP<Epetra_Vector> diagonal = CORE::LINALG::CreateVector(*DofRowMapView(), true);
       int error = massmatrix->ExtractDiagonalCopy(*diagonal);
       if (error != 0) dserror("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);

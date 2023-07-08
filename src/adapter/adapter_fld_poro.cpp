@@ -27,7 +27,7 @@
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : ADAPTER::FluidFPSI::FluidFPSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
@@ -41,8 +41,8 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discr
 /*======================================================================*/
 /* evaluate poroelasticity specific constraint*/
 void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
-    Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
-    Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
     Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     POROELAST::coupltype coupltype)
 {
@@ -138,7 +138,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
+Teuchos::RCP<CORE::LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
 {
   return fluidimpl_->VelPresSplitter();
 }

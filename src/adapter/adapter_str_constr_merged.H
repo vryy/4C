@@ -35,7 +35,7 @@ namespace STR
   }
 }  // namespace STR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -99,10 +99,10 @@ namespace ADAPTER
     virtual void ApplyInterfaceForcesTemporaryDeprecated(Teuchos::RCP<Epetra_Vector> iforce);
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// update displacement and evaluate elements
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector>
@@ -110,7 +110,7 @@ namespace ADAPTER
     );
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return structure_->GetDBCMapExtractor();
     };
@@ -129,7 +129,7 @@ namespace ADAPTER
 
     virtual INPAR::STR::STC_Scale GetSTCAlgo() { return structure_->GetSTCAlgo(); };
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
     {
       dserror("FSI with merged structural constraints does not work in combination with STC!");
       return structure_->GetSTCMat();
@@ -153,7 +153,7 @@ namespace ADAPTER
 
    private:
     /// the constraint map setup for full <-> stuct+constr transition
-    Teuchos::RCP<LINALG::MapExtractor> conmerger_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> conmerger_;
 
     /// the complete non-overlapping degree of freedom row map for structure and lagrange
     /// multipliers
@@ -165,7 +165,7 @@ namespace ADAPTER
     Teuchos::RCP<Teuchos::ParameterList>
         sdynparams_;  ///< dynamic control flags ... used, but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;   ///< eXtra input parameters
-    Teuchos::RCP<LINALG::Solver> solver_;            ///< the linear solver
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;      ///< the linear solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
 
     //@}

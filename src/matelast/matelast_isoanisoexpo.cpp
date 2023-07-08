@@ -49,7 +49,7 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-    LINALG::Matrix<3, 3> Id(true);
+    CORE::LINALG::Matrix<3, 3> Id(true);
     for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
     SetFiberVecs(-1.0, Id, Id);
   }
@@ -61,10 +61,10 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
     if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
     {
       // Read in of data
-      LINALG::Matrix<3, 3> locsys(true);
+      CORE::LINALG::Matrix<3, 3> locsys(true);
       ReadRadAxiCir(linedef, locsys);
 
-      LINALG::Matrix<3, 3> Id(true);
+      CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       // final setup of fiber data
       SetFiberVecs(0.0, locsys, Id);
@@ -88,9 +88,10 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
     dserror("INIT mode not implemented");
 }
 
-void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 1>& rcg,
-    const LINALG::Matrix<6, 1>& icg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    double I3, const int gp, const int eleGID, Teuchos::ParameterList& params)
+void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const CORE::LINALG::Matrix<6, 1>& rcg,
+    const CORE::LINALG::Matrix<6, 1>& icg, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 1>& stress, double I3, const int gp, const int eleGID,
+    Teuchos::ParameterList& params)
 {
   double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 
@@ -106,7 +107,7 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 
     k2 = params_->k2comp_;
   }
 
-  LINALG::Matrix<6, 1> Saniso(A_);  // first compute Sfbar = 2 dW/dJ4 A_
+  CORE::LINALG::Matrix<6, 1> Saniso(A_);  // first compute Sfbar = 2 dW/dJ4 A_
   double gammabar = 2. * (k1 * (J4 - 1.) * exp(k2 * (J4 - 1.) * (J4 - 1.)));  // 2 dW/dJ4
   Saniso.Scale(gammabar);                                                     // Sfbar
 
@@ -114,13 +115,13 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 
                        1. * (Saniso(3) * rcg(3) + Saniso(4) * rcg(4) + Saniso(5) * rcg(5));
   Saniso.Update(-incJ / 3. * traceCSfbar, icg, incJ);
 
-  LINALG::Matrix<6, 6> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
+  CORE::LINALG::Matrix<6, 6> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   AddtoCmatHolzapfelProduct(Psl, icg, 1.0);
   Psl.MultiplyNT(-1. / 3., icg, icg, 1.0);
 
-  LINALG::Matrix<6, 1> Aiso(A_);
+  CORE::LINALG::Matrix<6, 1> Aiso(A_);
   Aiso.Update(-J4 / 3.0, icg, incJ);
-  LINALG::Matrix<6, 6> cmataniso(true);  // isochoric elastic cmat
+  CORE::LINALG::Matrix<6, 6> cmataniso(true);  // isochoric elastic cmat
   double deltabar = 2. * (1. + 2. * k2 * (J4 - 1.) * (J4 - 1.)) * 2. * k1 *
                     exp(k2 * (J4 - 1.) * (J4 - 1.));  // 4 d^2Wf/dJ4dJ4
   cmataniso.MultiplyNT(deltabar, Aiso, Aiso);
@@ -132,9 +133,9 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 
   cmat.Update(1.0, cmataniso, 1.0);
 }
 
-void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
-    LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<4, 1>& dddPIII_aniso, const double I4,
-    const int gp, const int eleGID)
+void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+    CORE::LINALG::Matrix<3, 1>& ddPII_aniso, CORE::LINALG::Matrix<4, 1>& dddPIII_aniso,
+    const double I4, const int gp, const int eleGID)
 {
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -156,14 +157,14 @@ void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1>& dPI_a
 };
 
 void MAT::ELASTIC::IsoAnisoExpo::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   fibervecs.push_back(a_);
 }
 
-void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->gamma_ < -90) || (params_->gamma_ > 90)) dserror("Fiber angle not in [-90,90]");
   // convert
@@ -177,15 +178,15 @@ void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(
       gamma = newgamma;
   }
 
-  LINALG::Matrix<3, 1> ca(true);
+  CORE::LINALG::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
     ca(i) = cos(gamma) * locsys(i, 2) + sin(gamma) * locsys(i, 1);
   }
   // pull back in reference configuration
-  LINALG::Matrix<3, 1> a_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
+  CORE::LINALG::Matrix<3, 1> a_0(true);
+  CORE::LINALG::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
   a_0.Multiply(idefgrd, ca);

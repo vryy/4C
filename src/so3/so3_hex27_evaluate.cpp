@@ -40,11 +40,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
 
   SetParamsInterfacePtr(params);
 
-  LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH27, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH27, 1> elevec2(elevec2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH27, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH27, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH27, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH27, 1> elevec3(elevec3_epetra.A(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex27::ActionType act = So_hex27::none;
@@ -126,7 +126,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* matptr = nullptr;
+      CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -162,7 +162,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> myemat(true);
+      CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> myemat(true);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -219,7 +219,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       // elemat2 variable, since the inertia terms will be directly added to the right hand side.
       // Therefore, a view is only set in cases where the evaluated mass matrix should also be
       // exported in elemat2.
-      LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
+      CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27> mass_matrix_evaluate;
       if (act != So_hex27::calc_struct_internalinertiaforce) mass_matrix_evaluate.SetView(elemat2);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -262,10 +262,10 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         // In case of Lie group time integration, we need to explicitly add the inertia terms to the
         // force vector, as the global mass matrix is never multiplied with the global acceleration
         // vector.
-        LINALG::Matrix<NUMDOF_SOH27, 1> acceleration(true);
+        CORE::LINALG::Matrix<NUMDOF_SOH27, 1> acceleration(true);
         for (unsigned int i_dof = 0; i_dof < NUMDOF_SOH27; i_dof++)
           acceleration(i_dof) = myacc[i_dof];
-        LINALG::Matrix<NUMDOF_SOH27, 1> internal_inertia(true);
+        CORE::LINALG::Matrix<NUMDOF_SOH27, 1> internal_inertia(true);
         internal_inertia.Multiply(mass_matrix_evaluate, acceleration);
         elevec2 += internal_inertia;
       }
@@ -294,9 +294,9 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> stress;
-        LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> strain;
-        LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> plstrain;
+        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> stress;
+        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> strain;
+        CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D> plstrain;
         auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
@@ -358,13 +358,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // build incremental def gradient for every gauss point
-      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH27, 9);
+      CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH27, 9);
       DefGradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::Matrix<3, 3> deltaF;
-      LINALG::Matrix<3, 3> Fhist;
-      LINALG::Matrix<3, 3> Fnew;
+      CORE::LINALG::Matrix<3, 3> deltaF;
+      CORE::LINALG::Matrix<3, 3> Fhist;
+      CORE::LINALG::Matrix<3, 3> Fnew;
       for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
@@ -413,7 +413,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       double intenergy = 0.0;
 
       // shape functions and Gauss weights
-      const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+      const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+          soh27_derivs();
       const static std::vector<double> weights = soh27_weights();
 
       // get displacements of this processor
@@ -425,8 +426,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // update element geometry
-      LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
-      LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
+      CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
+      CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
 
       DRT::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOH27; ++i)
@@ -453,20 +454,20 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         */
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
-        LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ(true);
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ(true);
         N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
         defgrd.MultiplyTT(xcurr, N_XYZ);
 
         // right Cauchy-Green tensor = F^T * F
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> cauchygreen;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> cauchygreen;
         cauchygreen.MultiplyTN(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -525,8 +526,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         double energynorm = 0.0;
 
         // shape functions, derivatives and integration weights
-        const static std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> vals = soh27_shapefcts();
-        const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+        const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> vals = soh27_shapefcts();
+        const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
             soh27_derivs();
         const static std::vector<double> weights = soh27_weights();
 
@@ -537,11 +538,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
         // nodal displacement vector
-        LINALG::Matrix<NUMDOF_SOH27, 1> nodaldisp;
+        CORE::LINALG::Matrix<NUMDOF_SOH27, 1> nodaldisp;
         for (int i = 0; i < NUMDOF_SOH27; ++i) nodaldisp(i, 0) = mydisp[i];
 
         // reference geometry (nodal positions)
-        LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;
+        CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;
         DRT::Node** nodes = Nodes();
         for (int i = 0; i < NUMNOD_SOH27; ++i)
         {
@@ -551,7 +552,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
         }
 
         // deformation gradient = identity tensor (geometrically linear case!)
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
         for (int i = 0; i < NUMDIM_SOH27; ++i) defgrd(i, i) = 1;
 
         //----------------------------------------------------------------
@@ -563,15 +564,15 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           double fac = detJ_[gp] * weights[gp];
 
           // Gauss point in reference configuration
-          LINALG::Matrix<NUMDIM_SOH27, 1> xgp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, 1> xgp(true);
           for (int k = 0; k < NUMDIM_SOH27; ++k)
             for (int n = 0; n < NUMNOD_SOH27; ++n) xgp(k, 0) += (vals[gp])(n)*xrefe(n, k);
 
           //**************************************************************
           // get analytical solution
-          LINALG::Matrix<NUMDIM_SOH27, 1> uanalyt(true);
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainanalyt(true);
-          LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> derivanalyt(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, 1> uanalyt(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainanalyt(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> derivanalyt(true);
 
           CONTACT::AnalyticalSolutions3D(xgp, uanalyt, strainanalyt, derivanalyt);
           //**************************************************************
@@ -581,13 +582,13 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute displacements at GP
-          LINALG::Matrix<NUMDIM_SOH27, 1> ugp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, 1> ugp(true);
           for (int k = 0; k < NUMDIM_SOH27; ++k)
             for (int n = 0; n < NUMNOD_SOH27; ++n)
               ugp(k, 0) += (vals[gp])(n)*nodaldisp(NODDOF_SOH27 * n + k, 0);
 
           // displacement error
-          LINALG::Matrix<NUMDIM_SOH27, 1> uerror(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, 1> uerror(true);
           for (int k = 0; k < NUMDIM_SOH27; ++k) uerror(k, 0) = uanalyt(k, 0) - ugp(k, 0);
 
           // compute GP contribution to L2 error norm
@@ -599,18 +600,18 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
 
           // compute derivatives N_XYZ at GP w.r.t. material coordinates
           // by N_XYZ = J^-1 * N_rst
-          LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ(true);
           N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
           // compute partial derivatives at GP
-          LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> derivgp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> derivgp(true);
           for (int l = 0; l < NUMDIM_SOH27; ++l)
             for (int m = 0; m < NUMDIM_SOH27; ++m)
               for (int k = 0; k < NUMNOD_SOH27; ++k)
                 derivgp(l, m) += N_XYZ(m, k) * nodaldisp(NODDOF_SOH27 * k + l, 0);
 
           // derivative error
-          LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> deriverror(true);
+          CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> deriverror(true);
           for (int k = 0; k < NUMDIM_SOH27; ++k)
             for (int m = 0; m < NUMDIM_SOH27; ++m)
               deriverror(k, m) = derivanalyt(k, m) - derivgp(k, m);
@@ -624,7 +625,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute linear B-operator
-          LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
           for (int i = 0; i < NUMNOD_SOH27; ++i)
           {
             bop(0, NODDOF_SOH27 * i + 0) = N_XYZ(0, i);
@@ -649,17 +650,17 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           }
 
           // compute linear strain at GP
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straingp(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straingp(true);
           straingp.Multiply(bop, nodaldisp);
 
           // strain error
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainerror(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainerror(true);
           for (int k = 0; k < MAT::NUM_STRESS_3D; ++k)
             strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
 
           // compute stress vector and constitutive matrix
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
           SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
 
           // compute GP contribution to energy error norm
@@ -736,7 +737,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   const auto* funct = condition.Get<std::vector<int>>("funct");
-  LINALG::Matrix<NUMDIM_SOH27, 1> xrefegp(false);
+  CORE::LINALG::Matrix<NUMDIM_SOH27, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_SOH27; dim++)
@@ -745,13 +746,14 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
   const static std::vector<double> gpweights = soh27_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {
@@ -764,7 +766,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
   for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
   {
     // compute the Jacobian matrix
-    LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> jac;
+    CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> jac;
     jac.Multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian
@@ -818,8 +820,9 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {
     xrefe(i, 0) = Nodes()[i]->X()[0];
@@ -855,12 +858,12 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                          // current displacements
     std::vector<double>& residual,                                      // current residual displ
-    LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,            // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,             // element mass matrix
-    LINALG::Matrix<NUMDOF_SOH27, 1>* force,                         // element internal force vector
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,      // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,       // element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force,  // element internal force vector
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
     Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,    // stress output option
     const INPAR::STR::StrainType iostrain,    // strain output option
@@ -869,15 +872,16 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
   const static std::vector<double> gpweights = soh27_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
 
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH27; ++i)
@@ -892,7 +896,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOH27 + 2];
   }
 
-  LINALG::Matrix<NUMDOF_SOH27, 1> nodaldisp;
+  CORE::LINALG::Matrix<NUMDOF_SOH27, 1> nodaldisp;
   for (int i = 0; i < NUMDOF_SOH27; ++i)
   {
     nodaldisp(i, 0) = disp[i];
@@ -901,11 +905,11 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ;
+  CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
-  LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
+  CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(true);
   for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
@@ -941,7 +945,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
     for (int i = 0; i < NUMNOD_SOH27; ++i)
     {
       bop(0, NODDOF_SOH27 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -966,7 +970,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     }
 
     // now build the linear strain
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainlin(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainlin(true);
     strainlin.Multiply(bop, nodaldisp);
 
     // and rename it as glstrain to use the common methods further on
@@ -974,7 +978,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
     glstrain.Update(1.0, strainlin);
 
     // return gp strains (only in case of stress/strain output)
@@ -991,7 +995,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
       {
         if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = glstrain(0);
         gl(0, 1) = 0.5 * glstrain(3);
         gl(0, 2) = 0.5 * glstrain(5);
@@ -1003,11 +1007,11 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
         gl(2, 2) = glstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1030,16 +1034,16 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
         Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
-      LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
+      CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
       funct = shapefcts[gp];
-      LINALG::Matrix<1, NUMDIM_SOH27> point(true);
+      CORE::LINALG::Matrix<1, NUMDIM_SOH27> point(true);
       point.MultiplyTN(funct, xrefe);
       params.set("gprefecoord", point);
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1049,8 +1053,8 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::strain_gl:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
@@ -1058,10 +1062,10 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::strain_ea:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = plglstrain(0);
         gl(0, 1) = 0.5 * plglstrain(3);
         gl(0, 2) = 0.5 * plglstrain(5);
@@ -1073,11 +1077,11 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
         gl(2, 2) = plglstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1110,7 +1114,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
         if (elestress == nullptr) dserror("stress data not available");
         const double detF = defgrd.Determinant();
 
-        LINALG::Matrix<3, 3> pkstress;
+        CORE::LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -1121,8 +1125,8 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
         temp.Multiply(1.0 / detF, defgrd, pkstress);
         cauchystress.MultiplyNT(temp, defgrd);
 
@@ -1152,7 +1156,7 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(std::vector<int>& lm,  // locat
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<6, NUMDOF_SOH27> cb;
+      CORE::LINALG::Matrix<6, NUMDOF_SOH27> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
     }
@@ -1192,15 +1196,15 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     std::vector<double>* vel,                                           // current velocities
     std::vector<double>* acc,                                           // current accelerations
     std::vector<double>& residual,                                      // current residual displ
-    std::vector<double>& dispmat,                                 // current material displacements
-    LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,      // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,       // element mass matrix
-    LINALG::Matrix<NUMDOF_SOH27, 1>* force,                       // element internal force vector
-    LINALG::Matrix<NUMDOF_SOH27, 1>* forceinert,                  // element inertial force vector
-    LINALG::Matrix<NUMDOF_SOH27, 1>* force_str,                   // element structural force vector
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-    LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
+    std::vector<double>& dispmat,  // current material displacements
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force,                   // element internal force vector
+    CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* forceinert,              // element inertial force vector
+    CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force_str,  // element structural force vector
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
     Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,    // stress output option
     const INPAR::STR::StrainType iostrain,    // strain output option
@@ -1209,15 +1213,16 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts = soh27_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
   const static std::vector<double> gpweights = soh27_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {
@@ -1241,10 +1246,10 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ;
+  CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(false);
+  CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> defgrd(false);
   for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1260,10 +1265,10 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
-      LINALG::Matrix<3, 3> invJdef;
+      CORE::LINALG::Matrix<3, 3> invJdef;
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      LINALG::Matrix<3, 27> N_xyz;
+      CORE::LINALG::Matrix<3, 27> N_xyz;
       N_xyz.Multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
@@ -1273,11 +1278,11 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
       defgrd(2, 2) += 1.0;
 
       // get stored old incremental F
-      LINALG::Matrix<3, 3> Fhist;
+      CORE::LINALG::Matrix<3, 3> Fhist;
       prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::Matrix<3, 3> Fnew;
+      CORE::LINALG::Matrix<3, 3> Fnew;
       Fnew.Multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
@@ -1287,13 +1292,13 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     }
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> cauchygreen;
+    CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1315,7 +1320,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
       {
         if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = glstrain(0);
         gl(0, 1) = 0.5 * glstrain(3);
         gl(0, 2) = 0.5 * glstrain(5);
@@ -1327,11 +1332,11 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         gl(2, 2) = glstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1369,7 +1374,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH27> bop;
     for (int i = 0; i < NUMNOD_SOH27; ++i)
     {
       bop(0, NODDOF_SOH27 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -1398,16 +1403,16 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         Material()->MaterialType() == INPAR::MAT::m_mixture)
     {
       // gp reference coordinates
-      LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
+      CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct(true);
       funct = shapefcts[gp];
-      LINALG::Matrix<1, NUMDIM_SOH27> point(true);
+      CORE::LINALG::Matrix<1, NUMDIM_SOH27> point(true);
       point.MultiplyTN(funct, xrefe);
       params.set("gprefecoord", point);
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     UTILS::GetTemperatureForStructuralMaterial<hex27>(shapefcts[gp], params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1418,8 +1423,8 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::strain_gl:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
@@ -1427,10 +1432,10 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
       case INPAR::STR::strain_ea:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> gl;
         gl(0, 0) = plglstrain(0);
         gl(0, 1) = 0.5 * plglstrain(3);
         gl(0, 2) = 0.5 * plglstrain(5);
@@ -1442,11 +1447,11 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         gl(2, 2) = plglstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
-        LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1479,7 +1484,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         if (elestress == nullptr) dserror("stress data not available");
         const double detF = defgrd.Determinant();
 
-        LINALG::Matrix<3, 3> pkstress;
+        CORE::LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -1490,8 +1495,8 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
         temp.Multiply(1.0 / detF, defgrd, pkstress);
         cauchystress.MultiplyNT(temp, defgrd);
 
@@ -1521,14 +1526,14 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<6, NUMDOF_SOH27> cb;
+      CORE::LINALG::Matrix<6, NUMDOF_SOH27> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                 // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      std::vector<double> SmB_L(3);       // intermediate Sm.B_L
+      CORE::LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
+      sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOH27; ++inod)
       {
@@ -1587,9 +1592,9 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
           timintfac_dis = params.get<double>("timintfac_dis");
           timintfac_vel = params.get<double>("timintfac_vel");
         }
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_disp(true);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_disp(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
         SolidMaterial()->EvaluateNonLinMass(
@@ -1602,7 +1607,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
         // evaluate accelerations at time n+1 at gauss point
-        LINALG::Matrix<NUMDIM_SOH27, 1> myacc(true);
+        CORE::LINALG::Matrix<NUMDIM_SOH27, 1> myacc(true);
         for (int idim = 0; idim < NUMDIM_SOH27; ++idim)
           for (int inod = 0; inod < NUMNOD_SOH27; ++inod)
             myacc(idim) += shapefcts[gp](inod) * (*acc)[idim + (inod * NUMDIM_SOH27)];
@@ -1611,7 +1616,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
         {
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
-          LINALG::Matrix<1, NUMDOF_SOH27> cb;
+          CORE::LINALG::Matrix<1, NUMDOF_SOH27> cb;
           cb.MultiplyTN(linmass_disp, bop);
           for (int inod = 0; inod < NUMNOD_SOH27; ++inod)
           {
@@ -1649,7 +1654,8 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(std::vector<int>& lm,  // locat
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex27::soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass)
+void DRT::ELEMENTS::So_hex27::soh27_lumpmass(
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1671,9 +1677,9 @@ void DRT::ELEMENTS::So_hex27::soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27, NUMDOF
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh27_shapefcts()
+const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh27_shapefcts()
 {
-  std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
+  std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up nodal f at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
@@ -1693,10 +1699,10 @@ const std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> DRT::ELEMENTS::So_hex27::soh2
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
+const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
 DRT::ELEMENTS::So_hex27::soh27_derivs()
 {
-  std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
+  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
@@ -1731,15 +1737,15 @@ const std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
  |  shape functions and derivatives for So_hex27                         |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
-    LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>** shapefct,  // pointer to pointer of shapefct
-    LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
-    LINALG::Matrix<NUMGPT_SOH27, 1>** weights)              // pointer to pointer of weights
+    CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>** shapefct,  // pointer to pointer of shapefct
+    CORE::LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
+    CORE::LINALG::Matrix<NUMGPT_SOH27, 1>** weights)              // pointer to pointer of weights
 {
   // static matrix objects, kept in memory
-  static LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27> f;   // shape functions
-  static LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27> df;  // derivatives
-  static LINALG::Matrix<NUMGPT_SOH27, 1> weightfactors;  // weights for each gp
-  static bool fdf_eval;                                  // flag for re-evaluate everything
+  static CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27> f;   // shape functions
+  static CORE::LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27> df;  // derivatives
+  static CORE::LINALG::Matrix<NUMGPT_SOH27, 1> weightfactors;  // weights for each gp
+  static bool fdf_eval;                                        // flag for re-evaluate everything
 
   if (fdf_eval == true)  // if true f,df already evaluated
   {
@@ -1761,8 +1767,8 @@ void DRT::ELEMENTS::So_hex27::soh27_shapederiv(
       const double s = intpoints.qxg[igp][1];
       const double t = intpoints.qxg[igp][2];
 
-      LINALG::Matrix<NUMNOD_SOH27, 1> funct;
-      LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> deriv;
+      CORE::LINALG::Matrix<NUMNOD_SOH27, 1> funct;
+      CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> deriv;
       CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, hex27);
       CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, hex27);
       for (int inode = 0; inode < NUMNOD_SOH27; ++inode)
@@ -1805,10 +1811,11 @@ int DRT::ELEMENTS::So_hex27Type::Initialize(DRT::Discretization& dis)
 void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
     Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;  // current  coord. of element
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_SOH27 + 0];
@@ -1819,15 +1826,15 @@ void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
   for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
-    LINALG::Matrix<3, 3> invJdef;
+    CORE::LINALG::Matrix<3, 3> invJdef;
     prestress.StoragetoMatrix(gp, invJdef, prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_xyz;
+    CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_xyz;
     N_xyz.Multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::Matrix<3, 3> defgrd;
+    CORE::LINALG::Matrix<3, 3> defgrd;
     defgrd.MultiplyTT(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
@@ -1844,10 +1851,11 @@ void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
 void DRT::ELEMENTS::So_hex27::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs = soh27_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
+      soh27_derivs();
 
   // get incremental disp
-  LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xdisp;
   for (int i = 0; i < NUMNOD_SOH27; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_SOH27 + 0];
@@ -1855,11 +1863,11 @@ void DRT::ELEMENTS::So_hex27::UpdateJacobianMapping(
     xdisp(i, 2) = disp[i * NODDOF_SOH27 + 2];
   }
 
-  LINALG::Matrix<3, 3> invJhist;
-  LINALG::Matrix<3, 3> invJ;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_xyz;
-  LINALG::Matrix<3, 3> invJnew;
+  CORE::LINALG::Matrix<3, 3> invJhist;
+  CORE::LINALG::Matrix<3, 3> invJ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27> N_xyz;
+  CORE::LINALG::Matrix<3, 3> invJnew;
   for (int gp = 0; gp < NUMGPT_SOH27; ++gp)
   {
     // get the invJ old state

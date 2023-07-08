@@ -177,9 +177,9 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CheckReuseStatus
 template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
     Teuchos::ParameterList& azlist, const bool isCrsMatrix,
-    Teuchos::RCP<LINALG::KrylovProjector> projector)
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
 
   preconditioner_ = Teuchos::null;
 

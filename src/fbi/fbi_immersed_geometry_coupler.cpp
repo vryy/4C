@@ -26,8 +26,8 @@ The current implementation does not scale at all!
 /*----------------------------------------------------------------------*/
 
 FBI::FBIGeometryCoupler::FBIGeometryCoupler()
-    : fluidpositions_(new std::map<int, LINALG::Matrix<3, 1>>),
-      beampositions_(new std::map<int, LINALG::Matrix<3, 1>>),
+    : fluidpositions_(new std::map<int, CORE::LINALG::Matrix<3, 1>>),
+      beampositions_(new std::map<int, CORE::LINALG::Matrix<3, 1>>),
       searchtree_(new CORE::GEO::SearchTree(5)),
       searchradius_(DRT::Problem::Instance()
                         ->FBIParams()
@@ -47,14 +47,14 @@ void FBI::FBIGeometryCoupler::Setup(std::vector<Teuchos::RCP<DRT::Discretization
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
   Teuchos::TimeMonitor monitor(*t);
 
-  fluidpositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
-  beampositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
+  fluidpositions_ = Teuchos::rcp(new std::map<int, CORE::LINALG::Matrix<3, 1>>);
+  beampositions_ = Teuchos::rcp(new std::map<int, CORE::LINALG::Matrix<3, 1>>);
 
   // todo Specific for fixed grids.. we will have to do something here for ALE (overload?)
   ComputeFixedPositions(*discretizations[1], fluidpositions_);
 
   // Computes a bounding box for the fluid elements, within which the search will be done
-  LINALG::Matrix<3, 2> fluidBox = CORE::GEO::getXAABBofPositions(*fluidpositions_);
+  CORE::LINALG::Matrix<3, 2> fluidBox = CORE::GEO::getXAABBofPositions(*fluidpositions_);
 
   // Sets-up the searchtree (octtree) for the fluid elements in the given bounding box
   searchtree_->initializeTree(
@@ -78,13 +78,13 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
   ComputeCurrentPositions(*discretizations[0], beampositions_, column_structure_displacement);
 
   // todo Maybe have to do something for structure+beam in discretization.
-  std::map<int, LINALG::Matrix<3, 1>>::const_iterator beamnodeiterator;
+  std::map<int, CORE::LINALG::Matrix<3, 1>>::const_iterator beamnodeiterator;
 
   // loop over beam nodes
   for (beamnodeiterator = beampositions_->begin(); beamnodeiterator != beampositions_->end();
        beamnodeiterator++)
   {
-    const LINALG::Matrix<3, 1>& curbeamnodeposition = beamnodeiterator->second;
+    const CORE::LINALG::Matrix<3, 1>& curbeamnodeposition = beamnodeiterator->second;
 
     // search for all fluid elements in the given radius
     std::map<int, std::set<int>> closeeles = searchtree_->searchElementsInRadius(
@@ -137,7 +137,8 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
 
   // gather all gids of nodes redundantly
   std::vector<int> rdata;
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
+  CORE::LINALG::Gather<int>(
+      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
 
   // build completely overlapping map of nodes (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -152,7 +153,8 @@ void FBI::FBIGeometryCoupler::ExtendBeamGhosting(DRT::Discretization& discretiza
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
+  CORE::LINALG::Gather<int>(
+      sdata, rdata, (int)allproc.size(), allproc.data(), discretization.Comm());
 
   // build complete overlapping map of elements (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -215,7 +217,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   }
 
   // Communicate pair ids
-  LINALG::AllToAllCommunication(discretizations[0]->Comm(), pairids_to_send, pairids_to_recv);
+  CORE::LINALG::AllToAllCommunication(discretizations[0]->Comm(), pairids_to_send, pairids_to_recv);
 
   // bring pair_ids in correct format
   pairids->clear();
@@ -228,7 +230,8 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
   }
 
   // Communicate element gids
-  LINALG::AllToAllCommunication(discretizations[0]->Comm(), element_senddata, element_recvdata);
+  CORE::LINALG::AllToAllCommunication(
+      discretizations[0]->Comm(), element_senddata, element_recvdata);
 
 
   // Add my current column elements to the set for the map
@@ -263,7 +266,7 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     }
 
     // communicate node gids
-    LINALG::AllToAllCommunication(discretizations[0]->Comm(), node_senddata, node_recvdata);
+    CORE::LINALG::AllToAllCommunication(discretizations[0]->Comm(), node_senddata, node_recvdata);
 
     // add new node gids to overlapping column map
     const Epetra_Map* nodecolmap = discretizations[1]->NodeColMap();
@@ -294,8 +297,8 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
 }
 
 /*----------------------------------------------------------------------*/
-void FBI::FBIGeometryCoupler::ComputeFixedPositions(
-    DRT::Discretization& dis, Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions) const
+void FBI::FBIGeometryCoupler::ComputeFixedPositions(DRT::Discretization& dis,
+    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions) const
 {
   positions->clear();
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
@@ -308,7 +311,7 @@ void FBI::FBIGeometryCoupler::ComputeFixedPositions(
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,
+    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {
   positions->clear();

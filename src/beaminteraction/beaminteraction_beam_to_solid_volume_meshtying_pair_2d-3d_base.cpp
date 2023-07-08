@@ -48,14 +48,14 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                            integration_point,
-    LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
+    CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   auto evaluate_position = [&](const auto& q, auto& r_beam)
   {
     const auto eta = integration_point.GetEta();
-    LINALG::Matrix<3, 3, double> triad;
+    CORE::LINALG::Matrix<3, 3, double> triad;
     GetTriadAtXiDouble(eta, triad, reference);
-    LINALG::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
+    CORE::LINALG::Matrix<3, 1, double> r_cross_section_ref, r_cross_section_cur;
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);

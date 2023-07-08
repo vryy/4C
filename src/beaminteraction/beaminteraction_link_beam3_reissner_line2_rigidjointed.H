@@ -16,7 +16,7 @@ elements
 #include "linalg_serialdensevector.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }
@@ -126,7 +126,7 @@ namespace BEAMINTERACTION
     }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, LINALG::SerialDenseVector& bspotforce) const
+    virtual void GetBindingSpotForce(int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const
     {
       bspotforce = bspotforces_[bspotid];
     }
@@ -139,22 +139,22 @@ namespace BEAMINTERACTION
     \brief Evaluate forces and stiffness contribution [derived]
     */
     virtual bool EvaluateForce(
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2);
+        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2);
 
     /*!
     \brief Evaluate stiffness contribution [derived]
     */
-    virtual bool EvaluateStiff(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    virtual bool EvaluateForceStiff(LINALG::SerialDenseVector& forcevec1,
-        LINALG::SerialDenseVector& forcevec2, LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     //@}
 
@@ -165,8 +165,8 @@ namespace BEAMINTERACTION
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
     void FillStateVariablesForElementEvaluation(
-        LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
-        std::vector<LINALG::Matrix<4, 1, double>>& Qnode) const;
+        CORE::LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
+        std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode) const;
 
     //@}
 
@@ -178,7 +178,7 @@ namespace BEAMINTERACTION
 
 
     //! the following variables are for output purposes only (no need to pack or unpack)
-    std::vector<LINALG::SerialDenseVector> bspotforces_;
+    std::vector<CORE::LINALG::SerialDenseVector> bspotforces_;
 
     //@}
   };

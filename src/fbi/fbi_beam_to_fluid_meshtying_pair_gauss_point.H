@@ -54,9 +54,10 @@ namespace BEAMINTERACTION
      *
      * \returns True if pair is in contact.
      */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
 
    protected:
     /** \brief You will have to use the FBI::PairFactory

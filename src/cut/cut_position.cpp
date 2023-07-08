@@ -26,8 +26,8 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
-Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const Element& element, const LINALG::Matrix<rdim, 1>& xyz, INPAR::CUT::CUT_Floattype floattype)
+Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(const Element& element,
+    const CORE::LINALG::Matrix<rdim, 1>& xyz, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   if (rdim < factory.ProbDim())
@@ -42,7 +42,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
  *----------------------------------------------------------------------------*/
 template <unsigned rdim, unsigned cdim, unsigned rdim_2>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const LINALG::Matrix<rdim, cdim>& xyze, const LINALG::Matrix<rdim_2, 1>& xyz,
+    const CORE::LINALG::Matrix<rdim, cdim>& xyze, const CORE::LINALG::Matrix<rdim_2, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
@@ -79,7 +79,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const Epetra_SerialDenseMatrix& xyze, const LINALG::Matrix<rdim, 1>& xyz,
+    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
@@ -116,7 +116,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const std::vector<Node*> nodes, const LINALG::Matrix<rdim, 1>& xyz,
+    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<rdim, 1>& xyz,
     ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
@@ -139,7 +139,7 @@ void CORE::GEO::CUT::PositionGeneric<probdim, eletype, numNodesElement, dim,
 
   for (unsigned i = 0; i < numNodesElement; ++i)
   {
-    LINALG::Matrix<3, 1> x1(&this->xyze_(0, i), true);
+    CORE::LINALG::Matrix<3, 1> x1(&this->xyze_(0, i), true);
     bbside_->AddPoint(x1);
   }
 }
@@ -463,45 +463,47 @@ INPAR::CUT::CUT_Floattype CORE::GEO::CUT::PositionFactory::general_dist_floattyp
     INPAR::CUT::floattype_none;
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const Element& element, const LINALG::Matrix<2, 1>& xyz, INPAR::CUT::CUT_Floattype floattype);
+    const Element& element, const CORE::LINALG::Matrix<2, 1>& xyz,
+    INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const Element& element, const LINALG::Matrix<3, 1>& xyz, INPAR::CUT::CUT_Floattype floattype);
+    const Element& element, const CORE::LINALG::Matrix<3, 1>& xyz,
+    INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 3, 3>(
-    const LINALG::Matrix<3, 3>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 6, 3>(
-    const LINALG::Matrix<3, 6>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 6>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 4, 3>(
-    const LINALG::Matrix<3, 4>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 4>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 8, 3>(
-    const LINALG::Matrix<3, 8>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 8>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 9, 3>(
-    const LINALG::Matrix<3, 9>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 9>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3, 2, 3>(
-    const LINALG::Matrix<3, 2>& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2, 2, 2>(
-    const LINALG::Matrix<2, 2>& xyze, const LINALG::Matrix<2, 1>& xyz,
+    const CORE::LINALG::Matrix<2, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const Epetra_SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& xyz,
+    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const Epetra_SerialDenseMatrix& xyze, const LINALG::Matrix<2, 1>& xyz,
+    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const std::vector<Node*> nodes, const LINALG::Matrix<3, 1>& xyz,
+    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<3, 1>& xyz,
     ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const std::vector<Node*> nodes, const LINALG::Matrix<2, 1>& xyz,
+    const std::vector<Node*> nodes, const CORE::LINALG::Matrix<2, 1>& xyz,
     ::DRT::Element::DiscretizationType distype, INPAR::CUT::CUT_Floattype floattype);
 
 /* --- ComputeEmbeddedPosition --- */

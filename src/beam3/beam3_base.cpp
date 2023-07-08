@@ -181,7 +181,8 @@ double DRT::ELEMENTS::Beam3Base::GetCircularCrossSectionRadiusForInteractions() 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3, 1>& refpos, const double& xi) const
+void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(
+    CORE::LINALG::Matrix<3, 1>& refpos, const double& xi) const
 {
   const int numclnodes = this->NumCenterlineNodes();
   const int numnodalvalues = this->HermiteCenterlineInterpolation() ? 2 : 1;
@@ -219,7 +220,7 @@ MAT::BeamMaterialTemplated<T>& DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMateria
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
-    LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 3, T>& CM) const
+    CORE::LINALG::Matrix<3, 3, T>& CN, CORE::LINALG::Matrix<3, 3, T>& CM) const
 {
   GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
   GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
@@ -229,7 +230,7 @@ void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor(
-    double& mass_inertia_translational, LINALG::Matrix<3, 3, T>& J) const
+    double& mass_inertia_translational, CORE::LINALG::Matrix<3, 3, T>& J) const
 {
   GetTranslationalMassInertiaFactor(mass_inertia_translational);
   GetBeamMaterial().GetMassMomentOfInertiaTensorMaterialFrame(J);
@@ -245,7 +246,7 @@ void DRT::ELEMENTS::Beam3Base::GetTranslationalMassInertiaFactor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3, 1>& gamma) const
+void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(CORE::LINALG::Matrix<3, 1>& gamma) const
 {
   switch (BrownianDynParamsInterface().HowBeamDampingCoefficientsAreSpecified())
   {
@@ -297,11 +298,12 @@ void DRT::ELEMENTS::Beam3Base::GetDampingCoefficients(LINALG::Matrix<3, 1>& gamm
  *----------------------------------------------------------------------*/
 template <unsigned int ndim, typename T>
 void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity(
-    Teuchos::ParameterList& params,                     //!< parameter list
-    const LINALG::Matrix<ndim, 1, T>& evaluationpoint,  //!< point at which background velocity and
-                                                        //!< its gradient has to be computed
-    LINALG::Matrix<ndim, 1, T>& velbackground,          //!< velocity of background fluid
-    LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
+    Teuchos::ParameterList& params,  //!< parameter list
+    const CORE::LINALG::Matrix<ndim, 1, T>&
+        evaluationpoint,                              //!< point at which background velocity and
+                                                      //!< its gradient has to be computed
+    CORE::LINALG::Matrix<ndim, 1, T>& velbackground,  //!< velocity of background fluid
+    CORE::LINALG::Matrix<ndim, ndim, T>& velbackgroundgrad)
     const  //!< gradient of velocity of background fluid
 {
   /*note: this function is not yet a general one, but always assumes a shear flow, where the
@@ -336,7 +338,7 @@ void DRT::ELEMENTS::Beam3Base::UnShiftNodePosition(
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  static LINALG::Matrix<3, 1> d(true), ref(true), X(true);
+  static CORE::LINALG::Matrix<3, 1> d(true), ref(true), X(true);
   d.Clear();
   ref.Clear();
   X.Clear();
@@ -376,7 +378,7 @@ void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
 
   // loop through all nodes except for the first node which remains
   // fixed as reference node
-  static LINALG::Matrix<3, 1> d(true), ref(true), X(true);
+  static CORE::LINALG::Matrix<3, 1> d(true), ref(true), X(true);
   d.Clear();
   ref.Clear();
   X.Clear();
@@ -400,7 +402,7 @@ void DRT::ELEMENTS::Beam3Base::GetDirectionsOfShifts(std::vector<double>& disp,
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3, 1>& pos,
+void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(CORE::LINALG::Matrix<3, 1>& pos,
     std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
     CORE::GEO::MESHFREE::BoundingBox const& periodic_boundingbox) const
 {
@@ -414,7 +416,7 @@ void DRT::ELEMENTS::Beam3Base::GetPosOfBindingSpot(LINALG::Matrix<3, 1>& pos,
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(LINALG::Matrix<3, 3>& triad,
+void DRT::ELEMENTS::Beam3Base::GetTriadOfBindingSpot(CORE::LINALG::Matrix<3, 3>& triad,
     std::vector<double>& disp, INPAR::BEAMINTERACTION::CrosslinkerType linkertype,
     int bspotlocn) const
 {
@@ -436,7 +438,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
       discret, this, result_data_dofbased, element_posdofvec);
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_volume;
 
-  LINALG::Matrix<3, 1, double> point;
+  CORE::LINALG::Matrix<3, 1, double> point;
 
   // TODO: replace this with convex hull from bezier curve (small student project?)
   // Add a certain number of points along the beam.
@@ -460,24 +462,24 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Beam3Base::GetBoundingVolum
  | explicit template instantiations                                                           |
  *--------------------------------------------------------------------------------------------*/
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<double>(
-    LINALG::Matrix<3, 3, double>& CN, LINALG::Matrix<3, 3, double>& CM) const;
+    CORE::LINALG::Matrix<3, 3, double>& CN, CORE::LINALG::Matrix<3, 3, double>& CM) const;
 template void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices<Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
 
 template void DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<double>(
-    double&, LINALG::Matrix<3, 3, double>&) const;
+    double&, CORE::LINALG::Matrix<3, 3, double>&) const;
 template void
 DRT::ELEMENTS::Beam3Base::GetTranslationalAndRotationalMassInertiaTensor<Sacado::Fad::DFad<double>>(
-    double&, LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+    double&, CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, double>(Teuchos::ParameterList&,
-    const LINALG::Matrix<3, 1, double>&, LINALG::Matrix<3, 1, double>&,
-    LINALG::Matrix<3, 3, double>&) const;
+    const CORE::LINALG::Matrix<3, 1, double>&, CORE::LINALG::Matrix<3, 1, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&) const;
 template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DFad<double>>(
-    Teuchos::ParameterList&, const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+    Teuchos::ParameterList&, const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template MAT::BeamMaterialTemplated<double>&
 DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;

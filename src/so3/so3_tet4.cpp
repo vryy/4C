@@ -315,7 +315,7 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOTET4; ++i)
   {
     const double* x = nodes[i]->X();
@@ -324,10 +324,10 @@ std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
     xrefe(i, 2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
+  CORE::LINALG::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
-  LINALG::Matrix<1, NUMDIM_SOTET4> midpoint;
+  CORE::LINALG::Matrix<1, NUMDIM_SOTET4> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);
@@ -385,7 +385,8 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    static const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts = so_tet4_1gp_shapefcts();
+    static const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts =
+        so_tet4_1gp_shapefcts();
 
     // add fibers to the ParameterList
     // ParameterList does not allow to store a std::vector, so we have to add every gp fiber

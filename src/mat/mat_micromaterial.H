@@ -139,14 +139,14 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new MicroMaterial(*this)); }
 
     /// evaluate micro material on a processor with macro scale
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID);
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp, int eleGID);
 
     /// evaluate micro material on a processor which only knows about the micro scale (supporting
     /// proc)
-    void Evaluate(LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 6>* cmat,
-        LINALG::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
+    void Evaluate(CORE::LINALG::Matrix<3, 3>* defgrd, CORE::LINALG::Matrix<6, 6>* cmat,
+        CORE::LINALG::Matrix<6, 1>* stress, const int gp, const int ele_ID, const int microdisnum,
         double V0, bool eleowner);
 
     virtual double Density() const;

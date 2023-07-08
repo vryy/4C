@@ -50,18 +50,18 @@ bool CORE::GEO::CUT::BoundaryCell::IsValid() const { return points_->size() > 0;
  *----------------------------------------------------------------------------*/
 template <::DRT::Element::DiscretizationType celldistype>
 void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
-    const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin, LINALG::Matrix<3, 1>& normal,
-    double& drs, bool shadow)
+    const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
+    CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
 
 
   const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-  LINALG::Matrix<3, numnodes> xyzeGlo(this->xyz_, true), xyze;
+  CORE::LINALG::Matrix<3, numnodes> xyzeGlo(this->xyz_, true), xyze;
 
   for (int i = 0; i < numnodes; i++)
   {
-    LINALG::Matrix<3, 1> glo(&xyzeGlo(0, i)), loc;
+    CORE::LINALG::Matrix<3, 1> glo(&xyzeGlo(0, i)), loc;
 
     // map w.r to linear shadow element
     if (not shadow)
@@ -80,9 +80,9 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
     xyze(1, i) = loc(1);
     xyze(2, i) = loc(2);
   }
-  LINALG::Matrix<numnodes, 1> funct;
-  LINALG::Matrix<2, numnodes> deriv;
-  LINALG::Matrix<2, 2> metrictensor;
+  CORE::LINALG::Matrix<numnodes, 1> funct;
+  CORE::LINALG::Matrix<2, numnodes> deriv;
+  CORE::LINALG::Matrix<2, 2> metrictensor;
 
   CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
   CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
@@ -115,13 +115,13 @@ double CORE::GEO::CUT::Tri3BoundaryCell::Area()
   const std::vector<Point*> points = this->Points();
 
   // create planes consisting of 3 nodes each
-  LINALG::Matrix<numnodes, 1> p0(points[0]->X());
-  LINALG::Matrix<numnodes, 1> p1(points[1]->X());
-  LINALG::Matrix<numnodes, 1> p2(points[2]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p0(points[0]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p1(points[1]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p2(points[2]->X());
 
-  LINALG::Matrix<numnodes, 1> v01;
-  LINALG::Matrix<numnodes, 1> v02;
-  LINALG::Matrix<numnodes, 1> v12;
+  CORE::LINALG::Matrix<numnodes, 1> v01;
+  CORE::LINALG::Matrix<numnodes, 1> v02;
+  CORE::LINALG::Matrix<numnodes, 1> v12;
 
   v01.Update(1, p1, -1, p0, 0);
   v02.Update(1, p2, -1, p0, 0);
@@ -196,10 +196,10 @@ void CORE::GEO::CUT::Tri3BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file.precision(16);
 
   file << "VP(";
-  LINALG::Matrix<3, 1> midpoint_triag(true);
+  CORE::LINALG::Matrix<3, 1> midpoint_triag(true);
   for (int i = 0; i < 3; ++i)
   {
-    LINALG::Matrix<3, 1> cur(true);
+    CORE::LINALG::Matrix<3, 1> cur(true);
     cur(0, 0) = xyz_(0, i);
     cur(1, 0) = xyz_(1, i);
     cur(2, 0) = xyz_(2, i);
@@ -211,10 +211,10 @@ void CORE::GEO::CUT::Tri3BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file << "){";
 
   // Choose midpoint of triangle as normal for now. Not best choice possibly.
-  LINALG::Matrix<2, 1> eta;
+  CORE::LINALG::Matrix<2, 1> eta;
   eta(0, 0) = 0.5;
   eta(1, 0) = 0.5;
-  LINALG::Matrix<3, 1> normal;
+  CORE::LINALG::Matrix<3, 1> normal;
   this->Normal(eta, normal);
   file << normal(0) << "," << normal(1) << "," << normal(2);
 
@@ -228,10 +228,10 @@ void CORE::GEO::CUT::Quad4BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file.precision(16);
 
   file << "VP(";
-  LINALG::Matrix<3, 1> midpoint_quad(true);
+  CORE::LINALG::Matrix<3, 1> midpoint_quad(true);
   for (int i = 0; i < 4; ++i)
   {
-    LINALG::Matrix<3, 1> cur(true);
+    CORE::LINALG::Matrix<3, 1> cur(true);
     cur(0, 0) = xyz_(0, i);
     cur(1, 0) = xyz_(1, i);
     cur(2, 0) = xyz_(2, i);
@@ -243,10 +243,10 @@ void CORE::GEO::CUT::Quad4BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file << "){";
 
   // Choose midpoint of triangle as normal for now. Not best choice possibly.
-  LINALG::Matrix<2, 1> eta;
+  CORE::LINALG::Matrix<2, 1> eta;
   eta(0, 0) = 0.5;
   eta(1, 0) = 0.5;
-  LINALG::Matrix<3, 1> normal;
+  CORE::LINALG::Matrix<3, 1> normal;
   this->Normal(eta, normal);
   file << normal(0) << "," << normal(1) << "," << normal(2);
 
@@ -263,10 +263,10 @@ void CORE::GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
 
   file << "VP(";
-  LINALG::Matrix<3, 1> midpoint(true);
+  CORE::LINALG::Matrix<3, 1> midpoint(true);
   for (unsigned i = 0; i < num_nodes; ++i)
   {
-    LINALG::Matrix<3, 1> xyz(&xyz_(0, i), true);
+    CORE::LINALG::Matrix<3, 1> xyz(&xyz_(0, i), true);
     midpoint.Update(1.0, xyz, 1.0);
   }
 
@@ -279,9 +279,9 @@ void CORE::GEO::CUT::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
   file << "){";
 
   // Choose midpoint of line2
-  LINALG::Matrix<2, 1> eta;
+  CORE::LINALG::Matrix<2, 1> eta;
   eta = 0.0;
-  LINALG::Matrix<3, 1> normal;
+  CORE::LINALG::Matrix<3, 1> normal;
   this->Normal(eta, normal);
   for (unsigned j = 0; j < 3; ++j)
   {
@@ -303,7 +303,7 @@ void CORE::GEO::CUT::ArbitraryBoundaryCell::DumpGmshNormal(std::ofstream& file)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Point1BoundaryCell::Normal(
-    const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
+    const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   normal.Scale(0.0);
 }
@@ -311,7 +311,7 @@ void CORE::GEO::CUT::Point1BoundaryCell::Normal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Line2BoundaryCell::Normal(
-    const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
+    const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   const unsigned probdim = facet_->ParentSide()->ProbDim();
   switch (probdim)
@@ -328,13 +328,13 @@ void CORE::GEO::CUT::Line2BoundaryCell::Normal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Tri3BoundaryCell::Normal(
-    const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
+    const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
-  LINALG::Matrix<3, 3> side_xyze(xyz_.A(), true);
+  CORE::LINALG::Matrix<3, 3> side_xyze(xyz_.A(), true);
 
-  LINALG::Matrix<2, 3> deriv;
-  LINALG::Matrix<2, 3> A;
+  CORE::LINALG::Matrix<2, 3> deriv;
+  CORE::LINALG::Matrix<2, 3> A;
 
   CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), ::DRT::Element::tri3);
   A.MultiplyNT(deriv, side_xyze);
@@ -351,15 +351,15 @@ void CORE::GEO::CUT::Tri3BoundaryCell::Normal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
-    const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
+    const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
-  LINALG::Matrix<3, 4> side_xyze(xyz_.A(), true);
+  CORE::LINALG::Matrix<3, 4> side_xyze(xyz_.A(), true);
   // Position2d<::DRT::Element::quad4> position( side_xyze, xsi );
   // position.Normal( xsi, normal );
 
-  LINALG::Matrix<2, 4> deriv;
-  LINALG::Matrix<2, 3> A;
+  CORE::LINALG::Matrix<2, 4> deriv;
+  CORE::LINALG::Matrix<2, 3> A;
 
   CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), ::DRT::Element::quad4);
   A.MultiplyNT(deriv, side_xyze);
@@ -376,7 +376,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::ArbitraryBoundaryCell::Normal(
-    const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const
+    const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   dserror("Call GetNormalVector() to get normal for arbitrary boundarycells");
   exit(1);
@@ -431,31 +431,31 @@ CORE::DRT::UTILS::GaussIntegration CORE::GEO::CUT::ArbitraryBoundaryCell::gaussR
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::ArbitraryBoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::ArbitraryBoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   dserror("Element Center for ArbitraryBoundaryCells not implemented!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Point1BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Point1BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
   std::copy(xyz_.A(), xyz_.A() + 3, midpoint.A());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Line2BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Line2BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
-  LINALG::Matrix<3, 1> center_rst(true);
+  CORE::LINALG::Matrix<3, 1> center_rst(true);
   MyElementCenter<::DRT::Element::line2>(center_rst, midpoint);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Tri3BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Tri3BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
-  LINALG::Matrix<3, 1> center;
+  CORE::LINALG::Matrix<3, 1> center;
   center(0, 0) = 0.25;
   center(1, 0) = 0.25;
   center(2, 0) = 0.0;
@@ -464,9 +464,9 @@ void CORE::GEO::CUT::Tri3BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midpoint)
+void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
-  LINALG::Matrix<3, 1> center;
+  CORE::LINALG::Matrix<3, 1> center;
   center(0, 0) = 0.0;
   center(1, 0) = 0.0;
   center(2, 0) = 0.0;
@@ -475,7 +475,7 @@ void CORE::GEO::CUT::Quad4BoundaryCell::ElementCenter(LINALG::Matrix<3, 1>& midp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::CUT::Point1BoundaryCell::GetNormalVector()
+CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Point1BoundaryCell::GetNormalVector()
 {
   dserror("There is no normal for Point1 boundarycell");
   exit(EXIT_FAILURE);
@@ -483,10 +483,10 @@ LINALG::Matrix<3, 1> CORE::GEO::CUT::Point1BoundaryCell::GetNormalVector()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::CUT::Line2BoundaryCell::GetNormalVector()
+CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Line2BoundaryCell::GetNormalVector()
 {
-  LINALG::Matrix<3, 1> normal(true);
-  LINALG::Matrix<2, 1> xsi(true);
+  CORE::LINALG::Matrix<3, 1> normal(true);
+  CORE::LINALG::Matrix<2, 1> xsi(true);
 
   Normal(xsi, normal);
 
@@ -495,7 +495,7 @@ LINALG::Matrix<3, 1> CORE::GEO::CUT::Line2BoundaryCell::GetNormalVector()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::CUT::Tri3BoundaryCell::GetNormalVector()
+CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Tri3BoundaryCell::GetNormalVector()
 {
   dserror("Call Transform function to get normal for Tri3 boundarycell");
   exit(EXIT_FAILURE);
@@ -503,7 +503,7 @@ LINALG::Matrix<3, 1> CORE::GEO::CUT::Tri3BoundaryCell::GetNormalVector()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::CUT::Quad4BoundaryCell::GetNormalVector()
+CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::Quad4BoundaryCell::GetNormalVector()
 {
   dserror("Call Transform function to get normal for Quad4 boundarycell");
   exit(EXIT_FAILURE);
@@ -511,7 +511,10 @@ LINALG::Matrix<3, 1> CORE::GEO::CUT::Quad4BoundaryCell::GetNormalVector()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::CUT::ArbitraryBoundaryCell::GetNormalVector() { return normal_; }
+CORE::LINALG::Matrix<3, 1> CORE::GEO::CUT::ArbitraryBoundaryCell::GetNormalVector()
+{
+  return normal_;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -549,20 +552,20 @@ bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
   const std::vector<Point*> points = this->Points();
 
   // create planes consisting of 3 nodes each
-  LINALG::Matrix<numnodes, 1> p0(points[0]->X());
-  LINALG::Matrix<numnodes, 1> p1(points[1]->X());
-  LINALG::Matrix<numnodes, 1> p2(points[2]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p0(points[0]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p1(points[1]->X());
+  CORE::LINALG::Matrix<numnodes, 1> p2(points[2]->X());
 
-  LINALG::Matrix<numnodes, 1> v01;
-  LINALG::Matrix<numnodes, 1> v02;
-  LINALG::Matrix<numnodes, 1> v12;
+  CORE::LINALG::Matrix<numnodes, 1> v01;
+  CORE::LINALG::Matrix<numnodes, 1> v02;
+  CORE::LINALG::Matrix<numnodes, 1> v12;
 
   v01.Update(1, p1, -1, p0, 0);
   v02.Update(1, p2, -1, p0, 0);
   v12.Update(1, p1, -1, p2, 0);
 
   // Get distance to origin
-  LINALG::Matrix<numnodes, 1> temp(true);
+  CORE::LINALG::Matrix<numnodes, 1> temp(true);
   temp(0, 0) = p0.Norm2();  // Distance of points to origin
   temp(1, 0) = p1.Norm2();
   temp(2, 0) = p2.Norm2();
@@ -599,8 +602,8 @@ bool CORE::GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
 
 // function specializations
 template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<::DRT::Element::tri3>(
-    Element* elem1, const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
-    LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
+    Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
+    CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
 template void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords<::DRT::Element::quad4>(
-    Element* elem1, const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
-    LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);
+    Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
+    CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow);

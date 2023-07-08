@@ -19,10 +19,10 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Map;
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace Teuchos
 {
   class ParameterList;
@@ -125,7 +125,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! [derived]
       void WriteRestart(

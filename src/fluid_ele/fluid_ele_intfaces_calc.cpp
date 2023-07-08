@@ -106,8 +106,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     const INPAR::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
     Teuchos::ParameterList& params,            ///< parameter list
     DRT::DiscretizationFaces& discretization,  ///< faces discretization
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: AssembleInternalFacesUsingNeighborData");
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     // right value for shared nodes
     for (int i = 0; i < numdofpernode; i++)
     {
-      LINALG::Assemble(
+      CORE::LINALG::Assemble(
           *systemvector, elevec_blocks[i], patch_components_lm[i], patch_components_lmowner[i]);
     }
   }

@@ -57,8 +57,8 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddShearMod(
 }
 
 void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
-    const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
-    const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
@@ -71,8 +71,9 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(double& psi,
   psi += mue * 0.5 * (prinv(0) - 3.) - mue * log(sq) + lambda * 0.5 * pow((sq - 1.), 2.);
 }
 
-void MAT::ELASTIC::CoupLogMixNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupLogMixNeoHooke::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;

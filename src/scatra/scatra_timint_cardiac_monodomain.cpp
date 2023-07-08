@@ -29,7 +29,7 @@
  | constructor                                              ehrl  01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomain::TimIntCardiacMonodomain(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
@@ -57,7 +57,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // Activation time at time n+1
-  activation_time_np_ = LINALG::CreateVector(*dofrowmap, true);
+  activation_time_np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   activation_threshold_ = ep_params_->get<double>("ACTTHRES");
   // Assumes that maximum nb_max_mat_int_state_vars_ internal state variables will be written
   nb_max_mat_int_state_vars_ = ep_params_->get<int>(
@@ -67,7 +67,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
     material_internal_state_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_int_state_vars_, true));
     material_internal_state_np_component_ =
-        LINALG::CreateVector(*(discret_->ElementRowMap()), true);
+        CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
   }
   // Assumes that maximum nb_max_mat_ionic_currents_ ionic_currents variables will be written
   nb_max_mat_ionic_currents_ = ep_params_->get<int>(
@@ -77,7 +77,7 @@ void SCATRA::TimIntCardiacMonodomain::Setup()
     material_ionic_currents_np_ = Teuchos::rcp(
         new Epetra_MultiVector(*(discret_->ElementRowMap()), nb_max_mat_ionic_currents_, true));
     material_ionic_currents_np_component_ =
-        LINALG::CreateVector(*(discret_->ElementRowMap()), true);
+        CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
   }
 
   // create dofmap for output writing

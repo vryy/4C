@@ -18,7 +18,7 @@
 #include <Epetra_Comm.h>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }

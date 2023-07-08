@@ -106,8 +106,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
       Teuchos::rcp_dynamic_cast<const MAT::ScatraMatAniso>(material);
 
   // get constant diffusivity
-  LINALG::Matrix<nsd_, nsd_> difftensor(true);
-  LINALG::Matrix<3, 1> diff = actmat->Diffusivity();
+  CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
+  CORE::LINALG::Matrix<3, 1> diff = actmat->Diffusivity();
 
   for (unsigned i = 0; i < nsd_; i++) difftensor(i, i) = diff(i);
 
@@ -124,7 +124,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
 {
-  const LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {

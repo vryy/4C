@@ -54,7 +54,7 @@ namespace GEOMETRYPAIR
      * @param gauss_weight Gauss weight for this point.
      */
     ProjectionPoint1DTo3D(
-        scalar_type eta, LINALG::Matrix<3, 1, scalar_type> xi, double gauss_weight)
+        scalar_type eta, CORE::LINALG::Matrix<3, 1, scalar_type> xi, double gauss_weight)
         : eta_(eta),
           xi_(xi),
           projection_result_(ProjectionResult::none),
@@ -68,7 +68,7 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on line.
      * @param xi Parameter coordinates in volume.
      */
-    ProjectionPoint1DTo3D(scalar_type eta, LINALG::Matrix<3, 1, scalar_type> xi)
+    ProjectionPoint1DTo3D(scalar_type eta, CORE::LINALG::Matrix<3, 1, scalar_type> xi)
         : ProjectionPoint1DTo3D(eta, xi, -1.){};
 
     /**
@@ -76,7 +76,7 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on the line.
      */
     ProjectionPoint1DTo3D(scalar_type eta)
-        : ProjectionPoint1DTo3D(eta, LINALG::Matrix<3, 1, scalar_type>(true), -1.){};
+        : ProjectionPoint1DTo3D(eta, CORE::LINALG::Matrix<3, 1, scalar_type>(true), -1.){};
 
     /**
      * \brief Empty constructor.
@@ -121,22 +121,22 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the parameter coordinates in the volume.
      */
-    inline void SetXi(const LINALG::Matrix<3, 1, scalar_type>& xi) { xi_ = xi; };
+    inline void SetXi(const CORE::LINALG::Matrix<3, 1, scalar_type>& xi) { xi_ = xi; };
 
     /**
      * \brief Get the parameter coordinates in the volume.
      */
-    inline const LINALG::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
+    inline const CORE::LINALG::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
 
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
      */
-    inline LINALG::Matrix<3, 1, scalar_type>& GetXiMutable() { return xi_; };
+    inline CORE::LINALG::Matrix<3, 1, scalar_type>& GetXiMutable() { return xi_; };
 
     /**
      * \brief Set the parameter coordinates in the cross section.
      */
-    inline void SetEtaCrossSection(LINALG::Matrix<2, 1, scalar_type> eta_cross_section)
+    inline void SetEtaCrossSection(CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section)
     {
       eta_cross_section_ = eta_cross_section;
       is_cross_section_point_ = true;
@@ -145,7 +145,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the cross section.
      */
-    inline LINALG::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
+    inline CORE::LINALG::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
     {
       if (!is_cross_section_point_) dserror("The cross section coordinate has not been set!");
       return eta_cross_section_;
@@ -240,7 +240,7 @@ namespace GEOMETRYPAIR
     scalar_type eta_;
 
     //! Parameter coordinates in volume.
-    LINALG::Matrix<3, 1, scalar_type> xi_;
+    CORE::LINALG::Matrix<3, 1, scalar_type> xi_;
 
     //! Projection result.
     ProjectionResult projection_result_;
@@ -253,7 +253,7 @@ namespace GEOMETRYPAIR
     int intersection_face_;
 
     //! Parameter coordinates in the cross section.
-    LINALG::Matrix<2, 1, scalar_type> eta_cross_section_;
+    CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section_;
 
     //! Flag if this is a point on a cross section.
     bool is_cross_section_point_;

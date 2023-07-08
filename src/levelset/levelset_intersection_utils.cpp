@@ -78,7 +78,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
   // export phi from row to column map
   const Teuchos::RCP<Epetra_Vector> phicol =
       Teuchos::rcp(new Epetra_Vector(*scatradis.DofColMap()));
-  LINALG::Export(phi, *phicol);
+  CORE::LINALG::Export(phi, *phicol);
 
   // remark: loop over row elements is sufficient
   for (int iele = 0; iele < scatradis.NumMyRowElements(); ++iele)
@@ -94,7 +94,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     // Prepare cut
     // ------------------------------------------------------------------------
     CORE::GEO::CUT::LevelSetIntersection levelset(scatradis.Comm());
-    LINALG::SerialDenseMatrix xyze;
+    CORE::LINALG::SerialDenseMatrix xyze;
     std::vector<double> phi_nodes;
     std::vector<int> nids;
     PrepareCut(ele, scatradis, *phicol, xyze, phi_nodes, nids);
@@ -150,7 +150,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
-    const CORE::GEO::CUT::plain_element_set& cuteles, const LINALG::SerialDenseMatrix& xyze,
+    const CORE::GEO::CUT::plain_element_set& cuteles, const CORE::LINALG::SerialDenseMatrix& xyze,
     DRT::Element::DiscretizationType distype)
 {
   for (CORE::GEO::CUT::plain_element_set::const_iterator icutele = cuteles.begin();
@@ -195,7 +195,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSetContour(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
-    const LINALG::SerialDenseMatrix& xyze, const CORE::GEO::CUT::BoundaryCell& bcell,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::GEO::CUT::BoundaryCell& bcell,
     DRT::Element::DiscretizationType distype_ele)
 {
   DRT::Element::DiscretizationType distype_bc = bcell.Shape();
@@ -204,15 +204,15 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
   const int numnodebc = CORE::DRT::UTILS::getNumberOfElementNodes(distype_bc);
 
   // get physical coordinates of this cell
-  LINALG::SerialDenseMatrix coord = bcell.Coordinates();
+  CORE::LINALG::SerialDenseMatrix coord = bcell.Coordinates();
 
   // transfer to element coordinates
-  LINALG::SerialDenseMatrix localcoord(3, numnodebc, true);
+  CORE::LINALG::SerialDenseMatrix localcoord(3, numnodebc, true);
 
   for (int ivert = 0; ivert < numnodebc; ivert++)
   {
-    LINALG::Matrix<3, 1> lcoord;
-    LINALG::Matrix<3, 1> pcoord;
+    CORE::LINALG::Matrix<3, 1> lcoord;
+    CORE::LINALG::Matrix<3, 1> pcoord;
     for (int ll = 0; ll < 3; ll++) pcoord(ll, 0) = coord(ll, ivert);
 
     CORE::GEO::currentToVolumeElementCoordinates(distype_ele, xyze, pcoord, lcoord);
@@ -291,7 +291,7 @@ void SCATRA::LEVELSET::Intersection::CollectCutEles(CORE::GEO::CUT::ElementHandl
  *----------------------------------------------------------------------------*/
 void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
     const DRT::Discretization& scatradis, const Epetra_Vector& phicol,
-    LINALG::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
+    CORE::LINALG::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
 {
   const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -350,7 +350,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
-    CORE::GEO::CUT::LevelSetIntersection& levelset, const LINALG::SerialDenseMatrix& xyze,
+    CORE::GEO::CUT::LevelSetIntersection& levelset, const CORE::LINALG::SerialDenseMatrix& xyze,
     const std::vector<double>& phi_nodes, bool cut_screenoutput) const
 {
   try
@@ -537,14 +537,14 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
 
       // coordinates of cell vertices in (scatra) element parameter space
       //      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
-      //      const LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
-      const LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
+      //      const CORE::LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
       DRT::ParObject::AddtoPack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
       //      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
-      //      const LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
-      const LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
+      //      const CORE::LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      const CORE::LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
       DRT::ParObject::AddtoPack(dataSend, vertices_xyz);
     }
   }
@@ -586,11 +586,11 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       if (!(distype == DRT::Element::tri3 || distype == DRT::Element::quad4))
         dserror("unexpected distype %d", distypeint);
 
-      LINALG::SerialDenseMatrix vertices_xi;
+      CORE::LINALG::SerialDenseMatrix vertices_xi;
       DRT::ParObject::ExtractfromPack(posingroup, data, vertices_xi);
 
       // coordinates of cell vertices in physical space
-      LINALG::SerialDenseMatrix vertices_xyz;
+      CORE::LINALG::SerialDenseMatrix vertices_xyz;
       DRT::ParObject::ExtractfromPack(posingroup, data, vertices_xyz);
 
       // store boundary integration cells in boundaryintcelllist

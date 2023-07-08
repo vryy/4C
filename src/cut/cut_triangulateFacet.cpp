@@ -470,7 +470,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
 
     bool isEar = true;
 
-    LINALG::Matrix<3, 3> tri_coord;
+    CORE::LINALG::Matrix<3, 3> tri_coord;
     tri[0]->Coordinates(tri_coord.A());
     tri[1]->Coordinates(tri_coord.A() + 3);
     tri[2]->Coordinates(tri_coord.A() + 6);
@@ -481,7 +481,7 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
       // skip points of the triangle itself
       if (reflInd == ind0 || reflInd == ind2) continue;
 
-      LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
+      CORE::LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
       Teuchos::RCP<CORE::GEO::CUT::Position> pos =
           CORE::GEO::CUT::Position::Create(tri_coord, point_cord, ::DRT::Element::tri3);
       // precice computation if it is inside
@@ -804,8 +804,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
   while (inlists_.size() != 0)
   {
     // 1) Transformation in local coordinates
-    std::map<int, LINALG::Matrix<3, 1>> localmaincyclepoints;
-    std::map<std::vector<int>, LINALG::Matrix<3, 1>> localholecyclespoints;
+    std::map<int, CORE::LINALG::Matrix<3, 1>> localmaincyclepoints;
+    std::map<std::vector<int>, CORE::LINALG::Matrix<3, 1>> localholecyclespoints;
     int j = 1;  // index for referencing a maincyclepoint
     std::vector<int> k(2);
     k[0] = 1;  // index for referencing a holecycle
@@ -813,8 +813,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
     for (std::vector<Point*>::iterator i = ptlist_.begin(); i != ptlist_.end(); ++i)
     {
       Point* maincyclepoint = *i;
-      LINALG::Matrix<3, 1> maincyclepointcoordinates;
-      LINALG::Matrix<3, 1> localmaincyclepointcoordinates;
+      CORE::LINALG::Matrix<3, 1> maincyclepointcoordinates;
+      CORE::LINALG::Matrix<3, 1> localmaincyclepointcoordinates;
       maincyclepoint->Coordinates(maincyclepointcoordinates.A());
       parentside->LocalCoordinates(
           maincyclepointcoordinates, localmaincyclepointcoordinates, false);
@@ -828,8 +828,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
            ++i)
       {
         Point* holecyclepoint = *i;
-        LINALG::Matrix<3, 1> holecyclepointcoordinates;
-        LINALG::Matrix<3, 1> localholecyclepointcoordinates;
+        CORE::LINALG::Matrix<3, 1> holecyclepointcoordinates;
+        CORE::LINALG::Matrix<3, 1> localholecyclepointcoordinates;
         holecyclepoint->Coordinates(holecyclepointcoordinates.A());
         parentside->LocalCoordinates(
             holecyclepointcoordinates, localholecyclepointcoordinates, false);
@@ -842,11 +842,11 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
     // 2) Holecyclepoint with the maximum r-value
     double maximumxvalue = -1;
     std::vector<int> maximumxvalueid(2);
-    for (std::map<std::vector<int>, LINALG::Matrix<3, 1>>::iterator i =
+    for (std::map<std::vector<int>, CORE::LINALG::Matrix<3, 1>>::iterator i =
              localholecyclespoints.begin();
          i != localholecyclespoints.end(); ++i)
     {
-      LINALG::Matrix<3, 1> localholecyclespoint = i->second;
+      CORE::LINALG::Matrix<3, 1> localholecyclespoint = i->second;
       if (localholecyclespoint(0, 0) > maximumxvalue)
       {
         maximumxvalue = localholecyclespoint(0, 0);
@@ -854,7 +854,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
       }
     }
     double correspondingyvalue = (localholecyclespoints[maximumxvalueid])(1, 0);
-    LINALG::Matrix<3, 1> maximumpoint;
+    CORE::LINALG::Matrix<3, 1> maximumpoint;
     maximumpoint(0, 0) = maximumxvalue;
     maximumpoint(1, 0) = correspondingyvalue;
     maximumpoint(2, 0) = 0;
@@ -956,7 +956,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
       inlists_.erase(iter);
       continue;
     }
-    LINALG::Matrix<3, 1> closestpoint;
+    CORE::LINALG::Matrix<3, 1> closestpoint;
     closestpoint(0, 0) = closestedgexvalue;
     closestpoint(1, 0) = correspondingyvalue;
     closestpoint(2, 0) = 0;
@@ -982,7 +982,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
     {
       // 5) Closest edge point with the maximum x value
       int potentuallyvisiblepointid;
-      LINALG::Matrix<3, 1> potentuallyvisiblepoint;
+      CORE::LINALG::Matrix<3, 1> potentuallyvisiblepoint;
       if (localmaincyclepoints[closestedgexvalueid[0]](0, 0) >
           localmaincyclepoints[closestedgexvalueid[1]](0, 0))
       {
@@ -1009,7 +1009,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
         (*reflexmaincyclepointid)++;  // a little inconsistency here with KERNEL::CheckConvexity
       }
       std::vector<int> insidemaincyclepointids;
-      LINALG::Matrix<3, 3> triangle;
+      CORE::LINALG::Matrix<3, 3> triangle;
       for (int i = 0; i < 3; ++i)
       {
         triangle(i, 0) = maximumpoint(i, 0);
@@ -1020,7 +1020,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
            i != reflexmaincyclepointids.end(); ++i)
       {
         int reflexmaincyclepointid = *i;
-        LINALG::Matrix<3, 1> reflexmaincyclepoint = localmaincyclepoints[reflexmaincyclepointid];
+        CORE::LINALG::Matrix<3, 1> reflexmaincyclepoint =
+            localmaincyclepoints[reflexmaincyclepointid];
         Teuchos::RCP<Position> pos =
             CORE::GEO::CUT::Position::Create(triangle, reflexmaincyclepoint, ::DRT::Element::tri3);
         bool within = pos->IsGivenPointWithinElement();
@@ -1042,7 +1043,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
              i != insidemaincyclepointids.end(); ++i)
         {
           int insidemaincyclepointid = *i;
-          LINALG::Matrix<3, 1> insidemaincyclepoint = localmaincyclepoints[insidemaincyclepointid];
+          CORE::LINALG::Matrix<3, 1> insidemaincyclepoint =
+              localmaincyclepoints[insidemaincyclepointid];
           double distance1 = sqrt(pow((closestpoint(0, 0) - maximumpoint(0, 0)), 2) +
                                   pow((closestpoint(1, 0) - maximumpoint(1, 0)), 2));
           double distance2 = sqrt(pow((insidemaincyclepoint(0, 0) - maximumpoint(0, 0)), 2) +
@@ -1073,7 +1075,7 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
                i != closestanglemaincyclepointids.end(); ++i)
           {
             int closestanglemaincyclepointid = *i;
-            LINALG::Matrix<3, 1> closestanglemaincyclepoint =
+            CORE::LINALG::Matrix<3, 1> closestanglemaincyclepoint =
                 localmaincyclepoints[closestanglemaincyclepointid];
             double distance = sqrt(pow((closestanglemaincyclepoint(0, 0) - maximumpoint(0, 0)), 2) +
                                    pow((closestanglemaincyclepoint(1, 0) - maximumpoint(1, 0)), 2));

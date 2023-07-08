@@ -363,10 +363,10 @@ bool CORE::GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInside
   {
     Point* pt = *it;
 
-    LINALG::Matrix<3, 1> coo;
+    CORE::LINALG::Matrix<3, 1> coo;
     pt->Coordinates(coo.A());
 
-    LINALG::Matrix<3, 1> xyz_proj(coo), rst_proj;
+    CORE::LINALG::Matrix<3, 1> xyz_proj(coo), rst_proj;
 
     // x-coordinate of corner pt projected in the reference plane
     // y- and z-coordinate remain the same

@@ -159,8 +159,8 @@ namespace DRT
             Epetra_SerialDenseVector& elevec1);
 
         /// Function evaluation routine
-        void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
-            Epetra_SerialDenseVector& v) const;
+        void EvaluateAll(const int start_func, const double t,
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
 
         // convention: we sort the entries in the matrices the following way:
         // first comes the electric field then the magnetic one.

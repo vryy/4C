@@ -59,7 +59,7 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     DRT::Element::DiscretizationType sidetype, bool debug, unsigned dimedge, unsigned dimside,
     unsigned numNodesEdge, unsigned numNodesSide>
 void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::GetConnectivityInfo(const LINALG::Matrix<probdim, 1>& xreal,
+    numNodesEdge, numNodesSide>::GetConnectivityInfo(const CORE::LINALG::Matrix<probdim, 1>& xreal,
     const std::vector<int>& touched_edges_ids, std::set<std::pair<Side*, Edge*>>& out)
 {
   const std::vector<Edge*> side_edges = GetSide().Edges();
@@ -93,7 +93,7 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     unsigned numNodesEdge, unsigned numNodesSide>
 void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     numNodesEdge, numNodesSide>::AddConnectivityInfo(Point* p,
-    const LINALG::Matrix<probdim, 1>& xreal, const std::vector<int>& touched_edges_ids,
+    const CORE::LINALG::Matrix<probdim, 1>& xreal, const std::vector<int>& touched_edges_ids,
     const std::set<std::pair<Side*, Edge*>>& touched_cut_pairs)
 {
   // original intersection pair
@@ -111,7 +111,7 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     // NOTE: This might cause some problems in the future, due to the way p->t is used
     if (probdim == 3)
     {
-      LINALG::Matrix<3, 1> A;
+      CORE::LINALG::Matrix<3, 1> A;
       for (unsigned int cnt = 0; cnt < probdim; ++cnt) A(cnt, 0) = xreal(cnt, 0);
       p->t(e, A);
     }
@@ -175,9 +175,9 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     DRT::Element::DiscretizationType sidetype, bool debug, unsigned dimedge, unsigned dimside,
     unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckParallelism(std::vector<LINALG::Matrix<dimside, 1>>&
+    numNodesEdge, numNodesSide>::CheckParallelism(std::vector<CORE::LINALG::Matrix<dimside, 1>>&
                                                       side_rs_intersect,
-    std::vector<LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
+    std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
 {
   switch (dimside)
   {
@@ -210,9 +210,9 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     numNodesEdge,
-    numNodesSide>::CheckParallelismBetweenSideAndEdge(std::vector<LINALG::Matrix<dimside, 1>>&
+    numNodesSide>::CheckParallelismBetweenSideAndEdge(std::vector<CORE::LINALG::Matrix<dimside, 1>>&
                                                           side_rs_intersect,
-    std::vector<LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
+    std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_intersect, double& tolerance)
 {
   side_rs_intersect.clear();
   edge_r_intersect.clear();
@@ -233,18 +233,18 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     numNodesEdge, numNodesSide>::CheckAngleCriterionBetweenSideNormalAndEdge()
 {
   // calculate the normal at the side element center
-  const LINALG::Matrix<dimside, 1> rst_side_center(
+  const CORE::LINALG::Matrix<dimside, 1> rst_side_center(
       CORE::DRT::UTILS::getLocalCenterPosition<dimside>(sidetype));
 
-  LINALG::Matrix<probdim, numNodesSide> side_deriv1;
-  LINALG::Matrix<probdim, probdim> xjm;
-  LINALG::Matrix<probdim, 1> normal_center;
+  CORE::LINALG::Matrix<probdim, numNodesSide> side_deriv1;
+  CORE::LINALG::Matrix<probdim, probdim> xjm;
+  CORE::LINALG::Matrix<probdim, 1> normal_center;
   CORE::GEO::CUT::EvalDerivsInParameterSpace<probdim, sidetype, double>(
       xyze_surfaceElement_, rst_side_center, side_deriv1, xjm, NULL, &normal_center, NULL, true);
 
   // calcualte the direction vector of the edge element
-  LINALG::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
-  const LINALG::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
+  CORE::LINALG::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
+  const CORE::LINALG::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
   dedge.Update(-1.0, e_endpoint, 1.0);
   const double e_nrm2 = dedge.Norm2();
   if (e_nrm2 == 0.0)
@@ -273,9 +273,9 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     DRT::Element::DiscretizationType sidetype, bool debug, unsigned dimedge, unsigned dimside,
     unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
-    numNodesEdge, numNodesSide>::CheckCollinearity(std::vector<LINALG::Matrix<dimside, 1>>&
+    numNodesEdge, numNodesSide>::CheckCollinearity(std::vector<CORE::LINALG::Matrix<dimside, 1>>&
                                                        side_rs_corner_intersect,
-    std::vector<LINALG::Matrix<dimedge, 1>>& edge_r_corner_intersect, double& tolerance)
+    std::vector<CORE::LINALG::Matrix<dimedge, 1>>& edge_r_corner_intersect, double& tolerance)
 {
   dserror("Is this used?");
   if (numNodesEdge != 2 or numNodesSide != 2)
@@ -296,16 +296,16 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
    * check if the end points of the edge are on the side edge ( and are collinear ). */
   bool is_collinear = true;
 
-  std::vector<LINALG::Matrix<probdim, 1>> side_xyz_corner_intersect;
+  std::vector<CORE::LINALG::Matrix<probdim, 1>> side_xyz_corner_intersect;
   side_xyz_corner_intersect.reserve(2);
 
   side_rs_corner_intersect.reserve(2);
   edge_r_corner_intersect.reserve(2);
 
-  LINALG::Matrix<2, 1, LINALG::Matrix<2, 1>> e_corner_distance;
+  CORE::LINALG::Matrix<2, 1, CORE::LINALG::Matrix<2, 1>> e_corner_distance;
   for (unsigned i = 0; i < 2; ++i)
   {
-    const LINALG::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
+    const CORE::LINALG::Matrix<probdim, 1> e_cornerpoint(&xyze_lineElement_(0, i), true);
     Teuchos::RCP<CORE::GEO::CUT::Position> pos =
         CORE::GEO::CUT::Position::Create(xyze_surfaceElement_, e_cornerpoint, sidetype);
 
@@ -324,7 +324,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       if (withinlimits)
       {
         side_xyz_corner_intersect.push_back(e_cornerpoint);
-        side_rs_corner_intersect.push_back(LINALG::Matrix<dimside, 1>(true));
+        side_rs_corner_intersect.push_back(CORE::LINALG::Matrix<dimside, 1>(true));
         pos->LocalCoordinates(*(side_rs_corner_intersect.end() - 1));
       }
     }
@@ -357,7 +357,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
               xsi_edge_(0), side_xyz_corner_intersect[i], tolerance))
         dserror("We couldn't find the correct edge end-point!");
       if (num_cut_points_ > 1)
-        edge_r_corner_intersect.push_back(LINALG::Matrix<dimedge, 1>(xsi_edge_.A(), false));
+        edge_r_corner_intersect.push_back(CORE::LINALG::Matrix<dimedge, 1>(xsi_edge_.A(), false));
 
       // safety
       if (not(LineWithinLimits() and SurfaceWithinLimits())) dserror("Something went wrong!");
@@ -401,15 +401,15 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     numNodesEdge, numNodesSide>::CheckAngleCriterionBetweenTwoEdges()
 {
-  LINALG::Matrix<probdim, 1> deedge(&xyze_lineElement_(0, 0), false);
-  LINALG::Matrix<probdim, 1> dsedge(&xyze_surfaceElement_(0, 0), false);
+  CORE::LINALG::Matrix<probdim, 1> deedge(&xyze_lineElement_(0, 0), false);
+  CORE::LINALG::Matrix<probdim, 1> dsedge(&xyze_surfaceElement_(0, 0), false);
 
-  const LINALG::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
+  const CORE::LINALG::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
   deedge.Update(-1.0, e_endpoint, 1.0);
   const double e_nrm2 = deedge.Norm2();
   if (e_nrm2 == 0.0) dserror("The 1-st edge length is zero!");
 
-  const LINALG::Matrix<probdim, 1> s_endpoint(&xyze_surfaceElement_(0, 1), true);
+  const CORE::LINALG::Matrix<probdim, 1> s_endpoint(&xyze_surfaceElement_(0, 1), true);
   dsedge.Update(-1.0, s_endpoint, 1.0);
   const double s_nrm2 = dsedge.Norm2();
   if (s_nrm2 == 0.0) dserror("The 2-nd edge length is zero!");
@@ -435,11 +435,11 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
     unsigned numNodesEdge, unsigned numNodesSide>
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     numNodesEdge, numNodesSide>::FindLocalCoordinateOfEdgeEndPoint(double& pos,
-    const LINALG::Matrix<probdim, 1>& xyz, const double& tolerance) const
+    const CORE::LINALG::Matrix<probdim, 1>& xyz, const double& tolerance) const
 {
   const std::array<double, 2> r_endpoints = {-1.0, 1.0};
-  LINALG::Matrix<probdim, 1> dist;
-  LINALG::Matrix<numNodesEdge, 1> lineFunct;
+  CORE::LINALG::Matrix<probdim, 1> dist;
+  CORE::LINALG::Matrix<numNodesEdge, 1> lineFunct;
 
   for (unsigned i = 0; i < 2; ++i)
   {
@@ -470,13 +470,13 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
 
   bool zeroarea = false;
   // local coordinates are inside element
-  LINALG::Matrix<2, 1, bool> lineendpoint_within_surfacelimits(true);
+  CORE::LINALG::Matrix<2, 1, bool> lineendpoint_within_surfacelimits(true);
   // point is really inside element (normal distance = 0)
-  LINALG::Matrix<2, 1, bool> lineendpoint_in_surface(true);
-  LINALG::Matrix<2, 1> lineendpoint_dist;
-  LINALG::Matrix<2, 1> lineendpoint_tol;
-  LINALG::Matrix<2, 1, bool> lineendpoint_conv(true);
-  LINALG::Matrix<dimside + dimedge, 2> lineendpoint_xsi(true);
+  CORE::LINALG::Matrix<2, 1, bool> lineendpoint_in_surface(true);
+  CORE::LINALG::Matrix<2, 1> lineendpoint_dist;
+  CORE::LINALG::Matrix<2, 1> lineendpoint_tol;
+  CORE::LINALG::Matrix<2, 1, bool> lineendpoint_conv(true);
+  CORE::LINALG::Matrix<dimside + dimedge, 2> lineendpoint_xsi(true);
   std::vector<std::vector<int>> lineendpoint_touched_edges(2);
   std::vector<KERNEL::PointOnSurfaceLoc> lineendpoint_location_kernel(2);
 
@@ -529,9 +529,9 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
         /* problem here is that ComputeDistance might change the normal direction if
          * the projected point lies outside the element, that why we prefer to compute
          * the distance onto tri3! */
-        LINALG::Matrix<2, 1> tri_dist;
-        LINALG::Matrix<2, 1> tri_tol;
-        LINALG::Matrix<2, 1, bool> tri_conv;
+        CORE::LINALG::Matrix<2, 1> tri_dist;
+        CORE::LINALG::Matrix<2, 1> tri_tol;
+        CORE::LINALG::Matrix<2, 1, bool> tri_conv;
 
         std::vector<KERNEL::PointOnSurfaceLoc> tri_location_kernel(2);
         std::vector<std::vector<int>> tri_touched_edges(2);
@@ -661,7 +661,7 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
     {
       if (lineendpoint_in_surface(lp))
       {
-        LINALG::Matrix<probdim, 1> x;
+        CORE::LINALG::Matrix<probdim, 1> x;
         id_to_node[lp]->point()->Coordinates(x.A());
         InsertCut(id_to_node[lp], cuts);
 
@@ -908,14 +908,14 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType edgetype,
 bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside,
     numNodesEdge, numNodesSide>::HandleSpecialCases()
 {
-  LINALG::Matrix<dimside + dimedge, 1> i_xsi;
+  CORE::LINALG::Matrix<dimside + dimedge, 1> i_xsi;
   i_xsi = xsi_;
 
   /* point is outside the element and is not part of the interpolation
    * space (just for QUAD4 try triangulation) */
   if (sidetype == ::DRT::Element::quad4)
   {
-    LINALG::Matrix<2, 1> tri_conv;
+    CORE::LINALG::Matrix<2, 1> tri_conv;
     KERNEL::PointOnSurfaceLoc location_status[2];
     for (unsigned tri = 0; tri < 2; ++tri)
     {
@@ -1009,9 +1009,9 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     }
     case ::DRT::Element::quad4:
     {
-      std::vector<LINALG::Matrix<3, 1>> final_points;
-      std::vector<LINALG::Matrix<dimedge, 1>> edge_coords;
-      LINALG::Matrix<dimside + dimedge, 1> i_xsi;
+      std::vector<CORE::LINALG::Matrix<3, 1>> final_points;
+      std::vector<CORE::LINALG::Matrix<dimedge, 1>> edge_coords;
+      CORE::LINALG::Matrix<dimside + dimedge, 1> i_xsi;
       std::array<bool, 2> close_to_shared_edge = {false, false};
       i_xsi = xsi_;
       IntersectionStatus tri_status[2];
@@ -1036,8 +1036,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           if (tri_status[tri] == intersect_single_cut_point)
           {
             istatus_ = intersect_single_cut_point;
-            final_points.push_back(LINALG::Matrix<3, 1>(FinalPoint()));
-            edge_coords.push_back(LINALG::Matrix<dimedge, 1>(xsi_edge_.A()));
+            final_points.push_back(CORE::LINALG::Matrix<3, 1>(FinalPoint()));
+            edge_coords.push_back(CORE::LINALG::Matrix<dimedge, 1>(xsi_edge_.A()));
             // we found cut point
             cut_point_count++;
           }
@@ -1051,8 +1051,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
               {
                 // possible reference implementation
                 istatus_ = intersect_single_cut_point;
-                final_points.push_back(LINALG::Matrix<3, 1>(FinalPoint()));
-                edge_coords.push_back(LINALG::Matrix<dimedge, 1>(xsi_edge_.A()));
+                final_points.push_back(CORE::LINALG::Matrix<3, 1>(FinalPoint()));
+                edge_coords.push_back(CORE::LINALG::Matrix<dimedge, 1>(xsi_edge_.A()));
                 // we found cut point
                 cut_point_count++;
               }
@@ -1087,7 +1087,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         case 2:
         {
           // first check if this point is not on the split between triangles (diagonal)
-          LINALG::Matrix<3, 1> diff = final_points[0];
+          CORE::LINALG::Matrix<3, 1> diff = final_points[0];
           diff.Update(-1, final_points[1], 1);
           // this case is unsupported
           if (diff.Norm2() > TOPOLOGICAL_TOLERANCE)
@@ -1095,13 +1095,13 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             std::stringstream err_msg;
             err_msg << " Go two intersection points during intersection of triangulated quad4.  "
                        "This case is not supported! Global coordinates are \n";
-            for (std::vector<LINALG::Matrix<3, 1>>::iterator it = final_points.begin();
+            for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator it = final_points.begin();
                  it != final_points.end(); ++it)
             {
               err_msg << (*it);
             }
             err_msg << "Local coordinates on the edge are \n";
-            for (typename std::vector<LINALG::Matrix<dimedge, 1>>::iterator it =
+            for (typename std::vector<CORE::LINALG::Matrix<dimedge, 1>>::iterator it =
                      edge_coords.begin();
                  it != edge_coords.end(); ++it)
             {
@@ -1268,9 +1268,9 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   if (sidetype != ::DRT::Element::tri3)
     dserror("RefinedBBOverlapCheck is made for distored tri3s!");
 
-  std::vector<LINALG::Matrix<3, 1>> surfpoints;
-  std::vector<LINALG::Matrix<3, 1>> linepoints;
-  LINALG::Matrix<3, 1> actpoint;
+  std::vector<CORE::LINALG::Matrix<3, 1>> surfpoints;
+  std::vector<CORE::LINALG::Matrix<3, 1>> linepoints;
+  CORE::LINALG::Matrix<3, 1> actpoint;
   for (unsigned nid = 0; nid < numNodesSide; nid++)
   {
     (GetSide().Nodes()[nid])->Coordinates(actpoint.A());
@@ -1279,7 +1279,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   // find shortest edge on the surface!
   int smallestedge;
   {
-    LINALG::Matrix<3, 1> d1, d2, d3;
+    CORE::LINALG::Matrix<3, 1> d1, d2, d3;
     d1.Update(1.0, surfpoints[1], -1.0, surfpoints[2]);
     d2.Update(1.0, surfpoints[2], -1.0, surfpoints[0]);
     d3.Update(1.0, surfpoints[0], -1.0, surfpoints[1]);
@@ -1295,8 +1295,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       smallestedge = 2;
   }
 
-  LINALG::Matrix<3, 1> v1(true);
-  LINALG::Matrix<3, 1> v2(true);
+  CORE::LINALG::Matrix<3, 1> v1(true);
+  CORE::LINALG::Matrix<3, 1> v2(true);
   v1.Update(1.0, surfpoints[(smallestedge + 1) % 3], -1.0, surfpoints[smallestedge]);
   v2.Update(1.0, surfpoints[(smallestedge + 2) % 3], -1.0, surfpoints[smallestedge]);
 
@@ -1305,7 +1305,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     (GetEdge().Nodes()[nid])->Coordinates(actpoint.A());
     linepoints.push_back(actpoint);
   }
-  LINALG::Matrix<3, 1> v3(true);
+  CORE::LINALG::Matrix<3, 1> v3(true);
   v3.Update(1.0, linepoints[1], -1.0, linepoints[0]);
 
   bool overlap = false;  // we have an overlap of the refined bounding boxes?
@@ -1324,7 +1324,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   tmpoverlappingidx.push_back(max_steps);  // max idx with overlap for line2
   overlappingidx.push_back(tmpoverlappingidx);
 
-  LINALG::Matrix<3, 1> p1, p2, p3, p4, lp1, lp2;
+  CORE::LINALG::Matrix<3, 1> p1, p2, p3, p4, lp1, lp2;
 
   for (int refinestep = 1; refinestep <= maxstep; refinestep++)
   {
@@ -1434,9 +1434,9 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
   {
     bool signeddistance = true;
     int other_point_index = (tri_id == 0) ? 3 : 1;
-    LINALG::Matrix<3, 1> point(xyze_surfaceElement_.A() + other_point_index * 3, true);
-    LINALG::Matrix<3, 1> xsi;
-    LINALG::Matrix<3, 3> xyze_triElement;
+    CORE::LINALG::Matrix<3, 1> point(xyze_surfaceElement_.A() + other_point_index * 3, true);
+    CORE::LINALG::Matrix<3, 1> xsi;
+    CORE::LINALG::Matrix<3, 3> xyze_triElement;
     GetTriangle(xyze_triElement, tri_id);
 
     bool conv = false;
@@ -1491,14 +1491,14 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
 
       int other_point_index = (tri_id == 0) ? 3 : 1;
       Point* out_of_plane = GetSidePtr()->Nodes()[other_point_index]->point();
-      LINALG::Matrix<3, 1> coord;
+      CORE::LINALG::Matrix<3, 1> coord;
       out_of_plane->Coordinates(coord.A());
 
       for (std::vector<Node*>::const_iterator it = GetSidePtr()->Nodes().begin();
            it != GetSidePtr()->Nodes().end(); ++it)
       {
         Point* p = (*it)->point();
-        LINALG::Matrix<3, 1> distc;
+        CORE::LINALG::Matrix<3, 1> distc;
         p->Coordinates(distc.A());
         distc.Update(-1, coord, 1);
       }

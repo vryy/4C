@@ -66,10 +66,10 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
             NULL) const override;
   };
 }  // namespace GEOMETRYPAIR

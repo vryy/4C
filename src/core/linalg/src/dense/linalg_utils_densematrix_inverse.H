@@ -14,7 +14,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /**
    * \brief Reorder the matrix entries for the inverse of a nonsymmetric NxN matrix.
@@ -23,7 +23,7 @@ namespace LINALG
    * @tparam T Scalar Type of matrix.
    */
   template <typename T>
-  void InverseReorderMatrixEntries(LINALG::Matrix<2, 2, T>& A)
+  void InverseReorderMatrixEntries(CORE::LINALG::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -41,7 +41,7 @@ namespace LINALG
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void InverseReorderMatrixEntries(LINALG::Matrix<3, 3, T>& A)
+  void InverseReorderMatrixEntries(CORE::LINALG::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -69,7 +69,7 @@ namespace LINALG
    * @param A (in/out) Matrix A.
    */
   template <typename T>
-  void InverseReorderMatrixEntries(LINALG::Matrix<4, 4, T>& A)
+  void InverseReorderMatrixEntries(CORE::LINALG::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -138,7 +138,7 @@ namespace LINALG
    * @tparam dim Dimension of matrix.
    */
   template <typename T, unsigned int dim>
-  void Inverse(LINALG::Matrix<dim, dim, T>& A)
+  void Inverse(CORE::LINALG::Matrix<dim, dim, T>& A)
   {
     T det = Determinant(A);
     if (det == 0.0) dserror("Determinant of %dx%d matrix is exactly zero", dim, dim);
@@ -159,7 +159,7 @@ namespace LINALG
    * @tparam dim Dimension of matrix.
    */
   template <typename T, unsigned int dim>
-  bool InverseDoNotThrowErrorOnZeroDeterminant(LINALG::Matrix<dim, dim, T>& A, double eps)
+  bool InverseDoNotThrowErrorOnZeroDeterminant(CORE::LINALG::Matrix<dim, dim, T>& A, double eps)
   {
     T det = Determinant(A);
     if (abs(det) < eps) return false;
@@ -188,8 +188,8 @@ namespace LINALG
    * @tparam dim Dimension of matrix.
    */
   template <typename T, unsigned int dim>
-  bool SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(LINALG::Matrix<dim, dim, T>& A,
-      LINALG::Matrix<dim, 1, T>& b, LINALG::Matrix<dim, 1, T>& x, double eps)
+  bool SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(CORE::LINALG::Matrix<dim, dim, T>& A,
+      CORE::LINALG::Matrix<dim, 1, T>& b, CORE::LINALG::Matrix<dim, 1, T>& x, double eps)
   {
     T max_value = 0.0;
     for (unsigned int i_row = 0; i_row < dim; i_row++)
@@ -222,8 +222,8 @@ namespace LINALG
     \paramdeA (in):  de (not transposed!)
     \param ae(out):  coef. matrix (not transposed!)
     */
-  LINALG::SerialDenseMatrix InvertAndMultiplyByCholesky(
-      LINALG::SerialDenseMatrix& me, LINALG::SerialDenseMatrix& de, LINALG::SerialDenseMatrix& ae);
+  CORE::LINALG::SerialDenseMatrix InvertAndMultiplyByCholesky(CORE::LINALG::SerialDenseMatrix& me,
+      CORE::LINALG::SerialDenseMatrix& de, CORE::LINALG::SerialDenseMatrix& ae);
 
   /*!
    \brief Solve soe with me*ae^T = de^T (employed for calculating coefficient matrix for dual shape
@@ -234,11 +234,11 @@ namespace LINALG
    \param ae(out):  coef. matrix (not transposed!)
    */
   template <const int n>
-  void InvertAndMultiplyByCholesky(
-      LINALG::Matrix<n, n>& me, LINALG::Matrix<n, n>& de, LINALG::SerialDenseMatrix& ae)
+  void InvertAndMultiplyByCholesky(CORE::LINALG::Matrix<n, n>& me, CORE::LINALG::Matrix<n, n>& de,
+      CORE::LINALG::SerialDenseMatrix& ae)
   {
-    LINALG::Matrix<n, n> y;
-    LINALG::Matrix<n, n> maux = me;
+    CORE::LINALG::Matrix<n, n> y;
+    CORE::LINALG::Matrix<n, n> maux = me;
 
     // calc G with me=G*G^T
     for (int z = 0; z < n; ++z)
@@ -289,10 +289,10 @@ namespace LINALG
    \param ae(out):  coef. matrix (not transposed!)
    */
   template <const int n>
-  void InvertAndMultiplyByCholesky(
-      LINALG::Matrix<n, n>& me, LINALG::Matrix<n, n>& de, LINALG::Matrix<n, n>& ae)
+  void InvertAndMultiplyByCholesky(CORE::LINALG::Matrix<n, n>& me, CORE::LINALG::Matrix<n, n>& de,
+      CORE::LINALG::Matrix<n, n>& ae)
   {
-    LINALG::Matrix<n, n> y;
+    CORE::LINALG::Matrix<n, n> y;
 
     // calc G with me=G*G^T
     for (int z = 0; z < n; ++z)
@@ -339,10 +339,10 @@ namespace LINALG
    \param A (in/out): Matrix to be inverted
    */
   template <const int n>
-  void SymmetricPositiveDefiniteInverse(LINALG::Matrix<n, n>& A)
+  void SymmetricPositiveDefiniteInverse(CORE::LINALG::Matrix<n, n>& A)
   {
-    LINALG::Matrix<n, n> y(true);
-    LINALG::Matrix<n, n> ae(true);
+    CORE::LINALG::Matrix<n, n> y(true);
+    CORE::LINALG::Matrix<n, n> ae(true);
 
     // calc G with me=G*G^T
     for (int z = 0; z < n; ++z)
@@ -394,6 +394,6 @@ namespace LINALG
    */
   void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

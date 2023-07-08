@@ -26,7 +26,7 @@ namespace CORE::ADAPTER
   class CouplingConverter;
 }  // namespace CORE::ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 
@@ -44,7 +44,7 @@ namespace LINALG
 
   This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
   copies the temporary matrix. This is required both to preserve the
-  internal Epetra_CrsMatrix from the destination LINALG::SparseMatrix and
+  internal Epetra_CrsMatrix from the destination CORE::LINALG::SparseMatrix and
   because the destination matrix row map may be much larger than the source
   matrix row map.
 
@@ -59,9 +59,9 @@ namespace LINALG
   \note All matrix transformation operators work with filled and unfilled
   destination matrices. The source matrix is never changed. The destination
   matrix is not reallocated and its filled state is not explicitly
-  changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+  changed. There is a CORE::LINALG::SparseMatrix::Zero() call if addmatrix==false
   and this can reset the filled state if the matrix graph is not preserved
-  by the LINALG::SparseMatrix object.
+  by the CORE::LINALG::SparseMatrix object.
 
 
   \sa MatrixColTransform, MatrixRowTransform, MatrixRowColTransform
@@ -89,10 +89,10 @@ namespace LINALG
       exactmatch     (i) do not drop any source values if true \param addmatrix      (i) remove
       current dst values if false
      */
-    bool operator()(const LINALG::SparseMatrix& src, const Epetra_Map& logical_range_map,
+    bool operator()(const CORE::LINALG::SparseMatrix& src, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const double scale,
         const ::CORE::ADAPTER::CouplingConverter* row_converter,
-        const ::CORE::ADAPTER::CouplingConverter* col_converter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter* col_converter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -158,7 +158,7 @@ namespace LINALG
 
   This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
   copies the temporary matrix. This is required both to preserve the
-  internal Epetra_CrsMatrix from the destination LINALG::SparseMatrix and
+  internal Epetra_CrsMatrix from the destination CORE::LINALG::SparseMatrix and
   because the destination matrix row map may be much larger than the source
   matrix row map.
 
@@ -170,9 +170,9 @@ namespace LINALG
     \note All matrix transformation operators work with filled and unfilled
     destination matrices. The source matrix is never changed. The destination
     matrix is not reallocated and its filled state is not explicitly
-    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    changed. There is a CORE::LINALG::SparseMatrix::Zero() call if addmatrix==false
     and this can reset the filled state if the matrix graph is not preserved
-    by the LINALG::SparseMatrix object.
+    by the CORE::LINALG::SparseMatrix object.
 
     \sa MatrixLogicalSplitAndTransform, MatrixColTransform, MatrixRowColTransform
     \author u.kue
@@ -192,8 +192,8 @@ namespace LINALG
       \param dst     (i/o) destination matrix
       \param addmatrix (i) remove current dst values if false
      */
-    bool operator()(const LINALG::SparseMatrix& src, double scale,
-        const ::CORE::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
+    bool operator()(const CORE::LINALG::SparseMatrix& src, double scale,
+        const ::CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
         bool addmatrix = false);
 
    private:
@@ -222,9 +222,9 @@ namespace LINALG
     \note All matrix transformation operators work with filled and unfilled
     destination matrices. The source matrix is never changed. The destination
     matrix is not reallocated and its filled state is not explicitly
-    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    changed. There is a CORE::LINALG::SparseMatrix::Zero() call if addmatrix==false
     and this can reset the filled state if the matrix graph is not preserved
-    by the LINALG::SparseMatrix object.
+    by the CORE::LINALG::SparseMatrix object.
 
 
     \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, MatrixRowColTransform
@@ -249,8 +249,8 @@ namespace LINALG
       \param addmatrix (i) remove current dst values if false
      */
     bool operator()(const Epetra_Map& rowmap, const Epetra_Map& colmap,
-        const LINALG::SparseMatrix& src, double scale,
-        const ::CORE::ADAPTER::CouplingConverter& converter, LINALG::SparseMatrix& dst,
+        const CORE::LINALG::SparseMatrix& src, double scale,
+        const ::CORE::ADAPTER::CouplingConverter& converter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -270,9 +270,9 @@ namespace LINALG
     \note All matrix transformation operators work with filled and unfilled
     destination matrices. The source matrix is never changed. The destination
     matrix is not reallocated and its filled state is not explicitly
-    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    changed. There is a CORE::LINALG::SparseMatrix::Zero() call if addmatrix==false
     and this can reset the filled state if the matrix graph is not preserved
-    by the LINALG::SparseMatrix object.
+    by the CORE::LINALG::SparseMatrix object.
 
     \sa MatrixLogicalSplitAndTransform, MatrixRowTransform, MatrixColTransform
     \author u.kue
@@ -294,9 +294,9 @@ namespace LINALG
       \param exactmatch   (i) do not drop any source values if true
       \param addmatrix    (i) remove current dst values if false
      */
-    bool operator()(const LINALG::SparseMatrix& src, double scale,
+    bool operator()(const CORE::LINALG::SparseMatrix& src, double scale,
         const ::CORE::ADAPTER::CouplingConverter& rowconverter,
-        const ::CORE::ADAPTER::CouplingConverter& colconverter, LINALG::SparseMatrix& dst,
+        const ::CORE::ADAPTER::CouplingConverter& colconverter, CORE::LINALG::SparseMatrix& dst,
         bool exactmatch = true, bool addmatrix = false);
 
    private:
@@ -304,6 +304,6 @@ namespace LINALG
     MatrixLogicalSplitAndTransform transformer;
   };
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

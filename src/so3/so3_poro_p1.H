@@ -199,76 +199,78 @@ namespace DRT
           ) override;
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
-      void NonlinearStiffnessPoroelast(std::vector<int>& lm,     //!< location matrix
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,    //!< current displacements
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,     //!< current velocities
-          LINALG::Matrix<Base::numnod_, 1>* porosity,            //!< porosity value
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,  //!< fluid velocity of element
-          LINALG::Matrix<Base::numnod_, 1>& epreaf,              //!< fluid pressure of element
-          LINALG::Matrix<numdof_, numdof_>* stiffmatrix,         //!< element stiffness matrix
-          LINALG::Matrix<numdof_, numdof_>* reamatrix,           //!< element reactive matrix
-          LINALG::Matrix<numdof_, 1>* force,                     //!< element internal force vector
+      void NonlinearStiffnessPoroelast(std::vector<int>& lm,         //!< location matrix
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  //!< current displacements
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,   //!< current velocities
+          CORE::LINALG::Matrix<Base::numnod_, 1>* porosity,          //!< porosity value
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>&
+              evelnp,                                           //!< fluid velocity of element
+          CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,       //!< fluid pressure of element
+          CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  //!< element stiffness matrix
+          CORE::LINALG::Matrix<numdof_, numdof_>* reamatrix,    //!< element reactive matrix
+          CORE::LINALG::Matrix<numdof_, 1>* force,              //!< element internal force vector
           Teuchos::ParameterList& params  //!< algorithmic parameters e.g. time
       );
 
       //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity
       //! problems
-      void CouplingPoroelast(std::vector<int>& lm,               //!< location matrix
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,    //!< current displacements
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,     //!< current velocities
-          LINALG::Matrix<Base::numnod_, 1>* porosity,            //!< porosity value
-          LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,  //!< fluid velocity of element
-          LINALG::Matrix<Base::numnod_, 1>& epreaf,              //!< fluid pressure of element
-          LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
+      void CouplingPoroelast(std::vector<int>& lm,                   //!< location matrix
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,  //!< current displacements
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,   //!< current velocities
+          CORE::LINALG::Matrix<Base::numnod_, 1>* porosity,          //!< porosity value
+          CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>&
+              evelnp,                                      //!< fluid velocity of element
+          CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,  //!< fluid pressure of element
+          CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
               stiffmatrix,  //!< element stiffness matrix
-          LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
-              reamatrix,                      //!< element reactive matrix
-          LINALG::Matrix<numdof_, 1>* force,  //!< element internal force vector
-          Teuchos::ParameterList& params);    //!< algorithmic parameters e.g. time
+          CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>*
+              reamatrix,                            //!< element reactive matrix
+          CORE::LINALG::Matrix<numdof_, 1>* force,  //!< element internal force vector
+          Teuchos::ParameterList& params);          //!< algorithmic parameters e.g. time
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
       void ComputePorosityAndLinearization(Teuchos::ParameterList& params, const double& press,
-          const double& J, const int& gp, const LINALG::Matrix<Base::numnod_, 1>& shapfct,
-          const LINALG::Matrix<Base::numnod_, 1>* myporosity,
-          const LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
-          LINALG::Matrix<1, Base::numdof_>& dphi_dus) override;
+          const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity,
+          const CORE::LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
+          CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus) override;
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
       void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params, const double& press,
-          const double& J, const int& gp, const LINALG::Matrix<Base::numnod_, 1>& shapfct,
-          const LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity,
+          const double& J, const int& gp, const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity,
           double& dphi_dp) override;
 
       //! gauss point loop for evaluation of stiffness and rhs vector
       void GaussPointLoopP1(Teuchos::ParameterList& params,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
-          const LINALG::Matrix<Base::numnod_, 1>& epreaf,
-          const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-          LINALG::Matrix<Base::numdof_, Base::numdof_>& erea_v,
-          LINALG::Matrix<Base::numdof_, Base::numdof_>* sub_stiff,
-          LINALG::Matrix<Base::numdof_, 1>* sub_force,
-          LINALG::Matrix<Base::numdof_, Base::numnod_>& ecoupl_p1,
-          LINALG::Matrix<Base::numnod_, numdof_>& estiff_p1,
-          LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1);
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+          CORE::LINALG::Matrix<Base::numdof_, Base::numdof_>& erea_v,
+          CORE::LINALG::Matrix<Base::numdof_, Base::numdof_>* sub_stiff,
+          CORE::LINALG::Matrix<Base::numdof_, 1>* sub_force,
+          CORE::LINALG::Matrix<Base::numdof_, Base::numnod_>& ecoupl_p1,
+          CORE::LINALG::Matrix<Base::numnod_, numdof_>& estiff_p1,
+          CORE::LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1);
 
       //! gauss point loop for evaluation of stiffness (off diagonal)
       void GaussPointLoopP1OD(Teuchos::ParameterList& params,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
-          const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
-          const LINALG::Matrix<Base::numnod_, 1>& epreaf,
-          const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-          LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
-          LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff);
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+          const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+          const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
+          CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff);
 
-      Teuchos::RCP<LINALG::Matrix<Base::numnod_, 1>> init_porosity_;
+      Teuchos::RCP<CORE::LINALG::Matrix<Base::numnod_, 1>> init_porosity_;
 
       bool is_init_porosity_;
     };

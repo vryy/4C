@@ -1211,16 +1211,16 @@ std::vector<std::vector<int>> CORE::DRT::UTILS::getEleNodeNumbering_nodes_surfac
 
 
 /*----------------------------------------------------------------------*
- |  Fills a LINALG::SerialDenseMatrix                                   |
+ |  Fills a CORE::LINALG::SerialDenseMatrix                                   |
  |  with positions in reference coordinates                             |
  |                                                           u.may 08/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
+CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
     const ::DRT::Element::DiscretizationType distype)
 {
   const int nNode = getNumberOfElementNodes(distype);
   const int dim = getDimension(distype);
-  LINALG::SerialDenseMatrix map(dim, nNode);
+  CORE::LINALG::SerialDenseMatrix map(dim, nNode);
 
   switch (distype)
   {
@@ -1292,7 +1292,7 @@ LINALG::SerialDenseMatrix CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::DRT::UTILS::getSurfaces(
-    const LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
+    const CORE::LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
 {
   const double TOL = 1e-7;
   std::vector<int> surfaces;
@@ -1328,7 +1328,7 @@ std::vector<int> CORE::DRT::UTILS::getSurfaces(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::DRT::UTILS::getLines(
-    const LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
+    const CORE::LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
 {
   const double TOL = 1e-7;
   std::vector<int> lines;
@@ -1375,7 +1375,7 @@ std::vector<int> CORE::DRT::UTILS::getLines(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 int CORE::DRT::UTILS::getNode(
-    const LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
+    const CORE::LINALG::Matrix<3, 1>& rst, const ::DRT::Element::DiscretizationType distype)
 {
   const double TOL = 1e-7;
   int node = -1;
@@ -1435,10 +1435,10 @@ int CORE::DRT::UTILS::getNode(
  |  system of the element                                               |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
+CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
     const int nodeId, const ::DRT::Element::DiscretizationType distype)
 {
-  LINALG::Matrix<3, 1> coord(true);
+  CORE::LINALG::Matrix<3, 1> coord(true);
 
   if (distype == ::DRT::Element::line2)
   {
@@ -2059,10 +2059,10 @@ LINALG::Matrix<3, 1> CORE::DRT::UTILS::getNodeCoordinates(
  |  system of the cutter element                                        |
  |  according to the line ID for each discretization type               |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::DRT::UTILS::getLineCoordinates(
+CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::getLineCoordinates(
     const int lineId, const double lineCoord, const ::DRT::Element::DiscretizationType distype)
 {
-  LINALG::Matrix<3, 1> coord(true);
+  CORE::LINALG::Matrix<3, 1> coord(true);
   if (distype == ::DRT::Element::quad4 || distype == ::DRT::Element::quad8 ||
       distype == ::DRT::Element::quad9)
   {

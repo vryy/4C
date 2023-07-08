@@ -26,7 +26,7 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 {
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, iel_> xyze;
+  CORE::LINALG::Matrix<3, iel_> xyze;
   // TODO: does this work for line3?
   for (int inode = 0; inode < iel_; inode++)
   {

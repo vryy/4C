@@ -422,13 +422,13 @@ void CONTACT::AUG::ActiveSet::UpdateMaps(const CONTACT::ParamsInterface& cparams
 
     // Update Active set
     data.GActiveNodeRowMapPtr() =
-        LINALG::MergeMap(data.GActiveNodeRowMapPtr(), interface.ActiveNodes(), false);
+        CORE::LINALG::MergeMap(data.GActiveNodeRowMapPtr(), interface.ActiveNodes(), false);
     data.GActiveDofRowMapPtr() =
-        LINALG::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
+        CORE::LINALG::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
     data.GActiveNDofRowMapPtr() =
-        LINALG::MergeMap(data.GActiveNDofRowMapPtr(), interface.ActiveNDofs(), false);
+        CORE::LINALG::MergeMap(data.GActiveNDofRowMapPtr(), interface.ActiveNDofs(), false);
     data.GActiveTDofRowMapPtr() =
-        LINALG::MergeMap(data.GActiveTDofRowMapPtr(), interface.ActiveTDofs(), false);
+        CORE::LINALG::MergeMap(data.GActiveTDofRowMapPtr(), interface.ActiveTDofs(), false);
   }
 }
 

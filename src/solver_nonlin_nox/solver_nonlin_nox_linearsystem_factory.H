@@ -17,11 +17,11 @@
 #include "solver_nonlin_nox_enum_lists.H"
 
 // forward declaration
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace Teuchos
 {
@@ -59,9 +59,10 @@ namespace NOX
 
         Teuchos::RCP<NOX::Epetra::LinearSystem> BuildLinearSystem(
             const NOX::NLN::LinSystem::LinearSystemType& linsystype,
-            NOX::NLN::GlobalData& noxNlnGlobalData, const Teuchos::RCP<LINALG::SparseOperator>& jac,
+            NOX::NLN::GlobalData& noxNlnGlobalData,
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
             const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
-            const Teuchos::RCP<LINALG::SparseOperator>& precMat,
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
             const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject) const;
       };
 
@@ -72,9 +73,10 @@ namespace NOX
       */
       Teuchos::RCP<NOX::Epetra::LinearSystem> BuildLinearSystem(
           const NOX::NLN::LinSystem::LinearSystemType& linsystype,
-          NOX::NLN::GlobalData& noxNlnGlobalData, const Teuchos::RCP<LINALG::SparseOperator>& jac,
+          NOX::NLN::GlobalData& noxNlnGlobalData,
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& jac,
           const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
-          const Teuchos::RCP<LINALG::SparseOperator>& precMat,
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& precMat,
           const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject);
     }  // namespace LinSystem
   }    // namespace NLN

@@ -64,7 +64,7 @@
 STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       pred_(DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdynparams, "PREDICT")),
@@ -138,7 +138,7 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntImpl::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -294,17 +294,17 @@ void STR::TimIntImpl::Setup()
   if (itertype_ == INPAR::STR::soltech_newtonls) PrepareLineSearch();
 
   // create empty residual force vector
-  fres_ = LINALG::CreateVector(*DofRowMapView(), false);
+  fres_ = CORE::LINALG::CreateVector(*DofRowMapView(), false);
 
   // create empty reaction force vector of full length
-  freact_ = LINALG::CreateVector(*DofRowMapView(), false);
+  freact_ = CORE::LINALG::CreateVector(*DofRowMapView(), false);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = LINALG::CreateVector(*DofRowMapView(), true);
+  disi_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stcmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   stccompl_ = false;
 
   return;
@@ -586,8 +586,8 @@ void STR::TimIntImpl::PrepareLineSearch()
   discret_->Comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);
   if (haveCondensationGlobal)
   {
-    fresn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
-    fintn_str_ = LINALG::CreateVector(*DofRowMapView(), true);
+    fresn_str_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+    fintn_str_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   }
   return;
 }
@@ -616,7 +616,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   disi_->PutScalar(0.0);
 
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = LINALG::CreateVector(*DofRowMapView(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *(*dis_)(0), 0.0);
@@ -640,7 +640,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -670,7 +670,7 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
   // solve for disi_
@@ -782,8 +782,8 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
   updateprojection_ = false;
 
   // create the projector
-  projector_ =
-      Teuchos::rcp(new LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
+  projector_ = Teuchos::rcp(
+      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
 
   // update the projector
   UpdateKrylovSpaceProjection();
@@ -835,7 +835,7 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
     const Teuchos::RCP<Epetra_Vector> disn,                       //!< new displacement state
     const Teuchos::RCP<Epetra_Vector> vel,                        //!< velocity state
     Teuchos::RCP<Epetra_Vector>& fext,                            //!< external force
-    Teuchos::RCP<LINALG::SparseOperator>& fextlin  //!< linearization of external force
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& fextlin  //!< linearization of external force
 )
 {
   Teuchos::ParameterList p;
@@ -868,8 +868,8 @@ void STR::TimIntImpl::ApplyForceStiffExternal(const double time,  //!< evaluatio
 void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disi,
     const Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<LINALG::SparseOperator> stiff, Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> damp)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff, Teuchos::ParameterList& params,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> damp)
 {
   // *********** time measurement ***********
   double dtcpu = timer_->wallTime();
@@ -925,9 +925,9 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
     const double timintfac_dis, const double timintfac_vel, const Teuchos::RCP<Epetra_Vector> dis,
     const Teuchos::RCP<Epetra_Vector> disi, const Teuchos::RCP<Epetra_Vector> vel,
     const Teuchos::RCP<Epetra_Vector> acc, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<Epetra_Vector> finert, Teuchos::RCP<LINALG::SparseOperator> stiff,
-    Teuchos::RCP<LINALG::SparseOperator> mass, Teuchos::ParameterList& params, const double beta,
-    const double gamma, const double alphaf, const double alpham)
+    Teuchos::RCP<Epetra_Vector> finert, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> mass, Teuchos::ParameterList& params,
+    const double beta, const double gamma, const double alphaf, const double alpham)
 {
   // action for elements
   const std::string action = "calc_struct_nlnstiffmass";
@@ -976,7 +976,7 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial(const double time, cons
  * evaluation happens internal-force like */
 void STR::TimIntImpl::ApplyForceStiffSurfstress(const double time, const double dt,
     const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<LINALG::SparseOperator>& stiff)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff)
 {
   // surface stress loads (but on internal force vector side)
   if (surfstressman_->HaveSurfStress())
@@ -997,7 +997,7 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress(const double time, const double 
 /* evaluate forces due to constraints */
 void STR::TimIntImpl::ApplyForceStiffConstraint(const double time,
     const Teuchos::RCP<Epetra_Vector> dis, const Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<LINALG::SparseOperator>& stiff,
+    Teuchos::RCP<Epetra_Vector>& fint, Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,
     Teuchos::ParameterList pcon)
 {
   if (conman_->HaveConstraint())
@@ -1012,7 +1012,7 @@ void STR::TimIntImpl::ApplyForceStiffConstraint(const double time,
 /* evaluate forces due to Cardiovascular0D bcs */
 void STR::TimIntImpl::ApplyForceStiffCardiovascular0D(const double time,
     const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<LINALG::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::ParameterList pwindk)
 {
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
@@ -1024,14 +1024,14 @@ void STR::TimIntImpl::ApplyForceStiffCardiovascular0D(const double time,
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to spring dashpot BCs */
-void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<LINALG::SparseOperator> stiff,
+void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
     Teuchos::RCP<Epetra_Vector> veln, bool predict, Teuchos::ParameterList psprdash)
 {
   psprdash.set("total time", Time());
   if (springman_->HaveSpringDashpot())
   {
-    auto stiff_sparse = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff);
+    auto stiff_sparse = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff);
     if (stiff_sparse == Teuchos::null) dserror("Cannot cast stiffness matrix to sparse matrix!");
     springman_->StiffnessAndInternalForces(stiff_sparse, fint, disn, veln, psprdash);
   }
@@ -1041,8 +1041,9 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot(Teuchos::RCP<LINALG::SparseOp
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to contact / meshtying */
-void STR::TimIntImpl::ApplyForceStiffContactMeshtying(Teuchos::RCP<LINALG::SparseOperator>& stiff,
-    Teuchos::RCP<Epetra_Vector>& fresm, Teuchos::RCP<Epetra_Vector>& dis, bool predict)
+void STR::TimIntImpl::ApplyForceStiffContactMeshtying(
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff, Teuchos::RCP<Epetra_Vector>& fresm,
+    Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
   if (HaveContactMeshtying())
   {
@@ -1096,7 +1097,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying(Teuchos::RCP<LINALG::Spars
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to beam contact */
-void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<LINALG::SparseOperator>& stiff,
+void STR::TimIntImpl::ApplyForceStiffBeamContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,
     Teuchos::RCP<Epetra_Vector>& fresm, Teuchos::RCP<Epetra_Vector>& dis, bool predict)
 {
   if (HaveBeamContact())
@@ -1536,7 +1537,7 @@ int STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // *********** time measurement ***********
@@ -2117,7 +2118,7 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
   /**************************************************************
@@ -2537,7 +2538,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
       // prepare residual Lagrange multiplier
@@ -2551,9 +2552,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       STCPreconditioning();
 
       // get constraint matrix with and without Dirichlet zeros
-      Teuchos::RCP<LINALG::SparseMatrix> constr =
-          (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
-      Teuchos::RCP<LINALG::SparseMatrix> constrT = Teuchos::rcp(new LINALG::SparseMatrix(*constr));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> constr =
+          (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(conman_->GetConstrMatrix()));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> constrT =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*constr));
 
       constr->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
 
@@ -2561,10 +2563,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       if (stcscale_ != INPAR::STR::stc_none)
       {
         // std::cout<<"scaling constraint matrices"<<std::endl;
-        constrT = LINALG::MLMultiply(*stcmat_, true, *constrT, false, false, false, true);
+        constrT = CORE::LINALG::MLMultiply(*stcmat_, true, *constrT, false, false, false, true);
         if (stcscale_ == INPAR::STR::stc_currsym)
         {
-          constr = LINALG::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
+          constr = CORE::LINALG::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
           ;
         }
       }
@@ -2717,7 +2719,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
       // *********** time measurement ***********
@@ -3173,10 +3175,11 @@ void STR::TimIntImpl::CmtLinearSolve()
   std::ostringstream filename;
   const std::string filebase = "sparsematrix";
   filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
+  CORE::LINALG::PrintMatrixInMatlabFormat(
+      filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
 
   // print sparsity pattern to file
-  LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
+  CORE::LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
 #endif  // #ifdef CONTACTEIG
 
   //**********************************************************************
@@ -3351,9 +3354,10 @@ int STR::TimIntImpl::PTC()
 
     // modify stiffness matrix with dti
     {
-      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(SystemMatrix()->RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(SystemMatrix()->RowMap(), false);
       tmp->PutScalar(dti);
-      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(SystemMatrix()->RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> diag =
+          CORE::LINALG::CreateVector(SystemMatrix()->RowMap(), false);
       SystemMatrix()->ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *tmp, 1.0);
       SystemMatrix()->ReplaceDiagonalValues(*diag);
@@ -3361,7 +3365,7 @@ int STR::TimIntImpl::PTC()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
     // *********** time measurement ***********
@@ -4142,7 +4146,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
   solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
@@ -4184,7 +4188,7 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
   // apply Dirichlet BCs to system of equations
   if (preparejacobian)
   {
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -4194,22 +4198,25 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
-  stiff_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *domainmaps, *rangemaps, 81, false, true));
-  mass_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *domainmaps, *rangemaps, 81, false, true));
+  stiff_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *domainmaps, *rangemaps, 81, false, true));
+  mass_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *domainmaps, *rangemaps, 81, false, true));
   if (damping_ != INPAR::STR::damp_none)
-    damp_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        *domainmaps, *rangemaps, 81, false, true));
+    damp_ =
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+            *domainmaps, *rangemaps, 81, false, true));
 
   // recalculate mass and damping matrices
 
   Teuchos::RCP<Epetra_Vector> fint =
-      LINALG::CreateVector(*DofRowMapView(), true);  // internal force
+      CORE::LINALG::CreateVector(*DofRowMapView(), true);  // internal force
 
   stiff_->Zero();
   mass_->Zero();
@@ -4226,7 +4233,7 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     Teuchos::RCP<Epetra_Vector> finert = Teuchos::null;
     if (HaveNonlinearMass())
     {
-      finert = LINALG::CreateVector(*DofRowMapView(), true);  // intertial force
+      finert = CORE::LINALG::CreateVector(*DofRowMapView(), true);  // intertial force
       // Note: the following parameters are just dummies, since they are only needed to calculate
       // finert which we will not use anyway
       p.set("timintfac_dis", 0.0);  // dummy!
@@ -4285,13 +4292,14 @@ void STR::TimIntImpl::STCPreconditioning()
       stccompl_ = true;
     }
 
-    stiff_ = MLMultiply(
-        *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)), *stcmat_, true, false, true);
+    stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_)), *stcmat_,
+        true, false, true);
     if (stcscale_ == INPAR::STR::stc_currsym)
     {
       stiff_ = MLMultiply(*stcmat_, true,
-          *(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)), false, true, false, true);
-      Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*DofRowMapView(), true);
+          *(Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_)), false, true, false,
+          true);
+      Teuchos::RCP<Epetra_Vector> fressdc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
       stcmat_->Multiply(true, *fres_, *fressdc);
       fres_->Update(1.0, *fressdc, 0.0);
     }
@@ -4323,8 +4331,8 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
     fname += ".stcmatrix1.mtl";
     if (myrank_ == 0) std::cout << "Printing stcmatrix1 to file" << std::endl;
-    LINALG::PrintMatrixInMatlabFormat(
-        fname, *((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
+    CORE::LINALG::PrintMatrixInMatlabFormat(
+        fname, *((Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stcmat_))->EpetraMatrix()));
   }
 #endif
 
@@ -4336,8 +4344,8 @@ void STR::TimIntImpl::ComputeSTCMatrix()
     pe.set<int>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
-    Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
     tmpstcmat->Zero();
 
     discret_->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -4349,8 +4357,8 @@ void STR::TimIntImpl::ComputeSTCMatrix()
       std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
       fname += ".stcmatrix2.mtl";
       if (myrank_ == 0) std::cout << "Printing stcmatrix2 to file" << std::endl;
-      LINALG::PrintMatrixInMatlabFormat(
-          fname, *((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
+      CORE::LINALG::PrintMatrixInMatlabFormat(fname,
+          *((Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
     }
 #endif
 
@@ -4366,7 +4374,7 @@ void STR::TimIntImpl::RecoverSTCSolution()
 {
   if (stcscale_ != INPAR::STR::stc_none)
   {
-    Teuchos::RCP<Epetra_Vector> disisdc = LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disisdc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
     stcmat_->Multiply(false, *disi_, *disisdc);
     disi_->Update(1.0, *disisdc, 0.0);
@@ -4578,10 +4586,11 @@ int STR::TimIntImpl::CmtWindkConstrLinearSolve(const double k_ptc)
   std::ostringstream filename;
   const std::string filebase = "sparsematrix";
   filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
-  LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
+  CORE::LINALG::PrintMatrixInMatlabFormat(
+      filename.str().c_str(), *(SystemMatrix()->EpetraMatrix()));
 
   // print sparsity pattern to file
-  LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
+  CORE::LINALG::PrintSparsityToPostscript(*(SystemMatrix()->EpetraMatrix()));
 #endif  // #ifdef CONTACTEIG
 
   //**********************************************************************

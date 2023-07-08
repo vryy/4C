@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic mathematical methods for namespace LINALG
+\brief A collection of algebraic mathematical methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -20,7 +20,7 @@
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
@@ -89,12 +89,12 @@ namespace LINALG
   inline void Add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
       const double scalarA, Teuchos::RCP<Epetra_CrsMatrix> B, const double scalarB)
   {
-    LINALG::Add(*A, transposeA, scalarA, *B, scalarB);
+    CORE::LINALG::Add(*A, transposeA, scalarA, *B, scalarB);
     return;
   }
 
   /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to a LINALG::SparseMatrix: B = B*scalarB +
+   \brief Add a (transposed) Epetra_CrsMatrix to a CORE::LINALG::SparseMatrix: B = B*scalarB +
    A(^T)*scalarA
 
    Add one matrix to another.
@@ -118,7 +118,7 @@ namespace LINALG
    \param scalarB    (in)     : scaling factor for B
    */
   void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
-      LINALG::SparseMatrixBase& B, const double scalarB);
+      CORE::LINALG::SparseMatrixBase& B, const double scalarB);
 
   /*!
    \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly
@@ -141,7 +141,7 @@ namespace LINALG
    */
   inline Teuchos::RCP<Epetra_CrsMatrix> Transpose(const Teuchos::RCP<Epetra_CrsMatrix> A)
   {
-    return LINALG::Transpose(*A);
+    return CORE::LINALG::Transpose(*A);
   }
 
   /*!
@@ -232,7 +232,7 @@ namespace LINALG
 
   /// Returns a dim x dim identity matrix
   template <unsigned int dim>
-  void IdentityMatrix(LINALG::Matrix<dim, dim>& identity_matrix)
+  void IdentityMatrix(CORE::LINALG::Matrix<dim, dim>& identity_matrix)
   {
     for (unsigned int i = 0; i < dim; i++)
     {
@@ -248,6 +248,6 @@ namespace LINALG
     return;
   }
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_MATH_H

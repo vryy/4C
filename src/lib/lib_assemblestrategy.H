@@ -22,7 +22,7 @@
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -45,8 +45,8 @@ namespace DRT
    public:
     /// Construct with allocated global objects or Teuchos::null.
     AssembleStrategy(int firstdofset, int seconddofset,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 
@@ -61,7 +61,7 @@ namespace DRT
     /*!
       The graph will already include the Dirichlet lines. That is there will
       be just the diagonal entry on each line that is a Dirichlet line.
-      LINALG::SparseMatrix can assemble to filled matrices with ready made
+      CORE::LINALG::SparseMatrix can assemble to filled matrices with ready made
       Dirichlet lines. Thus the idea is to explicitly create a graph and
       creating filled matrices from it. It will never be required to assemble
       to unfilled matrices or reallocate any matrices as long as the mesh
@@ -84,8 +84,8 @@ namespace DRT
     //@}
 
     //! @name Access Methods to Global Object
-    Teuchos::RCP<LINALG::SparseOperator> Systemmatrix1() { return systemmatrix1_; }
-    Teuchos::RCP<LINALG::SparseOperator> Systemmatrix2() { return systemmatrix2_; }
+    Teuchos::RCP<CORE::LINALG::SparseOperator> Systemmatrix1() { return systemmatrix1_; }
+    Teuchos::RCP<CORE::LINALG::SparseOperator> Systemmatrix2() { return systemmatrix2_; }
     Teuchos::RCP<Epetra_Vector> Systemvector1() { return systemvector1_; }
     Teuchos::RCP<Epetra_Vector> Systemvector2() { return systemvector2_; }
     Teuchos::RCP<Epetra_Vector> Systemvector3() { return systemvector3_; }
@@ -162,17 +162,18 @@ namespace DRT
     //! @name General Purpose Assembly Methods
 
     /// Assemble to given matrix using nodal stride
-    virtual void Assemble(LINALG::SparseOperator& sysmat, int eid, const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lm,
-        const std::vector<int>& lmowner);
+    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
+        const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     /// Assemble to given matrix
-    virtual void Assemble(LINALG::SparseOperator& sysmat, int eid, const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
-        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
+    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
+        const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+        const std::vector<int>& lmcol);
 
     /// Assemble to given matrix
-    virtual void Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
+    virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
 
     /// Assemble to given vector
     virtual void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
@@ -190,8 +191,8 @@ namespace DRT
 
     //! @name Global Objects
 
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1_;
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2_;
     Teuchos::RCP<Epetra_Vector> systemvector1_;
     Teuchos::RCP<Epetra_Vector> systemvector2_;
     Teuchos::RCP<Epetra_Vector> systemvector3_;

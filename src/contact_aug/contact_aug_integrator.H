@@ -274,26 +274,27 @@ namespace CONTACT
       void WeakReset(const unsigned linsize);
 
       //! evaluate the scaling factor kappa at gp
-      void GP_kappa(MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-          double wgt, double jac) const;
+      void GP_kappa(MORTAR::MortarElement& sele,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac) const;
 
       /// \brief evaluate the lin. of the scaling factor kappa at gp (3-D)
       void Get_Deriv1st_Kappa(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, const Deriv1stMap& d_jac);
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt,
+          const Deriv1stMap& d_jac);
 
 
       //! evaluate the weighted element Area at gp
-      void GP_AugA(MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-          double wgt, double jac) const;
+      void GP_AugA(MORTAR::MortarElement& sele,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac) const;
 
       //! evaluate the linearization of weighted element area at gp
       void Get_Deriv1st_AugA(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, double wgt, double jac,
           const Deriv1stMap& derivjac) const;
 
       /// fill unified gauss point normal
-      void GP_Normal(MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          double* gpn) const;
+      void GP_Normal(MORTAR::MortarElement& sele,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn) const;
 
       /** \brief pure element based variant
        *
@@ -304,41 +305,43 @@ namespace CONTACT
        *
        *  \author hiermeier */
       void GP_Normal_DerivNormal(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn, Deriv1stVecMap& dn_non_unit,
-          Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit, Deriv2ndVecMap& ddn_unit);
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval, double* gpn,
+          Deriv1stVecMap& dn_non_unit, Deriv2ndVecMap& ddn_non_unit, Deriv1stVecMap& dn_unit,
+          Deriv2ndVecMap& ddn_unit);
 
       //! evaluate the linearization of weighted element area at gp
       void Get_Deriv2nd_Kappa(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const;
 
       /** \brief Evaluate the discrete gap at the current GP
        *
        *  \author hiermeier \date 06/17 */
       void GapN(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn, double& gapn_sl,
-          double& gapn_ma) const;
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval, const double* gpn,
+          double& gapn_sl, double& gapn_ma) const;
 
-      void GP_WGap(MORTAR::MortarElement& sele, const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval,
-          const double gapn_sl, const double gapn_ma, const double wg, const double jac) const;
+      void GP_WGap(MORTAR::MortarElement& sele,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double gapn_sl,
+          const double gapn_ma, const double wg, const double jac) const;
 
      private:
       // vectors for shape fct. evaluation
-      LINALG::Matrix<my::SLAVENUMNODE, 1> sval_;
-      LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE> sderiv_;
-      LINALG::Matrix<my::MASTERNUMNODE, 1> mval_;
-      LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE> mderiv_;
-      LINALG::Matrix<3, my::MASTERNUMNODE> mderiv2nd_;
-      LINALG::Matrix<my::SLAVENUMNODE, 1> lmval_;
-      LINALG::Matrix<my::SLAVENUMNODE, my::SLAVEDIM> lmderiv_;
+      CORE::LINALG::Matrix<my::SLAVENUMNODE, 1> sval_;
+      CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE> sderiv_;
+      CORE::LINALG::Matrix<my::MASTERNUMNODE, 1> mval_;
+      CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE> mderiv_;
+      CORE::LINALG::Matrix<3, my::MASTERNUMNODE> mderiv2nd_;
+      CORE::LINALG::Matrix<my::SLAVENUMNODE, 1> lmval_;
+      CORE::LINALG::Matrix<my::SLAVENUMNODE, my::SLAVEDIM> lmderiv_;
 
       // create empty vectors for shape fct. evaluation
-      LINALG::Matrix<my::SLAVENUMNODE, 3> ssecderiv_;
+      CORE::LINALG::Matrix<my::SLAVENUMNODE, 3> ssecderiv_;
 
       // slave and master nodal coords for Jacobian / GP evaluation
-      LINALG::Matrix<3, my::SLAVENUMNODE> scoord_;
-      LINALG::Matrix<3, my::MASTERNUMNODE> mcoord_;
+      CORE::LINALG::Matrix<3, my::SLAVENUMNODE> scoord_;
+      CORE::LINALG::Matrix<3, my::MASTERNUMNODE> mcoord_;
 
       // directional derivatives of sxia, sxib, mxia, mxib
       Deriv1stVecMap ximaps_;
@@ -373,7 +376,7 @@ namespace CONTACT
       // Jacobian derivative (1-st order)
       Deriv1stMap derivjac_;
 
-      CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp_;
+      CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp_;
 
       // directional derivative of slave GP normal (non-unit)
       Deriv1stMap dmap_nxsl_gp_;
@@ -416,18 +419,18 @@ namespace CONTACT
       virtual Type GetType() const = 0;
 
       virtual void Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
-          const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const LINALG::Matrix<3, 2>& stau) = 0;
+          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const CORE::LINALG::Matrix<3, 2>& stau) = 0;
 
       virtual void Deriv_MXiGP(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
           const double* sxi, const double* mxi, const double alpha,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const LINALG::Matrix<3, 2>& mtau) = 0;
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const CORE::LINALG::Matrix<3, 2>& mtau) = 0;
 
       virtual void Get_Deriv2nd_AugA(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const = 0;
 
      protected:
@@ -458,31 +461,32 @@ namespace CONTACT
       typename base_type::Type GetType() const override { return base_type::Type::deriv1st_only; };
 
       void Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
-          const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const LINALG::Matrix<3, 2>& stau) override;
+          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const CORE::LINALG::Matrix<3, 2>& stau) override;
 
       void Deriv1st_Jacobian(MORTAR::MortarElement& ele, const double* xi,
-          const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const LINALG::Matrix<3, 2>& stau,
-          LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
-          LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
+          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const CORE::LINALG::Matrix<3, 2>& stau,
+          CORE::LINALG::Matrix<probdim, my::SLAVENUMNODE, int>& nodal_dofs,
+          CORE::LINALG::Matrix<probdim, 1>& unit_normal, double& length_n_inv,
           Deriv1stVecMap& d_non_unit_normal);
 
       void Deriv_MXiGP(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, const double* sxi,
-          const double* mxi, const double alpha, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const LINALG::Matrix<3, 2>& mtau) override;
+          const double* mxi, const double alpha,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const CORE::LINALG::Matrix<3, 2>& mtau) override;
 
       void Deriv1st_MXiGP(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
           const double* sxi, const double* mxi, const double alpha,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const LINALG::Matrix<3, 2>& mtau, LINALG::Matrix<probdim, probdim>& lmat_inv);
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const CORE::LINALG::Matrix<3, 2>& mtau, CORE::LINALG::Matrix<probdim, probdim>& lmat_inv);
 
       void Get_Deriv2nd_AugA(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const override{/* do nothing */};
     };
 
@@ -511,17 +515,18 @@ namespace CONTACT
       typename base_type::Type GetType() const override { return base_type::Type::full; };
 
       void Deriv_Jacobian(MORTAR::MortarElement& ele, const double* xi,
-          const LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
-          const LINALG::Matrix<3, 2>& stau) override;
+          const CORE::LINALG::Matrix<my::SLAVEDIM, my::SLAVENUMNODE>& sderiv,
+          const CORE::LINALG::Matrix<3, 2>& stau) override;
 
       void Deriv_MXiGP(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, const double* sxi,
-          const double* mxi, const double alpha, const LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
-          const LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
-          const LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
-          const LINALG::Matrix<3, 2>& mtau) override;
+          const double* mxi, const double alpha,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& sval,
+          const CORE::LINALG::Matrix<my::MASTERNUMNODE, 1>& mval,
+          const CORE::LINALG::Matrix<my::MASTERDIM, my::MASTERNUMNODE>& mderiv,
+          const CORE::LINALG::Matrix<3, 2>& mtau) override;
 
       void Get_Deriv2nd_AugA(MORTAR::MortarElement& sele,
-          const LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
+          const CORE::LINALG::Matrix<my::SLAVENUMNODE, 1>& lmval, const double wgt,
           const Deriv2ndMap& dd_jac) const override;
     };
   }  // namespace AUG

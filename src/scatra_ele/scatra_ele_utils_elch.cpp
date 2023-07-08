@@ -58,22 +58,23 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  *---------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrationPoint(
-    const DRT::Element* ele,                             ///< current element
-    Epetra_SerialDenseMatrix& emat,                      ///< element matrix
-    Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<LINALG::Matrix<nen_, 1>>& ehist,   ///< history variables at element nodes
-    const double timefac,                                ///< time factor
-    const double fac,                                    ///< Gauss integration factor
-    const LINALG::Matrix<nen_, 1>& funct,                ///< shape functions at int. point
-    const Teuchos::RCP<DRT::Condition>& cond,            ///< condition
-    const int nume,                                      ///< number of transferred electrons
-    const std::vector<int>& stoich,                      ///< stoichiometry of the reaction
-    const double valence_k,                              ///< valence of the single reactant
-    const int kinetics,                                  ///< desired electrode kinetics model
-    const double pot0,  ///< actual electrode potential on metal side
-    const double frt,   ///< factor F/RT
-    const double fns,   ///< factor fns = s_k / (nume * faraday * (-1))
+    const DRT::Element* ele,                                   ///< current element
+    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
+    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+        ehist,                                   ///< history variables at element nodes
+    const double timefac,                        ///< time factor
+    const double fac,                            ///< Gauss integration factor
+    const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
+    const Teuchos::RCP<DRT::Condition>& cond,    ///< condition
+    const int nume,                              ///< number of transferred electrons
+    const std::vector<int>& stoich,              ///< stoichiometry of the reaction
+    const double valence_k,                      ///< valence of the single reactant
+    const int kinetics,                          ///< desired electrode kinetics model
+    const double pot0,                           ///< actual electrode potential on metal side
+    const double frt,                            ///< factor F/RT
+    const double fns,                            ///< factor fns = s_k / (nume * faraday * (-1))
     const double
         scalar,  ///< scaling factor for element matrix and right-hand side vector contributions
     const int k  ///< index of evaluated scalar
@@ -680,14 +681,14 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     Epetra_SerialDenseVector& scalars,         ///< scalars to be computed
     const Teuchos::ParameterList& params,      ///< parameter list
     const Teuchos::RCP<DRT::Condition>& cond,  ///< condition
-    const std::vector<LINALG::Matrix<nen_, 1>>&
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
-    const LINALG::Matrix<nen_, 1>& funct,                  ///< shape functions at integration point
-    const int zerocur,                                     ///< flag for zero current
-    const int kinetics,                                    ///< desired electrode kinetics model
-    const std::vector<int>& stoich,                        ///< stoichiometry of the reaction
-    const int nume,                                        ///< number of transferred electrons
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+    const CORE::LINALG::Matrix<nen_, 1>& funct,  ///< shape functions at integration point
+    const int zerocur,                           ///< flag for zero current
+    const int kinetics,                          ///< desired electrode kinetics model
+    const std::vector<int>& stoich,              ///< stoichiometry of the reaction
+    const int nume,                              ///< number of transferred electrons
     const double pot0,     ///< actual electrode potential on metal side at t_{n+1}
     const double frt,      ///< factor F/RT
     const double timefac,  ///< factor due to time discretization

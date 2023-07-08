@@ -77,18 +77,18 @@ namespace XFEM
 
     //! for every node search for a covering element from the source discretization
     void FindCoveringElementsAndInterpolateValues(
-        std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<LINALG::Matrix<8, 1>>& interpolated_vecs,
+        std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     //! compute position of target node w.r.t. source element and interpolate when covered by it
     template <DRT::Element::DiscretizationType distype>
-    bool CheckPositionAndProject(const DRT::Element* src_ele, const LINALG::Matrix<3, 1>& node_xyz,
-        LINALG::Matrix<8, 1>& interpolatedvec);
+    bool CheckPositionAndProject(const DRT::Element* src_ele,
+        const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec);
 
     //! communicate nodes demanding reconstruction in a Round-Robin pattern
-    void CommunicateNodes(std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<LINALG::Matrix<8, 1>>& interpolated_vecs,
+    void CommunicateNodes(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values);
 
     /// receive a block in the round robin communication pattern
@@ -98,8 +98,8 @@ namespace XFEM
     void SendBlock(std::vector<char>& sblock, DRT::Exporter& exporter, MPI_Request& request);
 
     /// pack values in the round robin communication pattern
-    void PackValues(std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-        std::vector<LINALG::Matrix<8, 1>>& interpolatedvecs,
+    void PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+        std::vector<CORE::LINALG::Matrix<8, 1>>& interpolatedvecs,
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 
@@ -116,7 +116,7 @@ namespace XFEM
     double searchradius_;
 
     //! map of source node to coordinates (including possible displacements)
-    std::map<int, LINALG::Matrix<3, 1>> src_nodepositions_n_;
+    std::map<int, CORE::LINALG::Matrix<3, 1>> src_nodepositions_n_;
 
     //! state vectors from projection source
     std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs_;

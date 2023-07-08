@@ -31,8 +31,9 @@ namespace CORE::UTILS
   }
 
   template <unsigned N, typename ScalarType>
-  void LocalNewtonIteration(LINALG::Matrix<N, 1, ScalarType>& x,
-      const LINALG::Matrix<N, 1, ScalarType>& residuum, LINALG::Matrix<N, N, ScalarType>&& jacobian)
+  void LocalNewtonIteration(CORE::LINALG::Matrix<N, 1, ScalarType>& x,
+      const CORE::LINALG::Matrix<N, 1, ScalarType>& residuum,
+      CORE::LINALG::Matrix<N, N, ScalarType>&& jacobian)
   {
     jacobian.Invert();
     x.MultiplyNN(-1, jacobian, residuum, 1.0);
@@ -51,7 +52,7 @@ namespace CORE::UTILS
   }
 
   template <unsigned N, typename ScalarType>
-  ScalarType L2Norm(const LINALG::Matrix<N, 1, ScalarType>& x)
+  ScalarType L2Norm(const CORE::LINALG::Matrix<N, 1, ScalarType>& x)
   {
     return CORE::FADUTILS::VectorNorm(x);
   }
@@ -65,7 +66,7 @@ namespace CORE::UTILS
    * `ScalarType L2Norm(const VectorType&)` that computes the L2-norm of the used vector type, and
    * `void LocalNewtonIteration(VectorType& x, const VectorType& residuum, JacobianType&&
    * jacobian_of_residuum)` that does a local Newton step. For often used parameters (double,
-   * LINALG::Matrix and FAD-types), these overloads are already implemented.
+   * CORE::LINALG::Matrix and FAD-types), these overloads are already implemented.
    *
    * @note The jacobian at the root is often needed to compute the linearization of the
    * Newton-Raphson method w.r.t the primary variables. @p SolveLocalNewtonAndReturnJacobian returns
@@ -91,11 +92,11 @@ namespace CORE::UTILS
    *
    * Example 2 (vector-valued double function):
    * @code
-   * LINALG::Matrix<2,1> x_0(true);
-   * auto [x, jacobian] = CORE::UTILS::SolveLocalNewtonAndReturnJacobian(x_0, [](LINALG::Matrix<2,1>
-   * x) { return std::make_tuple<LINALG::Matrix<2,1>, LINALG::Matrix<2,2>>({
-   *       LINALG::Matrix<2,1>{true}, // define your function here
-   *       LINALG::Matrix<2,2>{true} // define your jacobian here
+   * CORE::LINALG::Matrix<2,1> x_0(true);
+   * auto [x, jacobian] = CORE::UTILS::SolveLocalNewtonAndReturnJacobian(x_0,
+   * [](CORE::LINALG::Matrix<2,1> x) { return std::make_tuple<CORE::LINALG::Matrix<2,1>,
+   * CORE::LINALG::Matrix<2,2>>({ CORE::LINALG::Matrix<2,1>{true}, // define your function here
+   *       CORE::LINALG::Matrix<2,2>{true} // define your jacobian here
    *     });
    *   }, 1e-9);
    * @endcode

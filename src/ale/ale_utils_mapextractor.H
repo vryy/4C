@@ -25,7 +25,7 @@ namespace ALE
   namespace UTILS
   {
     /// specific MultiMapExtractor to handle the ale field
-    class MapExtractor : public LINALG::MultiMapExtractor
+    class MapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum
@@ -73,7 +73,7 @@ namespace ALE
     };
 
     /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
-    class FsiMapExtractor : public LINALG::MultiMapExtractor
+    class FsiMapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum
@@ -90,7 +90,7 @@ namespace ALE
     };
 
     /// specific MultiMapExtractor to handle the fluid_fluid_Coupling
-    class XFluidFluidMapExtractor : public LINALG::MultiMapExtractor
+    class XFluidFluidMapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum

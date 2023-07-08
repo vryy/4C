@@ -34,11 +34,11 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
     : So_base(id, owner),
       fbar_(false),
       //  data_(Teuchos::null),
-      KbbInv_(std::vector<LINALG::SerialDenseMatrix>(0)),
-      Kbd_(std::vector<LINALG::SerialDenseMatrix>(0)),
-      fbeta_(std::vector<LINALG::SerialDenseVector>(0)),
-      dDp_last_iter_(std::vector<LINALG::SerialDenseVector>(0)),
-      dDp_inc_(std::vector<LINALG::SerialDenseVector>(0)),
+      KbbInv_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
+      Kbd_(std::vector<CORE::LINALG::SerialDenseMatrix>(0)),
+      fbeta_(std::vector<CORE::LINALG::SerialDenseVector>(0)),
+      dDp_last_iter_(std::vector<CORE::LINALG::SerialDenseVector>(0)),
+      dDp_inc_(std::vector<CORE::LINALG::SerialDenseVector>(0)),
       plspintype_(plspin),
       KaaInv_(Teuchos::null),
       Kad_(Teuchos::null),
@@ -92,64 +92,64 @@ DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 
 
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::shapefunct_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::deriv_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::invJ_;
 template <DRT::Element::DiscretizationType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detJ_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::defgrd_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::defgrd_mod_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::rcg_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::delta_Lp_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_>>
     DRT::ELEMENTS::So3_Plast<distype>::bop_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::pk2_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
     DRT::ELEMENTS::So3_Plast<distype>::cmat_;
 
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xrefe_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xcurr_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::xcurr_rate_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::etemp_;
 
 template <DRT::Element::DiscretizationType distype>
@@ -157,41 +157,41 @@ std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_;
 template <DRT::Element::DiscretizationType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::detF_0_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::inv_defgrd_0_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nen_>>
     DRT::ELEMENTS::So3_Plast<distype>::N_XYZ_0_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::rcg_vec_;
 template <DRT::Element::DiscretizationType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::f_bar_fac_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numdofperelement_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::htensor_;
 
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::numstr_,
                     DRT::ELEMENTS::So3_Plast<distype>::numstr_>>
     DRT::ELEMENTS::So3_Plast<distype>::T0invT_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nsd_,
                     DRT::ELEMENTS::So3_Plast<distype>::nsd_>>
     DRT::ELEMENTS::So3_Plast<distype>::jac_0_;
 template <DRT::Element::DiscretizationType distype>
 std::pair<bool, double> DRT::ELEMENTS::So3_Plast<distype>::det_jac_0_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::SerialDenseMatrix> DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
+std::pair<bool, CORE::LINALG::SerialDenseMatrix> DRT::ELEMENTS::So3_Plast<distype>::M_eas_;
 
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
+std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::weights_;
 template <DRT::Element::DiscretizationType distype>
 std::pair<bool, std::vector<Epetra_SerialDenseVector>> DRT::ELEMENTS::So3_Plast<distype>::knots_;
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
 
   // Gauss points and weights
   int size2 = ExtractInt(position, data);
-  xsi_.resize(size2, LINALG::Matrix<nsd_, 1>(true));
+  xsi_.resize(size2, CORE::LINALG::Matrix<nsd_, 1>(true));
   for (int i = 0; i < size2; ++i) ExtractfromPack(position, data, xsi_[i]);
   ExtractfromPack(position, data, wgt_);
   numgpt_ = wgt_.size();
@@ -416,9 +416,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
   tsi_ = (bool)ExtractInt(position, data);
   if (tsi_)
   {
-    dFintdT_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_, 1>>(numgpt_));
-    KbT_ = Teuchos::rcp(new std::vector<LINALG::SerialDenseVector>(
-        numgpt_, LINALG::SerialDenseVector(plspintype_, true)));
+    dFintdT_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numdofperelement_, 1>>(numgpt_));
+    KbT_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+        numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true)));
     temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_));
     int size = ExtractInt(position, data);
     for (int i = 0; i < size; i++)
@@ -449,27 +449,28 @@ void DRT::ELEMENTS::So3_Plast<distype>::Unpack(const std::vector<char>& data)
   }
   else
   {
-    KaaInv_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_, numdofperelement_, true));
+    KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, neas_, true));
+    Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, numdofperelement_, true));
     if (tsi_)
     {
-      KaT_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new LINALG::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, nen_, true));
+      KdT_eas_ = Teuchos::rcp(new CORE::LINALG::Matrix<numdofperelement_, nen_>);
     }
-    feas_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<LINALG::SerialDenseMatrix>(
-        numgpt_, LINALG::SerialDenseMatrix(plspintype_, neas_, true)));
-    alpha_eas_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_delta_over_last_timestep_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new LINALG::SerialDenseVector(neas_, true));
+    feas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
+        numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, neas_, true)));
+    alpha_eas_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    alpha_eas_last_timestep_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    alpha_eas_delta_over_last_timestep_ =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
+    alpha_eas_inc_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(neas_, true));
   }
 
-  KbbInv_.resize(numgpt_, LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
-  Kbd_.resize(numgpt_, LINALG::SerialDenseMatrix(plspintype_, numdofperelement_, true));
-  fbeta_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
-  dDp_last_iter_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
-  dDp_inc_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
+  KbbInv_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
+  Kbd_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, numdofperelement_, true));
+  fbeta_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
+  dDp_last_iter_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
+  dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
   if (eastype_ != soh8p_easnone)
   {
@@ -684,11 +685,11 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   EasInit();
 
   // plasticity related stuff
-  KbbInv_.resize(numgpt_, LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
-  Kbd_.resize(numgpt_, LINALG::SerialDenseMatrix(plspintype_, numdofperelement_, true));
-  fbeta_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
-  dDp_last_iter_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
-  dDp_inc_.resize(numgpt_, LINALG::SerialDenseVector(plspintype_, true));
+  KbbInv_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, plspintype_, true));
+  Kbd_.resize(numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, numdofperelement_, true));
+  fbeta_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
+  dDp_last_iter_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
+  dDp_inc_.resize(numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = DRT::Problem::Instance()->SemiSmoothPlastParams();
   DRT::UTILS::AddEnumClassToParameterList(
@@ -823,15 +824,15 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
     plmat->SetupTSI(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);
 
     // setup element data
-    dFintdT_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numdofperelement_, 1>>(numgpt_));
+    dFintdT_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numdofperelement_, 1>>(numgpt_));
     temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_, plmat->InitTemp()));
-    KbT_ = Teuchos::rcp(new std::vector<LINALG::SerialDenseVector>(
-        numgpt_, LINALG::SerialDenseVector(plspintype_, true)));
+    KbT_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+        numgpt_, CORE::LINALG::SerialDenseVector(plspintype_, true)));
 
     if (eastype_ != soh8p_easnone)
     {
-      KaT_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new LINALG::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, nen_, true));
+      KdT_eas_ = Teuchos::rcp(new CORE::LINALG::Matrix<numdofperelement_, nen_>);
     }
     else
     {
@@ -848,12 +849,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
 template <DRT::Element::DiscretizationType distype>
 template <unsigned int num_cols>
 void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
-    LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
+    CORE::LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
   if (distype != DRT::Element::hex8) dserror("soh8_expol called from non-hex8 element");
 
   // static variables, that are the same for every element
-  static LINALG::Matrix<nen_, numgpt_post> expolOperator;
+  static CORE::LINALG::Matrix<nen_, numgpt_post> expolOperator;
   static bool isfilled;
 
   if (isfilled == false)
@@ -908,7 +909,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
     isfilled = true;
   }
 
-  LINALG::Matrix<nen_, num_cols> nodalData;
+  CORE::LINALG::Matrix<nen_, num_cols> nodalData;
   nodalData.Multiply(expolOperator, data);
 
   // "assembly" of extrapolated nodal data
@@ -926,11 +927,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
 }
 
 template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
-    LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
+    CORE::LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
 template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
-    LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
+    CORE::LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
 template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
-    LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
+    CORE::LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |

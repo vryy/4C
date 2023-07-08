@@ -21,8 +21,8 @@ namespace CORE::GEO
    * @param basisvec_1[o] : first basis vector
    * @param basisvec_2[o] : second basis vector
    */
-  void BuildOrthonormalBasisFromUnitVector(const LINALG::Matrix<3, 1>& unitvec,
-      LINALG::Matrix<3, 1>& basisvec_1, LINALG::Matrix<3, 1>& basisvec_2)
+  void BuildOrthonormalBasisFromUnitVector(const CORE::LINALG::Matrix<3, 1>& unitvec,
+      CORE::LINALG::Matrix<3, 1>& basisvec_1, CORE::LINALG::Matrix<3, 1>& basisvec_2)
   {
     if (std::abs(unitvec.Norm2() - 1.0) > 1.0e-14) dserror("given vector not normalized!");
 

@@ -753,7 +753,7 @@ void CORE::GEO::CUT::Node::ChangeSelfCutPosition(Point::PointPosition pos)
  *-----------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Node::isAtSameLocation(const Node* nod) const
 {
-  LINALG::Matrix<3, 1> nx1, nx2;
+  CORE::LINALG::Matrix<3, 1> nx1, nx2;
 
   point_->Coordinates(nx1.A());
   Coordinates(nx1.A());

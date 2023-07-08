@@ -336,10 +336,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
   }
 
   // analytic solution
-  LINALG::Matrix<nsd_, 1> u(true);
+  CORE::LINALG::Matrix<nsd_, 1> u(true);
   double p = 0.0;
-  LINALG::Matrix<nsd_, nsd_> dervel(true);
-  LINALG::Matrix<nsd_, 1> xyz(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> dervel(true);
+  CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   const INPAR::FLUID::CalcError calcerr =
       DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
@@ -437,12 +437,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
       // xyz is a vector containing the coordiantes of the quadrature points in real coordinates
-      LINALG::Matrix<nsd_, 1> xyz(false);
+      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
       // Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
       // Declaring vectors for velocity and grad(u) as well as the pressure scalar value
-      LINALG::Matrix<nsd_, 1> u(false);
-      LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in EvaluateAll
+      CORE::LINALG::Matrix<nsd_, 1> u(false);
+      CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in EvaluateAll
       double p;
 
       dsassert(initfield != NULL && startfunc != NULL,
@@ -568,7 +568,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       const double fac = shapesface_->jfac(q);
       // xyz is the vector containing the coordinates of the quadrature points
       //(in local coordinates)
-      LINALG::Matrix<nsd_, 1> xyz(false);
+      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
 
       // Taking the real coordinates of quadrature points of the current face
       // from the shapesface_ utility
@@ -577,7 +577,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       // Creating the vector of trace velocities
       // It is a nsd_ dimensional vector because we are working in a quadrature
       // point and therefore we only have nds_ unknowns
-      LINALG::Matrix<nsd_, 1> u(false);
+      CORE::LINALG::Matrix<nsd_, 1> u(false);
 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
@@ -771,7 +771,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
-    LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
+    CORE::LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
     // Cycling throught the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
@@ -847,9 +847,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
 {
   InitializeShapes(ele);
   // get coordinates of hex 8
-  LINALG::Matrix<nsd_, nen_> xyze(true);
+  CORE::LINALG::Matrix<nsd_, nen_> xyze(true);
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
   dsassert(elevec1.M() == numsamppoints * numsamppoints * numsamppoints * 6,
@@ -896,10 +896,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
     }
 
     // also save coordinates
-    LINALG::Matrix<nen_, 1> myfunct;
+    CORE::LINALG::Matrix<nen_, 1> myfunct;
     CORE::DRT::UTILS::shape_function<distype>(shapes_->xsi, myfunct);
 
-    LINALG::Matrix<nsd_, 1> mypoint(true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(true);
     mypoint.MultiplyNN(xyze, myfunct);
 
     for (unsigned int d = 0; d < nsd_; ++d) elevec1(6 * i + d + 3) = mypoint(d);
@@ -971,10 +971,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
     {
-      LINALG::Matrix<nsd_, 1> f(false);
+      CORE::LINALG::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
       Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
-      LINALG::Matrix<nsd_, 1> xsi(false);
+      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
       poly.Evaluate(xsi, values);
@@ -1081,10 +1081,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
     {
-      LINALG::Matrix<nsd_, 1> f(false);
+      CORE::LINALG::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
       Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
-      LINALG::Matrix<nsd_, 1> xsi(false);
+      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
       poly.Evaluate(xsi, values);
@@ -1143,20 +1143,20 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
     zeroMatrix(mass);
     zeroMatrix(trVec);
 
-    LINALG::Matrix<nsd_, nsd_> trafo;
-    LINALG::SerialDenseMatrix faceQPoints;
+    CORE::LINALG::Matrix<nsd_, nsd_> trafo;
+    CORE::LINALG::SerialDenseMatrix faceQPoints;
     CORE::DRT::UTILS::BoundaryGPToParentGP<nsd_>(faceQPoints, trafo, *shapesface_->quadrature_,
         distype, CORE::DRT::UTILS::getEleFaceShapeType(distype, face), face);
 
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
       const double fac = shapesface_->jfac(q);
-      LINALG::Matrix<nsd_, 1> xsi(false);
+      CORE::LINALG::Matrix<nsd_, 1> xsi(false);
 
       // use the location of the quadrature point in the parent element to evaluate the polynomial
       for (unsigned int d = 0; d < nsd_; ++d) xsi(d) = faceQPoints(q, d);
 
-      LINALG::Matrix<nsd_, 1> u(false);
+      CORE::LINALG::Matrix<nsd_, 1> u(false);
 
       Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
 
@@ -1204,11 +1204,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfunc,
-    const INPAR::FLUID::InitialField initfield, const LINALG::Matrix<nsd_, 1>& xyz,
-    LINALG::Matrix<nsd_, 1>& u) const
+    const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
+    CORE::LINALG::Matrix<nsd_, 1>& u) const
 {
   // pass on dummy entries (costs a little but will not be significant)
-  LINALG::Matrix<nsd_, nsd_> grad(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> grad(true);
   double p;
   EvaluateAll(startfunc, initfield, xyz, u, grad, p);
 }
@@ -1218,8 +1218,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateVelocity(const int startfu
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
-    const INPAR::FLUID::InitialField initfield, const LINALG::Matrix<nsd_, 1>& xyz,
-    LINALG::Matrix<nsd_, 1>& u, LINALG::Matrix<nsd_, nsd_>& grad, double& p) const
+    const INPAR::FLUID::InitialField initfield, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
+    CORE::LINALG::Matrix<nsd_, 1>& u, CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const
 {
   switch (initfield)
   {
@@ -1335,10 +1335,10 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMEN
   const double time = localSolver_->fldparatimint_->Time();
 
   // initialize variables
-  LINALG::Matrix<nsd_, 1> u(true);
+  CORE::LINALG::Matrix<nsd_, 1> u(true);
   double p = 0.0;
-  LINALG::Matrix<nsd_, nsd_> dervel(true);
-  LINALG::Matrix<nsd_, 1> xyz(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> dervel(true);
+  CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   // get function used to evaluate the error
   const Teuchos::ParameterList fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
@@ -1430,7 +1430,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidual(
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
-    const LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
     Epetra_SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
     const std::vector<double>& interiorebodyforce)
 {
@@ -2327,7 +2327,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
   for (unsigned int i = 0; i < (nsd_ + 1) * ndofs_; ++i)
     uuMatFinal((nsd_ + 1) * ndofs_, i) = uuMat((nsd_ + 1) * ndofs_, i);
 
-  // factorize uuMatFinal and solve. do not use LINALG::FixedSizeSerialDenseSolver because
+  // factorize uuMatFinal and solve. do not use CORE::LINALG::FixedSizeSerialDenseSolver because
   // we want to solve twice and reuse the factorization
   Teuchos::LAPACK<int, double> lapack;
   const int size = uuMatFinal.M();

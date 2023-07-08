@@ -177,7 +177,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituent_ElastHyperBase::Update(LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituent_ElastHyperBase::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::Update(defgrd, params, gp, eleGID);
@@ -187,8 +187,9 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::Update(LINALG::Matrix<3, 3> con
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd,
-    Teuchos::ParameterList& params, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(
+    CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   MixtureConstituent::UpdatePrestress(defgrd, params, gp, eleGID);
 
@@ -241,7 +242,7 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
   {
     for (int gp = 0; gp < NumGP(); ++gp)
     {
-      static LINALG::Matrix<9, 1> tmp(false);
+      static CORE::LINALG::Matrix<9, 1> tmp(false);
       tmp.Clear();
       UTILS::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
 

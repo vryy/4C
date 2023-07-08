@@ -19,7 +19,7 @@
 
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
@@ -88,8 +88,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    virtual void PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
     /**
@@ -98,8 +98,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    virtual void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const {};
 
     /**
@@ -120,9 +120,9 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+    void ProjectPointToOther(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Get the intersection between the line and a surface in the volume.
@@ -137,10 +137,10 @@ namespace GEOMETRYPAIR
      * values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the intersection.
      */
-    void IntersectLineWithSurface(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    void IntersectLineWithSurface(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Intersect a line with all surfaces of a volume.
@@ -150,10 +150,11 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    void IntersectLineWithOther(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
+        const scalar_type& eta_start,
+        const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start) const;
 
    protected:
     //! Link to the geometry evaluation container.

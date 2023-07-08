@@ -27,11 +27,11 @@ namespace NOX
     enum class CorrectionType : int;
   }  // namespace NLN
 }  // namespace NOX
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace INPAR
 {
   namespace STR
@@ -154,7 +154,8 @@ namespace STR
       //!@}
 
       // Get element based scaling operator
-      Teuchos::RCP<LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC() override;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> CalcJacobianContributionsFromElementLevelForPTC()
+          override;
 
       //! Access the implicit integrator
       STR::IMPLICIT::Generic& ImplInt();

@@ -129,12 +129,12 @@ namespace SCATRA
        *
        *  \author hiermeier \date 11/16 */
       void PrepareCut(const DRT::Element* ele, const DRT::Discretization& scatradis,
-          const Epetra_Vector& phicol, LINALG::SerialDenseMatrix& xyze,
+          const Epetra_Vector& phicol, CORE::LINALG::SerialDenseMatrix& xyze,
           std::vector<double>& phi_nodes, std::vector<int>& node_ids) const;
 
       /// perform the cut operation
       CORE::GEO::CUT::ElementHandle* Cut(CORE::GEO::CUT::LevelSetIntersection& levelset,
-          const LINALG::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
+          const CORE::LINALG::SerialDenseMatrix& xyze, const std::vector<double>& phi_nodes,
           bool cut_screenoutput) const;
 
       /// collect the cut elements after a successful cut operation
@@ -158,12 +158,12 @@ namespace SCATRA
        *
        *  \author rasthofer \date 09/13 */
       void GetZeroLevelSetContour(const CORE::GEO::CUT::plain_element_set& cuteles,
-          const LINALG::SerialDenseMatrix& xyze, DRT::Element::DiscretizationType distype);
+          const CORE::LINALG::SerialDenseMatrix& xyze, DRT::Element::DiscretizationType distype);
 
       /// check for supported boundary cell discretization types
       virtual void CheckBoundaryCellType(DRT::Element::DiscretizationType distype_bc) const;
 
-      virtual void AddToBoundaryIntCellsPerEle(const LINALG::SerialDenseMatrix& xyze,
+      virtual void AddToBoundaryIntCellsPerEle(const CORE::LINALG::SerialDenseMatrix& xyze,
           const CORE::GEO::CUT::BoundaryCell& bcell, DRT::Element::DiscretizationType distype_ele);
 
       /// access the private boundary cell vector

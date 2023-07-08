@@ -16,8 +16,9 @@
 /*----------------------------------------------------------------------*
  |  Analytical solutions for 2D problems                      popp 06/11|
  *----------------------------------------------------------------------*/
-void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<2, 1>& uanalyt,
-    LINALG::Matrix<4, 1>& epsanalyt, LINALG::Matrix<2, 2>& derivanalyt)
+void CONTACT::AnalyticalSolutions2D(const CORE::LINALG::Matrix<2, 1>& pos,
+    CORE::LINALG::Matrix<2, 1>& uanalyt, CORE::LINALG::Matrix<4, 1>& epsanalyt,
+    CORE::LINALG::Matrix<2, 2>& derivanalyt)
 {
   // get corresponding input parameter
   const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
@@ -101,7 +102,7 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
     const double a = 1.0;       // hole radius
     const double x = -pos(0, 0);
     const double y = -pos(1, 0);
-    LINALG::Matrix<3, 1> stress_analytical;
+    CORE::LINALG::Matrix<3, 1> stress_analytical;
 
     // plane strain modification
     E /= 1. - nue * nue;
@@ -128,7 +129,7 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
             6.0 * a * a * y * y) *
         sqrt(y * y / (x * x + y * y));
 
-    LINALG::Matrix<3, 3> CmatInv(true);
+    CORE::LINALG::Matrix<3, 3> CmatInv(true);
 
     // plane stress
     CmatInv(0, 0) = 1.;
@@ -138,7 +139,7 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
     CmatInv(2, 2) = 2. * (1. + nue);
     CmatInv.Scale(1. / E);
 
-    LINALG::Matrix<3, 1> strain_analytical;
+    CORE::LINALG::Matrix<3, 1> strain_analytical;
     strain_analytical.Multiply(CmatInv, stress_analytical);
 
     // strains
@@ -184,8 +185,9 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
 /*----------------------------------------------------------------------*
  |  Analytical solutions for 3D problems                      popp 06/11|
  *----------------------------------------------------------------------*/
-void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Matrix<3, 1>& uanalyt,
-    LINALG::Matrix<6, 1>& epsanalyt, LINALG::Matrix<3, 3>& derivanalyt)
+void CONTACT::AnalyticalSolutions3D(const CORE::LINALG::Matrix<3, 1>& pos,
+    CORE::LINALG::Matrix<3, 1>& uanalyt, CORE::LINALG::Matrix<6, 1>& epsanalyt,
+    CORE::LINALG::Matrix<3, 3>& derivanalyt)
 {
   // get corresponding input parameter
   const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
@@ -309,7 +311,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     const double theta = acos(pos(2, 0) / r);
 
     // transformation matrix S
-    LINALG::Matrix<3, 3> trafo;
+    CORE::LINALG::Matrix<3, 3> trafo;
     trafo(0, 0) = sin(theta) * cos(phi);
     trafo(0, 1) = cos(theta) * cos(phi);
     trafo(0, 2) = -sin(phi);
@@ -321,7 +323,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     trafo(2, 2) = 0.0;
 
     // transformation matrix J^(-1)
-    LINALG::Matrix<3, 3> Jinv;
+    CORE::LINALG::Matrix<3, 3> Jinv;
     Jinv(0, 0) = sin(theta) * cos(phi);
     Jinv(0, 1) = sin(theta) * sin(phi);
     Jinv(0, 2) = cos(theta);
@@ -338,14 +340,14 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     const double A = -B / (b * b * b);
 
     // displacements
-    LINALG::Matrix<3, 1> usphere;
+    CORE::LINALG::Matrix<3, 1> usphere;
     usphere(0, 0) = (A * r) + (B / (r * r));
     usphere(1, 0) = 0.0;
     usphere(2, 0) = 0.0;
     uanalyt.MultiplyNN(trafo, usphere);
 
     // strains
-    LINALG::Matrix<3, 3> epssphere;
+    CORE::LINALG::Matrix<3, 3> epssphere;
     epssphere(0, 0) = A - 2 * B / (r * r * r);
     epssphere(0, 1) = 0.0;
     epssphere(0, 2) = 0.0;
@@ -356,7 +358,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     epssphere(2, 1) = 0.0;
     epssphere(2, 2) = usphere(0, 0) / r;
 
-    LINALG::Matrix<3, 3> temp1, temp2;
+    CORE::LINALG::Matrix<3, 3> temp1, temp2;
     temp1.MultiplyNT(epssphere, trafo);
     temp2.MultiplyNN(trafo, temp1);
 
@@ -368,7 +370,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     epsanalyt(5, 0) = 2 * temp2(0, 2);
 
     // displacement derivatives
-    LINALG::Matrix<3, 3> derivsphere;
+    CORE::LINALG::Matrix<3, 3> derivsphere;
     derivsphere(0, 0) = sin(theta) * cos(phi) * (A - 2 * B / (r * r * r));
     derivsphere(0, 1) = cos(theta) * cos(phi) * (A * r + B / (r * r));
     derivsphere(0, 2) = -sin(theta) * sin(phi) * (A * r + B / (r * r));
@@ -396,7 +398,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     const double a = 2.0;      // hole radius
     const double x = -pos(0, 0);
     const double y = -pos(1, 0);
-    LINALG::Matrix<3, 1> stress_analytical;
+    CORE::LINALG::Matrix<3, 1> stress_analytical;
 
 
     stress_analytical(0) =
@@ -420,7 +422,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
             6.0 * a * a * y * y) *
         sqrt(y * y / (x * x + y * y));
 
-    LINALG::Matrix<3, 3> CmatInv(true);
+    CORE::LINALG::Matrix<3, 3> CmatInv(true);
 
     // plane stress
     CmatInv(0, 0) = 1.;
@@ -430,7 +432,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
     CmatInv(2, 2) = 2. * (1. + nue);
     CmatInv.Scale(1. / E);
 
-    LINALG::Matrix<3, 1> strain_analytical;
+    CORE::LINALG::Matrix<3, 1> strain_analytical;
     strain_analytical.Multiply(CmatInv, stress_analytical);
 
     // strains

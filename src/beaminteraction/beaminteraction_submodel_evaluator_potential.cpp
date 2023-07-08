@@ -129,13 +129,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce");
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> dummystiff;
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> dummystiff;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -217,14 +217,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
   TEUCHOS_FUNC_TIME_MONITOR("BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff");
 
   // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
-  std::vector<LINALG::SerialDenseVector> dummyforce;
+  std::vector<CORE::LINALG::SerialDenseVector> dummyforce;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -309,19 +309,19 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
       "BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff");
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
   // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -969,14 +969,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
 
 
   // loop over my points and collect the geometry/grid data, i.e. interacting points
-  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
-  std::vector<LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele1_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> coordinates_ele2_this_pair;
 
-  std::vector<LINALG::Matrix<3, 1, double>> potential_forces_ele1_this_pair;
-  std::vector<LINALG::Matrix<3, 1, double>> potential_forces_ele2_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_forces_ele1_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_forces_ele2_this_pair;
 
-  std::vector<LINALG::Matrix<3, 1, double>> potential_moments_ele1_this_pair;
-  std::vector<LINALG::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_moments_ele1_this_pair;
+  std::vector<CORE::LINALG::Matrix<3, 1, double>> potential_moments_ele2_this_pair;
 
   // loop over contact pairs and retrieve all active contact point coordinates
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator pair_iter;

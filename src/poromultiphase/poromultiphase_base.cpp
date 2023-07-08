@@ -64,7 +64,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::Init(const Teuchos::ParameterList& glob
   structure_ = adapterbase->StructureField();
 
   // initialize zero vector for convenience
-  struct_zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
+  struct_zeros_ = CORE::LINALG::CreateVector(*structure_->DofRowMap(), true);
   // do we also solve the structure, this is helpful in case of fluid-scatra coupling without mesh
   // deformation
   solve_structure_ = DRT::INPUT::IntegralValue<int>(algoparams, "SOLVE_STRUCTURE");
@@ -289,7 +289,7 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::FluidDofRowMa
 /*------------------------------------------------------------------------*
  | coupled artery-porofluid system matrix                kremheller 05/18 |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
 POROMULTIPHASE::PoroMultiPhaseBase::ArteryPorofluidSysmat() const
 {
   return fluid_->ArteryPorofluidSysmat();

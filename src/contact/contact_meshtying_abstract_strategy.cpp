@@ -156,15 +156,15 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     interface_[i]->UpdateLagMultSets(offset_if);
 
     // merge interface Lagrange multiplier dof maps to global LM dof map
-    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
+    glmdofrowmap_ = CORE::LINALG::MergeMap(glmdofrowmap_, interface_[i]->LagMultDofs());
     offset_if = glmdofrowmap_->NumGlobalElements();
     if (offset_if < 0) offset_if = 0;
 
     // merge interface master, slave maps to global master, slave map
-    gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
-    gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
-    gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
-    gmnoderowmap_ = LINALG::MergeMap(gmnoderowmap_, interface_[i]->MasterRowNodes());
+    gsdofrowmap_ = CORE::LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
+    gmdofrowmap_ = CORE::LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
+    gsnoderowmap_ = CORE::LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
+    gmnoderowmap_ = CORE::LINALG::MergeMap(gmnoderowmap_, interface_[i]->MasterRowNodes());
 
     // store initial element col map for binning strategy
     initial_elecolmap_.push_back(
@@ -176,14 +176,14 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
-    gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *gsdofrowmap_);
-    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
+    gndofrowmap_ = CORE::LINALG::SplitMap(*ProblemDofs(), *gsdofrowmap_);
+    gndofrowmap_ = CORE::LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }
 
   // setup combined global slave and master dof map
   // setup global displacement dof map
-  gsmdofrowmap_ = LINALG::MergeMap(*gsdofrowmap_, *gmdofrowmap_, false);
-  gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
+  gsmdofrowmap_ = CORE::LINALG::MergeMap(*gsdofrowmap_, *gmdofrowmap_, false);
+  gdisprowmap_ = CORE::LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
 
   // ------------------------------------------------------------------------
   // setup global accessible vectors and matrices
@@ -229,13 +229,13 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
     // and otherwise, only consider slave DOFs
     if (lagmultquad == INPAR::MORTAR::lagmult_lin)
     {
-      trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_, 10));
-      invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsmdofrowmap_, 10));
+      trafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsmdofrowmap_, 10));
+      invtrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsmdofrowmap_, 10));
     }
     else
     {
-      trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
-      invtrafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
+      trafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 10));
+      invtrafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 10));
     }
 
     // set of already processed nodes
@@ -258,7 +258,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   // set displacement state
@@ -325,10 +325,10 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   //********************************************************************
   // initialize and evaluate global mortar stuff
   //********************************************************************
-  // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-  dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
-  mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
-  g_ = LINALG::CreateVector(*gsdofrowmap_, true);
+  // (re)setup global Mortar CORE::LINALG::SparseMatrices and Epetra_Vectors
+  dmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 10));
+  mmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gsdofrowmap_, 100));
+  g_ = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
 
   // assemble D- and M-matrix on all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->AssembleDM(*dmatrix_, *mmatrix_);
@@ -338,8 +338,8 @@ void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
 
   // compute g-vector at global level
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
   AssembleCoords("slave", true, xs);
   AssembleCoords("master", true, xm);
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -414,7 +414,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   if (ParRedist())
   {
     // allreduce restricted slave dof row map in new distribution
-    Teuchos::RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*gsdofrowmap_);
+    Teuchos::RCP<Epetra_Map> fullsdofs = CORE::LINALG::AllreduceEMap(*gsdofrowmap_);
 
     // map data to be filled
     std::vector<int> data;
@@ -443,15 +443,15 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
   // before parallel redistribution!
   if (ParRedist())
   {
-    gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *pgsdofrowmap_);
-    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *pgmdofrowmap_);
+    gndofrowmap_ = CORE::LINALG::SplitMap(*ProblemDofs(), *pgsdofrowmap_);
+    gndofrowmap_ = CORE::LINALG::SplitMap(*gndofrowmap_, *pgmdofrowmap_);
   }
 
   // Step 6: re-setup displacement dof row map with current parallel
   // distribution (possibly wrong, same argument as above)
   if (ParRedist())
   {
-    gdisprowmap_ = LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
+    gdisprowmap_ = CORE::LINALG::MergeMap(*gndofrowmap_, *gsmdofrowmap_, false);
   }
 
   return;
@@ -490,7 +490,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   {
     // export Xslavemod to column map for current interface
     Epetra_Vector Xslavemodcol(*(interface_[i]->SlaveColDofs()), false);
-    LINALG::Export(*Xslavemod, Xslavemodcol);
+    CORE::LINALG::Export(*Xslavemod, Xslavemodcol);
 
     // loop over all slave column nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveColNodes()->NumMyElements(); ++j)
@@ -564,11 +564,11 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   // (2) re-evaluate constraints in reference configuration
   //**********************************************************************
   // initialize
-  g_ = LINALG::CreateVector(*gsdofrowmap_, true);
+  g_ = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
   AssembleCoords("slave", true, xs);
   AssembleCoords("master", true, xm);
   Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -584,7 +584,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+void CONTACT::MtAbstractStrategy::Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
     Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
 {
   // trivial (no choice as for contact)
@@ -636,7 +636,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofrowmap));
 
     if (vectorglobal != Teuchos::null)
-      LINALG::Export(*vectorglobal, *vectorinterface);
+      CORE::LINALG::Export(*vectorglobal, *vectorinterface);
     else
       dserror("StoreNodalQuantities: Null vector handed in!");
 
@@ -707,7 +707,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
  |  Store dirichlet B.C. status into MortarNode               popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -741,10 +741,10 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
   }
 
   // create old style dirichtoggle vector (supposed to go away)
-  pgsdirichtoggle_ = LINALG::CreateVector(*gsdofrowmap_, true);
+  pgsdirichtoggle_ = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
   Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->CondMap())));
   temp->PutScalar(1.0);
-  LINALG::Export(*temp, *pgsdirichtoggle_);
+  CORE::LINALG::Export(*temp, *pgsdirichtoggle_);
 
   return;
 }
@@ -823,8 +823,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   // export the interface forces to full dof layout
   Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fcslavetemp, *fcslave);
-  LINALG::Export(*fcmastertemp, *fcmaster);
+  CORE::LINALG::Export(*fcslavetemp, *fcslave);
+  CORE::LINALG::Export(*fcmastertemp, *fcmaster);
 
   // interface forces and moments
   std::vector<double> gfcs(3);
@@ -886,7 +886,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
         lm[d] = mtnode->Dofs()[d];
         lmowner[d] = mtnode->Owner();
       }
-      LINALG::Assemble(*gapslave, posnode, lm, lmowner);
+      CORE::LINALG::Assemble(*gapslave, posnode, lm, lmowner);
     }
 
     // loop over all master nodes on the current interface
@@ -927,7 +927,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
         lm[d] = mtnode->Dofs()[d];
         lmowner[d] = mtnode->Owner();
       }
-      LINALG::Assemble(*gapmaster, posnode, lm, lmowner);
+      CORE::LINALG::Assemble(*gapmaster, posnode, lm, lmowner);
     }
   }
 
@@ -1141,18 +1141,18 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(llmx, glmx, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(llmy, glmy, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(llmz, glmz, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(llmx, glmx, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(llmy, glmy, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(llmz, glmz, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(Xposl, Xposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(Yposl, Yposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(Zposl, Zposg, (int)allproc.size(), allproc.data(), Comm());
 
-  LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
-  LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(xposl, xposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(yposl, yposg, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(zposl, zposg, (int)allproc.size(), allproc.data(), Comm());
 
   // output is solely done by proc 0
   if (Comm().MyPID() == 0)
@@ -1271,7 +1271,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
     }
 
     // do assembly
-    LINALG::Assemble(*vec, val, lm, lmowner);
+    CORE::LINALG::Assemble(*vec, val, lm, lmowner);
   }
 
   return;

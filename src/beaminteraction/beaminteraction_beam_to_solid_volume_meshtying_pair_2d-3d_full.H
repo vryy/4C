@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
@@ -82,8 +82,8 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void GetTriadAtXiDouble(
-        const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const override;
+    void GetTriadAtXiDouble(const double xi, CORE::LINALG::Matrix<3, 3, double>& triad,
+        const bool reference) const override;
 
    private:
     //! Reference triad interpolation in the beam element

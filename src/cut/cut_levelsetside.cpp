@@ -146,8 +146,8 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           }
 
           // find levelset value at side center
-          LINALG::Matrix<4, 1> lsv;
-          LINALG::Matrix<4, 1> funct;
+          CORE::LINALG::Matrix<4, 1> lsv;
+          CORE::LINALG::Matrix<4, 1> funct;
           CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., ::DRT::Element::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
@@ -157,7 +157,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
             if (lsv(i) == 0) zero_positions.push_back(i);
           }
 
-          LINALG::Matrix<1, 1> midlsv;
+          CORE::LINALG::Matrix<1, 1> midlsv;
           midlsv.MultiplyTN(lsv, funct);
 
           for (unsigned i = 1; i < zero_positions.size(); ++i)
@@ -186,24 +186,24 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           }
 
 #ifdef USE_PHIDERIV_FOR_CUT_DETERMINATION
-          LINALG::Matrix<3, 1> coords0;
+          CORE::LINALG::Matrix<3, 1> coords0;
           bool connect01and23;
 
           edge_points[0]->Coordinates(&coords0(0, 0));
           std::vector<double> grad_phi0 = element->GetLevelSetGradient(coords0);
 
-          LINALG::Matrix<3, 1> coords1;
+          CORE::LINALG::Matrix<3, 1> coords1;
           edge_points[1]->Coordinates(&coords1(0, 0));
           std::vector<double> grad_phi1 = element->GetLevelSetGradient(coords1);
 
           double dotProduct01 = grad_phi0[0] * grad_phi1[0] + grad_phi0[1] * grad_phi1[1] +
                                 grad_phi0[2] * grad_phi1[2];
 
-          LINALG::Matrix<3, 1> coords2;
+          CORE::LINALG::Matrix<3, 1> coords2;
           edge_points[2]->Coordinates(&coords2(0, 0));
           std::vector<double> grad_phi2 = element->GetLevelSetGradient(coords2);
 
-          LINALG::Matrix<3, 1> coords3;
+          CORE::LINALG::Matrix<3, 1> coords3;
           edge_points[3]->Coordinates(&coords3(0, 0));
           std::vector<double> grad_phi3 = element->GetLevelSetGradient(coords3);
 

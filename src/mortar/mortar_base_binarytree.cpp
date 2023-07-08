@@ -324,7 +324,7 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
     trianglepoints.resize(kdop_);
 
     double dcurrent;
-    LINALG::Matrix<3, 3> A;
+    CORE::LINALG::Matrix<3, 3> A;
     for (int i = 0; i < kdop_ / 2; i++)
     {
       // for ismin & ismax of slabs

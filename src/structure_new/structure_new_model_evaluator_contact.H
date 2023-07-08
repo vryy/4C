@@ -70,7 +70,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! Perform a correction of adaptive parameters
       bool CorrectParameters(NOX::NLN::CorrectionType type) override;
@@ -151,7 +152,7 @@ namespace STR
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianBlock(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetJacobianBlock(
           const DRT::UTILS::MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
@@ -165,7 +166,7 @@ namespace STR
           const std::vector<INPAR::STR::ModelType>* without_these_models = NULL,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<LINALG::SparseOperator> GetAuxDisplJacobian() const;
+      virtual Teuchos::RCP<CORE::LINALG::SparseOperator> GetAuxDisplJacobian() const;
 
       void EvaluateWeightedGapGradientError();
 

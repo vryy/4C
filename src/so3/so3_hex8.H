@@ -366,15 +366,17 @@ namespace DRT
       // const vector<double> GetFibervec(){return fiberdirection_;};
       /// Evaluate center coordinates in reference system
       void soh8_ElementCenterRefeCoords(
-          LINALG::Matrix<1, NUMDIM_SOH8>& centercoord,  ///< center coordinates in reference system
-          LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe)
+          CORE::LINALG::Matrix<1, NUMDIM_SOH8>&
+              centercoord,  ///< center coordinates in reference system
+          CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe)
           const;  ///< material coord. of element
 
       /// Evaluate Gauss-Point coordinates in reference system
-      void soh8_GaussPointRefeCoords(
-          LINALG::Matrix<1, NUMDIM_SOH8>& gpcoord,  ///< Gauss-Point coordinates in reference system
-          LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe,  ///< material coord. of element
-          int gp) const;                                          ///< current Gauss-Point
+      void soh8_GaussPointRefeCoords(CORE::LINALG::Matrix<1, NUMDIM_SOH8>&
+                                         gpcoord,  ///< Gauss-Point coordinates in reference system
+          CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const&
+              xrefe,      ///< material coord. of element
+          int gp) const;  ///< current Gauss-Point
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -389,17 +391,18 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
+          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
           Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
           Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
-          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
-          double* d_cauchyndir_dc) override;
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
+          const double* concentration, double* d_cauchyndir_dc) override;
       //@}
 
      protected:
@@ -474,9 +477,9 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJ_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJmat_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>> invJmat_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
 
@@ -521,7 +524,7 @@ namespace DRT
       /** \brief Evaluate the determinant of the current jacobian at each element
        *  corner and return the smallest value */
       double soh8_get_min_det_jac_at_corners(
-          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
+          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
 
       void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
           STR::ELEMENTS::EvalErrorFlag flag);
@@ -539,43 +542,47 @@ namespace DRT
           std::vector<double>* acc,                    // current accelerations
           std::vector<double>& residual,               ///< current residual displ
           std::vector<double>& dispmat,                ///< current material displacements
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH8, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOH8, 1>* forceinert,             // element inertial force vector
-          LINALG::Matrix<NUMDOF_SOH8, 1>*
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* forceinert,  // element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>*
               force_str,  // element structural force vector (no condensation; for NewtonLS)
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+              eleplstrain,                     ///< plastic strains at GP
           Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
           INPAR::STR::StressType iostress,     ///< stress output option
           INPAR::STR::StrainType iostrain,     ///< strain output option
           INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Calculate nonlinear stiffness and mass matrix (GEMM)
-      virtual void soh8_nlnstiffmass_gemm(std::vector<int>& lm,   ///< location matrix
-          std::vector<double>& dispo,                             ///< old displacements
-          std::vector<double>& disp,                              ///< current displacements
-          std::vector<double>& residual,                          ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH8, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+      virtual void soh8_nlnstiffmass_gemm(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& dispo,                            ///< old displacements
+          std::vector<double>& disp,                             ///< current displacements
+          std::vector<double>& residual,                         ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+              eleplstrain,                     ///< plastic strains at GP
           Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
           INPAR::STR::StressType iostress,     ///< stress output option
           INPAR::STR::StrainType iostrain,     ///< strain output option
           INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);
+      void soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);
 
       //! Evaluate Hex8 Shapefcts to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> soh8_derivs() const;
 
       /*!
        * \brief Evaluate the first derivatives of the shape functions at the Gauss point gp
@@ -583,19 +590,19 @@ namespace DRT
        * \param derivs first derivatives of the shape functions
        * \param gp Gauss point
        */
-      void soh8_derivs(LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
+      void soh8_derivs(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, int gp) const;
       //! Evaluate Hex8 Weights to keep them static
       const std::vector<double> soh8_weights() const;
 
       //! push forward of material stresses to the current, spatial configuration
-      void PK2toCauchy(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* cauchystress);
+      void PK2toCauchy(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
+          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* cauchystress);
 
       //! push forward of Green-Lagrange strain to Euler-Almansi strains
-      void GLtoEA(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
-          LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* euler_almansi);
+      void GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
+          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
+          CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* euler_almansi);
 
       //@}
 
@@ -608,9 +615,10 @@ namespace DRT
       //! EAS technology, setup necessary data
       void soh8_eassetup(std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
           double& detJ0,                                                // det of Jacobian at origin
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
-          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const;  // material element coords
+          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe)
+          const;  // material element coords
 
       //! EAS technology, update
       void soh8_easupdate();
@@ -626,9 +634,9 @@ namespace DRT
        * \param xcurr  [in] : Current nodal coordinates of the element
        * \param gp  [in] : Id of the Gauss point
        */
-      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
-          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xdisp,
-          const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr, int gp);
+      void ComputeDeformationGradient(CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xdisp,
+          const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr, int gp);
 
       /*! \brief Calculate the deformation gradient that is consistent
        *         with modified (e.g. EAS) GL strain tensor.
@@ -640,8 +648,8 @@ namespace DRT
        * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
        * \param defgrd_mod   (out) : consistent modified deformation gradient
        */
-      void CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
-          LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod) const;
+      void CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+          CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod) const;
 
 
       //! @name Multi-scale related stuff
@@ -680,7 +688,7 @@ namespace DRT
        * analyses by averaging over the initial volume
        * */
       void GetTemperatureForStructuralMaterial(
-          const LINALG::Matrix<NUMNOD_SOH8, 1>&
+          const CORE::LINALG::Matrix<NUMNOD_SOH8, 1>&
               shapefcts,  ///< shape functions of current Gauss point
           Teuchos::ParameterList&
               params  ///< special material parameters e.g. scalar-valued temperature
@@ -697,17 +705,17 @@ namespace DRT
 
       /// FDCheck constitutive tensor and/or use the approximation as elastic stiffness matrix
       void EvaluateFiniteDifferenceMaterialTangent(
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
           std::vector<double>& disp,  ///< current displacements
           double detJ_w,              ///< jacobian determinant times gauss weigth
           double detJ, double detJ0, double charelelength,
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8>& bop,
-          const LINALG::Matrix<6, NUMDOF_SOH8>& cb,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& N_XYZ,
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8>& bop,
+          const CORE::LINALG::Matrix<6, NUMDOF_SOH8>& cb,
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& N_XYZ,
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
           const std::vector<Epetra_SerialDenseMatrix>* M_GP, const Epetra_SerialDenseMatrix* alpha,
-          LINALG::SerialDenseMatrix& M, int gp, Teuchos::ParameterList& params);
+          CORE::LINALG::SerialDenseMatrix& M, int gp, Teuchos::ParameterList& params);
 
      private:
       /** recover elementwise stored stuff

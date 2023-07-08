@@ -1472,30 +1472,30 @@ bool CORE::GEO::CUT::Side::HoleOfFacet(Facet& facet, const std::vector<Cycle>& h
   bool intersectioninpoint = true;
   std::vector<Point*> facetpoints = facet.Points();
   int facetsize = facetpoints.size();
-  std::vector<LINALG::Matrix<3, 1>> facetpointslocalcoord;
+  std::vector<CORE::LINALG::Matrix<3, 1>> facetpointslocalcoord;
   facetpointslocalcoord.reserve(facetsize);
   for (std::vector<Point*>::iterator i = facetpoints.begin(); i != facetpoints.end(); ++i)
   {
     Point* facetpoint = *i;
-    LINALG::Matrix<3, 1> pointcoord;
+    CORE::LINALG::Matrix<3, 1> pointcoord;
     facetpoint->Coordinates(pointcoord.A());
-    LINALG::Matrix<3, 1> pointlocalcoord;
+    CORE::LINALG::Matrix<3, 1> pointlocalcoord;
     LocalCoordinates(pointcoord, pointlocalcoord, false);
     facetpointslocalcoord.push_back(pointlocalcoord);
   }
-  LINALG::Matrix<3, 1> holepointcoord;
-  LINALG::Matrix<3, 1> holepointlocalcoord;
+  CORE::LINALG::Matrix<3, 1> holepointcoord;
+  CORE::LINALG::Matrix<3, 1> holepointlocalcoord;
   hole[0]()[0]->Coordinates(holepointcoord.A());
   LocalCoordinates(holepointcoord, holepointlocalcoord, false);
   double epsilon = 0;
   while (intersectioninpoint)
   {
     intersectioninpoint = false;
-    for (std::vector<LINALG::Matrix<3, 1>>::iterator i = facetpointslocalcoord.begin();
+    for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator i = facetpointslocalcoord.begin();
          i != facetpointslocalcoord.end(); ++i)
     {
-      LINALG::Matrix<3, 1> facetpoint1 = *i;
-      LINALG::Matrix<3, 1> facetpoint2;
+      CORE::LINALG::Matrix<3, 1> facetpoint1 = *i;
+      CORE::LINALG::Matrix<3, 1> facetpoint2;
       if (i + 1 != facetpointslocalcoord.end())
       {
         facetpoint2 = *(i + 1);
@@ -1576,11 +1576,12 @@ void CORE::GEO::CUT::Side::replaceNodes(Node* nod, Node* replwith)
 template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigned numNodesSide,
     unsigned dim>
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsCloserSide(
-    const LINALG::Matrix<probdim, 1>& startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
+    const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz, CORE::GEO::CUT::Side* other,
+    bool& is_closer)
 {
   /* shoot a ray starting from the startpoint through the midpoint of this side
    * and find an intersection point with the other side */
-  LINALG::Matrix<probdim, 1> ray_point_xyz(true);
+  CORE::LINALG::Matrix<probdim, 1> ray_point_xyz(true);
   // as second point on the ray we define the midpoint of this side
 
 
@@ -1590,18 +1591,19 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
    * almost parallel sides and a start-point next to the common point of the sides
    * the side-center might lead to a ray which is almost parallel to the other side */
 
-  LINALG::Matrix<dim, numNodesSide> corner_coords_rst(true);
+  CORE::LINALG::Matrix<dim, numNodesSide> corner_coords_rst(true);
   this->LocalCornerCoordinates(corner_coords_rst.A());
 
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
    * inside */
-  LINALG::Matrix<dim, 1> rst_center = CORE::DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
+  CORE::LINALG::Matrix<dim, 1> rst_center =
+      CORE::DRT::UTILS::getLocalCenterPosition<dim>(this->Shape());
 
   //-----------------------------
   // get perturbed coordinates
   //-----------------------------
-  LINALG::Matrix<dim, numNodesSide> inner_corner_coords_rst(true);
+  CORE::LINALG::Matrix<dim, numNodesSide> inner_corner_coords_rst(true);
 
   // 1. transform such that coordinates center is located in the element center
   for (unsigned i = 0; i < numNodesSide; ++i)
@@ -1628,11 +1630,11 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
    * as possible to guarantee well-conditioned systems for finding ray-cut points */
   //-----------------------------
 
-  LINALG::Matrix<probdim, 1> xyz(true);
-  LINALG::Matrix<probdim, 1> ray_dir(true);
+  CORE::LINALG::Matrix<probdim, 1> xyz(true);
+  CORE::LINALG::Matrix<probdim, 1> ray_dir(true);
 
   // get normal of other side at its center
-  LINALG::Matrix<probdim, 1> t1, t2, n(true);
+  CORE::LINALG::Matrix<probdim, 1> t1, t2, n(true);
   other->BasisAtCenter(t1, t2, n);
 
 
@@ -1648,7 +1650,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
   for (unsigned i = 0; i < numNodesSide; i++)
   {
     // get ray vector (endpoint-startpoint)
-    LINALG::Matrix<dim, 1> rst_inner_corner(&inner_corner_coords_rst(0, i), true);
+    CORE::LINALG::Matrix<dim, 1> rst_inner_corner(&inner_corner_coords_rst(0, i), true);
     PointAt(rst_inner_corner, xyz);
     ray_dir.Update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
 
@@ -1666,7 +1668,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::IsClose
   /* shoot the ray and find a cutpoint with the other side's plane or curved
    * surface space */
   //-----------------------------
-  LINALG::Matrix<dim, 1> rs(true);
+  CORE::LINALG::Matrix<dim, 1> rs(true);
   double line_xi = 0.0;
 
   bool cut_found = other->RayCut(startpoint_xyz, ray_point_xyz, rs, line_xi);
@@ -1748,7 +1750,7 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigne
     unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinSide(
-    const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rs, double& dist)
+    const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rs, double& dist)
 {
   dserror("Do we use this function?");
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
@@ -1773,12 +1775,12 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigne
     unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::LocalCoordinates(
-    const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd, bool allow_dist,
-    double tol)
+    const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<probdim, 1>& rsd,
+    bool allow_dist, double tol)
 {
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, sidetype>(*this, xyz);
   bool success = pos->Compute(tol, allow_dist);
-  LINALG::Matrix<dim, 1> rs(true);
+  CORE::LINALG::Matrix<dim, 1> rs(true);
   if (pos->Status() == Position::position_valid) pos->LocalCoordinates(rs);
   // copy the position
   std::copy(rs.A(), rs.A() + dim, &rsd(0));
@@ -1819,13 +1821,13 @@ template <unsigned probdim, ::DRT::Element::DiscretizationType sidetype, unsigne
     unsigned dim>
 ///  lies point with given coordinates within this side?
 bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
-    const LINALG::Matrix<probdim, 1>& p1_xyz, const LINALG::Matrix<probdim, 1>& p2_xyz,
-    LINALG::Matrix<dim, 1>& rs, double& line_xi)
+    const CORE::LINALG::Matrix<probdim, 1>& p1_xyz, const CORE::LINALG::Matrix<probdim, 1>& p2_xyz,
+    CORE::LINALG::Matrix<dim, 1>& rs, double& line_xi)
 {
-  LINALG::Matrix<probdim, numNodesSide> xyze_surface(true);
+  CORE::LINALG::Matrix<probdim, numNodesSide> xyze_surface(true);
   this->Coordinates(xyze_surface);
 
-  LINALG::Matrix<probdim, 2> xyze_line(true);
+  CORE::LINALG::Matrix<probdim, 2> xyze_line(true);
   for (unsigned i = 0; i < probdim; ++i)
   {
     xyze_line(i, 0) = p1_xyz(i);
@@ -1833,7 +1835,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   }
   /* The dim+1 entry corresponds to the parameter space coordinate of the
    * 1-D line element. */
-  LINALG::Matrix<dim + 1, 1> xsi(true);
+  CORE::LINALG::Matrix<dim + 1, 1> xsi(true);
 
   // do not check for within-limits during the Newton-scheme, since the cut-point is
   // allowed to be not within the side and line

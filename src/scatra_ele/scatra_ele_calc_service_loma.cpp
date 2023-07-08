@@ -44,7 +44,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::EvaluateAction(DRT::Element* ele,
       // extract additional local values from global vector
       Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, lm);
     }
   }
 
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(DRT:
     // extract local values from global vector
     Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
     if (phiam == Teuchos::null) dserror("Cannot get state vector 'phiam'");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phiam, ephiam_, la[0].lm_);
   }
 
   // get thermodynamic pressure
@@ -204,7 +204,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(const DRT::Element*
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcSubgrVelocityVisc(
-    LINALG::Matrix<nsd_, 1>& epsilonvel)
+    CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
   my::derxy2_.Scale(prefac);

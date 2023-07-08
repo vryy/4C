@@ -62,16 +62,17 @@ namespace BEAMINTERACTION
      * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
      * @return True if pair is in contact.
      */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
 
    protected:
     /**
      * \brief Get the triad of the beam at the parameter coordinate xi (derived)
      */
-    void GetTriadAtXiDouble(
-        const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const override;
+    void GetTriadAtXiDouble(const double xi, CORE::LINALG::Matrix<3, 3, double>& triad,
+        const bool reference) const override;
   };
 }  // namespace BEAMINTERACTION
 

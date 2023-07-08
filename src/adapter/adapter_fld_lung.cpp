@@ -26,7 +26,7 @@ parenchyma balloon
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
@@ -55,16 +55,17 @@ void ADAPTER::FluidLung::Init()
 
   // build map extractor for fsi <-> full map
 
-  fsiinterface_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
+  fsiinterface_ = Teuchos::rcp(
+      new CORE::LINALG::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
 
   // build map extractor for asi, other <-> full inner map
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.push_back(Interface()->OtherMap());
   maps.push_back(Interface()->LungASICondMap());
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-  innersplit_ = Teuchos::rcp(new LINALG::MapExtractor(*fullmap, Interface()->LungASICondMap()));
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  innersplit_ =
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*fullmap, Interface()->LungASICondMap()));
 
   // build mapextractor for outflow fsi boundary dofs <-> full map
 
@@ -102,7 +103,7 @@ void ADAPTER::FluidLung::Init()
       new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, Discretization()->Comm()));
 
   outflowfsiinterface_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*Interface()->FullMap(), outflowfsidofmap));
 }
 
 
@@ -191,7 +192,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
       constrowner.push_back(curr->second->Owner());
-      LINALG::Assemble(*initflowrate, elevector3, constrlm, constrowner);
+      CORE::LINALG::Assemble(*initflowrate, elevector3, constrlm, constrowner);
     }
   }
 }
@@ -200,11 +201,11 @@ void ADAPTER::FluidLung::InitializeVolCon(
 /*======================================================================*/
 /* evaluate structural part of fluid-structure volume constraint */
 void ADAPTER::FluidLung::EvaluateVolCon(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidShapeDerivMatrix,
-    Teuchos::RCP<LINALG::SparseMatrix> FluidConstrMatrix,
-    Teuchos::RCP<LINALG::SparseMatrix> ConstrFluidMatrix,
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> AleConstrMatrix,
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ConstrAleMatrix,
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> FluidShapeDerivMatrix,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> FluidConstrMatrix,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstrFluidMatrix,
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> AleConstrMatrix,
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ConstrAleMatrix,
     Teuchos::RCP<Epetra_Vector> FluidRHS, Teuchos::RCP<Epetra_Vector> CurrFlowRates,
     Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID, const double dttheta)
 {
@@ -301,13 +302,13 @@ void ADAPTER::FluidLung::EvaluateVolCon(
 
       // negative sign (for shift to rhs) is already implicitly taken into account!
       elevector1.Scale(-lagraval * invresscale);
-      LINALG::Assemble(*FluidRHS, elevector1, lm, lmowner);
+      CORE::LINALG::Assemble(*FluidRHS, elevector1, lm, lmowner);
 
       std::vector<int> constrlm;
       std::vector<int> constrowner;
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->Owner());
-      LINALG::Assemble(*CurrFlowRates, elevector3, constrlm, constrowner);
+      CORE::LINALG::Assemble(*CurrFlowRates, elevector3, constrlm, constrowner);
     }
   }
 
@@ -344,7 +345,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(
   FluidConstrMatrix->Scale(invresscale);
   ConstrFluidMatrix->Scale(dttheta);
 
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*DofRowMap(), true);
   outflowfsiinterface_->InsertCondVector(outflowfsiinterface_->ExtractCondVector(zeros), FluidRHS);
 }
 

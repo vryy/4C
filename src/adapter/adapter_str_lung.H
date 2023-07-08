@@ -26,7 +26,7 @@ attached parenchyma balloon
 
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -54,7 +54,7 @@ namespace ADAPTER
         const int offsetID);                  ///< ID of first volume constraint -> offset
 
     /// Evaluate structural part of lung volume constraint
-    void EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBase> StructMatrix,
+    void EvaluateVolCon(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> StructMatrix,
         Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
         Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
         const int offsetID);
@@ -71,7 +71,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed);
 
     /// Get MapExtractor for fsi <-> full map
-    Teuchos::RCP<const LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> FSIInterface() { return fsiinterface_; }
 
     /// Get map of volume coupling dofs
     const Teuchos::RCP<const Epetra_Map> LungConstrMap() { return lungconstraintmap_; }
@@ -91,7 +91,7 @@ namespace ADAPTER
     /// this is needed since otherwise "OtherMap" contains only dofs
     /// which are not part of a condition. however, asi dofs are of
     /// course also "inner" dofs for the structural field.
-    Teuchos::RCP<LINALG::MapExtractor> fsiinterface_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> fsiinterface_;
   };
 
 }  // namespace ADAPTER

@@ -22,11 +22,11 @@
 #include <string>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {

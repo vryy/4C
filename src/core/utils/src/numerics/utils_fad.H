@@ -46,9 +46,9 @@ namespace CORE::FADUTILS
   \brief Cast of a FAD matrix to a double matrix
   */
   template <typename type, unsigned int dim1, unsigned int dim2>
-  LINALG::Matrix<dim1, dim2, double> CastToDouble(LINALG::Matrix<dim1, dim2, type> a)
+  CORE::LINALG::Matrix<dim1, dim2, double> CastToDouble(CORE::LINALG::Matrix<dim1, dim2, type> a)
   {
-    LINALG::Matrix<dim1, dim2, double> b(true);
+    CORE::LINALG::Matrix<dim1, dim2, double> b(true);
 
     for (unsigned int i = 0; i < dim1; i++)
     {
@@ -108,7 +108,7 @@ namespace CORE::FADUTILS
   \brief Calculate Norm of a FAD vector
   */
   template <typename scalar_type, unsigned int length>
-  scalar_type VectorNorm(LINALG::Matrix<length, 1, scalar_type> v)
+  scalar_type VectorNorm(CORE::LINALG::Matrix<length, 1, scalar_type> v)
   {
     scalar_type norm_squared = 0.0;
     for (unsigned int i = 0; i < length; i++)
@@ -123,7 +123,7 @@ namespace CORE::FADUTILS
   \brief Template specialization for double
   */
   template <unsigned int length>
-  double VectorNorm(LINALG::Matrix<length, 1, double> v)
+  double VectorNorm(CORE::LINALG::Matrix<length, 1, double> v)
   {
     return v.Norm2();
   }
@@ -131,7 +131,7 @@ namespace CORE::FADUTILS
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
   // Todo this function is obsolete
   template <typename T>
-  T Norm(LINALG::Matrix<3, 1, T> v)
+  T Norm(CORE::LINALG::Matrix<3, 1, T> v)
   {
     T norm_squared = 0.0;
     for (int i = 0; i < 3; i++)
@@ -145,9 +145,9 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate inner product of two FAD or double vectors
   */
-  // Todo this function is obsolete, use Dot of LINALG::Matrix instead
+  // Todo this function is obsolete, use Dot of CORE::LINALG::Matrix instead
   template <typename type>
-  type ScalarProduct(LINALG::Matrix<3, 1, type> a, LINALG::Matrix<3, 1, type> b)
+  type ScalarProduct(CORE::LINALG::Matrix<3, 1, type> a, CORE::LINALG::Matrix<3, 1, type> b)
   {
     return a(0) * b(0) + a(1) * b(1) + a(2) * b(2);
   }
@@ -155,11 +155,12 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate difference of two FAD or double vectors
   */
-  // Todo this function is obsolete, use Update of LINALG::Matrix instead
+  // Todo this function is obsolete, use Update of CORE::LINALG::Matrix instead
   template <typename type>
-  LINALG::Matrix<3, 1, type> DiffVector(LINALG::Matrix<3, 1, type> a, LINALG::Matrix<3, 1, type> b)
+  CORE::LINALG::Matrix<3, 1, type> DiffVector(
+      CORE::LINALG::Matrix<3, 1, type> a, CORE::LINALG::Matrix<3, 1, type> b)
   {
-    LINALG::Matrix<3, 1, type> c(true);
+    CORE::LINALG::Matrix<3, 1, type> c(true);
     for (int i = 0; i < 3; i++) c(i) = a(i) - b(i);
 
     return c;
@@ -168,14 +169,14 @@ namespace CORE::FADUTILS
   /*!
   \brief Calculate vector product of two FAD or double vectors
   */
-  // Todo this function is obsolete, use CrossProduct of LINALG::Matrix instead
+  // Todo this function is obsolete, use CrossProduct of CORE::LINALG::Matrix instead
   template <typename type>
-  LINALG::Matrix<3, 1, type> VectorProduct(
-      LINALG::Matrix<3, 1, type> first_vector, LINALG::Matrix<3, 1, type> second_vector)
+  CORE::LINALG::Matrix<3, 1, type> VectorProduct(
+      CORE::LINALG::Matrix<3, 1, type> first_vector, CORE::LINALG::Matrix<3, 1, type> second_vector)
   {
-    LINALG::Matrix<3, 1, type> result_vector;
+    CORE::LINALG::Matrix<3, 1, type> result_vector;
     result_vector.Clear();
-    LINALG::Matrix<3, 3, type> S_first_vector;
+    CORE::LINALG::Matrix<3, 3, type> S_first_vector;
     S_first_vector.Clear();
 
     S_first_vector(0, 0) = 0.0;

@@ -369,7 +369,7 @@ void XFEM::ConditionManager::Create()
     levelset_gid_ = numglobal_coupling_sides;
     numglobal_coupling_sides += 1;
 
-    bg_phinp_ = LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
+    bg_phinp_ = CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
 
     // information about the coupling condition for level-sets is obtained via the background
     // element for which we store the index of the level-set coupling object we allow for multiple
@@ -445,7 +445,7 @@ Teuchos::RCP<const Epetra_Vector> XFEM::ConditionManager::GetLevelSetFieldCol()
   // export nodal level-set values to node column map
   Teuchos::RCP<Epetra_Vector> bg_phinp_col =
       Teuchos::rcp(new Epetra_Vector(*bg_dis_->NodeColMap()));
-  LINALG::Export(*GetLevelSetField(), *bg_phinp_col);
+  CORE::LINALG::Export(*GetLevelSetField(), *bg_phinp_col);
 
   return bg_phinp_col;
 }
@@ -515,7 +515,7 @@ void XFEM::ConditionManager::UpdateLevelSetField()
   }
 
   // export to column vector
-  LINALG::Export(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
+  CORE::LINALG::Export(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
 
   // set the levelset coupling index for all row elements
   const Epetra_Map* elerowmap = bg_dis_->ElementRowMap();
@@ -550,7 +550,7 @@ void XFEM::ConditionManager::UpdateLevelSetField()
     (*ele_lsc_coup_idx)[leleid] = *(lsc_coupling_indices.begin());
   }
 
-  LINALG::Export(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
+  CORE::LINALG::Export(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
 
   is_levelset_uptodate_ = true;
 }

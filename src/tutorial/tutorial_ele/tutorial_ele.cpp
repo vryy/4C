@@ -38,8 +38,9 @@ TUTORIAL::ELEMENTS::TutorialElement::TutorialElement(int id, double E, double X0
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::ELEMENTS::TutorialElement::Evaluate(LINALG::Matrix<7, 1>* state,
-    LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector, bool eval_mat, bool eval_vec)
+void TUTORIAL::ELEMENTS::TutorialElement::Evaluate(CORE::LINALG::Matrix<7, 1>* state,
+    CORE::LINALG::Matrix<2, 2>* elematrix, CORE::LINALG::Matrix<2, 1>* elevector, bool eval_mat,
+    bool eval_vec)
 {
   // get calc instance (singleton object)
   TUTORIAL::ELEMENTS::TutorialEleCalc* calculator_object = TutorialEleCalc::Instance();

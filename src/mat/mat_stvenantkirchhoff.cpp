@@ -144,7 +144,7 @@ void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
 /*----------------------------------------------------------------------*
 // computes isotropic elasticity tensor in matrix notion for 3d
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::SetupCmat(LINALG::Matrix<6, 6>& cmat)
+void MAT::StVenantKirchhoff::SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat)
 {
   // get material parameters
   const double Emod = params_->youngs_;      // Young's modulus (modulus of elasticity)
@@ -154,7 +154,7 @@ void MAT::StVenantKirchhoff::SetupCmat(LINALG::Matrix<6, 6>& cmat)
 }
 
 void MAT::StVenantKirchhoff::FillCmat(
-    LINALG::Matrix<6, 6>& cmat, const double Emod, const double nu)
+    CORE::LINALG::Matrix<6, 6>& cmat, const double Emod, const double nu)
 {
   // isotropic elasticity tensor C in Voigt matrix notation
   //                     [ 1-nu     nu     nu |       0       0       0    ]
@@ -194,9 +194,9 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface
-  const LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
-  LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
-  LINALG::Matrix<6, 1> stress(stress_e->A(), true);
+  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
+  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
+  CORE::LINALG::Matrix<6, 1> stress(stress_e->A(), true);
 
   SetupCmat(cmat);
   // evaluate stresses
@@ -207,9 +207,10 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   SetupCmat(*cmat);
   // evaluate stresses
@@ -221,12 +222,12 @@ void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
-  LINALG::Matrix<6, 6> cmat(true);
+  CORE::LINALG::Matrix<6, 6> cmat(true);
   SetupCmat(cmat);
 
-  LINALG::Matrix<6, 1> stress(true);
+  CORE::LINALG::Matrix<6, 1> stress(true);
   stress.MultiplyNN(cmat, glstrain);
 
   for (int k = 0; k < 6; ++k) psi += glstrain(k) * stress(k);
@@ -237,12 +238,12 @@ void MAT::StVenantKirchhoff::StrainEnergy(
 /*----------------------------------------------------------------------*
  |  Evaluate for GEMM                                           ly 02/13|
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-    LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, CORE::LINALG::Matrix<3, 3>* rcg_new,
+    CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");
@@ -257,7 +258,7 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
   double psio = 0.0;
 
   Teuchos::ParameterList params;
-  LINALG::Matrix<3, 3> defgrd(true);
+  CORE::LINALG::Matrix<3, 3> defgrd(true);
   Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
   *density = Density();
   StrainEnergy(*glstrain_new, psi, gp, eleGID);
@@ -267,7 +268,7 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
   // ALGORITHMIC STRESSES AND CMAT FOR GEMM
   //**********************************************************************
   // tensor M = increment of Cauchy-Green tensor
-  LINALG::Matrix<3, 3> M;
+  CORE::LINALG::Matrix<3, 3> M;
   M.Update(1.0, *rcg_new, -1.0, *rcg_old);
   double Mb = M.Dot(M);
 

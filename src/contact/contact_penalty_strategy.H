@@ -147,7 +147,7 @@ namespace CONTACT
 
     */
     void EvaluateContact(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Evaluate frictional contact
@@ -156,7 +156,7 @@ namespace CONTACT
 
     */
     void EvaluateFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -187,7 +187,7 @@ namespace CONTACT
 
     */
     void InitializeUzawa(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -256,7 +256,7 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const;
 
@@ -273,9 +273,9 @@ namespace CONTACT
     int ActiveSetSteps() { return 0; }
     void ResetActiveSet() {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       dserror(
@@ -341,15 +341,16 @@ namespace CONTACT
     CoPenaltyStrategy(const CoPenaltyStrategy& old) = delete;
 
     std::vector<Teuchos::RCP<CoInterface>> interface_;  // contact interfaces
-    Teuchos::RCP<LINALG::SparseMatrix> linzmatrix_;     // global matrix LinZ with derivatives of LM
-    double constrnorm_;                                 // L2-norm of normal contact constraints
-    double constrnormtan_;                              // L2-norm of tangential contact constraints
-    double initialpenalty_;                             // initial penalty parameter
-    double initialpenaltytan_;                          // initial tangential penalty parameter
-    bool evalForceCalled_;                              //< flag for evaluate force call
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        linzmatrix_;            // global matrix LinZ with derivatives of LM
+    double constrnorm_;         // L2-norm of normal contact constraints
+    double constrnormtan_;      // L2-norm of tangential contact constraints
+    double initialpenalty_;     // initial penalty parameter
+    double initialpenaltytan_;  // initial tangential penalty parameter
+    bool evalForceCalled_;      //< flag for evaluate force call
 
-    Teuchos::RCP<Epetra_Vector> fc_;         //< contact penalty force
-    Teuchos::RCP<LINALG::SparseMatrix> kc_;  //< contact penalty stiffness
+    Teuchos::RCP<Epetra_Vector> fc_;               //< contact penalty force
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;  //< contact penalty stiffness
 
   };  // class CoPenaltyStrategy
 }  // namespace CONTACT

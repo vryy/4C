@@ -156,8 +156,9 @@ double NOX::FSI::GenericNormF::getInitialTolerance() const { return initialToler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialNormF::PartialNormF(std::string name, const LINALG::MultiMapExtractor& extractor,
-    int blocknum, double tolerance, NOX::Abstract::Vector::NormType normType, ScaleType stype)
+NOX::FSI::PartialNormF::PartialNormF(std::string name,
+    const CORE::LINALG::MultiMapExtractor& extractor, int blocknum, double tolerance,
+    NOX::Abstract::Vector::NormType normType, ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, normType, stype),
       extractor_(extractor),
       blocknum_(blocknum)
@@ -193,8 +194,9 @@ double NOX::FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name, const LINALG::MapExtractor& extractor1,
-    double scale1, const LINALG::MapExtractor& extractor2, double scale2,
+NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
+    const CORE::LINALG::MapExtractor& extractor1, double scale1,
+    const CORE::LINALG::MapExtractor& extractor2, double scale2,
     Teuchos::RCP<CORE::ADAPTER::CouplingConverter> converter, double tolerance, ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, NOX::Abstract::Vector::TwoNorm, stype),
       extractor1_(extractor1),
@@ -394,7 +396,7 @@ double NOX::FSI::GenericNormUpdate::getTolerance() const { return tolerance_; }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
-    const LINALG::MultiMapExtractor& extractor, int blocknum, double tolerance,
+    const CORE::LINALG::MultiMapExtractor& extractor, int blocknum, double tolerance,
     NOX::Abstract::Vector::NormType ntype, ScaleType stype)
     : GenericNormUpdate(name, tolerance, ntype, stype), extractor_(extractor), blocknum_(blocknum)
 {
@@ -403,7 +405,8 @@ NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
-    const LINALG::MultiMapExtractor& extractor, int blocknum, double tolerance, ScaleType stype)
+    const CORE::LINALG::MultiMapExtractor& extractor, int blocknum, double tolerance,
+    ScaleType stype)
     : GenericNormUpdate(name, tolerance, stype), extractor_(extractor), blocknum_(blocknum)
 {
 }

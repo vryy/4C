@@ -32,12 +32,12 @@ namespace POROMULTIPHASESCATRA
         const std::string& contcoupleddofname);
 
     //! set-up linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-        Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) override;
+    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
     void Setup() override;
@@ -125,14 +125,14 @@ namespace POROMULTIPHASESCATRA
      * @returns dbcmap, also containing additional boundary condition for collapsed eles
      */
     Teuchos::RCP<Epetra_Map> GetAdditionalDBCForCollapsedEles(
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art,
         Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed);
 
     //! FE-assemble into global force and stiffness
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! get the segment lengths of element 'artelegid'

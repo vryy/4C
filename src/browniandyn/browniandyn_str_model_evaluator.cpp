@@ -85,7 +85,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
   stiff_brownian_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the
@@ -223,8 +223,8 @@ bool STR::MODELEVALUATOR::BrownianDyn::AssembleForce(
   // build residual  Res = F_{brw;n+1}
   //                     - F_{ext;n+1}
   // -------------------------------------------------------------------------
-  LINALG::AssembleMyVector(1.0, f, -timefac_np, *f_ext_np_ptr_);
-  LINALG::AssembleMyVector(1.0, f, timefac_np, *f_brown_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *f_ext_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *f_brown_np_ptr_);
 
   return true;
 }
@@ -232,11 +232,11 @@ bool STR::MODELEVALUATOR::BrownianDyn::AssembleForce(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BrownianDyn::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
 
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_brownian_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_brownian_ptr_->Zero();
@@ -280,7 +280,8 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
   // -------------------------------------------------------------------------
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
   // -------------------------------------------------------------------------
   // set brwonian force vector (gets filled on element level)
   // -------------------------------------------------------------------------
@@ -342,7 +343,8 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
   // -------------------------------------------------------------------------
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
   // -------------------------------------------------------------------------
   // set jac matrix and brownian force vector (filled on element level)
   // -------------------------------------------------------------------------
@@ -368,7 +370,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   CheckInitSetup();
 
@@ -384,7 +386,7 @@ void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   CheckInitSetup();
 
@@ -403,7 +405,7 @@ void STR::MODELEVALUATOR::BrownianDyn::EvaluateBrownian(Teuchos::ParameterList& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BrownianDyn::EvaluateNeumannBrownianDyn(
-    Teuchos::RCP<Epetra_Vector> eval_vec, Teuchos::RCP<LINALG::SparseOperator> eval_mat)
+    Teuchos::RCP<Epetra_Vector> eval_vec, Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat)
 {
   CheckInitSetup();
   // -------------------------------------------------------------------------

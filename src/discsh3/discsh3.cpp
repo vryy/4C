@@ -90,8 +90,8 @@ DRT::ELEMENTS::DiscSh3::DiscSh3(int id, int owner)
       ans_(0),
       sdc_(1.0),
       material_(0),
-      x_n_(LINALG::Matrix<1, 9>(true)),
-      x_n_1_(LINALG::Matrix<1, 9>(true)),
+      x_n_(CORE::LINALG::Matrix<1, 9>(true)),
+      x_n_1_(CORE::LINALG::Matrix<1, 9>(true)),
       data_()
 {
   gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point_gauss_radau;
@@ -292,10 +292,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::DiscSh3::Surfaces()
 /*----------------------------------------------------------------------------*
  |  Calculate spatial configuration of an element (private)    mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
+CORE::LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
     const std::vector<double>& disp) const
 {
-  LINALG::Matrix<1, 9> x(true);
+  CORE::LINALG::Matrix<1, 9> x(true);
   for (int i = 0; i < NumNode(); ++i)
   {
     x(3 * i) = Nodes()[i]->X()[0] + disp[i * 3 + 0];
@@ -309,12 +309,13 @@ LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
 /*----------------------------------------------------------------------------*
  |  Calculate spatial configuration of an element (private)    mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(DRT::Discretization& dis) const
+CORE::LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
+    DRT::Discretization& dis) const
 {
   Teuchos::RCP<const Epetra_Vector> discol = dis.GetState("displacement");
 
   if (discol == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-  LINALG::Matrix<1, 9> coord(true);
+  CORE::LINALG::Matrix<1, 9> coord(true);
 
   // compute current nodal positions
   for (int dim = 0; dim < 3; ++dim)
@@ -334,10 +335,10 @@ LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(DRT::Discretiz
 /*----------------------------------------------------------------------------*
  |  Calculate spatial configuration of an element (private)    mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
+CORE::LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
     DRT::Discretization& dis, const Epetra_Vector& discol) const
 {
-  LINALG::Matrix<1, 9> coord(true);
+  CORE::LINALG::Matrix<1, 9> coord(true);
 
   // compute current nodal positions
   for (int dim = 0; dim < 3; ++dim)
@@ -357,11 +358,11 @@ LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::SpatialConfiguration(
 /*----------------------------------------------------------------------------*
  |  Calculate current velocity of an element (private)         mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::GetVel(DRT::Discretization& dis) const
+CORE::LINALG::Matrix<1, 9> DRT::ELEMENTS::DiscSh3::GetVel(DRT::Discretization& dis) const
 {
   Teuchos::RCP<const Epetra_Vector> velcol = dis.GetState("velocity");
 
-  LINALG::Matrix<1, 9> vel(true);
+  CORE::LINALG::Matrix<1, 9> vel(true);
 
   // compute current nodal positions
   for (int dim = 0; dim < 3; ++dim)
@@ -385,7 +386,7 @@ void DRT::ELEMENTS::DiscSh3::AddPrimaryDOFsMaster(DRT::Element& master, DRT::Ele
     bool refconfig)
 {
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -458,7 +459,7 @@ void DRT::ELEMENTS::DiscSh3::AddPrimaryDOFsNeighbour(DRT::Element& master, DRT::
     std::vector<FAD>& x_FAD, DRT::Discretization& dis, bool refconfig)
 {
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -520,19 +521,19 @@ void DRT::ELEMENTS::DiscSh3::SortPrimaryDOFs(DRT::Element& master, DRT::Element&
 void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
     Teuchos::ParameterList& params, const int NumGElements)
 {
-  LINALG::Matrix<1, 3, FAD> normal(true);
-  LINALG::Matrix<1, 3> normal_val(true);
+  CORE::LINALG::Matrix<1, 3, FAD> normal(true);
+  CORE::LINALG::Matrix<1, 3> normal_val(true);
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
-  LINALG::Matrix<1, 9> X = MaterialConfiguration();
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 9> X = MaterialConfiguration();
   for (int j = 0; j < 3; j++)
   {
     side1(j) = X(j + 3) - X(j);
     side2(j) = X(j + 6) - X(j);
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -548,8 +549,8 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
   // Check if the normal vector is outwards
   Teuchos::RCP<Epetra_SerialDenseVector> CG_ref_rcp =
       params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("reference CG", Teuchos::null);
-  LINALG::Matrix<1, 3> CG(true);
-  LINALG::Matrix<1, 3> Barycenter(true);
+  CORE::LINALG::Matrix<1, 3> CG(true);
+  CORE::LINALG::Matrix<1, 3> Barycenter(true);
   for (int i = 0; i < 3; i++)
   {
     CG(i) = (*CG_ref_rcp)(i) / NumGElements;
@@ -557,14 +558,14 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
 
 
   // Calc barycenter
-  LINALG::Matrix<1, 3> bary_center;
+  CORE::LINALG::Matrix<1, 3> bary_center;
   for (int dim = 0; dim < 3; dim++)
   {
     bary_center(dim) = (X(dim) + X(3 + dim) + X(6 + dim)) / 3;
   }
 
   // Vector connecting center of gravity and barycenter
-  LINALG::Matrix<1, 3> vector_aux;
+  CORE::LINALG::Matrix<1, 3> vector_aux;
   for (int dim = 0; dim < 3; dim++)
   {
     vector_aux(dim) = bary_center(dim) - CG(dim);
@@ -587,8 +588,8 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
  * Compute surface area and its first and second derivatives    lw 05/08*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x, const int numnode,
-    const int ndof, double& A, Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
+void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,
+    const int numnode, const int ndof, double& A, Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
     Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2)
 {
   // initialization
@@ -602,8 +603,8 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x
   int ngp = intpoints.nquad;
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::SerialDenseMatrix deriv(2, numnode);
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
 
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
@@ -622,9 +623,9 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x
     SurfaceIntegration(detA, normal, x, deriv);
     A += detA * intpoints.qwgt[gpid];
 
-    LINALG::SerialDenseMatrix ddet(3, ndof, true);
-    LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
-    LINALG::SerialDenseVector jacobi_deriv(ndof, true);
+    CORE::LINALG::SerialDenseMatrix ddet(3, ndof, true);
+    CORE::LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
+    CORE::LINALG::SerialDenseVector jacobi_deriv(ndof, true);
 
     dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
 
@@ -725,7 +726,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x
  * Compute surface area at ref                                  lw 05/08*
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
-    const LINALG::SerialDenseMatrix& x0, const int numnode, const int ndof, double& A)
+    const CORE::LINALG::SerialDenseMatrix& x0, const int numnode, const int ndof, double& A)
 {
   // initialization
   A = 0.;
@@ -735,8 +736,8 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
   int ngp = intpoints.nquad;
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::SerialDenseMatrix deriv(2, numnode);
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
 
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
@@ -767,7 +768,7 @@ void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double
     const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
   dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
 
   /* compute covariant metric tensor G for surface element
@@ -780,7 +781,7 @@ void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double
   ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
   **        dr     dr            dr     ds            ds     ds
   */
-  LINALG::SerialDenseMatrix metrictensor(2, 2);
+  CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
   metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);

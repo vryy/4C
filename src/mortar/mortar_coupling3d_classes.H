@@ -161,7 +161,7 @@ namespace MORTAR
     performed in parallel by individual processes.
 
     */
-    IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, double* auxn,
+    IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
         const DRT::Element::DiscretizationType& shape,
         std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
         std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
@@ -239,7 +239,7 @@ namespace MORTAR
     \brief Return coordinates of intcell vertices
 
     */
-    const LINALG::Matrix<3, 3>& Coords() { return coords_; }
+    const CORE::LINALG::Matrix<3, 3>& Coords() { return coords_; }
 
     /*!
     \brief Return normal of auxiliary plane of this intcell
@@ -310,7 +310,7 @@ namespace MORTAR
 
     */
     virtual bool EvaluateShape(
-        const double* xi, LINALG::Matrix<3, 1>& val, LINALG::Matrix<3, 2>& deriv);
+        const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv);
 
     /*!
     \brief Evaluate Jacobian determinant for parameter space integration
@@ -332,13 +332,13 @@ namespace MORTAR
     IntCell operator=(const IntCell& old);
     IntCell(const IntCell& old);
 
-    int id_;                       // local ID of this intcell
-    int slaveId_;                  // id of slave element
-    int masterId_;                 // id of master element
-    int nvertices_;                // number of vertices (always 3)
-    double area_;                  // integration cell area
-    LINALG::Matrix<3, 3> coords_;  // coords of cell vertices
-    double auxn_[3];               // normal of auxiliary plane (3D)
+    int id_;                             // local ID of this intcell
+    int slaveId_;                        // id of slave element
+    int masterId_;                       // id of master element
+    int nvertices_;                      // number of vertices (always 3)
+    double area_;                        // integration cell area
+    CORE::LINALG::Matrix<3, 3> coords_;  // coords of cell vertices
+    double auxn_[3];                     // normal of auxiliary plane (3D)
 
     bool auxplane_;                           // flag indicating coupling strategy (true = auxplane)
     DRT::Element::DiscretizationType shape_;  // shape of this element (always tri3)

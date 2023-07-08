@@ -29,10 +29,10 @@ namespace Teuchos
 {
   class Time;
 };
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace DRT
 {
   class DiscretizationInterface;
@@ -75,7 +75,8 @@ namespace STR
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
           const Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes,
           const Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs,
-          const Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>>
+          const Teuchos::RCP<
+              std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
               linsolvers);
 
       /// setup new class variables
@@ -253,8 +254,8 @@ namespace STR
       ///@{
 
       /// Returns linear solvers pointer
-      const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>& GetLinSolvers()
-          const
+      const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
+      GetLinSolvers() const
       {
         CheckInitSetup();
         return *linsolvers_;
@@ -575,7 +576,7 @@ namespace STR
       /// @name Get mutable linear solver variables (read and write access)
       ///@{
       /// Returns linear solvers pointer
-      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>>
+      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
       GetLinSolversPtr()
       {
         CheckInitSetup();
@@ -583,7 +584,8 @@ namespace STR
       }
 
       /// Returns linear solvers pointer
-      std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>& GetMutableLinSolvers()
+      std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
+      GetMutableLinSolvers()
       {
         CheckInitSetup();
         return *linsolvers_;
@@ -791,7 +793,8 @@ namespace STR
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>> linsolvers_;
+      Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+          linsolvers_;
       ///@}
 
       /// @name status test control parameters

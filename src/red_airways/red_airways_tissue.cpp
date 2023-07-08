@@ -478,8 +478,8 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
     dserror(
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
-  Teuchos::RCP<LINALG::Solver> solver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                        actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()),
           false);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

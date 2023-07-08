@@ -88,22 +88,26 @@ namespace MAT
       //@}
 
       // add strain energy
-      void AddStrainEnergy(double& psi,       ///< strain energy function
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-          int gp,                                ///< Gauss point
-          int eleGID                             ///< element GID
+      void AddStrainEnergy(double& psi,  ///< strain energy function
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+          int gp,                                      ///< Gauss point
+          int eleGID                                   ///< element GID
           ) override;
 
       // Add derivatives with respect to modified invariants.
       void AddDerivativesModified(
-          LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
-          LINALG::Matrix<6, 1>&
+          CORE::LINALG::Matrix<3, 1>&
+              dPmodI,  ///< first derivative with respect to modified invariants
+          CORE::LINALG::Matrix<6, 1>&
               ddmodPII,  ///< second derivative with respect to modified invariants
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          int gp,                              ///< Gauss point
-          int eleGID                           ///< element GID
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          int gp,      ///< Gauss point
+          int eleGID   ///< element GID
           ) override;
 
       /// @name Access methods

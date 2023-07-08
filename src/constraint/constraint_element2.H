@@ -229,7 +229,8 @@ namespace DRT
       /*!
       \brief Create matrix with material configuration for 2 dimensions and 3 nodes
       */
-      inline void MaterialConfiguration(LINALG::Matrix<3, 2>& x  ///< nodal coords in material frame
+      inline void MaterialConfiguration(
+          CORE::LINALG::Matrix<3, 2>& x  ///< nodal coords in material frame
       ) const
       {
         const int numnode = 3;
@@ -247,8 +248,9 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 2 dimensions and 3 nodes
       */
-      inline void SpatialConfiguration(LINALG::Matrix<3, 2>& x,  ///< nodal coords in spatial frame
-          const std::vector<double> disp                         ///< displacements
+      inline void SpatialConfiguration(
+          CORE::LINALG::Matrix<3, 2>& x,  ///< nodal coords in spatial frame
+          const std::vector<double> disp  ///< displacements
       ) const
       {
         const int numnode = 3;
@@ -265,42 +267,44 @@ namespace DRT
 
 
       /// compute normal for 2D case using the first two nodes to specify a line
-      void ComputeNormal(const LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          LINALG::Matrix<2, 1>& elenormal                 ///< resulting element normal
+      void ComputeNormal(const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
+          CORE::LINALG::Matrix<2, 1>& elenormal                 ///< resulting element normal
       );
 
       /// Compute normal distance between line and third node
-      double ComputeNormalDist(const LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          const LINALG::Matrix<2, 1>& elenormal                 ///< element normal
+      double ComputeNormalDist(
+          const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
+          const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivatives of normal distance with respect to the nodal displacements
-      void ComputeFirstDerivDist(const LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector,                    ///< vector to store results into
-          const LINALG::Matrix<2, 1>& elenormal                   ///< element normal
+      void ComputeFirstDerivDist(
+          const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
+          Epetra_SerialDenseVector& elevector,         ///< vector to store results into
+          const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
       /// Compute second derivatives of normal distance with respect to the nodal displacements
       void ComputeSecondDerivDist(
-          const LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elevector,   ///< matrix to store results into
-          const LINALG::Matrix<2, 1>& elenormal  ///< element normal
+          const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
+          Epetra_SerialDenseMatrix& elevector,         ///< matrix to store results into
+          const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
       /// Compute angle at second node
-      double ComputeAngle(const LINALG::Matrix<3, 2>& xc  ///< nodal coords in spatial frame
+      double ComputeAngle(const CORE::LINALG::Matrix<3, 2>& xc  ///< nodal coords in spatial frame
       );
 
       /// Compute first derivatives of angle at second node with respect to the nodal displacements
       void ComputeFirstDerivAngle(
-          const LINALG::Matrix<3, 2>& xc,      ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector  ///< vector to store results into
+          const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
+          Epetra_SerialDenseVector& elevector    ///< vector to store results into
       );
 
       /// Compute second derivatives of angle at second node with respect to the nodal displacements
       void ComputeSecondDerivAngle(
-          const LINALG::Matrix<3, 2>& xc,      ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elematrix  ///< matrix to store results into
+          const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
+          Epetra_SerialDenseMatrix& elematrix    ///< matrix to store results into
       );
 
     };  // class ConstraintElement2

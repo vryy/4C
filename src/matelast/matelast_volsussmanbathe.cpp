@@ -23,9 +23,9 @@ MAT::ELASTIC::VolSussmanBathe::VolSussmanBathe(MAT::ELASTIC::PAR::VolSussmanBath
 {
 }
 
-void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(double& psi,
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double kappa = params_->kappa_;
 
@@ -34,8 +34,8 @@ void MAT::ELASTIC::VolSussmanBathe::AddStrainEnergy(double& psi, const LINALG::M
   psi += kappa * 0.5 * (modinv(2) - 1.) * (modinv(2) - 1.);
 }
 
-void MAT::ELASTIC::VolSussmanBathe::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+void MAT::ELASTIC::VolSussmanBathe::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double kappa = params_->kappa_;
@@ -46,7 +46,7 @@ void MAT::ELASTIC::VolSussmanBathe::AddDerivativesModified(LINALG::Matrix<3, 1>&
 }
 
 void MAT::ELASTIC::VolSussmanBathe::Add3rdVolDeriv(
-    const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+    const CORE::LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
 {
   d3PsiVolDJ3 += 0.;
 }

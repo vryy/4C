@@ -215,7 +215,7 @@ namespace SSI
     Teuchos::RCP<CORE::ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! extractor for coupled surface of structure discretization with surface scatra
-    Teuchos::RCP<LINALG::MapExtractor> extractor_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> extractor_;
 
    private:
     //! flag indicating if class is setup

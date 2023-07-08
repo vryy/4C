@@ -34,7 +34,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const Epetra_SerialDenseVector&
   AddtoPack(data, A, m * sizeof(double));
 }
 
-void DRT::ParObject::AddtoPack(PackBuffer& data, const LINALG::SerialDenseMatrix& stuff)
+void DRT::ParObject::AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff)
 {
   int m = stuff.M();
   int n = stuff.N();
@@ -74,7 +74,7 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
 }
 
 void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
-    const std::vector<char>& data, LINALG::SerialDenseMatrix& stuff)
+    const std::vector<char>& data, CORE::LINALG::SerialDenseMatrix& stuff)
 {
   int m = 0;
   ExtractfromPack(position, data, m);

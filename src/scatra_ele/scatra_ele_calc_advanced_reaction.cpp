@@ -172,8 +172,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetRhsInt(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double taufac, const double densnp, const LINALG::Matrix<nen_, 1>& sgconv,
-    const LINALG::Matrix<nen_, 1>& diff)
+    const double taufac, const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+    const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   // -----------------first care for 'easy' reaction terms K*(\partial_c
   // c)=Id*K-------------------------------------- NOTE: K_i must not depend on any concentrations!!
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
 
   my::CalcMatReact(emat, k, timefacfac, timetaufac, taufac, densnp, sgconv, diff);
 
-  const LINALG::Matrix<nen_, 1>& conv = my::scatravarmanager_->Conv(k);
+  const CORE::LINALG::Matrix<nen_, 1>& conv = my::scatravarmanager_->Conv(k);
 
   // -----------------second care for advanced reaction terms ( - (\partial_c f(c) )------------
   // NOTE: The shape of f(c) can be arbitrary. So better consider using this term for new
@@ -189,7 +189,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
 
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  LINALG::Matrix<nen_, 1> functint = my::funct_;
+  CORE::LINALG::Matrix<nen_, 1> functint = my::funct_;
   if (not my::scatrapara_->MatGP()) functint = funct_elementcenter_;
 
   for (int j = 0; j < my::numscal_; j++)

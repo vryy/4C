@@ -64,10 +64,10 @@ namespace DRT
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,             //!< ?
-          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const int vi,                                  //!< ?
-          const int ui                                   //!< ?
+      void GetLaplacianWeakForm(double& val,                   //!< ?
+          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const int vi,                                        //!< ?
+          const int ui                                         //!< ?
       )
       {
         val = 0.0;
@@ -88,10 +88,10 @@ namespace DRT
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,          //!< ?
-          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
-          const int vi                                   //!< ?
+      void GetLaplacianWeakFormRHS(double& val,                //!< ?
+          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const int vi                                         //!< ?
       )
       {
         val = 0.0;
@@ -116,10 +116,10 @@ namespace DRT
       double J_;
 
       /// inverse of cauchy-green deformation gradient
-      LINALG::Matrix<nsd_, nsd_> C_inv_;
+      CORE::LINALG::Matrix<nsd_, nsd_> C_inv_;
 
       /// derivative dJ/dX by finite differences
-      LINALG::Matrix<nsd_, 1> dJdX_;
+      CORE::LINALG::Matrix<nsd_, 1> dJdX_;
 
     };  // end ScaTraEleCalcRefConcReac
 

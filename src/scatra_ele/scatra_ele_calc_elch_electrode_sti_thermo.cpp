@@ -76,7 +76,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
     const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
+    const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
 {
   // call base class routine for isothermal problems
   myelectrode::CalcMatAndRhs(

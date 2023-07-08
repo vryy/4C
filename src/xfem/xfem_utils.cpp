@@ -24,7 +24,7 @@
 #include "mat_newtonianfluid.H"
 
 void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
-    std::map<int, LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> idispnp)
 {
   Teuchos::RCP<const Epetra_Vector> dispcol = DRT::UTILS::GetColVersionOfRowVector(dis, idispnp);
   nodevecmap.clear();
@@ -38,7 +38,7 @@ void XFEM::UTILS::ExtractNodeVectors(Teuchos::RCP<DRT::Discretization> dis,
     DRT::UTILS::ExtractMyValues(*dispcol, mydisp, lm);
     if (mydisp.size() < 3) dserror("we need at least 3 dofs here");
 
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0] + mydisp[0];
     currpos(1) = node->X()[1] + mydisp[1];
     currpos(2) = node->X()[2] + mydisp[2];

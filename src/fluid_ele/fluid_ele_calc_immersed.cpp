@@ -93,13 +93,13 @@ int DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
-    const LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
   // set number of current gp
   gp_iquad_ = iquad;
   // compute convective conservative term from previous iteration u_old(u_old*nabla)
-  LINALG::Matrix<nsd_, 1> conv_old_cons(true);
+  CORE::LINALG::Matrix<nsd_, 1> conv_old_cons(true);
   conv_old_cons.Update(my::vdiv_, my::convvelint_, 0.0);
 
   //----------------------------------------------------------------------
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 
     */
 
-    static LINALG::Matrix<1, nsd_> sgvelintaf(true);
+    static CORE::LINALG::Matrix<1, nsd_> sgvelintaf(true);
     sgvelintaf.Clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
       instationary                                 conservative          cross-stress, part 1
@@ -412,8 +412,9 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::LinGalMomResU(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalPart(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, LINALG::Matrix<nsd_, 1>& resM_Du,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce,
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, CORE::LINALG::Matrix<nsd_, 1>& resM_Du,
     const double& rhsfac)
 {
   my::InertiaConvectionReactionGalPart(estif_u, velforce, lin_resM_Du, resM_Du, rhsfac);
@@ -439,7 +440,7 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::InertiaConvectionReactionGalP
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, 1>& preforce,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
   for (int vi = 0; vi < nen_; ++vi)
@@ -476,8 +477,8 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ContinuityGalPart(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ConservativeFormulation(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    const double& timefacfac, const double& rhsfac)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
   if (not(immersedele_->HasProjectedDirichlet()))
     my::ConservativeFormulation(estif_u, velforce, timefacfac, rhsfac);

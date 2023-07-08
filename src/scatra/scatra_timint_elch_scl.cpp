@@ -42,15 +42,15 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchSCL::ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntElch(dis, solver, params, sctratimintparams, extraparams, output),
       matrixtype_elch_scl_(
-          Teuchos::getIntegralValue<LINALG::MatrixType>(params->sublist("SCL"), "MATRIXTYPE"))
+          Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(params->sublist("SCL"), "MATRIXTYPE"))
 {
-  if (matrixtype_elch_scl_ != LINALG::MatrixType::sparse and
-      matrixtype_elch_scl_ != LINALG::MatrixType::block_field)
+  if (matrixtype_elch_scl_ != CORE::LINALG::MatrixType::sparse and
+      matrixtype_elch_scl_ != CORE::LINALG::MatrixType::block_field)
     dserror("Only sparse and block field matrices supported in SCL computations");
 
   if (DRT::INPUT::IntegralValue<int>(*elchparams_, "INITPOTCALC"))
@@ -121,14 +121,14 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
   SetupCoupling();
 
   // setup maps for coupled problem
-  full_map_elch_scl_ = LINALG::MergeMap(DofRowMap(), MicroScaTraField()->DofRowMap());
+  full_map_elch_scl_ = CORE::LINALG::MergeMap(DofRowMap(), MicroScaTraField()->DofRowMap());
   std::vector<Teuchos::RCP<const Epetra_Map>> block_map_vec_scl;
   switch (matrixtype_elch_scl_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
       block_map_vec_scl = {full_map_elch_scl_};
       break;
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
       block_map_vec_scl = {DofRowMap(), MicroScaTraField()->DofRowMap()};
       break;
     default:
@@ -136,31 +136,31 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
       break;
   }
   full_block_map_elch_scl_ =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(*full_map_elch_scl_, block_map_vec_scl));
+      Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*full_map_elch_scl_, block_map_vec_scl));
 
   // setup matrix, rhs, and increment for coupled problem
-  increment_elch_scl_ = LINALG::CreateVector(*full_map_elch_scl_, true);
-  residual_elch_scl_ = LINALG::CreateVector(*full_map_elch_scl_, true);
+  increment_elch_scl_ = CORE::LINALG::CreateVector(*full_map_elch_scl_, true);
+  residual_elch_scl_ = CORE::LINALG::CreateVector(*full_map_elch_scl_, true);
 
 
   switch (matrixtype_elch_scl_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       const int expected_entries_per_row = 27;
       const bool explicitdirichlet = false;
       const bool savegraph = true;
-      system_matrix_elch_scl_ = Teuchos::rcp(new LINALG::SparseMatrix(
+      system_matrix_elch_scl_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *full_map_elch_scl_, expected_entries_per_row, explicitdirichlet, savegraph));
       break;
     }
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       const int expected_entries_per_row = 81;
       const bool explicitdirichlet = false;
       const bool savegraph = true;
-      system_matrix_elch_scl_ =
-          Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      system_matrix_elch_scl_ = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *full_block_map_elch_scl_, *full_block_map_elch_scl_, expected_entries_per_row,
               explicitdirichlet, savegraph));
       break;
@@ -171,22 +171,22 @@ void SCATRA::ScaTraTimIntElchSCL::Setup()
   }
 
   // extractor to get micro or macro dofs from global vector
-  macro_micro_dofs_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*full_map_elch_scl_, MicroScaTraField()->DofRowMap()));
+  macro_micro_dofs_ = Teuchos::rcp(
+      new CORE::LINALG::MapExtractor(*full_map_elch_scl_, MicroScaTraField()->DofRowMap()));
 
   dbcmaps_elch_scl_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*full_map_elch_scl_, dbcmaps_->CondMap()));
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*full_map_elch_scl_, dbcmaps_->CondMap()));
 
   // setup solver for coupled problem
-  solver_elch_scl_ = Teuchos::rcp(
-      new LINALG::Solver(problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")),
-          discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_elch_scl_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      problem->SolverParams(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->Comm(),
+      DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   switch (matrixtype_elch_scl_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
       break;
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       std::ostringstream scatrablockstr;
       scatrablockstr << 1;
@@ -275,9 +275,10 @@ void SCATRA::ScaTraTimIntElchSCL::NonlinearSolve()
 
   CopySolutionToMicroField();
 
-  auto equilibration_method = std::vector<LINALG::EquilibrationMethod>(1, EquilibrationMethod());
-  auto equilibration =
-      LINALG::BuildEquilibration(matrixtype_elch_scl_, equilibration_method, full_map_elch_scl_);
+  auto equilibration_method =
+      std::vector<CORE::LINALG::EquilibrationMethod>(1, EquilibrationMethod());
+  auto equilibration = CORE::LINALG::BuildEquilibration(
+      matrixtype_elch_scl_, equilibration_method, full_map_elch_scl_);
 
   // start Newton-Raphson iteration
   while (true)
@@ -302,7 +303,7 @@ void SCATRA::ScaTraTimIntElchSCL::NonlinearSolve()
       system_matrix_elch_scl_->Complete();
 
       // All DBCs are on the macro scale
-      LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
+      CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
           residual_elch_scl_, zeros_, *dbcmaps_elch_scl_->CondMap());
 
       if (BreakNewtonLoopAndPrintConvergence()) break;
@@ -817,9 +818,9 @@ void SCATRA::ScaTraTimIntElchSCL::SetupCoupling()
       slave_dof_map, perm_slave_dof_map, master_dof_map, perm_master_dof_map);
 
   macro_coupling_dofs_ = Teuchos::rcp(
-      new LINALG::MapExtractor(*DofRowMap(), macro_micro_coupling_adapter_->MasterDofMap()));
+      new CORE::LINALG::MapExtractor(*DofRowMap(), macro_micro_coupling_adapter_->MasterDofMap()));
 
-  micro_coupling_dofs_ = Teuchos::rcp(new LINALG::MapExtractor(
+  micro_coupling_dofs_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
       *microdis->DofRowMap(), macro_micro_coupling_adapter_->SlaveDofMap()));
 
   // setup relation between first node of micro sub problem and following nodes. This is required
@@ -863,7 +864,7 @@ void SCATRA::ScaTraTimIntElchSCL::ScaleMicroProblem()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::BoundaryAction>(
       "action", SCATRA::BoundaryAction::calc_nodal_size, condparams);
 
-  auto nodal_size_macro = LINALG::CreateVector(*DofRowMap(), true);
+  auto nodal_size_macro = CORE::LINALG::CreateVector(*DofRowMap(), true);
   discret_->EvaluateCondition(condparams, Teuchos::null, Teuchos::null, nodal_size_macro,
       Teuchos::null, Teuchos::null, "S2ISCLCoupling");
 
@@ -892,7 +893,7 @@ void SCATRA::ScaTraTimIntElchSCL::ScaleMicroProblem()
   const auto glob_nodal_size_micro =
       DRT::UTILS::BroadcastMap(my_nodal_size_micro, discret_->Comm());
 
-  auto micro_scale = LINALG::CreateVector(*MicroScaTraField()->DofRowMap(), true);
+  auto micro_scale = CORE::LINALG::CreateVector(*MicroScaTraField()->DofRowMap(), true);
   for (int lid_micro = MicroScaTraField()->DofRowMap()->NumMyElements() - 1; lid_micro >= 0;
        --lid_micro)
   {
@@ -913,7 +914,7 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
   auto micro_residual = micro_coupling_dofs_->ExtractCondVector(MicroScaTraField()->Residual());
   auto micro_residual_on_macro_side = macro_micro_coupling_adapter_->SlaveToMaster(micro_residual);
 
-  auto full_macro_vector = LINALG::CreateVector(*DofRowMap(), true);
+  auto full_macro_vector = CORE::LINALG::CreateVector(*DofRowMap(), true);
   macro_coupling_dofs_->InsertCondVector(micro_residual_on_macro_side, full_macro_vector);
 
   residual_elch_scl_->PutScalar(0.0);
@@ -931,9 +932,10 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
 
   switch (matrixtype_elch_scl_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      auto sparse_systemmatrix = LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_);
+      auto sparse_systemmatrix =
+          CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_);
 
       sparse_systemmatrix->Add(*SystemMatrix(), false, 1.0, 1.0);
 
@@ -941,30 +943,30 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
           Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->OtherMap(), *micro_coupling_dofs_->OtherMap(), 1.0, nullptr,
           nullptr, *sparse_systemmatrix, true, true);
 
       // micro: interior - slave
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->OtherMap(), *micro_coupling_dofs_->CondMap(), 1.0, nullptr,
           &(*micro_side_converter), *sparse_systemmatrix, true, true);
 
       // micro: slave - interior
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->CondMap(), *micro_coupling_dofs_->OtherMap(), 1.0,
           &(*micro_side_converter), nullptr, *sparse_systemmatrix, true, true);
 
       // micro: slave - slave
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->CondMap(), *micro_coupling_dofs_->CondMap(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), *sparse_systemmatrix, true, true);
       break;
     }
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       auto block_systemmatrix =
-          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_);
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_);
 
       block_systemmatrix->Matrix(0, 0).Add(*SystemMatrix(), false, 1.0, 1.0);
 
@@ -972,22 +974,22 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
           Teuchos::rcp(new CORE::ADAPTER::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
 
       // micro: interior - interior
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->OtherMap(), *micro_coupling_dofs_->OtherMap(), 1.0, nullptr,
           nullptr, block_systemmatrix->Matrix(1, 1), true, true);
 
       // micro: interior - slave
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->OtherMap(), *micro_coupling_dofs_->CondMap(), 1.0, nullptr,
           &(*micro_side_converter), block_systemmatrix->Matrix(1, 0), true, true);
 
       // micro: slave - interior
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->CondMap(), *micro_coupling_dofs_->OtherMap(), 1.0,
           &(*micro_side_converter), nullptr, block_systemmatrix->Matrix(0, 1), true, true);
 
       // micro: slave - slave
-      LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*MicroScaTraField()->SystemMatrix(),
           *micro_coupling_dofs_->CondMap(), *micro_coupling_dofs_->CondMap(), 1.0,
           &(*micro_side_converter), &(*micro_side_converter), block_systemmatrix->Matrix(0, 0),
           true, true);
@@ -999,10 +1001,10 @@ void SCATRA::ScaTraTimIntElchSCL::AssembleAndApplyMeshTying()
   }
 
   // pseudo DBCs on slave side
-  LINALG::SparseMatrix& micromatrix =
-      matrixtype_elch_scl_ == LINALG::MatrixType::sparse
-          ? *LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_)
-          : LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_)
+  CORE::LINALG::SparseMatrix& micromatrix =
+      matrixtype_elch_scl_ == CORE::LINALG::MatrixType::sparse
+          ? *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix_elch_scl_)
+          : CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix_elch_scl_)
                 ->Matrix(1, 1);
   auto slavemaps = macro_micro_coupling_adapter_->SlaveDofMap();
   const double one = 1.0;
@@ -1144,17 +1146,17 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
     system_matrix_elch_scl_->Complete();
 
     // All DBCs are on the macro scale
-    LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_, residual_elch_scl_,
-        zeros_, *dbcmaps_elch_scl_->CondMap());
+    CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
+        residual_elch_scl_, zeros_, *dbcmaps_elch_scl_->CondMap());
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
     auto pseudo_dbc_scl =
-        LINALG::MergeMap(splitter_->OtherMap(), MicroScaTraField()->Splitter()->OtherMap());
-    auto pseudo_zeros_scl = LINALG::CreateVector(*pseudo_dbc_scl, true);
+        CORE::LINALG::MergeMap(splitter_->OtherMap(), MicroScaTraField()->Splitter()->OtherMap());
+    auto pseudo_zeros_scl = CORE::LINALG::CreateVector(*pseudo_dbc_scl, true);
 
-    LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_, residual_elch_scl_,
-        pseudo_zeros_scl, *pseudo_dbc_scl);
+    CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
+        residual_elch_scl_, pseudo_zeros_scl, *pseudo_dbc_scl);
 
     // compute L2 norm of state vector
     double state_L2_macro, state_L2_micro;

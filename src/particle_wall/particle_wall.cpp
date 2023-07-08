@@ -170,7 +170,7 @@ void PARTICLEWALL::WallHandlerBase::UpdateBinRowAndColMap(
 void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
 {
   // get bounding box dimension
-  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
+  CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // iterate over row wall nodes
   for (int rowlidofnode = 0; rowlidofnode < walldiscretization_->NumMyRowNodes(); ++rowlidofnode)
@@ -179,7 +179,7 @@ void PARTICLEWALL::WallHandlerBase::CheckWallNodesLocatedInBoundingBox() const
     DRT::Node* node = walldiscretization_->lRowNode(rowlidofnode);
 
     // init current position of node
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
     for (int dim = 0; dim < 3; ++dim) currpos(dim) = node->X()[dim];
 
     if (walldatastate_->GetDispRow() != Teuchos::null)
@@ -332,7 +332,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
     DRT::Element* ele = walldiscretization_->lColElement(collidofele);
 
     // determine nodal positions of column wall element
-    std::map<int, LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
     DetermineColWallEleNodalPos(ele, colelenodalpos);
 
     // iterate over neighboring bins
@@ -361,11 +361,11 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
             particlecontainerbundle->GetSpecificContainer(neighborTypeEnum, PARTICLEENGINE::Owned);
 
         // get position of neighboring particle
-        const LINALG::Matrix<3, 1> currpos(
+        const CORE::LINALG::Matrix<3, 1> currpos(
             neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex));
 
         // get coordinates of closest point on current column wall element to particle
-        LINALG::Matrix<3, 1> closestpos;
+        CORE::LINALG::Matrix<3, 1> closestpos;
         CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, currpos, closestpos);
 
         // distance vector from particle to closest point on current column wall element
@@ -397,7 +397,7 @@ PARTICLEWALL::WallHandlerBase::GetPotentialWallNeighbors() const
 }
 
 void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
-    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const
+    DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const
 {
 #ifdef DEBUG
   if (walldiscretization_->ElementColMap()->LID(ele->Id()) < 0)
@@ -438,7 +438,7 @@ void PARTICLEWALL::WallHandlerBase::DetermineColWallEleNodalPos(
   for (int k = 0; k < numnodes; ++k)
   {
     // get reference to current nodal position
-    LINALG::Matrix<3, 1>& currpos = colelenodalpos[nodes[k]->Id()];
+    CORE::LINALG::Matrix<3, 1>& currpos = colelenodalpos[nodes[k]->Id()];
 
     // determine nodal position
     for (int dim = 0; dim < 3; ++dim) currpos(dim) = nodes[k]->X()[dim] + nodal_disp[k * 3 + dim];
@@ -502,7 +502,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
   if (walldatastate_->GetDispRow() != Teuchos::null)
   {
     disn_col = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap()));
-    LINALG::Export(*walldatastate_->GetDispRow(), *disn_col);
+    CORE::LINALG::Export(*walldatastate_->GetDispRow(), *disn_col);
   }
 
   // determine bin to row wall element distribution
@@ -670,7 +670,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     eleids.reserve(6);
 
     // get bounding box dimension
-    LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
+    CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
     // reduce bounding box size to account for round-off errors
     for (int dim = 0; dim < 3; ++dim)
@@ -757,14 +757,14 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
       -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping node column map
-  Teuchos::RCP<Epetra_Map> nodecolmap = LINALG::AllreduceEMap(*noderowmap);
+  Teuchos::RCP<Epetra_Map> nodecolmap = CORE::LINALG::AllreduceEMap(*noderowmap);
 
   // element row map of wall elements
   std::shared_ptr<Epetra_Map> elerowmap = std::make_shared<Epetra_Map>(
       -1, eleids.size(), eleids.data(), 0, walldiscretization_->Comm());
 
   // fully overlapping element column map
-  Teuchos::RCP<Epetra_Map> elecolmap = LINALG::AllreduceEMap(*elerowmap);
+  Teuchos::RCP<Epetra_Map> elecolmap = CORE::LINALG::AllreduceEMap(*elerowmap);
 
   // fully overlapping ghosting of the wall elements to have everything redundant
   walldiscretization_->ExportColumnNodes(*nodecolmap);

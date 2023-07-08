@@ -19,7 +19,7 @@
 
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -37,8 +37,8 @@ namespace ADAPTER
 
     /// compute contribution of mechanical state to eq. system
     virtual void EvaluateAdditionalSolutionDependingModels(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
 

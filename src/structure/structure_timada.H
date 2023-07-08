@@ -26,7 +26,7 @@ namespace DRT
 
 class Epetra_Vector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -315,7 +315,7 @@ namespace STR
     Teuchos::RCP<TimInt> sti_;                       //!< marching time integrator
     Teuchos::RCP<DRT::Discretization> discret_;      //!< attached discretisation
     int myrank_;                                     //!< processor ID
-    Teuchos::RCP<LINALG::Solver> solver_;            //!< linear algebraic solver
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;      //!< linear algebraic solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 

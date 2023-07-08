@@ -63,8 +63,9 @@ void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
   }
   else
   {
-    eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
-    nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
+    eextendedghosting_ =
+        CORE::LINALG::MergeMap(eextendedghosting_, currently_ghosted_elements, true);
+    nextendedghosting_ = CORE::LINALG::MergeMap(nextendedghosting_, currently_ghosted_nodes, true);
   }
 
   return;
@@ -400,12 +401,12 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
       Teuchos::rcp(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, Comm()));
 
   // Merge s/m column maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> colnodesfull = LINALG::MergeMap(nodecolmap, SCN, true);
-  Teuchos::RCP<Epetra_Map> colelesfull = LINALG::MergeMap(elecolmap, SCE, true);
+  Teuchos::RCP<Epetra_Map> colnodesfull = CORE::LINALG::MergeMap(nodecolmap, SCN, true);
+  Teuchos::RCP<Epetra_Map> colelesfull = CORE::LINALG::MergeMap(elecolmap, SCE, true);
 
   // Merge s/m row maps for eles and nodes
-  Teuchos::RCP<Epetra_Map> rownodesfull = LINALG::MergeMap(noderowmap, SRN, false);
-  Teuchos::RCP<Epetra_Map> rowelesfull = LINALG::MergeMap(elerowmap, SRE, false);
+  Teuchos::RCP<Epetra_Map> rownodesfull = CORE::LINALG::MergeMap(noderowmap, SRN, false);
+  Teuchos::RCP<Epetra_Map> rowelesfull = CORE::LINALG::MergeMap(elerowmap, SRE, false);
 
   // to discretization
   // export nodes and elements to the row map
@@ -492,11 +493,14 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
     }  // end RR
 
   // Append ghost nodes/elements to be ghosted to existing column maps
-  eextendedghosting_ = LINALG::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
   eextendedghosting_ =
-      LINALG::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
-  nextendedghosting_ = LINALG::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
+      CORE::LINALG::MergeMap(eextendedghosting_, initial_slave_element_column_map, true);
+  nextendedghosting_ =
+      CORE::LINALG::MergeMap(nextendedghosting_, initial_slave_node_column_map, true);
+  eextendedghosting_ =
+      CORE::LINALG::MergeMap(eextendedghosting_, initial_master_element_column_map, true);
+  nextendedghosting_ =
+      CORE::LINALG::MergeMap(nextendedghosting_, initial_master_node_column_map, true);
 
   // finally extend ghosting
   Discret().ExportColumnElements(*eextendedghosting_);

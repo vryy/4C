@@ -56,10 +56,13 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { return field_->DofRowMap(); }
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return field_->SystemMatrix(); }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    {
+      return field_->SystemMatrix();
+    }
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
       return field_->BlockSystemMatrix();
     }

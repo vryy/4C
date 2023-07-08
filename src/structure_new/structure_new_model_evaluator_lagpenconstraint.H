@@ -17,10 +17,10 @@
 #include "constraint_manager.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace LAGPENCONSTRAINT
 {
@@ -68,7 +68,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void WriteRestart(
@@ -148,7 +149,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
       //! structural stiffness matrix
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_constr_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_constr_ptr_;
 
       //! constraint contributions to the structural rhs at \f%t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> fstrconstr_np_ptr_;

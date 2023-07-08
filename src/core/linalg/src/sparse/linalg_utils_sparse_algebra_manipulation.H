@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of sparse matrix manipulation methods for namespace LINALG
+\brief A collection of sparse matrix manipulation methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -31,7 +31,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Export a vector to a different map
@@ -125,7 +125,7 @@ namespace LINALG
    */
   inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A)
   {
-    LINALG::Complete(*A);
+    CORE::LINALG::Complete(*A);
     return;
   }
 
@@ -142,7 +142,7 @@ namespace LINALG
   inline void Complete(
       Teuchos::RCP<Epetra_CrsMatrix> A, const Epetra_Map& domainmap, const Epetra_Map& rangemap)
   {
-    LINALG::Complete(*A, domainmap, rangemap);
+    CORE::LINALG::Complete(*A, domainmap, rangemap);
     return;
   }
 
@@ -211,11 +211,11 @@ namespace LINALG
    \param A21          : on exit matrix block A21
    \param A22          : on exit matrix block A22
    */
-  bool SplitMatrix2x2(Teuchos::RCP<LINALG::SparseMatrix> A, Teuchos::RCP<Epetra_Map>& A11rowmap,
-      Teuchos::RCP<Epetra_Map>& A22rowmap, Teuchos::RCP<Epetra_Map>& A11domainmap,
-      Teuchos::RCP<Epetra_Map>& A22domainmap, Teuchos::RCP<LINALG::SparseMatrix>& A11,
-      Teuchos::RCP<LINALG::SparseMatrix>& A12, Teuchos::RCP<LINALG::SparseMatrix>& A21,
-      Teuchos::RCP<LINALG::SparseMatrix>& A22);
+  bool SplitMatrix2x2(Teuchos::RCP<CORE::LINALG::SparseMatrix> A,
+      Teuchos::RCP<Epetra_Map>& A11rowmap, Teuchos::RCP<Epetra_Map>& A22rowmap,
+      Teuchos::RCP<Epetra_Map>& A11domainmap, Teuchos::RCP<Epetra_Map>& A22domainmap,
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& A11, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A12,
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& A21, Teuchos::RCP<CORE::LINALG::SparseMatrix>& A22);
 
   /** \brief Insert a diagonal row vector into a unfilled SparseMatrix
    *         on each proc without communication
@@ -227,7 +227,8 @@ namespace LINALG
    *  returns -1. In this case you should use ReplaceDiagonalValues(), instead.
    *
    *  \author hiermeier \date 03/17 */
-  int InsertMyRowDiagonalIntoUnfilledMatrix(LINALG::SparseMatrix& mat, const Epetra_Vector& diag);
+  int InsertMyRowDiagonalIntoUnfilledMatrix(
+      CORE::LINALG::SparseMatrix& mat, const Epetra_Vector& diag);
 
   /*!
    \brief Split an Epetra_Map and return the part complementary to \c Agiven
@@ -340,7 +341,8 @@ namespace LINALG
    *  \author hiermeier \date 03/18 */
   void ComputeDofMapsFromNodeMaps(const int dofset_id,
       const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
-      const DRT::DiscretizationInterface& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
+      const ::DRT::DiscretizationInterface& discret,
+      std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
 
   /*! \brief Compute a dof map corresponding to the given node map
    *
@@ -351,8 +353,8 @@ namespace LINALG
    *  \return corresponding dof map
    *
    *  \author hiermeier \date 03/18 */
-  Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
-      const int dofset_id, const Epetra_Map& node_map, const DRT::DiscretizationInterface& discret);
+  Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(const int dofset_id, const Epetra_Map& node_map,
+      const ::DRT::DiscretizationInterface& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
@@ -378,6 +380,6 @@ namespace LINALG
   void EpetraMultiVectorToStdVector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_H

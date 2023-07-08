@@ -294,7 +294,7 @@ namespace CONTACT
       //! @{
 
       /// assemble the B-matrix (i.e. D+M)
-      void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const;
+      void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const;
 
       /*! Assemble the averaged weighted gap vector and the weighted gap
        *  vector of all active nodes */
@@ -313,7 +313,7 @@ namespace CONTACT
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// assemble the inactive second order derivative matrix w.r.t. the displ.
-      void AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
+      void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /*! Assemble the normal Lagrange multiplier vector */
@@ -334,29 +334,29 @@ namespace CONTACT
       /*! \brief Assemble DGLmLinMatrix
        *
        *  Linearization w.r.t. the displacements */
-      void AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const;
+      void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const;
 
       /*! \brief Assemble DGGLinMatrix
        *
        *  Linearization w.r.t. the displacements */
       virtual void AssembleDGGLinMatrix(
-          LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
+          CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
 
       /*! \brief Assemble DLmNWGapLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleDLmNWGapLinMatrix(LINALG::SparseMatrix& dLmNWGapLinMatrix,
+      void AssembleDLmNWGapLinMatrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
           const enum MapType map_type = MapType::active_slave_nodes) const;
 
       /*! \brief Assemble DLmTLmTMatrix
        *
        *  Linearization w.r.t. the LM */
-      void AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLmTMatrix) const;
+      void AssembleDLmTLmTMatrix(CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const;
 
       /*! \brief Assemble DLmTLmTLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLmTLmTLinMatrix) const;
+      void AssembleDLmTLmTLinMatrix(CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const;
 
       /*! \brief Assemble AugInactiveMatrix
        *
@@ -367,7 +367,7 @@ namespace CONTACT
       /*! \brief Assemble AugInactiveLinMatrix
        *
        *  Linearization w.r.t. the displ. */
-      void AssembleAugInactiveLinMatrix(LINALG::SparseMatrix& augInactiveLinMatrix,
+      void AssembleAugInactiveLinMatrix(CORE::LINALG::SparseMatrix& augInactiveLinMatrix,
           const Epetra_Vector& cnVec, const double inactive_scale) const;
 
       /// collect the owner of each interface node
@@ -543,8 +543,8 @@ namespace CONTACT
      *
      *  \author hiermeier \date 03/17 */
     template <class T>
-    void AssembleMapIntoMatrix(
-        int row, double scal, const T& values, LINALG::SparseMatrix& mat, double threshold = 0.0);
+    void AssembleMapIntoMatrix(int row, double scal, const T& values,
+        CORE::LINALG::SparseMatrix& mat, double threshold = 0.0);
 
     namespace INTERFACE
     {
@@ -566,23 +566,23 @@ namespace CONTACT
          *  If a variational consistent formulation is used, the Dn and Mn matrices
          *  will be equivalent to the transpose of the gradient of the weighted gap
          *  vector. Otherwise, Dn and Mn represent an estimate of these derivatives. */
-        virtual void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const = 0;
+        virtual void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const = 0;
 
         virtual void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const = 0;
 
         virtual void Assemble_SlForceLmInactive(Epetra_Vector& sl_force_lm_inactive,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
+        virtual void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const = 0;
 
-        virtual void AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const = 0;
+        virtual void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const = 0;
 
         virtual void AssembleDGGLinMatrix(
-            LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const = 0;
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const = 0;
 
         virtual void AssembleDLmNWGapLinMatrix(
-            LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const = 0;
+            CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const = 0;
 
        protected:
         /// return a reference to the parent interface
@@ -639,7 +639,7 @@ namespace CONTACT
         ~NodeBasedAssembleStrategy() override{};
 
         /// derived
-        void AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const override;
+        void AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const override;
 
         /// derived
         void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;
@@ -649,19 +649,19 @@ namespace CONTACT
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
+        void AssembleInactiveDDMatrix(CORE::LINALG::SparseMatrix& inactive_dd_matrix,
             const Epetra_Vector& cnVec, const double inactive_scale) const override;
 
         /// derived
-        void AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const override;
+        void AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const override;
 
         /// derived
         void AssembleDGGLinMatrix(
-            LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
 
         /// derived
-        void AssembleDLmNWGapLinMatrix(
-            LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const override;
+        void AssembleDLmNWGapLinMatrix(CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix,
+            const enum MapType map_type) const override;
       };
 
       /*--------------------------------------------------------------------------*/
@@ -674,13 +674,13 @@ namespace CONTACT
 
         inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
             const NodeDataContainer& augdata,
-            LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
+            CORE::LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
 
         inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
-            LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
+            CORE::LINALG::SparseMatrix& dGGLinMatrix) const {/* empty */};
 
         inline void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,
-            LINALG::SparseMatrix& inactive_dd_matrix) const {/* empty */};
+            CORE::LINALG::SparseMatrix& inactive_dd_matrix) const {/* empty */};
 
         inline bool Add_Var_A_GG(
             const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g_col) const
@@ -713,13 +713,13 @@ namespace CONTACT
         ~CompleteAssemblePolicy(){/* empty */};
 
         inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
-            const NodeDataContainer& augdata, LINALG::SparseMatrix& dGGLinMatrix) const;
+            const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
         inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
-            LINALG::SparseMatrix& dGGLinMatrix) const;
+            CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
         void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,
-            LINALG::SparseMatrix& inactive_dd_matrix) const;
+            CORE::LINALG::SparseMatrix& inactive_dd_matrix) const;
 
         bool Add_Var_A_GG(
             const double cn, const NodeDataContainer& augdata, Epetra_Vector& sl_force_g_col) const;

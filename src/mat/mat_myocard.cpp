@@ -256,9 +256,9 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup conductivity tensor                                cbert 02/13 |
  *----------------------------------------------------------------------*/
-void MAT::Myocard::Setup(const LINALG::Matrix<3, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
+void MAT::Myocard::Setup(const CORE::LINALG::Matrix<3, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
 
-void MAT::Myocard::Setup(const LINALG::Matrix<2, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
+void MAT::Myocard::Setup(const CORE::LINALG::Matrix<2, 1>& fiber1) { SetupDiffusionTensor(fiber1); }
 
 void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 {
@@ -282,7 +282,7 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double>& fiber1)
   const double diff1 = params_->diff1;
   const double diff2 = params_->diff2;
 
-  LINALG::Matrix<3, 3> difftensor;
+  CORE::LINALG::Matrix<3, 3> difftensor;
 
   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
   // first row
@@ -303,7 +303,7 @@ void MAT::Myocard::SetupDiffusionTensor(const std::vector<double>& fiber1)
   return;
 }
 
-void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<3, 1>& fiber1)
+void MAT::Myocard::SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1)
 {
   // Normalize fiber1
   double fiber1normS = fiber1(0) * fiber1(0) + fiber1(1) * fiber1(1) + fiber1(2) * fiber1(2);
@@ -313,7 +313,7 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<3, 1>& fiber1)
   const double diff1 = params_->diff1;
   const double diff2 = params_->diff2;
 
-  LINALG::Matrix<3, 3> difftensor;
+  CORE::LINALG::Matrix<3, 3> difftensor;
 
   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
   // first row
@@ -335,7 +335,7 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<3, 1>& fiber1)
   return;
 }
 
-void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<2, 1>& fiber1)
+void MAT::Myocard::SetupDiffusionTensor(const CORE::LINALG::Matrix<2, 1>& fiber1)
 {
   // Normalize fiber1
   double fiber1normS = fiber1(0) * fiber1(0) + fiber1(1) * fiber1(1);
@@ -345,7 +345,7 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<2, 1>& fiber1)
   const double diff1 = params_->diff1;
   const double diff2 = params_->diff2;
 
-  LINALG::Matrix<3, 3> difftensor;
+  CORE::LINALG::Matrix<3, 3> difftensor;
 
   // ******** SETUP ORTHOTROPIC DIFFUSION TENSOR: diff2*Id + (diff1-diff2)*fiber1*fiber1'
   // first row
@@ -361,13 +361,13 @@ void MAT::Myocard::SetupDiffusionTensor(const LINALG::Matrix<2, 1>& fiber1)
   return;
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<1, 1>& diffus3, int gp) const
+void MAT::Myocard::Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3, int gp) const
 {
   diffus3(0, 0) = difftensor_[gp](0, 0);
   return;
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<2, 2>& diffus3, int gp) const
+void MAT::Myocard::Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3, int gp) const
 {
   for (int i = 0; i < 2; i++)
   {
@@ -380,7 +380,7 @@ void MAT::Myocard::Diffusivity(LINALG::Matrix<2, 2>& diffus3, int gp) const
   return;
 }
 
-void MAT::Myocard::Diffusivity(LINALG::Matrix<3, 3>& diffus3, int gp) const
+void MAT::Myocard::Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3, int gp) const
 {
   for (int i = 0; i < 3; i++)
   {

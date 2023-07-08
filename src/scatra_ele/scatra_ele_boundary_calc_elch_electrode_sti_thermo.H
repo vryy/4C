@@ -74,23 +74,23 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          const LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
+          const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
           double detF, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
@@ -132,7 +132,7 @@ namespace DRT
       [[nodiscard]] double GetFRT() const override;
 
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-      LINALG::Matrix<nen_, 1> etempnp_;
+      CORE::LINALG::Matrix<nen_, 1> etempnp_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
   }     // namespace ELEMENTS
 }  // namespace DRT

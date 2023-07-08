@@ -125,7 +125,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // add the DBC values to the current state vector
   Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
       Teuchos::rcp(new Epetra_Vector(GlobalState().GlobalProblemMap(), true));
-  LINALG::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
+  CORE::LINALG::Export(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, *dbc_incr_exp_ptr, 1.0);
   // Reset the state variables
   const NOX::Epetra::Vector& x_eptra = dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
@@ -202,7 +202,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
 
   /* Alternatively, it's also possible to get a const pointer on the jacobian
    * by calling grp.getLinearSystem()->getJacobianOperator()... */
-  Teuchos::RCP<const LINALG::SparseMatrix> stiff_ptr =
+  Teuchos::RCP<const CORE::LINALG::SparseMatrix> stiff_ptr =
       tang_predict_ptr_->GlobalState().GetJacobianDisplBlock();
 
   // check if the jacobian is filled
@@ -213,7 +213,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
   if (stiff_ptr->Multiply(false, dbc_incr, *freact_ptr)) dserror("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  ::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
+  ::CORE::LINALG::AssembleMyVector(1.0, F, 1.0, *freact_ptr);
 
   return;
 }

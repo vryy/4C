@@ -230,7 +230,7 @@ namespace CORE::GEO
       /// However, we want to obtain position of the cut_point
       /// on the edge based on the real intersection( before mergin),to be consistest with rest of
       /// the code
-      double t(Edge* edge, const LINALG::Matrix<3, 1>& coord);
+      double t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& coord);
 
       // void t( Edge* edge, double pos ) { t_[edge] = pos; }
 
@@ -309,9 +309,9 @@ namespace CORE::GEO
 #if CUT_CREATION_INFO
       // Add merged pair. If the coord = NULL, it means it was inserted without actual computation
       // of the coordinate, solely on topology e.g. in the InsertCut
-      void AddMergedPair(const std::pair<Side*, Edge*>& inter, LINALG::Matrix<3, 1>* coord);
+      void AddMergedPair(const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord);
 
-      const std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>>&
+      const std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>&
       GetMergedPointsInfo()
       {
         return merged_points_info_;
@@ -414,7 +414,8 @@ namespace CORE::GEO
       // Map that indicates what intersections (keys of the map)  merged coordinates in the the
       // first part of value pair to the Point* of second part of value parit.Indicates what
       // coordinates were merged in this particular point, due to closeness
-      std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>> merged_points_info_;
+      std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>
+          merged_points_info_;
 
       // Displays why particular cut pair is intersected in this point
       std::map<std::pair<Side*, Edge*>, std::string> creation_info_;
@@ -672,10 +673,10 @@ namespace CORE::GEO
 
     /// Find distance between points
     template <unsigned int probDim>
-    double DistanceBetweenPoints(
-        const LINALG::Matrix<probDim, 1>& coord_a, const LINALG::Matrix<probDim, 1>& coord_b)
+    double DistanceBetweenPoints(const CORE::LINALG::Matrix<probDim, 1>& coord_a,
+        const CORE::LINALG::Matrix<probDim, 1>& coord_b)
     {
-      LINALG::Matrix<probDim, 1> diff;
+      CORE::LINALG::Matrix<probDim, 1> diff;
       diff.Update(1, coord_a, -1, coord_b);
       return diff.Norm2();
     }
@@ -684,7 +685,7 @@ namespace CORE::GEO
     double DistanceBetweenPoints(Point* p1, Point* p2);
 
     /// Find distance between points
-    double DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 1>& coord_b);
+    double DistanceBetweenPoints(Point* p1, const CORE::LINALG::Matrix<3, 1>& coord_b);
 
   }  // namespace CUT
 }  // namespace CORE::GEO

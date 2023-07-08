@@ -15,7 +15,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /**
    *\brief Explicit determinant of a nonsymmetric 2x2 matrix.
@@ -24,7 +24,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const LINALG::Matrix<2, 2, T>& A)
+  T Determinant(const CORE::LINALG::Matrix<2, 2, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -41,7 +41,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const LINALG::Matrix<3, 3, T>& A)
+  T Determinant(const CORE::LINALG::Matrix<3, 3, T>& A)
   {
     T b00 = A(0, 0);
     T b01 = A(0, 1);
@@ -66,7 +66,7 @@ namespace LINALG
    * @return Determinant of matrix A.
    */
   template <typename T>
-  T Determinant(const LINALG::Matrix<4, 4, T>& A)
+  T Determinant(const CORE::LINALG::Matrix<4, 4, T>& A)
   {
     T a00 = A(0, 0);
     T a01 = A(0, 1);
@@ -106,6 +106,6 @@ namespace LINALG
   */
   double DeterminantLU(const Epetra_SerialDenseMatrix& A);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

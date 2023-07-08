@@ -26,11 +26,11 @@ namespace DRT
   class DofSetInterface;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FLD
 {
@@ -41,7 +41,7 @@ namespace FLD
     {
      public:
       /// construct with a block matrix base
-      explicit VelPressSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
+      explicit VelPressSplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
           : mat_(mat),
             matrix00_(mat_.Matrix(0, 0)),
             matrix01_(mat_.Matrix(0, 1)),
@@ -220,7 +220,7 @@ namespace FLD
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -232,7 +232,7 @@ namespace FLD
       {
         int rblock = RowBlock(0, rgid);
         int cblock = ColBlock(rblock, 0, cgid);
-        LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+        CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
         matrix.Assemble(val, rgid, cgid);
       }
 
@@ -248,13 +248,13 @@ namespace FLD
 
      private:
       /// my block matrix base
-      LINALG::BlockSparseMatrixBase& mat_;
+      CORE::LINALG::BlockSparseMatrixBase& mat_;
 
       // the four sub-matrices of the whole matrix
-      LINALG::SparseMatrix& matrix00_;
-      LINALG::SparseMatrix& matrix01_;
-      LINALG::SparseMatrix& matrix10_;
-      LINALG::SparseMatrix& matrix11_;
+      CORE::LINALG::SparseMatrix& matrix00_;
+      CORE::LINALG::SparseMatrix& matrix01_;
+      CORE::LINALG::SparseMatrix& matrix10_;
+      CORE::LINALG::SparseMatrix& matrix11_;
 
       /// number of velocity dofs
       int numdim_;
@@ -265,11 +265,11 @@ namespace FLD
 
 
     /// (FSI) interface block matrix split strategy
-    class InterfaceSplitStrategy : public LINALG::DefaultBlockMatrixStrategy
+    class InterfaceSplitStrategy : public CORE::LINALG::DefaultBlockMatrixStrategy
     {
      public:
-      explicit InterfaceSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-          : LINALG::DefaultBlockMatrixStrategy(mat)
+      explicit InterfaceSplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
+          : CORE::LINALG::DefaultBlockMatrixStrategy(mat)
       {
       }
 
@@ -282,14 +282,14 @@ namespace FLD
         {
           // if we have an element with conditioned nodes, we have to do the
           // default assembling
-          LINALG::DefaultBlockMatrixStrategy::Assemble(
+          CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
               eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
         else
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          LINALG::SparseMatrix& matrix = Mat().Matrix(0, 0);
+          CORE::LINALG::SparseMatrix& matrix = Mat().Matrix(0, 0);
           matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }
@@ -297,7 +297,7 @@ namespace FLD
       void Assemble(double val, int rgid, int cgid)
       {
         // forward single value assembling
-        LINALG::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
+        CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
       }
 
       void SetCondElements(Teuchos::RCP<std::set<int>> condelements)
@@ -319,7 +319,7 @@ namespace FLD
           const bool alefluid, const int numdim);
 
       /// initialize smoothing of stresses
-      void InitAggr(Teuchos::RCP<LINALG::SparseOperator> sysmat);
+      void InitAggr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
 
       /// update and return WSS vector
       Teuchos::RCP<Epetra_Vector> GetWallShearStresses(
@@ -369,7 +369,7 @@ namespace FLD
           Teuchos::RCP<const Epetra_Vector> stresses, double dt);
 
       /// Calculate Aggregation Matrix
-      void CalcSepEnr(Teuchos::RCP<LINALG::SparseOperator> sysmat);
+      void CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat);
 
       /// fluid discretization
       const Teuchos::RCP<DRT::Discretization> discret_;
@@ -384,7 +384,7 @@ namespace FLD
       const int numdim_;
 
       /// filtering matrix for wall shear stress
-      Teuchos::RCP<LINALG::SparseMatrix> SepEnr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> SepEnr_;
 
       /// wss calculation type
       const INPAR::FLUID::WSSType WssType_;
@@ -406,7 +406,7 @@ namespace FLD
 
 
     void SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim,
-        const DRT::Discretization& alefluiddis, LINALG::MapExtractor& extractor,
+        const DRT::Discretization& alefluiddis, CORE::LINALG::MapExtractor& extractor,
         Teuchos::RCP<Epetra_Map> fullmap);
 
     /*!
@@ -559,7 +559,7 @@ namespace FLD
       \author Axel Gerstenberger
       \date 10/08
      */
-    std::map<int, LINALG::Matrix<3, 1>> ComputeSurfaceImpulsRates(
+    std::map<int, CORE::LINALG::Matrix<3, 1>> ComputeSurfaceImpulsRates(
         DRT::Discretization& dis,  ///< the discretisation (node distribution, conditions)
         const Teuchos::RCP<Epetra_Vector> velnp  ///< solution vector with velocities and pressure
                                                  ///< (only velocities are used)

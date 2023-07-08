@@ -74,7 +74,7 @@ namespace CORE::LINEAR_SOLVER
      * @param projector Krylov projector
      */
     void CreatePreconditioner(Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
-        Teuchos::RCP<LINALG::KrylovProjector> projector);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     //! a communicator
     const Epetra_Comm& comm_;

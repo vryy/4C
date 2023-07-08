@@ -223,7 +223,7 @@ void DRT::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
   localtypeids.reserve(ids.size());
   localtypeids.assign(ids.begin(), ids.end());
 
-  LINALG::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
+  CORE::LINALG::AllreduceVector(localtypeids, globaltypeids, dis.Comm());
 
   std::set<ElementType*>& ae = active_elements_[&dis];
 
@@ -250,9 +250,10 @@ void DRT::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   FinalizeRegistration();
 

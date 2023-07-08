@@ -72,8 +72,8 @@ namespace TUTORIAL
 
       */
       virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress,
-          LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
-          const double J, const LINALG::Matrix<2, 1> B) = 0;
+          CORE::LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
+          const double J, const CORE::LINALG::Matrix<2, 1> B) = 0;
 
       /// return young's modulus
       double YoungModulus() { return Young_; };
@@ -126,8 +126,8 @@ namespace TUTORIAL
 
       */
       virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress,
-          LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
-          const double J, const LINALG::Matrix<2, 1> B);
+          CORE::LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
+          const double J, const CORE::LINALG::Matrix<2, 1> B);
 
 
     };  // class TutorialMatStVenantKirchhoff

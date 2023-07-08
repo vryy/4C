@@ -662,10 +662,11 @@ void FPSI::UTILS::MapExtractor::Setup(
   othermaps.push_back(additionalothermap);
   othermaps.push_back(extractor.OtherMap());
 
-  if (LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
+  if (CORE::LINALG::MultiMapExtractor::IntersectMaps(othermaps)->NumGlobalElements() > 0)
     dserror("Failed to add dofmap of foreign discretization to OtherMap. Detected overlap.");
 
-  Teuchos::RCP<const Epetra_Map> mergedothermap = LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  Teuchos::RCP<const Epetra_Map> mergedothermap =
+      CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
 
   // the vector of maps for the new map extractor consists of othermap at position 0
   // followed by the maps of conditioned DOF
@@ -677,9 +678,9 @@ void FPSI::UTILS::MapExtractor::Setup(
   for (int i = 1; i < extractor.NumMaps(); ++i) maps.push_back(extractor.Map(i));
 
   // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<const Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
 
-  LINALG::MultiMapExtractor::Setup(*fullmap, maps);
+  CORE::LINALG::MultiMapExtractor::Setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/

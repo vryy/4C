@@ -145,7 +145,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   intersectionmapsfluid.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   intersectionmapsfluid.push_back(FluidField()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmapfluid =
-      LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmapsfluid);
 
   // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the
   // interface

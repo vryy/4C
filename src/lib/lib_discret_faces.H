@@ -22,11 +22,11 @@
 #include <Teuchos_ParameterList.hpp>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -309,7 +309,7 @@ namespace DRT
     /*!
     \brief Evaluate edge-based integrals
     */
-    void EvaluateEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    void EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1,
         Teuchos::ParameterList edgebasedparams = Teuchos::ParameterList());
 

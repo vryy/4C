@@ -68,7 +68,7 @@ void CONTACT::CoNitscheStrategyTsi::SetParentState(
     if (disT.is_null()) dserror("set state temperature, but no thermo-discretization???");
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*disT->DofColMap(), true));
-    LINALG::Export(vec, *global);
+    CORE::LINALG::Export(vec, *global);
 
     // set state on interfaces
     for (auto& interface : interface_)
@@ -151,29 +151,29 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategyTsi::GetRhsBlockPtr(
   }
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::SetupMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt)
 {
   switch (bt)
   {
     case DRT::UTILS::MatBlockType::displ_temp:
-      return Teuchos::rcp(
-          new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
-                                       *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
-              100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+      return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *Teuchos::rcpFromRef<const Epetra_Map>(
+              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+          100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case DRT::UTILS::MatBlockType::temp_displ:
     case DRT::UTILS::MatBlockType::temp_temp:
-      return Teuchos::rcp(
-          new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
-                                       *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
-              100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+      return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *Teuchos::rcpFromRef<const Epetra_Map>(
+              *DRT::Problem::Instance()->GetDis("thermo")->DofRowMap()),
+          100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
   }
 }
 
 void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc)
+    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
@@ -202,7 +202,7 @@ void CONTACT::CoNitscheStrategyTsi::CompleteMatrixBlockPtr(
   }
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategyTsi::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");

@@ -39,22 +39,22 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::EvaluateForceStiff(
     Teuchos::RCP<::DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
-    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
+    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
 {
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
   // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);

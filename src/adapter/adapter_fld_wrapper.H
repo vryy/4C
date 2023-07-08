@@ -78,16 +78,19 @@ namespace ADAPTER
     {
       return fluid_->DofRowMap(nds);
     };
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return fluid_->SystemMatrix(); }
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    {
+      return fluid_->SystemMatrix();
+    }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
     {
       return fluid_->SystemSparseMatrix();
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
       return fluid_->BlockSystemMatrix();
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
     {
       return fluid_->ShapeDerivatives();
     }
@@ -96,7 +99,7 @@ namespace ADAPTER
       return fluid_->Discretization();
     }
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_->DofSet(); }
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return fluid_->GetDBCMapExtractor();
     }
@@ -201,7 +204,7 @@ namespace ADAPTER
     {
       return fluid_->DiscWriter();
     }
-    virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()
+    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
     {
       return fluid_->GetVelPressSplitter();
     }
@@ -286,7 +289,7 @@ namespace ADAPTER
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return fluid_->LinearSolver(); }
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return fluid_->LinearSolver(); }
     virtual void CalcIntermediateSolution() { return fluid_->CalcIntermediateSolution(); }
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
     {

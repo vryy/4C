@@ -47,7 +47,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::Update() { return; }
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::InitializeLinearSolver(
-    Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   porofluidmultitimint_->Discretization()->ComputeNullSpaceIfNecessary(solver->Params());
 }
@@ -55,9 +55,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::InitializeLinearSolver(
 /*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-    Teuchos::RCP<Epetra_Vector> residual)
+void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::LinearSolve(
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
+    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual)
 {
   solver->Solve(sysmat->EpetraOperator(), increment, residual, true, 1, Teuchos::null);
 

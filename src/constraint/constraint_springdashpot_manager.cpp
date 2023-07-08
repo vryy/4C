@@ -43,7 +43,7 @@ UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretizati
 }
 
 void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
-    Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
 {

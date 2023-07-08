@@ -62,7 +62,7 @@ namespace CORE::GEO
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setNodeObjectType(
-        const int nodeId, const int label, const LINALG::Matrix<3, 1>& physcoord);
+        const int nodeId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Set line object type
@@ -71,8 +71,8 @@ namespace CORE::GEO
     \param label        (in)        : label
     \param physcoord    (in)        : physical coordinates of point on object
     */
-    void setLineObjectType(
-        const int lineId, const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord);
+    void setLineObjectType(const int lineId, const int surfId, const int label,
+        const CORE::LINALG::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Set surface object type
@@ -81,7 +81,7 @@ namespace CORE::GEO
     \param physcoord    (in)        : physical coordinates of point on object
     */
     void setSurfaceObjectType(
-        const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord);
+        const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord);
 
     /*!
     \brief Return object type
@@ -127,7 +127,7 @@ namespace CORE::GEO
     /*!
     \brief Return vector of physical coordinates
      */
-    inline LINALG::Matrix<3, 1> getPhysCoord() const
+    inline CORE::LINALG::Matrix<3, 1> getPhysCoord() const
     {
       if (objectType_ == NOTYPE_OBJECT) dserror("no object type and physical coordinates are set");
       return physcoord_;
@@ -152,7 +152,7 @@ namespace CORE::GEO
     int label_;
 
     //! physical coordinates of point on nearest object
-    LINALG::Matrix<3, 1> physcoord_;
+    CORE::LINALG::Matrix<3, 1> physcoord_;
   };
 
 }  // namespace CORE::GEO

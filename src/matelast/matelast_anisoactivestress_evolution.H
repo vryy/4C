@@ -157,9 +157,10 @@ namespace MAT
       void PostSetup(Teuchos::ParameterList& params) override;
 
       /// Add anisotropic principal stresses
-      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -167,14 +168,14 @@ namespace MAT
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,       ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+      void SetFiberVecs(double newgamma,             ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Setup of patient-specific materials

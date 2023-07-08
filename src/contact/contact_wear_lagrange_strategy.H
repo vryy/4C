@@ -47,14 +47,14 @@ namespace WEAR
     \brief Condense discr. wear and lm. for frictional contact
 
     */
-    void CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    void CondenseWearDiscr(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector>& gact);
 
     /*!
     \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
 
     */
-    void CondenseWearImplExpl(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    void CondenseWearImplExpl(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector>& gact);
 
     /*!
@@ -62,7 +62,7 @@ namespace WEAR
 
     */
     void PrepareSaddlePointSystem(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Recovery method
@@ -103,9 +103,9 @@ namespace WEAR
     \param mergedsol (out): Epetra_Vector for merged solution vector
     \param mergedrhs (out): Epetra_Vector for merged right hand side vector
     */
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
 
     /*!
@@ -284,7 +284,7 @@ namespace WEAR
 
     */
     void EvaluateFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
@@ -355,15 +355,15 @@ namespace WEAR
     Teuchos::RCP<Epetra_Vector> wearmrhs_;
 
     // implicit wear algorithm
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         wlinmatrix_;  // global Matrix Wg containing wear-lm derivatives
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         wlinmatrixsl_;  // global Matrix Wsl containing wear-lm slip derivatives
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         wlinmatrixst_;  // global Matrix Wst containing wear-lm stick derivatives
 
     // both-sided wear weak dirich cond
-    Teuchos::RCP<LINALG::SparseMatrix> d2matrix_;  // global Mortar matrix D2
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> d2matrix_;  // global Mortar matrix D2
 
     Teuchos::RCP<Epetra_Map>
         gminvolvednodes_;  // global involved master node row map (of all interfaces)
@@ -402,33 +402,33 @@ namespace WEAR
     bool sswear_;          // bool steady state wear
 
     // discrete wear algorithm (SLAVE)
-    Teuchos::RCP<LINALG::SparseMatrix> twmatrix_;  // global Mortar wear matrix T
-    Teuchos::RCP<LINALG::SparseMatrix> ematrix_;   // global Mortar wear matrix E
-    Teuchos::RCP<LINALG::SparseMatrix> eref_;      // global Mortar wear matrix E
-    Teuchos::RCP<LINALG::SparseMatrix> lintdis_;   // Lin T w.r.t. displ: Lin(T*n*lm)
-    Teuchos::RCP<LINALG::SparseMatrix> lintlm_;    // Lin T w.r.t. lm: (T*n)
-    Teuchos::RCP<LINALG::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrix_;  // global Mortar wear matrix T
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrix_;   // global Mortar wear matrix E
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> eref_;      // global Mortar wear matrix E
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdis_;   // Lin T w.r.t. displ: Lin(T*n*lm)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlm_;    // Lin T w.r.t. lm: (T*n)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         linslipW_;  // global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Epetra_Vector> inactiveWearRhs_;  // inactive wear rhs: -w_i
     Teuchos::RCP<Epetra_Vector> WearCondRhs_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // discrete wear algorithm (MASTER)
-    Teuchos::RCP<LINALG::SparseMatrix> twmatrixM_;  // global Mortar wear matrix T
-    Teuchos::RCP<LINALG::SparseMatrix> ematrixM_;   // global Mortar wear matrix E
-    Teuchos::RCP<LINALG::SparseMatrix> lintdisM_;   // Lin T w.r.t. displ: Lin(T*n*lm)
-    Teuchos::RCP<LINALG::SparseMatrix> lintlmM_;    // Lin T w.r.t. lm: (T*n)
-    Teuchos::RCP<LINALG::SparseMatrix> linedisM_;   // Lin E w.r.t. displ: Lin(E*w)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> twmatrixM_;  // global Mortar wear matrix T
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ematrixM_;   // global Mortar wear matrix E
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintdisM_;   // Lin T w.r.t. displ: Lin(T*n*lm)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lintlmM_;    // Lin T w.r.t. lm: (T*n)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> linedisM_;   // Lin E w.r.t. displ: Lin(E*w)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         linslipWM_;  // global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Epetra_FEVector> inactiveWearRhsM_;  // inactive wear rhs: -w_i
     Teuchos::RCP<Epetra_FEVector> WearCondRhsM_;      // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // matrix blocks for recovering
-    Teuchos::RCP<LINALG::SparseMatrix> dnblock_;
-    Teuchos::RCP<LINALG::SparseMatrix> dmblock_;
-    Teuchos::RCP<LINALG::SparseMatrix> diblock_;
-    Teuchos::RCP<LINALG::SparseMatrix> dablock_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dnblock_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmblock_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> diblock_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dablock_;
     Teuchos::RCP<Epetra_Vector> fw_;
 
     Teuchos::RCP<Epetra_Map> gidofs_;

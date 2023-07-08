@@ -935,9 +935,9 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(const int myrank, 
  *----------------------------------------------------------------------*/
 double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(const std::string field, const int myrank,
     const int level, const int sweeps, const double damp, const MLAPI::Operator& A,
-    const LINALG::SparseMatrix& matrix, const Teuchos::RCP<LINALG::Preconditioner>& solver,
-    MLAPI::MultiVector& x, const MLAPI::MultiVector& f, int& run, bool initiguesszero,
-    bool analysis, bool silent) const
+    const CORE::LINALG::SparseMatrix& matrix,
+    const Teuchos::RCP<CORE::LINALG::Preconditioner>& solver, MLAPI::MultiVector& x,
+    const MLAPI::MultiVector& f, int& run, bool initiguesszero, bool analysis, bool silent) const
 {
 #if (FSIAMG_ANALYSIS >= 3)
   analysis = true;

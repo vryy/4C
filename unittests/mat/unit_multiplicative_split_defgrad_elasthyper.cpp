@@ -295,24 +295,24 @@ namespace
     }
 
     // defined input quantities
-    LINALG::Matrix<3, 3> FM_;
-    LINALG::Matrix<3, 3> iFinM_;
+    CORE::LINALG::Matrix<3, 3> FM_;
+    CORE::LINALG::Matrix<3, 3> iFinM_;
     double detFin_;
     // reference solutions
-    LINALG::Matrix<6, 1> iCinV_ref_;
-    LINALG::Matrix<6, 1> iCinCiCinV_ref_;
-    LINALG::Matrix<6, 1> iCV_ref_;
-    LINALG::Matrix<3, 3> iCinCM_ref_;
-    LINALG::Matrix<3, 3> iFinCeM_ref_;
-    LINALG::Matrix<9, 1> CiFin9x1_ref_;
-    LINALG::Matrix<9, 1> CiFinCe9x1_ref_;
-    LINALG::Matrix<9, 1> CiFiniCe9x1_ref_;
-    LINALG::Matrix<3, 1> prinv_ref_;
-    LINALG::Matrix<3, 1> dPIe_ref_;
-    LINALG::Matrix<6, 1> ddPIIe_ref_;
-    LINALG::Matrix<6, 9> dSdiFin_ref_;
-    LINALG::Matrix<3, 1> gamma_ref_;
-    LINALG::Matrix<8, 1> delta_ref_;
+    CORE::LINALG::Matrix<6, 1> iCinV_ref_;
+    CORE::LINALG::Matrix<6, 1> iCinCiCinV_ref_;
+    CORE::LINALG::Matrix<6, 1> iCV_ref_;
+    CORE::LINALG::Matrix<3, 3> iCinCM_ref_;
+    CORE::LINALG::Matrix<3, 3> iFinCeM_ref_;
+    CORE::LINALG::Matrix<9, 1> CiFin9x1_ref_;
+    CORE::LINALG::Matrix<9, 1> CiFinCe9x1_ref_;
+    CORE::LINALG::Matrix<9, 1> CiFiniCe9x1_ref_;
+    CORE::LINALG::Matrix<3, 1> prinv_ref_;
+    CORE::LINALG::Matrix<3, 1> dPIe_ref_;
+    CORE::LINALG::Matrix<6, 1> ddPIIe_ref_;
+    CORE::LINALG::Matrix<6, 9> dSdiFin_ref_;
+    CORE::LINALG::Matrix<3, 1> gamma_ref_;
+    CORE::LINALG::Matrix<8, 1> delta_ref_;
 
     // pointer to material parameters
     Teuchos::RCP<MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper>
@@ -328,9 +328,9 @@ namespace
     SetConcentrationToInelasticMaterial(concentration);
 
     // actual call that is tested
-    LINALG::Matrix<6, 6> cMatAdd(true);
+    CORE::LINALG::Matrix<6, 6> cMatAdd(true);
     // reference solution
-    LINALG::Matrix<6, 6> cMatAdd_ref;
+    CORE::LINALG::Matrix<6, 6> cMatAdd_ref;
     cMatAdd_ref(0, 0) = -0.701208493301168;
     cMatAdd_ref(0, 1) = -0.5890084484992926;
     cMatAdd_ref(0, 2) = -0.5043624088277512;
@@ -380,7 +380,7 @@ namespace
     SetConcentrationToInelasticMaterial(dummy_conc);
 
     // input variables
-    LINALG::Matrix<3, 1> n, dir;
+    CORE::LINALG::Matrix<3, 1> n, dir;
     n(0) = 1.0 / std::sqrt(2.0);
     n(1) = 0.0;
     n(2) = -1.0 / std::sqrt(2.0);
@@ -391,16 +391,16 @@ namespace
 
     // output variables
     double cauchy_n_dir(0.0);
-    LINALG::Matrix<3, 1> d_cauchyndir_dn(true), d_cauchyndir_ddir(true);
-    LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
+    CORE::LINALG::Matrix<3, 1> d_cauchyndir_dn(true), d_cauchyndir_ddir(true);
+    CORE::LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
 
     multiplicative_split_defgrad_->EvaluateCauchyNDirAndDerivatives(FM_, n, dir, cauchy_n_dir,
         &d_cauchyndir_dn, &d_cauchyndir_ddir, &d_cauchyndir_dF, nullptr, nullptr, nullptr, 0, 0,
         &concentration, nullptr, nullptr, nullptr);
 
     const double cauchy_n_dir_ref(6.019860168755);
-    LINALG::Matrix<3, 1> d_cauchyndir_dn_ref(true), d_cauchyndir_ddir_ref(true);
-    LINALG::Matrix<9, 1> d_cauchyndir_dF_ref(true);
+    CORE::LINALG::Matrix<3, 1> d_cauchyndir_dn_ref(true), d_cauchyndir_ddir_ref(true);
+    CORE::LINALG::Matrix<9, 1> d_cauchyndir_dF_ref(true);
     d_cauchyndir_dn_ref(0) = -2.856437080521;
     d_cauchyndir_dn_ref(1) = -6.736850094992;
     d_cauchyndir_dn_ref(2) = -1.136980497476e+01;
@@ -427,7 +427,7 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluatedSdiFin)
   {
-    LINALG::Matrix<6, 9> dSdiFin(true);
+    CORE::LINALG::Matrix<6, 9> dSdiFin(true);
     multiplicative_split_defgrad_->EvaluatedSdiFin(gamma_ref_, delta_ref_, iFinM_, iCinCM_ref_,
         iCinV_ref_, CiFin9x1_ref_, CiFinCe9x1_ref_, iCinCiCinV_ref_, CiFiniCe9x1_ref_, iCV_ref_,
         iFinCeM_ref_, detFin_, dSdiFin);
@@ -440,8 +440,8 @@ namespace
     // derivatives of principle invariants
     const int gp(0);
     const int eleGID(0);
-    LINALG::Matrix<3, 1> dPIe(true);
-    LINALG::Matrix<6, 1> ddPIIe(true);
+    CORE::LINALG::Matrix<3, 1> dPIe(true);
+    CORE::LINALG::Matrix<6, 1> ddPIIe(true);
     multiplicative_split_defgrad_->EvaluateInvariantDerivatives(
         prinv_ref_, gp, eleGID, dPIe, ddPIIe);
 
@@ -452,15 +452,15 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateKinQuantElast)
   {
     // variables of kinematic quantities
-    LINALG::Matrix<6, 1> iCinV(true);
-    LINALG::Matrix<6, 1> iCinCiCinV(true);
-    LINALG::Matrix<6, 1> iCV(true);
-    LINALG::Matrix<3, 3> iCinCM(true);
-    LINALG::Matrix<3, 3> iFinCeM(true);
-    LINALG::Matrix<9, 1> CiFin9x1(true);
-    LINALG::Matrix<9, 1> CiFinCe9x1(true);
-    LINALG::Matrix<9, 1> CiFiniCe9x1(true);
-    LINALG::Matrix<3, 1> prinv(true);
+    CORE::LINALG::Matrix<6, 1> iCinV(true);
+    CORE::LINALG::Matrix<6, 1> iCinCiCinV(true);
+    CORE::LINALG::Matrix<6, 1> iCV(true);
+    CORE::LINALG::Matrix<3, 3> iCinCM(true);
+    CORE::LINALG::Matrix<3, 3> iFinCeM(true);
+    CORE::LINALG::Matrix<9, 1> CiFin9x1(true);
+    CORE::LINALG::Matrix<9, 1> CiFinCe9x1(true);
+    CORE::LINALG::Matrix<9, 1> CiFiniCe9x1(true);
+    CORE::LINALG::Matrix<3, 1> prinv(true);
 
     multiplicative_split_defgrad_->EvaluateKinQuantElast(&FM_, iFinM_, iCinV, iCinCiCinV, iCV,
         iCinCM, iFinCeM, CiFin9x1, CiFinCe9x1, CiFiniCe9x1, prinv);
@@ -484,11 +484,11 @@ namespace
 
     // actual material call
     const double concentration(1.0);
-    LINALG::Matrix<9, 1> DFDx(true);
+    CORE::LINALG::Matrix<9, 1> DFDx(true);
     multiplicative_split_defgrad_->EvaluateLinearizationOD(FM_, concentration, &DFDx);
 
     // define the reference solution
-    LINALG::Matrix<9, 1> DFDx_ref;
+    CORE::LINALG::Matrix<9, 1> DFDx_ref;
     DFDx_ref(0) = 4.417109534556e-01;
     DFDx_ref(1) = 4.818664946788e-01;
     DFDx_ref(2) = 5.220220359020e-01;
@@ -509,9 +509,9 @@ namespace
 
     // do the actual call that is tested
     auto source(MAT::PAR::InelasticSource::concentration);
-    LINALG::Matrix<6, 1> dSdx(true);
+    CORE::LINALG::Matrix<6, 1> dSdx(true);
     // reference solution
-    LINALG::Matrix<6, 1> dSdx_ref;
+    CORE::LINALG::Matrix<6, 1> dSdx_ref;
     dSdx_ref(0) = -1.907155639254611e-05;
     dSdx_ref(1) = -1.409683812529051e-05;
     dSdx_ref(2) = -1.05352513901749e-05;
@@ -527,9 +527,9 @@ namespace
   TEST_F(MultiplicativeSplitDefgradElastHyperTest, TestEvaluateStressCmatIso)
   {
     // second Piola-Kirchhoff stress
-    LINALG::Matrix<6, 1> S(true);
+    CORE::LINALG::Matrix<6, 1> S(true);
     // reference solution
-    LINALG::Matrix<6, 1> S_ref(true);
+    CORE::LINALG::Matrix<6, 1> S_ref(true);
     S_ref(0) = 35.001617076265632;
     S_ref(1) = 39.602547633321855;
     S_ref(2) = 42.518455970246585;
@@ -538,9 +538,9 @@ namespace
     S_ref(5) = 1.717758619623368;
 
     // elasticity tensor: 2 \partial S / \partial C
-    LINALG::Matrix<6, 6> cMatIso(true);
+    CORE::LINALG::Matrix<6, 6> cMatIso(true);
     // reference solution
-    LINALG::Matrix<6, 6> cMatIso_ref;
+    CORE::LINALG::Matrix<6, 6> cMatIso_ref;
     cMatIso_ref(0, 0) = 64.536084541141619;
     cMatIso_ref(0, 1) = 23.288856786802732;
     cMatIso_ref(0, 2) = 20.045220754159409;

@@ -20,12 +20,12 @@
 class Epetra_FEVector;
 class Epetra_Vector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
   namespace UTILS
   {
     /// specific MultiMapExtractor to handle different types of element during beam interaction
-    class MapExtractor : public LINALG::MultiMapExtractor
+    class MapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum
@@ -182,7 +182,7 @@ namespace BEAMINTERACTION
     void GetPosAndTriadOfBindingSpot(DRT::Element* ele,
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        LINALG::Matrix<3, 1>& bspotpos, LINALG::Matrix<3, 3>& bspottriad,
+        CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad,
         std::vector<double>& eledisp);
 
     /*-----------------------------------------------------------------------------*
@@ -191,17 +191,18 @@ namespace BEAMINTERACTION
         Teuchos::RCP<Epetra_Vector> const& ia_discolnp,
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        LINALG::Matrix<3, 1>& bspotpos, LINALG::Matrix<3, 3>& bspottriad);
+        CORE::LINALG::Matrix<3, 1>& bspotpos, CORE::LINALG::Matrix<3, 3>& bspottriad);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    bool IsDistanceOutOfRange(LINALG::Matrix<3, 1> const& pos1, LINALG::Matrix<3, 1> const& pos2,
-        double const lowerbound, double const upperbound);
+    bool IsDistanceOutOfRange(CORE::LINALG::Matrix<3, 1> const& pos1,
+        CORE::LINALG::Matrix<3, 1> const& pos2, double const lowerbound, double const upperbound);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
-    bool IsEnclosedAngleOutOfRange(LINALG::Matrix<3, 1> const& direction1,
-        LINALG::Matrix<3, 1> const& direction2, double const lowerbound, double const upperbound);
+    bool IsEnclosedAngleOutOfRange(CORE::LINALG::Matrix<3, 1> const& direction1,
+        CORE::LINALG::Matrix<3, 1> const& direction2, double const lowerbound,
+        double const upperbound);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
@@ -210,9 +211,10 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const ::DRT::Discretization& discret,
-        std::vector<int> const& elegid, std::vector<LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat);
+        std::vector<int> const& elegid, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<Epetra_FEVector> fe_sysvec,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat);
 
 
     /*----------------------------------------------------------------------------*
@@ -227,7 +229,7 @@ namespace BEAMINTERACTION
      */
     template <unsigned int n_centerline_dof>
     void GetElementCenterlineGIDIndices(DRT::Discretization const& discret, const DRT::Element* ele,
-        LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid);
+        CORE::LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid);
 
     /**
      * \brief Get the local indices of the centerline DOFs of an element.
@@ -244,10 +246,10 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     void AssembleCenterlineDofForceStiffIntoElementForceStiff(DRT::Discretization const& discret,
         std::vector<int> const& elegid,
-        std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
+        std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+        std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -264,8 +266,9 @@ namespace BEAMINTERACTION
      * (the rest will be 0).
      */
     void AssembleCenterlineDofColMatrixIntoElementColMatrix(DRT::Discretization const& discret,
-        const DRT::Element* element, LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
-        LINALG::SerialDenseMatrix& row_matrix_elementDOFs);
+        const DRT::Element* element,
+        CORE::LINALG::SerialDenseMatrix const& row_matrix_centerlineDOFs,
+        CORE::LINALG::SerialDenseMatrix& row_matrix_elementDOFs);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -285,8 +288,8 @@ namespace BEAMINTERACTION
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<LINALG::SerialDenseVector> const& bspotforce,
-        std::vector<LINALG::SerialDenseVector>& eleforce);
+        std::vector<CORE::LINALG::SerialDenseVector> const& bspotforce,
+        std::vector<CORE::LINALG::SerialDenseVector>& eleforce);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -295,8 +298,8 @@ namespace BEAMINTERACTION
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& bspotstiff,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>& elestiff);
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& bspotstiff,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>& elestiff);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -305,15 +308,15 @@ namespace BEAMINTERACTION
         Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> const& pbb,
         const Teuchos::RCP<Epetra_Vector> disp_np_col,
         const Teuchos::RCP<BEAMINTERACTION::BeamLink> elepairptr,
-        std::vector<LINALG::SerialDenseVector> const& bspotforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& bspotstiff,
-        std::vector<LINALG::SerialDenseVector>& eleforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>& elestiff);
+        std::vector<CORE::LINALG::SerialDenseVector> const& bspotforce,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& bspotstiff,
+        std::vector<CORE::LINALG::SerialDenseVector>& eleforce,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>& elestiff);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void SetupEleTypeMapExtractor(Teuchos::RCP<const ::DRT::Discretization> const& discret,
-        Teuchos::RCP<LINALG::MultiMapExtractor>& eletypeextractor);
+        Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& eletypeextractor);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

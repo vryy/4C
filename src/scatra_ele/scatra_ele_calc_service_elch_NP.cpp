@@ -61,18 +61,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
-    const DRT::Element* ele,                             ///< current element
-    Epetra_SerialDenseMatrix& emat,                      ///< element matrix
-    Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<LINALG::Matrix<nen_, 1>>& ehist,   ///< history variables at element nodes
-    double timefac,                                      ///< time factor
-    Teuchos::RCP<DRT::Condition> cond,                   ///< electrode kinetics boundary condition
-    const int nume,                                      ///< number of transferred electrons
-    const std::vector<int> stoich,                       ///< stoichiometry of the reaction
-    const int kinetics,                                  ///< desired electrode kinetics model
-    const double pot0,                                   ///< electrode potential on metal side
-    const double frt,                                    ///< factor F/RT
+    const DRT::Element* ele,                                   ///< current element
+    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
+    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+        ehist,                          ///< history variables at element nodes
+    double timefac,                     ///< time factor
+    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                     ///< number of transferred electrons
+    const std::vector<int> stoich,      ///< stoichiometry of the reaction
+    const int kinetics,                 ///< desired electrode kinetics model
+    const double pot0,                  ///< electrode potential on metal side
+    const double frt,                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -197,7 +198,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
-    LINALG::Matrix<nsd_, 1>& q,              //!< flux of species k
+    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
 )
@@ -304,11 +305,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
       // working arrays
       double potint(0.0);
-      LINALG::Matrix<2, 1> conint(true);
-      LINALG::Matrix<nsd_, 1> xint(true);
-      LINALG::Matrix<2, 1> c(true);
+      CORE::LINALG::Matrix<2, 1> conint(true);
+      CORE::LINALG::Matrix<nsd_, 1> xint(true);
+      CORE::LINALG::Matrix<2, 1> c(true);
       double deltapot(0.0);
-      LINALG::Matrix<2, 1> deltacon(true);
+      CORE::LINALG::Matrix<2, 1> deltacon(true);
 
       // start loop over integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; iquad++)
@@ -403,10 +404,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
       if (my::numscal_ != 2) dserror("Numscal_ != 2 for desired error calculation.");
 
       // working arrays
-      LINALG::Matrix<2, 1> conint(true);
-      LINALG::Matrix<nsd_, 1> xint(true);
-      LINALG::Matrix<2, 1> c(true);
-      LINALG::Matrix<2, 1> deltacon(true);
+      CORE::LINALG::Matrix<2, 1> conint(true);
+      CORE::LINALG::Matrix<nsd_, 1> xint(true);
+      CORE::LINALG::Matrix<2, 1> c(true);
+      CORE::LINALG::Matrix<2, 1> deltacon(true);
 
       // some constants that are needed
       const double c0_inner = 0.6147737641011396;

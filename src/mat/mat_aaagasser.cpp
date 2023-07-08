@@ -120,9 +120,10 @@ void MAT::AAAgasser::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Evaluate Material                         (public)                  |
  *----------------------------------------------------------------------*/
-void MAT::AAAgasser::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::AAAgasser::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   double normdist = params.get("iltthick meanvalue", -999.0);
   if (normdist == -999.0) dserror("Aneurysm mean ilt distance not found");
@@ -148,11 +149,11 @@ void MAT::AAAgasser::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // build second order identity tensor:
-  LINALG::Matrix<6, 1> id2(true);
+  CORE::LINALG::Matrix<6, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
 
   // build fourth order identity tensor S (see HOLZAPFEL p. 261):
-  LINALG::Matrix<6, 6> id4(true);
+  CORE::LINALG::Matrix<6, 6> id4(true);
   for (int i = 0; i < 3; i++) id4(i, i) = 1.0;
   for (int i = 3; i < 6; i++) id4(i, i) = 0.5;
 
@@ -162,12 +163,12 @@ void MAT::AAAgasser::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   //  [0.5*glstrain(5)    0.5*glstrain(4)       glstrain(2)]
 
   // right Cauchy-Green Tensor:
-  LINALG::Matrix<6, 1> rcg(*glstrain);
+  CORE::LINALG::Matrix<6, 1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg.Update(1.0, id2, 1.0);
 
   // 'contra-variant' right Cauchy-Green Tensor (originally from bborn 08/09)
-  LINALG::Matrix<6, 1> scg(rcg);
+  CORE::LINALG::Matrix<6, 1> scg(rcg);
   for (int i = 3; i < 6; i++) scg(i) *= 0.5;
 
   //--------------------------------------------------------------------------------------
@@ -190,7 +191,7 @@ void MAT::AAAgasser::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::Matrix<6, 1> invc(false);
+  CORE::LINALG::Matrix<6, 1> invc(false);
 
   double invdet = 1. / iiinv;
 

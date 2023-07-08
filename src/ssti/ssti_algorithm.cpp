@@ -267,7 +267,7 @@ void SSTI::SSTIAlgorithm::DistributeStructureSolution()
   ThermoField()->ApplyMeshMovement(structure_->Dispnp());
 
   // convective velocity is set to zero
-  const auto convective_velocity = LINALG::CreateVector(*structure_->DofRowMap());
+  const auto convective_velocity = CORE::LINALG::CreateVector(*structure_->DofRowMap());
 
   ScaTraField()->SetVelocityField(
       convective_velocity, Teuchos::null, structure_->Velnp(), Teuchos::null);
@@ -286,7 +286,7 @@ void SSTI::SSTIAlgorithm::DistributeScatraSolution()
   {
     // pass master-side scatra degrees of freedom to thermo discretization
     const Teuchos::RCP<Epetra_Vector> imasterphinp =
-        LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
     meshtying_strategy_scatra_->InterfaceMaps()->InsertVector(
         meshtying_strategy_scatra_->CouplingAdapter()->MasterToSlave(
             meshtying_strategy_scatra_->InterfaceMaps()->ExtractVector(*ScaTraField()->Phinp(), 2)),
@@ -307,7 +307,7 @@ void SSTI::SSTIAlgorithm::DistributeThermoSolution()
   {
     // extract master side temperatures and copy to slave side dof map
     const Teuchos::RCP<Epetra_Vector> imastertempnp =
-        LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
     meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
         meshtying_strategy_thermo_->CouplingAdapter()->MasterToSlave(
             meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 2)),
@@ -315,7 +315,7 @@ void SSTI::SSTIAlgorithm::DistributeThermoSolution()
 
     // extract slave side temperatures
     const Teuchos::RCP<Epetra_Vector> islavetempnp =
-        LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*ThermoField()->Discretization()->DofRowMap(), true);
     meshtying_strategy_thermo_->InterfaceMaps()->InsertVector(
         meshtying_strategy_thermo_->InterfaceMaps()->ExtractVector(*ThermoField()->Phinp(), 1), 1,
         islavetempnp);

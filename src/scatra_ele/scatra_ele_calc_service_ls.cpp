@@ -45,10 +45,10 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
 
-      std::vector<LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero(my::numscal_);
 
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
       if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -74,7 +74,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, const std::vector<LINALG::Matrix<nen_, 1>>& ephizero,
+    const DRT::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
     Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
 {
   // get element volume

@@ -539,8 +539,8 @@ void MORTAR::IntElement::NodeLinearization(
         double xi[2] = {pseudo_nodes_param_coords[pn][0], pseudo_nodes_param_coords[pn][1]};
 
         // evaluate shape functions at pseudo node param coords
-        LINALG::SerialDenseVector sval(9);
-        LINALG::SerialDenseMatrix sderiv(9, 2);
+        CORE::LINALG::SerialDenseVector sval(9);
+        CORE::LINALG::SerialDenseMatrix sderiv(9, 2);
         parele_->EvaluateShape(xi, sval, sderiv, 9, true);
 
         // loop over all parent element control points
@@ -567,7 +567,7 @@ void MORTAR::IntElement::NodeLinearization(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, double* auxn,
+MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coords, double* auxn,
     const DRT::Element::DiscretizationType& shape,
     std::vector<CORE::GEN::pairedvector<int, double>>& linv1,
     std::vector<CORE::GEN::pairedvector<int, double>>& linv2,
@@ -637,8 +637,8 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
   if (Shape() == DRT::Element::tri3 or Shape() == DRT::Element::line2)
   {
     // collect fundamental data
-    LINALG::Matrix<3, 1> val;
-    LINALG::Matrix<3, 2> deriv;
+    CORE::LINALG::Matrix<3, 1> val;
+    CORE::LINALG::Matrix<3, 2> deriv;
 
     // Evaluate shape, get nodal coords and interpolate global coords
     EvaluateShape(xi, val, deriv);
@@ -701,7 +701,7 @@ void MORTAR::IntCell::Print()
  |  Evaluate shape functions (IntCell)                        popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::IntCell::EvaluateShape(
-    const double* xi, LINALG::Matrix<3, 1>& val, LINALG::Matrix<3, 2>& deriv)
+    const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv)
 {
   if (!xi) dserror("EvaluateShape (IntCell) called with xi=NULL");
 

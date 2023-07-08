@@ -33,11 +33,11 @@ namespace GEOMETRYPAIR
 
   class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
-namespace LINALG
+namespace CORE::LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type>
@@ -91,10 +91,10 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to surface pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    virtual void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    virtual void PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
             nullptr) const {};
 
     /**
@@ -104,10 +104,10 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to surface pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    virtual void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    virtual void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
             nullptr) const {};
 
     /**
@@ -120,10 +120,10 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void ProjectPointToOther(const LINALG::Matrix<3, 1, scalar_type>& point,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr,
+    void ProjectPointToOther(const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr,
         const bool min_one_iteration = false) const;
 
     /**
@@ -135,11 +135,12 @@ namespace GEOMETRYPAIR
      * @param xi_start (in) start values for parameter coordinates in volume.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void IntersectLineWithOther(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    void IntersectLineWithOther(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals = nullptr) const;
+        const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start,
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+            nullptr) const;
 
     /**
      * \brief Return the pointer to the evaluation data of this pair.
@@ -161,10 +162,10 @@ namespace GEOMETRYPAIR
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
     void EvaluateSurfacePositionAndDerivative(
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-        const LINALG::Matrix<3, 1, scalar_type>& xi, LINALG::Matrix<3, 1, scalar_type>& r,
-        LINALG::Matrix<3, 3, scalar_type>& dr,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+        const CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& r, CORE::LINALG::Matrix<3, 3, scalar_type>& dr,
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const;
 
     /**
      * \brief Get the intersection between the line and an extended boundary of the surface.
@@ -183,11 +184,12 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the intersection.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void IntersectLineWithSurfaceEdge(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    void IntersectLineWithSurfaceEdge(
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
         const bool min_one_iteration = false) const;
 
     /**
@@ -203,7 +205,7 @@ namespace GEOMETRYPAIR
      * @param beam_radius
      * @return True if normal distance is in a reasonable range, false otherwise.
      */
-    bool ValidParameterSurface(LINALG::Matrix<3, 1, scalar_type>& xi,
+    bool ValidParameterSurface(CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
         const scalar_type& surface_size, const double beam_radius) const;
 
     /**
@@ -218,7 +220,7 @@ namespace GEOMETRYPAIR
      * @return Maximum distance between the first 3 nodes.
      */
     scalar_type GetSurfaceSize(
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const;
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const;
 
     /**
      * \brief Get number of faces for this surface and create a vector with the indices of the
@@ -316,10 +318,10 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to surface pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    void PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
             nullptr) const override;
 
     /**
@@ -334,10 +336,10 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to surface pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
-        const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
+        const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
             nullptr) const override;
 
    private:

@@ -106,7 +106,7 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
@@ -118,7 +118,7 @@ namespace CONTACT
 
     */
     void InitializeUzawa(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -170,9 +170,9 @@ namespace CONTACT
     // thus they are defined empty here in the case of Penalty meshtying.
 
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       dserror(
@@ -223,7 +223,7 @@ namespace CONTACT
         const enum DRT::UTILS::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) const override;
 
     //@}
@@ -240,20 +240,20 @@ namespace CONTACT
     double initialpenalty_;
 
     //! Mortar matrix product \f$M^T M\f$
-    Teuchos::RCP<LINALG::SparseMatrix> mtm_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mtm_;
 
     //! Mortar matrix product \f$M^T D\f$
-    Teuchos::RCP<LINALG::SparseMatrix> mtd_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mtd_;
 
     //! Mortar matrix product \f$D^T M\f$
-    Teuchos::RCP<LINALG::SparseMatrix> dtm_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dtm_;
 
     //! Mortar matrix product \f$D^T D\f$
-    Teuchos::RCP<LINALG::SparseMatrix> dtd_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dtd_;
 
 
     //! Global stiffness matrix
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
 
     /*! \brief Global residual vector
      *

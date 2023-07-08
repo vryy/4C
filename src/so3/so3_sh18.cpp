@@ -170,7 +170,7 @@ void DRT::ELEMENTS::So_sh18::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // element technology bools

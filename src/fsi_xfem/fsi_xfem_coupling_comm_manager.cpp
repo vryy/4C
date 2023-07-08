@@ -80,7 +80,7 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA,
   {
     case Coupling_Comm_Manager::full_to_full:
     {
-      Teuchos::RCP<LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       InsertVector(idxA, vecA, idxB, tmpvec, Coupling_Comm_Manager::full_to_partial, false, scale);
       if (!add)
@@ -97,7 +97,7 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA,
     }
     case Coupling_Comm_Manager::partial_to_full:
     {
-      Teuchos::RCP<LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mmeb = GetMapExtractor(idxB);
       Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::rcp(new Epetra_Vector(*mmeb->Map(1), true));
       InsertVector(
           idxA, vecA, idxB, tmpvec, Coupling_Comm_Manager::partial_to_partial, false, scale);
@@ -140,7 +140,7 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA,
     }
     case Coupling_Comm_Manager::partial_to_global:
     {
-      Teuchos::RCP<LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, Coupling_Comm_Manager::partial_to_full, false, scale);
       if (!add)
@@ -151,7 +151,7 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA,
     }
     case Coupling_Comm_Manager::full_to_global:
     {
-      Teuchos::RCP<LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mme = GetFullMapExtractor();
       Teuchos::RCP<Epetra_Vector> fullvec = Teuchos::rcp(new Epetra_Vector(*mme->Map(idxB), true));
       InsertVector(idxA, vecA, idxB, fullvec, Coupling_Comm_Manager::full_to_full, false, scale);
       if (!add)
@@ -170,7 +170,7 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA,
 | //! Insert a Matrix A into Matrix B (choose type of transfer, add or scaling)     ager 03/2016|
 *----------------------------------------------------------------------------------------------*/
 bool XFEM::Coupling_Comm_Manager::InsertMatrix(int transform_id, int idxA,
-    const LINALG::SparseMatrix& matA, int idxB, LINALG::SparseMatrix& matB,
+    const CORE::LINALG::SparseMatrix& matA, int idxB, CORE::LINALG::SparseMatrix& matB,
     const Coupling_Comm_Manager::matrix_transfer_type mttype, double scale, bool exactmatch,
     bool addmatrix)
 {
@@ -238,7 +238,7 @@ void XFEM::Coupling_Comm_Manager::SetupMultiMapExtractors(
   {
     Teuchos::RCP<DRT::UTILS::MultiConditionSelector> mcs =
         Teuchos::rcp(new DRT::UTILS::MultiConditionSelector());
-    mme_[dit->first] = Teuchos::rcp(new LINALG::MultiMapExtractor());
+    mme_[dit->first] = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     mcs->AddSelector(Teuchos::rcp(
         new DRT::UTILS::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
     mcs->SetupExtractor(*dit->second, *dit->second->DofRowMap(), *mme_[dit->first]);
@@ -259,18 +259,18 @@ void XFEM::Coupling_Comm_Manager::SetupFullMapExtractors(
   for (std::map<int, Teuchos::RCP<const DRT::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<LINALG::MapExtractor> me = Teuchos::rcp(new LINALG::MapExtractor());
+    Teuchos::RCP<CORE::LINALG::MapExtractor> me = Teuchos::rcp(new CORE::LINALG::MapExtractor());
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first, dit->first + 1);
       me->Setup(*dit->second->DofRowMap(), coup->MasterDofMap(),
-          LINALG::SplitMap(*dit->second->DofRowMap(), *coup->MasterDofMap()));
+          CORE::LINALG::SplitMap(*dit->second->DofRowMap(), *coup->MasterDofMap()));
     }
     else
     {
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first - 1, dit->first);
       me->Setup(*dit->second->DofRowMap(), coup->SlaveDofMap(),
-          LINALG::SplitMap(*dit->second->DofRowMap(), *coup->SlaveDofMap()));
+          CORE::LINALG::SplitMap(*dit->second->DofRowMap(), *coup->SlaveDofMap()));
     }
     mme_[dit->first] = me;
   }
@@ -285,10 +285,12 @@ void XFEM::Coupling_Comm_Manager::SetupCouplings(
 {
   if (dis.size() < 2) return;
 
-  for (std::map<int, Teuchos::RCP<LINALG::MultiMapExtractor>>::iterator mmealpha = mme_.begin();
+  for (std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mmealpha =
+           mme_.begin();
        mmealpha != mme_.end(); ++mmealpha)
   {
-    for (std::map<int, Teuchos::RCP<LINALG::MultiMapExtractor>>::iterator mmebeta = mme_.begin();
+    for (std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mmebeta =
+             mme_.begin();
          mmebeta != mme_.end(); ++mmebeta)
     {
       if ((*mmealpha).first >= (*mmebeta).first)
@@ -360,8 +362,8 @@ void XFEM::Coupling_Comm_Manager::SetupFullExtractor(
     maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->DofRowMap())));
   }
 
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
-  fullextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*fullmap, maps));
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
+  fullextractor_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*fullmap, maps));
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -419,10 +421,10 @@ Teuchos::RCP<CORE::ADAPTER::Coupling> XFEM::Coupling_Comm_Manager::GetCoupling(i
 /*------------------------------------------------------------------------------------------------*
 | Get Transform Object between Discret A and B                                        ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager::GetTransform(
-    int transform_id)
+Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>
+XFEM::Coupling_Comm_Manager::GetTransform(int transform_id)
 {
-  std::map<int, Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform>>::iterator tit =
+  std::map<int, Teuchos::RCP<CORE::LINALG::MatrixLogicalSplitAndTransform>>::iterator tit =
       transform_.find(transform_id);
   if (tit != transform_.end() && transform_id != -1)
   {
@@ -430,7 +432,7 @@ Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager
   }
   else
   {
-    transform_[transform_id] = Teuchos::rcp(new LINALG::MatrixLogicalSplitAndTransform());
+    transform_[transform_id] = Teuchos::rcp(new CORE::LINALG::MatrixLogicalSplitAndTransform());
     return transform_[transform_id];
   }
   return Teuchos::null;
@@ -439,9 +441,9 @@ Teuchos::RCP<LINALG::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager
 /*------------------------------------------------------------------------------------------------*
 | Get Map Extractor Object for idx                                                    ager 03/2016|
 *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MultiMapExtractor> XFEM::Coupling_Comm_Manager::GetMapExtractor(int idx)
+Teuchos::RCP<CORE::LINALG::MultiMapExtractor> XFEM::Coupling_Comm_Manager::GetMapExtractor(int idx)
 {
-  std::map<int, Teuchos::RCP<LINALG::MultiMapExtractor>>::iterator mit = mme_.find(idx);
+  std::map<int, Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator mit = mme_.find(idx);
   if (mit != mme_.end())
   {
     return mit->second;

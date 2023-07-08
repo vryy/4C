@@ -116,7 +116,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     double GetGrowthScalar(int gp) const override;
@@ -133,9 +133,9 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * \brief Evaluation of the constituent with an inelastic, external part.
@@ -148,9 +148,10 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iF_in,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) override;
 
    private:
     /// my material parameters

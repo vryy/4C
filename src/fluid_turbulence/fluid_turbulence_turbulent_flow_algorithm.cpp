@@ -143,7 +143,7 @@ void FLD::TurbulentFlowAlgorithm::TransferInflowVelocity()
 
   // velocity/pressure at time n+1 to be transferred to the complete fluid field
   // get a vector layout from the complete discretization
-  velnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
+  velnp_ = CORE::LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
 
   // get exporter for transfer of dofs from inflow discretization to complete fluid discretization
   Epetra_Export exporter(inflowvelnp->Map(), velnp_->Map());
@@ -182,15 +182,15 @@ void FLD::TurbulentFlowAlgorithm::ReadRestart(const int restart)
   // vectors to be transferred to the inflow field
   // get a vector layout from the inflow discretization
   Teuchos::RCP<Epetra_Vector> velnp;
-  velnp = LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  velnp = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
   Teuchos::RCP<Epetra_Vector> veln;
-  veln = LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  veln = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
   Teuchos::RCP<Epetra_Vector> velnm;
-  velnm = LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  velnm = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
   Teuchos::RCP<Epetra_Vector> accnp;
-  accnp = LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  accnp = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
   Teuchos::RCP<Epetra_Vector> accn;
-  accn = LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
+  accn = CORE::LINALG::CreateVector(*inflowdis_->DofRowMap(), true);
 
   // get all vectors of restart
   Teuchos::RCP<const Epetra_Vector> fluidvelnp = fluidalgo_->FluidField()->Velnp();

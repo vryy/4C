@@ -221,8 +221,8 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
   double dt = ParamsInterface().GetDeltaTime();
 
   // velocity and gradient of background velocity field
-  LINALG::Matrix<3, 1> velbackground;
-  LINALG::Matrix<3, 3> velbackgroundgrad;  // is a dummy so far
+  CORE::LINALG::Matrix<3, 1> velbackground;
+  CORE::LINALG::Matrix<3, 3> velbackgroundgrad;  // is a dummy so far
 
   // Compute background velocity
   GetBackgroundVelocity(params, velbackground, velbackgroundgrad);
@@ -253,9 +253,9 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
  grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::GetBackgroundVelocity(
-    Teuchos::ParameterList& params,           //!< parameter list
-    LINALG::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
-    LINALG::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
+    Teuchos::ParameterList& params,                 //!< parameter list
+    CORE::LINALG::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
+    CORE::LINALG::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
 {
   // only constant background velocity implemented yet. for case of shear flow, see beam3r
 
@@ -346,7 +346,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
   // Add reference position.
   if (mydisp.size() != 3)
     dserror("Got unexpected number of DOFs. Expected 3, but received %d", mydisp.size());
-  LINALG::Matrix<3, 1, double> sphere_center;
+  CORE::LINALG::Matrix<3, 1, double> sphere_center;
   for (unsigned int i_dof = 0; i_dof < 3; i_dof++)
     sphere_center(i_dof) = mydisp[i_dof] + Nodes()[0]->X()[i_dof];
 
@@ -364,18 +364,20 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::ELEMENTS::Rigidsphere::GetBoundingVol
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixVariationsAtXi(
-    LINALG::SerialDenseMatrix& Ivar, const double& dummy1, const std::vector<double>& dummy2) const
+    CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
+    const std::vector<double>& dummy2) const
 {
-  LINALG::Matrix<6, 3, double> Ivar_fixedsize(&Ivar(0, 0), true);
+  CORE::LINALG::Matrix<6, 3, double> Ivar_fixedsize(&Ivar(0, 0), true);
   for (unsigned int i = 0; i < 3; ++i) Ivar_fixedsize(i, i) = 1.0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixIncrementsAtXi(
-    LINALG::SerialDenseMatrix& Iinc, const double& dummy1, const std::vector<double>& dummy2) const
+    CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
+    const std::vector<double>& dummy2) const
 {
-  LINALG::Matrix<6, 3, double> Iinc_fixedsize(&Iinc(0, 0), true);
+  CORE::LINALG::Matrix<6, 3, double> Iinc_fixedsize(&Iinc(0, 0), true);
   for (unsigned int i = 0; i < 3; ++i) Iinc_fixedsize(i, i) = 1.0;
 }
 

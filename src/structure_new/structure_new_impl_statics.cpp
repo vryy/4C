@@ -69,7 +69,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   ResetEvalParams();
@@ -81,7 +81,7 @@ bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOp
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Statics::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   ResetEvalParams();

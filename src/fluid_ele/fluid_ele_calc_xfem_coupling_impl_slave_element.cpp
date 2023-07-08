@@ -149,7 +149,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelnp(
-          LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+          CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
       ) const
       {
         ivelint.Multiply(slave_vel_, slave_funct_);
@@ -160,7 +160,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVeln(
-          LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
+          CORE::LINALG::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
       ) const
       {
         ivelintn.Multiply(slave_veln_, slave_funct_);
@@ -195,7 +195,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradnp(
-          LINALG::Matrix<nsd_, nsd_>&
+          CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradint  ///< interface velocity gradients at coupling slave side
       ) const
       {
@@ -207,7 +207,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceVelGradn(
-          LINALG::Matrix<nsd_, nsd_>&
+          CORE::LINALG::Matrix<nsd_, nsd_>&
               velgradintn  ///< interface velocity gradients at coupling slave side
       ) const
       {
@@ -219,7 +219,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunct(
-          LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
+          CORE::LINALG::Matrix<slave_nen_, 1>& slave_funct  ///< coupling slave shape functions
       ) const
       {
         slave_funct = slave_funct_;
@@ -295,8 +295,8 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVelnp(
-          LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump or
-                                                 ///< prescribed DBC at Gaussian point
+          CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
+                                                       ///< or prescribed DBC at Gaussian point
       ) const
       {
         ivelint_jump.Multiply(interface_velnp_jump_, slave_funct_);
@@ -307,8 +307,8 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetInterfaceJumpVeln(
-          LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump or
-                                                  ///< prescribed DBC at Gaussian point
+          CORE::LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump
+                                                        ///< or prescribed DBC at Gaussian point
       ) const
       {
         ivelintn_jump.Multiply(interface_veln_jump_, slave_funct_);
@@ -320,9 +320,9 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
-          LINALG::Matrix<nsd_, 1>& xslave)
+          CORE::LINALG::Matrix<nsd_, 1>& xslave)
       {
-        LINALG::Matrix<3, 1> rst_slave(true);
+        CORE::LINALG::Matrix<3, 1> rst_slave(true);
         Evaluate(xslave, rst_slave);
       }
 
@@ -331,7 +331,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::Evaluate(
-          LINALG::Matrix<nsd_, 1>& xslave, LINALG::Matrix<nsd_, 1>& rst_slave)
+          CORE::LINALG::Matrix<nsd_, 1>& xslave, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
       {
         // coupling with a 2D element
         if (slave_nsd_ == nsd_ - 1)
@@ -362,8 +362,8 @@ namespace DRT
           dserror("Unsupported dimension clash!");
 
 
-        LINALG::Matrix<nsd_, nsd_> slave_xjm(true);
-        LINALG::Matrix<nsd_, nsd_> slave_xji(true);
+        CORE::LINALG::Matrix<nsd_, nsd_> slave_xjm(true);
+        CORE::LINALG::Matrix<nsd_, nsd_> slave_xji(true);
 
         slave_xjm.MultiplyNT(slave_deriv_, slave_xyze_);
         slave_xji.Invert(slave_xjm);
@@ -385,9 +385,9 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ComputeInterfaceForce(
-          Epetra_SerialDenseVector& iforce,   ///< interface force vector
-          LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
-          const double& fac                   ///< integration factor
+          Epetra_SerialDenseVector& iforce,         ///< interface force vector
+          CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
+          const double& fac                         ///< integration factor
       )
       {
         for (unsigned inode = 0; inode < slave_nen_; ++inode)
@@ -409,10 +409,10 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ProjectOnSide(
-          LINALG::Matrix<nsd_, 1>&
+          CORE::LINALG::Matrix<nsd_, 1>&
               x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
-          LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
-          LINALG::Matrix<nsd_, 1>&
+          CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
+          CORE::LINALG::Matrix<nsd_, 1>&
               xi_side  ///< local coordinates of projected gaussian point w.r.t side
       )
       {
@@ -613,7 +613,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::GetSlaveFunctDeriv(
-          LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
+          CORE::LINALG::Matrix<nsd_, slave_nen_>& slave_derxy) const
       {
         slave_derxy = slave_derxy_;
       }

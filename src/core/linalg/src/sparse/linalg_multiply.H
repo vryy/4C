@@ -13,7 +13,7 @@
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCPDecl.hpp>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   // forward declarations
 
@@ -25,7 +25,7 @@ namespace LINALG
   \brief Matrix-Matrix Multiply C = A*B using ML
 
   Depending on the structure of your matrix, this method is potentially
-  (significantly) faster than the LINALG::Multiply implementations.
+  (significantly) faster than the CORE::LINALG::Multiply implementations.
   A factor of 5 - 10 in speed has been observed when comparing.
   It uses ML instead of EpetraExt for the multiplication kernel.
 
@@ -58,7 +58,7 @@ namespace LINALG
 
   \note ML wipes all exact zero entries in the product. So its perfectly
         ok if your product has less nonzeros than with the other
-        LINALG::Multiply methods.
+        CORE::LINALG::Multiply methods.
 
   \param Aorig (in)       : Matrix A for C=A*B
   \param Borig (in)       : Matrix B for C=A*B
@@ -114,6 +114,6 @@ namespace LINALG
   Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

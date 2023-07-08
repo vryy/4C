@@ -32,8 +32,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreE
   // Call PreEvaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -45,15 +45,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::PreE
  */
 template <typename beam, typename solid>
 bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Evaluate(
-    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
+    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
+    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -75,15 +75,15 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
   if (projection_points.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> r_beam;
-  LINALG::Matrix<3, 3, scalar_type> triad;
-  LINALG::Matrix<3, 1, scalar_type> r_cross_section_ref;
-  LINALG::Matrix<3, 1, scalar_type> r_cross_section;
-  LINALG::Matrix<3, 1, scalar_type> r_solid;
-  LINALG::Matrix<3, 1, scalar_type> force;
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
+  CORE::LINALG::Matrix<3, 3, scalar_type> triad;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_solid;
+  CORE::LINALG::Matrix<3, 1, scalar_type> force;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -193,12 +193,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::Eval
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::GetTriadAtXiDouble(
-    const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const
+    const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {
-    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, double> dummy;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> dummy;
     this->GetCouplingReferencePosition(beam_coupling_ref, dummy);
     GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad, this->Element1());
   }

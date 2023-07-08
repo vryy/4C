@@ -38,11 +38,11 @@ namespace MAT
       explicit InelasticDeformationDirection(std::vector<double> growthdirection);
 
       /// reference to matrix that determines growth direction
-      const LINALG::Matrix<3, 3>& GrowthDirMat() const { return growth_dir_mat_; }
+      const CORE::LINALG::Matrix<3, 3>& GrowthDirMat() const { return growth_dir_mat_; }
 
      private:
       /// matrix that determines growth direction
-      LINALG::Matrix<3, 3> growth_dir_mat_;
+      CORE::LINALG::Matrix<3, 3> growth_dir_mat_;
     };
 
     /*----------------------------------------------------------------------
@@ -145,7 +145,7 @@ namespace MAT
       explicit InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// reference to matrix that determines growth direction
-      const LINALG::Matrix<3, 3>& GrowthDirMat() { return growth_dir_->GrowthDirMat(); }
+      const CORE::LINALG::Matrix<3, 3>& GrowthDirMat() { return growth_dir_->GrowthDirMat(); }
 
      private:
       /// calculation of direction of inelastic deformation
@@ -233,7 +233,10 @@ namespace MAT
       explicit InelasticDefgradPolyIntercalFracAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// return reference to matrix that determines growth direction
-      const LINALG::Matrix<3, 3>& GrowthDirMat() const { return growth_dir_->GrowthDirMat(); };
+      const CORE::LINALG::Matrix<3, 3>& GrowthDirMat() const
+      {
+        return growth_dir_->GrowthDirMat();
+      };
 
      private:
       /// pointer to object, that calculates and holds direction of inelastic deformation
@@ -393,7 +396,7 @@ namespace MAT
      * @param[out] iFinM   Inverse inelastic deformation gradient
      */
     virtual void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) = 0;
 
     /*!
      * @brief evaluate additional terms for the elasticity tensor
@@ -406,9 +409,9 @@ namespace MAT
      *                     deformation gradient of current inelastic contribution
      * @param[in,out] cmatadd  Additional elasticity tensor
      */
-    virtual void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) = 0;
+    virtual void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) = 0;
 
     /*!
      * @brief calculate the derivative of the inelastic deformation gradient
@@ -418,7 +421,7 @@ namespace MAT
      *                         of different field
      */
     virtual void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) = 0;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) = 0;
 
     /*!
      * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
@@ -432,9 +435,9 @@ namespace MAT
      * @param[in,out] dstressdx Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable
      *                          of different field
      */
-    virtual void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdx) = 0;
+    virtual void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdx) = 0;
 
     /*!
      * @brief pre-evaluation, intended to be used for stuff that has to be done only once per
@@ -496,18 +499,19 @@ namespace MAT
      */
     explicit InelasticDefgradNoGrowth(MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdx) override;
 
     PAR::InelasticSource GetInelasticSource() override;
 
@@ -517,7 +521,7 @@ namespace MAT
 
    private:
     // identity tensor
-    LINALG::Matrix<3, 3> identity_;
+    CORE::LINALG::Matrix<3, 3> identity_;
   };
 
   /*--------------------------------------------------------------------*/
@@ -532,18 +536,19 @@ namespace MAT
    public:
     explicit InelasticDefgradTimeFunct(MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override{};
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override{};
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override{};
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override{};
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override{};
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdx) override{};
 
     PAR::InelasticSource GetInelasticSource() override;
 
@@ -562,7 +567,7 @@ namespace MAT
     double funct_value_;
 
     //! identity tensor
-    LINALG::Matrix<3, 3> identity_;
+    CORE::LINALG::Matrix<3, 3> identity_;
   };
 
   class InelasticDefgradScalar : public InelasticDefgradFactors
@@ -575,15 +580,17 @@ namespace MAT
      */
     explicit InelasticDefgradScalar(MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override = 0;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
     PAR::InelasticSource GetInelasticSource() override = 0;
 
@@ -651,17 +658,19 @@ namespace MAT
     INPAR::MAT::MaterialType MaterialType() const override = 0;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override = 0;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override = 0;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override = 0;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -704,17 +713,18 @@ namespace MAT
     }
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -764,17 +774,18 @@ namespace MAT
     }
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 
@@ -819,17 +830,18 @@ namespace MAT
     }
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
@@ -873,17 +885,18 @@ namespace MAT
     }
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticDefgradPolyIntercalFracAniso* Parameter() override
     {
@@ -905,18 +918,19 @@ namespace MAT
    public:
     explicit InelasticDefgradLinTempIso(MAT::PAR::Parameter* params);
 
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 6>& cmatadd) override;
 
     void EvaluateInelasticDefGradDerivative(
-        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+        double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM) override;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) override;
+    void EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+        CORE::LINALG::Matrix<6, 1>& dstressdT) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 

@@ -56,7 +56,7 @@ namespace CONTACT
     CoNitscheStrategy(const CoNitscheStrategy& old) = delete;
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
         int iter, bool predictor) override;
 
     void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
@@ -78,7 +78,8 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const override;
 
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+        const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams) const override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
@@ -96,7 +97,7 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps) override{
+    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */};
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
     void EvaluateReferenceState() override;
@@ -144,9 +145,9 @@ namespace CONTACT
     int ActiveSetSteps() override { return 0; }
     void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override {}
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
     {
       dserror(
@@ -168,18 +169,18 @@ namespace CONTACT
     void UpdateUzawaAugmentedLagrange() override {}
     void UpdateConstraintNorm(int uzawaiter) override {}
     void Initialize() override{};
-    void EvaluateContact(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+    void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
       dserror("not supported in this strategy");
     }
-    void EvaluateFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
       dserror("not supported in this strategy");
     }
-    void InitializeUzawa(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
     void ResetPenalty() override {}
@@ -230,7 +231,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return matrix block for given matrix block type
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt);
 
     /*!
@@ -240,7 +241,7 @@ namespace CONTACT
      * @param[in,out] kc  matrix block of given matrix block type that has to be completed
      */
     virtual void CompleteMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc);
+        const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc);
 
     /*!
      * @brief Fill block matrix of given matrix block type
@@ -248,7 +249,7 @@ namespace CONTACT
      * @param[in] bt  matrix block type
      * @return the filled block matrix of given matrix block type
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> CreateMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> CreateMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt);
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface_;
@@ -257,7 +258,7 @@ namespace CONTACT
     bool curr_state_eval_;
 
     Teuchos::RCP<Epetra_FEVector> fc_;
-    Teuchos::RCP<LINALG::SparseMatrix> kc_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kc_;
   };
 }  // namespace CONTACT
 #endif  // CONTACT_NITSCHE_STRATEGY_H

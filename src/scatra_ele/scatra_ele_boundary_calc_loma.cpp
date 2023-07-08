@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   my::normal_ = my::GetConstNormal(my::xyze_);
 
   // extract temperature flux vector for each node of the parent element
-  LINALG::SerialDenseMatrix eflux(3, nenparent);
+  CORE::LINALG::SerialDenseMatrix eflux(3, nenparent);
   DRT::Element* peleptr = (DRT::Element*)parentele;
   int k = my::numscal_ - 1;  // temperature is always last degree of freedom!!
   std::ostringstream temp;
@@ -206,8 +206,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-    const int k)
+    Teuchos::RCP<const MAT::Material> material,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
 {
   // initialization
   double density(0.);

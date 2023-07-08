@@ -544,7 +544,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum, DRT::Element* oldele)
 
     // copy fiber information from solid material to scatra material (for now, only one fiber
     // vector)
-    std::vector<LINALG::Matrix<3, 1>> fibervecs(0);
+    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs(0);
     somat->GetFiberVecs(fibervecs);
     actmat->Setup(fibervecs[0]);
   }

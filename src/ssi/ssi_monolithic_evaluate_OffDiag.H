@@ -19,11 +19,11 @@ namespace ADAPTER
   class Coupling;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -42,7 +42,7 @@ namespace SSI
   {
    public:
     explicit ScatraStructureOffDiagCoupling(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
@@ -53,38 +53,38 @@ namespace SSI
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureblock);
 
     //! evaluation contributions to off-diagonal manifold scatra-structure block of global system
     //! matrix
     virtual void EvaluateOffDiagBlockScatraManifoldStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock);
 
     //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
     //! matrix
     void EvaluateOffDiagBlockScatraStructureInterface(
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureinterface);
 
     //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
     virtual void EvaluateOffDiagBlockStructureScatraDomain(
-        Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const;
 
    protected:
     //! copy slave side symmetric contributions to the scatra structure interface linearization
     //! entries to master side scaled by -1.0
     void CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(
-        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
 
     //! evaluate symmetric contributions to the scatra structure interface linearization on the
     //! slave side
     void EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(
-        Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
 
     //! evaluate non-symmetric contributions to the scatra structure interface linearization
     void EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(
-        Teuchos::RCP<LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator> mastermatrix);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix);
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> FullMapStructure() const { return full_map_structure_; }
@@ -94,7 +94,7 @@ namespace SSI
 
    private:
     //! map extractor associated with all degrees of freedom inside structure field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> full_map_structure_;
@@ -116,7 +116,7 @@ namespace SSI
   {
    public:
     explicit ScatraManifoldStructureOffDiagCoupling(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
@@ -125,7 +125,7 @@ namespace SSI
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockScatraManifoldStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock) override;
 
    private:
     //! scatra manifold discretization
@@ -142,7 +142,7 @@ namespace SSI
   {
    public:
     explicit ScatraStructureOffDiagCouplingSSTI(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
@@ -151,7 +151,7 @@ namespace SSI
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockStructureScatraDomain(
-        Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const override;
 
    private:
     //! map extractor associated with all degrees of freedom inside scatra field

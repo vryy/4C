@@ -44,17 +44,17 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+    CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+    CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     this->CastGeometryPair()->Evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -65,10 +65,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
-  LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> local_M(false);
-  LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
-  LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> local_M(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
   EvaluateDM(local_D, local_M, local_kappa, local_constraint);
@@ -105,12 +105,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> r;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, double> lambda_discret;
-    LINALG::Matrix<3, 1, double> xi_mortar_node;
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    CORE::LINALG::Matrix<3, 1, scalar_type> X;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r;
+    CORE::LINALG::Matrix<3, 1, scalar_type> u;
+    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
+    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -277,10 +277,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
-    LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-    LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
-    LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+    CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
   local_D.PutScalar(0.0);
@@ -289,12 +289,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   local_constraint.PutScalar(0.0);
 
   // Initialize variables for shape function values.
-  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
+  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  CORE::LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
 
   // Initialize variable for beam position derivative.
-  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian = 0.0;
@@ -385,8 +385,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
  */
 template <typename beam, typename solid, typename mortar>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
-    mortar>::EvaluatePenaltyForceDouble(const LINALG::Matrix<3, 1, double>& r_beam,
-    const LINALG::Matrix<3, 1, double>& r_solid, LINALG::Matrix<3, 1, double>& force) const
+    mortar>::EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+    const CORE::LINALG::Matrix<3, 1, double>& r_solid,
+    CORE::LINALG::Matrix<3, 1, double>& force) const
 {
   force.PutScalar(0.0);
 }

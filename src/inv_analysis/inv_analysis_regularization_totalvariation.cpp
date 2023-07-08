@@ -56,7 +56,7 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
   // communicate theta data from other procs such that every proc can compute sums
   // over adjacent parameters
   Epetra_MultiVector thetacol(adjacency_->ColMap(), thetaele.NumVectors(), false);
-  LINALG::Export(thetaele, thetacol);
+  CORE::LINALG::Export(thetaele, thetacol);
 
   double functvalue = 0.0;
   for (int i = 0; i < thetaele(0)->MyLength(); i++)
@@ -115,7 +115,7 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(
   // communicate theta data from other procs such that every proc can compute sums
   // over adjacent parameters
   Epetra_MultiVector thetacol(adjacency_->ColMap(), thetaele.NumVectors(), false);
-  LINALG::Export(thetaele, thetacol);
+  CORE::LINALG::Export(thetaele, thetacol);
 
   // a gradient with the column layout of the adjacency matrix to be filled
   // on each proc and then summed up via the Epetra_Export back to the
@@ -184,7 +184,7 @@ void INVANA::RegularizationTotalVariation::EvaluateGradient(
 
   // bring back gradient to the unique full layout.
   // we have to add up off proc components so we cannot use
-  // the LINALG::Export since it only provides CombineMode::Insert
+  // the CORE::LINALG::Export since it only provides CombineMode::Insert
   Epetra_MultiVector tmp(adjacency_->RowMap(), 1, true);
   Epetra_Export exporter(gradientcol.Map(), tmp.Map());
   int err = tmp.Export(gradientcol, exporter, Add);

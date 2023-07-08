@@ -50,7 +50,7 @@ namespace CORE::GEO
     \param coordinates          (in)        : coordinates of the interface points
     */
     InterfacePoint(CORE::GEO::pointType& pType, int nodeId, std::vector<int>& lineId,
-        std::vector<int>& surfId, LINALG::Matrix<3, 1>& coordinates);
+        std::vector<int>& surfId, CORE::LINALG::Matrix<3, 1>& coordinates);
 
 
     /*!
@@ -109,7 +109,7 @@ namespace CORE::GEO
 
     \param coordinates            (in)        : coordinates of interface point
     */
-    void setCoord(const LINALG::Matrix<3, 1>& coordinates);
+    void setCoord(const CORE::LINALG::Matrix<3, 1>& coordinates);
 
     /*!
     \brief  set X-coordinate of the interface point
@@ -173,7 +173,7 @@ namespace CORE::GEO
     /*!
       \brief Return coordinates the interface points
      */
-    inline LINALG::Matrix<3, 1> getCoord() const { return coord_; }
+    inline CORE::LINALG::Matrix<3, 1> getCoord() const { return coord_; }
 
     /*!
     \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
@@ -205,7 +205,7 @@ namespace CORE::GEO
     std::vector<int> surfId_;
 
     //! coordinates of interface points
-    LINALG::Matrix<3, 1> coord_;
+    CORE::LINALG::Matrix<3, 1> coord_;
   };
 
 

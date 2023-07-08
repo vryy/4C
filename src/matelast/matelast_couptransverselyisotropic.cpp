@@ -60,7 +60,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineD
     case 0:
     {
       // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
-      LINALG::Matrix<3, 3> Id(true);
+      CORE::LINALG::Matrix<3, 3> Id(true);
       for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
       SetFiberVecs(-1.0, Id, Id);
 
@@ -76,9 +76,9 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineD
       if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
       {
         // Read in of data
-        LINALG::Matrix<3, 3> locsys(true);
+        CORE::LINALG::Matrix<3, 3> locsys(true);
         ReadRadAxiCir(linedef, locsys);
-        LINALG::Matrix<3, 3> Id(true);
+        CORE::LINALG::Matrix<3, 3> Id(true);
         for (int i = 0; i < 3; i++) Id(i, i) = 1.0;
         // final setup of fiber data
         SetFiberVecs(0.0, locsys, Id);
@@ -120,28 +120,28 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UnpackSummand(
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs)
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
 {
   fibervecs.push_back(A_);
 }
 
-void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if ((params_->angle_ < -90) || (params_->angle_ > 90))
     dserror("Fiber angle not in [-90,90]! Given angle = %d", params_->angle_);
   // convert
   const double angle = (params_->gamma_ * M_PI) / 180.;
 
-  LINALG::Matrix<3, 1> ca(true);
+  CORE::LINALG::Matrix<3, 1> ca(true);
   for (int i = 0; i < 3; ++i)
   {
     // a = cos gamma e3 + sin gamma e2
     ca(i) = std::cos(angle) * locsys(i, 2) + std::sin(angle) * locsys(i, 1);
   }
   // pull back in reference configuration
-  LINALG::Matrix<3, 1> A_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
+  CORE::LINALG::Matrix<3, 1> A_0(true);
+  CORE::LINALG::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
   A_0.Multiply(idefgrd, ca);
@@ -151,16 +151,16 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
-    const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
-    const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   // build Cartesian identity 2-tensor I_{AB}
-  LINALG::Matrix<6, 1> identity(true);
+  CORE::LINALG::Matrix<6, 1> identity(true);
   std::fill(identity.A(), identity.A() + 3, 1.0);
 
   // convert Green-Lagrange strain to right Cauchy-Green Tensor
   // C_{AB} = 2 * E_{AB} + I_{AB} [ REMARK: strain-like 6-Voigt vector ]
-  LINALG::Matrix<6, 1> rcg(true);
+  CORE::LINALG::Matrix<6, 1> rcg(true);
   rcg.Update(2.0, glstrain, 1.0);
   rcg.Update(1.0, identity, 1.0);
 
@@ -175,24 +175,25 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
-    const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   // direct return if an error occurred
   if (ResetInvariants(rcg, &params)) return;
 
   // switch to stress notation
-  LINALG::Matrix<6, 1> rcg_s(false);
+  CORE::LINALG::Matrix<6, 1> rcg_s(false);
   UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_s);
 
-  LINALG::Matrix<6, 1> rcg_inv_s(false);
+  CORE::LINALG::Matrix<6, 1> rcg_inv_s(false);
   UpdateSecondPiolaKirchhoffStress(stress, rcg_s, rcg_inv_s);
 
   UpdateElasticityTensor(cmat, rcg_inv_s);
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
-    LINALG::Matrix<6, 6>& cmat, const LINALG::Matrix<6, 1>& rcg_inv_s) const
+    CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const
 {
   const double alpha = params_->alpha_;
   const double beta = params_->beta_;
@@ -255,7 +256,7 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
 }
 
 int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
-    const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params)
+    const CORE::LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params)
 {
   // calculate the square root of the third invariant alias the determinant
   // of the deformation gradient
@@ -278,7 +279,7 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
         AA_(5) * rcg(5);
 
   // calculate pseudo invariant I5 ( quad. strain measure in fiber direction )
-  LINALG::Matrix<6, 1> rcg_quad(false);
+  CORE::LINALG::Matrix<6, 1> rcg_quad(false);
   UTILS::VOIGT::Strains::PowerOfSymmetricTensor(2, rcg, rcg_quad);
   I5_ = AA_(0) * (rcg_quad(0)) + AA_(1) * (rcg_quad(1)) + AA_(2) * (rcg_quad(2)) +
         AA_(3) * (rcg_quad(3)) + AA_(4) * (rcg_quad(4)) + AA_(5) * (rcg_quad(5));
@@ -287,8 +288,8 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
 }
 
 void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
-    LINALG::Matrix<6, 1>& stress, const LINALG::Matrix<6, 1>& rcg_s,
-    LINALG::Matrix<6, 1>& rcg_inv_s) const
+    CORE::LINALG::Matrix<6, 1>& stress, const CORE::LINALG::Matrix<6, 1>& rcg_s,
+    CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const
 {
   const double alpha = params_->alpha_;
   const double beta = params_->beta_;
@@ -311,10 +312,10 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
 
   // (2) contribution
   {
-    LINALG::Matrix<3, 1> ca(true);
+    CORE::LINALG::Matrix<3, 1> ca(true);
     UTILS::VOIGT::Stresses::MultiplyTensorVector(rcg_s, A_, ca);
 
-    LINALG::Matrix<6, 1> caa_aac(true);
+    CORE::LINALG::Matrix<6, 1> caa_aac(true);
     UTILS::VOIGT::Stresses::SymmetricOuterProduct(ca, A_, caa_aac);
 
     const double fac = -alpha;

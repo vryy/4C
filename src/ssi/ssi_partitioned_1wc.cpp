@@ -105,7 +105,8 @@ void SSI::SSIPart1WC::DoScatraStep()
       else
       {
         // create vector with dofrowmap from previously performed scatra calculation
-        Teuchos::RCP<Epetra_Vector> phinptemp = LINALG::CreateVector(*cardmono->DofRowMapScatra());
+        Teuchos::RCP<Epetra_Vector> phinptemp =
+            CORE::LINALG::CreateVector(*cardmono->DofRowMapScatra());
 
         // read phinp from restart file
         reader->ReadVector(phinptemp, "phinp");
@@ -286,7 +287,7 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
   }
 
   // set zero velocity and displacement field for scatra
-  auto zeros_structure = LINALG::CreateVector(*StructureField()->DofRowMap(), true);
+  auto zeros_structure = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(), true);
   SetStructSolution(zeros_structure, zeros_structure, false);
 
   ScaTraField()->PrepareTimeLoop();

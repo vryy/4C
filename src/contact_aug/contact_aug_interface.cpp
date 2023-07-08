@@ -589,14 +589,14 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleBMatrix(LINALG::SparseMatrix& BMatrix) const
+void CONTACT::AUG::Interface::AssembleBMatrix(CORE::LINALG::SparseMatrix& BMatrix) const
 {
   interfaceData_.AssembleStrategy().AssembleBMatrix(BMatrix);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLinMatrix) const
+void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(CORE::LINALG::SparseMatrix& dGLmLinMatrix) const
 {
   interfaceData_.AssembleStrategy().AssembleDGLmLinMatrix(dGLmLinMatrix);
 }
@@ -604,7 +604,7 @@ void CONTACT::AUG::Interface::AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDGGLinMatrix(
-    LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
+    CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
   interfaceData_.AssembleStrategy().AssembleDGGLinMatrix(dGGLinMatrix, cnVec);
 }
@@ -628,8 +628,9 @@ void CONTACT::AUG::Interface::Assemble_SlForceLmInactive(Epetra_Vector& sl_force
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(LINALG::SparseMatrix& inactive_dd_matrix,
-    const Epetra_Vector& cnVec, const double inactive_scale) const
+void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(
+    CORE::LINALG::SparseMatrix& inactive_dd_matrix, const Epetra_Vector& cnVec,
+    const double inactive_scale) const
 {
   interfaceData_.AssembleStrategy().AssembleInactiveDDMatrix(
       inactive_dd_matrix, cnVec, inactive_scale);
@@ -638,7 +639,7 @@ void CONTACT::AUG::Interface::AssembleInactiveDDMatrix(LINALG::SparseMatrix& ina
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleDLmNWGapLinMatrix(
-    LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
+    CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
 {
   interfaceData_.AssembleStrategy().AssembleDLmNWGapLinMatrix(dLmNWGapLinMatrix, map_type);
 }
@@ -841,7 +842,8 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
 void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
     Epetra_Vector& augInactiveRhs, Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes =
+      CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
@@ -880,7 +882,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
         rVal[rDof] = ct_inv * lm[rDof] * augA;
     }
 
-    LINALG::Assemble(augInactiveRhs, rVal, rGid, rOwner);
+    CORE::LINALG::Assemble(augInactiveRhs, rVal, rGid, rOwner);
   }
 
   return;
@@ -950,7 +952,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
     }
 
     // Assemble
-    LINALG::Assemble(dLmTLmTRhs, rVal, rGid, rOwner);
+    CORE::LINALG::Assemble(dLmTLmTRhs, rVal, rGid, rOwner);
   }
 
   return;
@@ -958,7 +960,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLmTMatrix) const
+void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(CORE::LINALG::SparseMatrix& dLmTLmTMatrix) const
 {
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
@@ -1006,7 +1008,8 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLm
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLmTLmTLinMatrix) const
+void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(
+    CORE::LINALG::SparseMatrix& dLmTLmTLinMatrix) const
 {
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
@@ -1052,7 +1055,8 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLm
 void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augInactiveDiagMatrix,
     const Epetra_Vector& cnVec, const double inactive_scale) const
 {
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes =
+      CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // get ct and invert it
   double ct_inv = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
@@ -1061,7 +1065,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
   const int nummynodes = augInactiveSlaveNodes->NumMyElements();
   const int* mynodegids = augInactiveSlaveNodes->MyGlobalElements();
 
-  LINALG::SerialDenseVector vals;
+  CORE::LINALG::SerialDenseVector vals;
   std::vector<int> rowIds(0);
   std::vector<int> rowner(0);
 
@@ -1105,7 +1109,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     // insert owner
     std::fill(rowner.data(), rowner.data() + numdof, cnode->Owner());
 
-    LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
+    CORE::LINALG::Assemble(augInactiveDiagMatrix, vals, rowIds, rowner);
   }
 
   return;
@@ -1114,7 +1118,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::AssembleAugInactiveLinMatrix(
-    LINALG::SparseMatrix& augInactiveLinMatrix, const Epetra_Vector& cnVec,
+    CORE::LINALG::SparseMatrix& augInactiveLinMatrix, const Epetra_Vector& cnVec,
     const double inactive_scale) const
 {
   // get ct and invert it
@@ -1211,7 +1215,8 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
   }
 
   // *** Inactive part *************************************************
-  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> augInactiveSlaveNodes =
+      CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
   // loop over proc's active slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
   for (int i = 0; i < augInactiveSlaveNodes->NumMyElements(); ++i)
@@ -1286,8 +1291,8 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
   activedofs_ = Teuchos::rcp(
       new Epetra_Map(-1, (int)myactivedofgids.size(), myactivedofgids.data(), 0, Comm()));
 
-  inactivenodes_ = LINALG::SplitMap(*snoderowmap_, *activenodes_);
-  inactivedofs_ = LINALG::SplitMap(*sdofrowmap_, *activedofs_);
+  inactivenodes_ = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  inactivedofs_ = CORE::LINALG::SplitMap(*sdofrowmap_, *activedofs_);
 
   SplitAugActiveDofs();
 
@@ -1493,7 +1498,7 @@ void CONTACT::AUG::Interface::BuildActiveColMaps()
     }
   }
 
-  LINALG::Export(active_row_nodes, active_col_nodes);
+  CORE::LINALG::Export(active_row_nodes, active_col_nodes);
 
   {
     std::vector<int> acol_gids;
@@ -1844,7 +1849,7 @@ CONTACT::AUG::Interface::GetVarWGapLinOfSide<CONTACT::AUG::SideType::slave>(
  *----------------------------------------------------------------------------*/
 template <class T>
 void CONTACT::AUG::AssembleMapIntoMatrix(
-    int row, double scal, const T& values, LINALG::SparseMatrix& mat, double threshold)
+    int row, double scal, const T& values, CORE::LINALG::SparseMatrix& mat, double threshold)
 {
   dsassert(threshold >= 0.0, "The threshold value has to be positive!");
 
@@ -1857,10 +1862,10 @@ void CONTACT::AUG::AssembleMapIntoMatrix(
 
     switch (mat.GetMatrixtype())
     {
-      case LINALG::SparseMatrix::FE_MATRIX:
+      case CORE::LINALG::SparseMatrix::FE_MATRIX:
         mat.FEAssemble(val, row, col);
         break;
-      case LINALG::SparseMatrix::CRS_MATRIX:
+      case CORE::LINALG::SparseMatrix::CRS_MATRIX:
         mat.Assemble(val, row, col);
         break;
     }
@@ -1964,8 +1969,8 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
         const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
         const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);
 
-        const LINALG::Matrix<3, 1> X0(cnode0.X(), true);
-        LINALG::Matrix<3, 1> diffX(cnode1.X(), false);
+        const CORE::LINALG::Matrix<3, 1> X0(cnode0.X(), true);
+        CORE::LINALG::Matrix<3, 1> diffX(cnode1.X(), false);
 
         diffX.Update(-1.0, X0, 1.0);
 
@@ -2093,7 +2098,7 @@ void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_s
 Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Interface::CollectRowNodeOwners(
     const DRT::Discretization& structure_dis) const
 {
-  Teuchos::RCP<Epetra_Map> smnodemap_ptr = LINALG::MergeMap(snoderowmap_, mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> smnodemap_ptr = CORE::LINALG::MergeMap(snoderowmap_, mnoderowmap_);
 
   Teuchos::RCP<Epetra_Vector> gsmnodeowners =
       Teuchos::rcp(new Epetra_Vector(*smnodemap_ptr, false));
@@ -2159,7 +2164,7 @@ CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::s
   Teuchos::RCP<const Epetra_Map> slelerowmap = ElementRowMapPtr<SideType::slave>();
   Teuchos::RCP<const Epetra_Map> maelerowmap = ElementRowMapPtr<SideType::master>();
 
-  return LINALG::MergeMap(slelerowmap, maelerowmap);
+  return CORE::LINALG::MergeMap(slelerowmap, maelerowmap);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -2172,10 +2177,10 @@ CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::m
 template Teuchos::RCP<const Epetra_Map> CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<
     CONTACT::AUG::SideType::slave_master>() const;
 
-template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::Deriv1stMap>(
-    int row, double scal, const Deriv1stMap& values, LINALG::SparseMatrix& mat, double threshold);
+template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::Deriv1stMap>(int row, double scal,
+    const Deriv1stMap& values, CORE::LINALG::SparseMatrix& mat, double threshold);
 template void CONTACT::AUG::AssembleMapIntoMatrix<CONTACT::AUG::plain_double_map>(int row,
-    double scal, const plain_double_map& values, LINALG::SparseMatrix& mat, double threshold);
+    double scal, const plain_double_map& values, CORE::LINALG::SparseMatrix& mat, double threshold);
 
 template const CONTACT::AUG::Deriv1stMap&
 CONTACT::AUG::Interface::GetVarWGapOfSide<CONTACT::AUG::SideType::master>(

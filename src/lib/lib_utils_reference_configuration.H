@@ -32,12 +32,13 @@ namespace DRT
      *  \author cschmidt \date 11/18 */
     template <int probdim, DRT::Element::DiscretizationType distype>
     static void LocalToGlobalPositionAtXiRefConfig(const DRT::Element* element,
-        const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
-        LINALG::Matrix<probdim, 1>& coord)
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        CORE::LINALG::Matrix<probdim, 1>& coord)
     {
-      static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
+      static CORE::LINALG::Matrix<
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
           funct(true);
-      static LINALG::Matrix<probdim,
+      static CORE::LINALG::Matrix<probdim,
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
           nodecoords(true);
 
@@ -80,14 +81,15 @@ namespace DRT
      *  \author cschmidt \date 11/18 */
     template <DRT::Element::DiscretizationType distype>
     static void ComputeUnitNormalAtXiRefConfig(const DRT::Element* element,
-        const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
-        LINALG::Matrix<3, 1>& normal)
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xi,
+        CORE::LINALG::Matrix<3, 1>& normal)
     {
-      static LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToDim<distype>::dim> gxieta(true);
-      static LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      static CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToDim<distype>::dim> gxieta(true);
+      static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
           deriv(true);
-      static LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+      static CORE::LINALG::Matrix<3,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
           nodecoords(true);
 
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xi, deriv);
@@ -113,10 +115,10 @@ namespace DRT
       }
 
       gxieta.MultiplyNT(1.0, nodecoords, deriv, 0.0);
-      static LINALG::Matrix<3, 1> gxi(true);
-      static LINALG::Matrix<3, 1> geta(true);
-      static LINALG::Matrix<2, 1> first(true);
-      static LINALG::Matrix<2, 1> second(true);
+      static CORE::LINALG::Matrix<3, 1> gxi(true);
+      static CORE::LINALG::Matrix<3, 1> geta(true);
+      static CORE::LINALG::Matrix<2, 1> first(true);
+      static CORE::LINALG::Matrix<2, 1> second(true);
       first(0, 0) = 1.0;
       second(1, 0) = 1.0;
       gxi.Multiply(1.0, gxieta, first, 0.0);

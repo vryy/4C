@@ -114,17 +114,17 @@ namespace DRT
           not numdofpernodenodewise_->Map().SameAs(*dis.NodeColMap()))
       {
         Epetra_IntVector numdofpernodenodewise_rowmap(*dis.NodeRowMap());
-        LINALG::Export(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
+        CORE::LINALG::Export(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
         numdofpernodenodewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
-        LINALG::Export(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
+        CORE::LINALG::Export(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
       if (numdofperelementelewise_ != Teuchos::null and
           not numdofperelementelewise_->Map().SameAs(*dis.ElementColMap()))
       {
         Epetra_IntVector numdofperelementelewise_rowmap(*dis.ElementRowMap());
-        LINALG::Export(*numdofperelementelewise_, numdofperelementelewise_rowmap);
+        CORE::LINALG::Export(*numdofperelementelewise_, numdofperelementelewise_rowmap);
         numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-        LINALG::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
+        CORE::LINALG::Export(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
       if (numdofperfacefacewise_ != Teuchos::null) dserror("Redistribution not yet implemented!");
 

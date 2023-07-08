@@ -54,10 +54,10 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
     mllist_.remove("init smoother", false);
 
     // see whether we use standard ml or our own mlapi operator
-    const bool domlapioperator = mllist_.get<bool>("LINALG::AMG_Operator", false);
+    const bool domlapioperator = mllist_.get<bool>("CORE::LINALG::AMG_Operator", false);
     if (domlapioperator)
     {
-      P_ = Teuchos::rcp(new LINALG::AMG_Operator(Pmatrix_, mllist_, true));
+      P_ = Teuchos::rcp(new CORE::LINALG::AMG_Operator(Pmatrix_, mllist_, true));
     }
     else
     {

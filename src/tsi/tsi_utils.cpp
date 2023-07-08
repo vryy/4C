@@ -299,7 +299,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
       DRT::Element* actele1 = dis1->gElement(ids_1[i]);
       std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
 
-      LINALG::Matrix<3, 1> diffcoords(true);
+      CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 

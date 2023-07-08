@@ -28,7 +28,7 @@
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class Preconditioner;
@@ -36,7 +36,7 @@ namespace LINALG
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -117,7 +117,7 @@ namespace ALE
 
    public:
     Ale(Teuchos::RCP<DRT::Discretization> actdis,      ///< pointer to discretization
-        Teuchos::RCP<LINALG::Solver> solver,           ///< linear solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,     ///< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,   ///< parameter list
         Teuchos::RCP<IO::DiscretizationWriter> output  ///< output writing
     );
@@ -138,8 +138,8 @@ namespace ALE
 
     /*! \brief Create Systemmatrix
      *
-     * We allocate the LINALG object just once, the result is an empty
-     * LINALG object. Evaluate has to be called separately.
+     * We allocate the CORE::LINALG object just once, the result is an empty
+     * CORE::LINALG object. Evaluate has to be called separately.
      *
      */
     void CreateSystemMatrix(
@@ -163,7 +163,7 @@ namespace ALE
     virtual int Solve();
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; }
 
     //! update displacement with iterative increment
     virtual void UpdateIter();
@@ -186,7 +186,7 @@ namespace ALE
     //@{
 
     /// access the preconditioner
-    Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner();
+    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner();
 
     /// create the preconditioner
     virtual void CreatePreconditioner(
@@ -286,10 +286,10 @@ namespace ALE
     Teuchos::RCP<const Epetra_Map> DofRowMap() const;
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     /// direct access to discretization
     Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
@@ -320,7 +320,7 @@ namespace ALE
     /// create result test for encapsulated algorithm
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
     )
@@ -329,7 +329,7 @@ namespace ALE
     }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Update slave dofs for multifield simulations with ale
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a);
@@ -377,7 +377,7 @@ namespace ALE
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! linear solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -403,7 +403,7 @@ namespace ALE
     //! @name matrices, vectors
     //@{
 
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;  ///< stiffness matrix
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;  ///< stiffness matrix
 
     /*! \brief residual vector
      *
@@ -443,7 +443,7 @@ namespace ALE
      *  Each adapter class can extract its map extractor via
      *  an application-specific key
      */
-    std::map<int, Teuchos::RCP<LINALG::MapExtractor>> dbcmaps_;
+    std::map<int, Teuchos::RCP<CORE::LINALG::MapExtractor>> dbcmaps_;
 
     //@}
 
@@ -483,7 +483,7 @@ namespace ALE
     virtual void OutputState(bool& datawritten);
 
     /// cached preconditioner on constant system matrix
-    Teuchos::RCP<LINALG::Preconditioner> precond_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> precond_;
 
     /// ale formulation read from inputfile
     const INPAR::ALE::AleDynamic aletype_;
@@ -548,7 +548,7 @@ namespace ALE
 
     //! Constructor
     AleLinear(Teuchos::RCP<DRT::Discretization> actdis,  ///< pointer to discretization
-        Teuchos::RCP<LINALG::Solver> solver,             ///< linear solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,       ///< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,     ///< parameter list
         Teuchos::RCP<IO::DiscretizationWriter> output    ///< output writing
     );

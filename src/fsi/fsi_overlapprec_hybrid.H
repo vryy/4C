@@ -55,7 +55,7 @@ namespace FSI
   {
    public:
     //! Constructor
-    OverlappingBlockMatrixHybridSchwarz(const LINALG::MultiMapExtractor& maps,
+    OverlappingBlockMatrixHybridSchwarz(const CORE::LINALG::MultiMapExtractor& maps,
         ADAPTER::FSIStructureWrapper& structure,  ///< structure field
         ADAPTER::Fluid& fluid,                    ///< fluid field
         ADAPTER::AleFsiWrapper& ale,              ///< ale field

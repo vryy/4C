@@ -38,7 +38,7 @@ namespace FLD
 
     */
     TransferTurbulentInflowCondition(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief Destructor
@@ -96,7 +96,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> dis_;
 
     //! info on DIirchlet boundary
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! the connectivity of the boundary condition
     std::map<int, std::vector<int>> midtosid_;
@@ -115,7 +115,7 @@ namespace FLD
 
     */
     TransferTurbulentInflowConditionXW(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief Destructor
@@ -150,7 +150,7 @@ namespace FLD
 
     */
     TransferTurbulentInflowConditionNodal(
-        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+        Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief Destructor

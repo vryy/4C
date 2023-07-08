@@ -40,13 +40,14 @@ MIXTURE::SimpleMixtureRule::SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* p
 {
 }
 
-void MIXTURE::SimpleMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
+void MIXTURE::SimpleMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+    const int eleGID)
 {
   // define temporary matrices
-  static LINALG::Matrix<6, 1> cstress;
-  static LINALG::Matrix<6, 6> ccmat;
+  static CORE::LINALG::Matrix<6, 1> cstress;
+  static CORE::LINALG::Matrix<6, 6> ccmat;
 
   // This is the simplest mixture rule
   // Just iterate over all constituents and add all stress/cmat contributions

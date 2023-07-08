@@ -193,21 +193,22 @@ namespace CONTACT
     virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
 
-    virtual void OldUnitNormalAtXi(
-        const double* xi, LINALG::Matrix<3, 1>& n_old, LINALG::Matrix<3, 2>& d_n_old_dxi);
+    virtual void OldUnitNormalAtXi(const double* xi, CORE::LINALG::Matrix<3, 1>& n_old,
+        CORE::LINALG::Matrix<3, 2>& d_n_old_dxi);
 
     /*!
      \brief Evaluate derivative J,xi of Jacobian determinant
      */
-    virtual void DJacDXi(double* djacdxi, double* xi, const LINALG::SerialDenseMatrix& secderiv);
+    virtual void DJacDXi(
+        double* djacdxi, double* xi, const CORE::LINALG::SerialDenseMatrix& secderiv);
 
     /*! \brief Evaluate derivative J,xi of Jacobian determinant
      *
      *  \author hiermeier \date 03/17 */
     template <unsigned elenumnode>
-    inline void DJacDXi(double* djacdxi, double* xi, LINALG::Matrix<elenumnode, 3>& secderiv)
+    inline void DJacDXi(double* djacdxi, double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv)
     {
-      LINALG::SerialDenseMatrix sdm_secderiv(View, secderiv.A(), elenumnode, elenumnode, 3);
+      CORE::LINALG::SerialDenseMatrix sdm_secderiv(View, secderiv.A(), elenumnode, elenumnode, 3);
       DJacDXi(djacdxi, xi, sdm_secderiv);
     }
 

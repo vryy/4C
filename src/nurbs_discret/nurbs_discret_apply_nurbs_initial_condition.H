@@ -29,7 +29,7 @@ namespace DRT
 {
   class Discretization;
 }
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -104,7 +104,7 @@ namespace DRT
 
     \date 04/09
     */
-    void apply_nurbs_initial_condition_solve(DRT::Discretization& dis, LINALG::Solver& solver,
+    void apply_nurbs_initial_condition_solve(DRT::Discretization& dis, CORE::LINALG::Solver& solver,
         const int startfuncno, Teuchos::RCP<Epetra_Vector> initialvals);
 
 

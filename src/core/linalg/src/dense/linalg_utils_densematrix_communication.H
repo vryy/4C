@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of communication methods for namespace LINALG
+\brief A collection of communication methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -20,7 +20,7 @@
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Gather information of type vector<T> on a subset of processors
@@ -80,7 +80,7 @@ namespace LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    DRT::Exporter exporter(source, target, comm);
+    ::DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -155,7 +155,7 @@ namespace LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    DRT::Exporter exporter(source, target, comm);
+    ::DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -230,7 +230,7 @@ namespace LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    DRT::Exporter exporter(source, target, comm);
+    ::DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -305,7 +305,7 @@ namespace LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    DRT::Exporter exporter(source, target, comm);
+    ::DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -383,7 +383,7 @@ namespace LINALG
     const int tnummyelements = (int)targetvec.size();
     Epetra_Map target(-1, tnummyelements, targetvec.data(), 0, comm);
     // build an exporter and export data
-    DRT::Exporter exporter(source, target, comm);
+    ::DRT::Exporter exporter(source, target, comm);
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
@@ -682,6 +682,6 @@ namespace LINALG
     const typename pair_type::first_type& operator()(const pair_type& v) const { return v.first; }
   };
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H

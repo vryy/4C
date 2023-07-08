@@ -82,12 +82,12 @@ void CONTACT::AUG::LagrangeMultiplierFunction::Setup()
 void CONTACT::AUG::LagrangeMultiplierFunction::Redistribute()
 {
   const Epetra_Map& slMaDofRowMap = *data_->GSlMaDofRowMapPtr();
-  bmat_ = Teuchos::rcp(new LINALG::SparseMatrix(slMaDofRowMap, 100, false, false));
+  bmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(slMaDofRowMap, 100, false, false));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLinearSolver(
+Teuchos::RCP<CORE::LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLinearSolver(
     const int lin_sol_id, const Epetra_Comm& comm,
     enum INPAR::SOLVER::SolverType& solver_type) const
 {
@@ -97,8 +97,8 @@ Teuchos::RCP<LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLin
   const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(lin_sol_id);
   solver_type = Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
-      new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   if (solver_type != INPAR::SOLVER::SolverType::umfpack and
       solver_type != INPAR::SOLVER::SolverType::superlu)
@@ -110,7 +110,7 @@ Teuchos::RCP<LINALG::Solver> CONTACT::AUG::LagrangeMultiplierFunction::CreateLin
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::LagrangeMultiplierFunction::LinSolve(
-    LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
+    CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol)
 {
   if (rhs.NumVectors() > 1 or sol.NumVectors() > 1)
     dserror("MultiVector support is not yet implemented!");
@@ -137,13 +137,13 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::Compute(
   CreateBMatrix();
 
   Epetra_Vector str_gradient_exp(*data_->GSlMaDofRowMapPtr(), true);
-  LINALG::Export(*str_gradient, str_gradient_exp);
+  CORE::LINALG::Export(*str_gradient, str_gradient_exp);
 
   Epetra_Vector rhs(data_->GActiveNDofRowMap(), true);
   bmat_->Multiply(true, str_gradient_exp, rhs);
 
-  Teuchos::RCP<LINALG::SparseMatrix> bbmat =
-      LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
+      CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
   LinSolve(*bbmat, rhs, *lmn_vec);
 
@@ -194,22 +194,23 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
-  LINALG::SparseMatrix full_stiff(
-      *cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ), LINALG::Copy);
+  CORE::LINALG::SparseMatrix full_stiff(
+      *cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ), CORE::LINALG::Copy);
 
-  Teuchos::RCP<LINALG::SparseMatrix> kdd_ptr =
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kdd_ptr =
       strategy_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
 
   // undo matrix contributions
   full_stiff.Add(*kdd_ptr, false, -1.0, 1.0);
 
   // --- first summand
-  Teuchos::RCP<Epetra_Vector> tmp_vec = LINALG::CreateVector(full_stiff.RangeMap(), true);
+  Teuchos::RCP<Epetra_Vector> tmp_vec = CORE::LINALG::CreateVector(full_stiff.RangeMap(), true);
 
   int err = full_stiff.Multiply(false, dincr, *tmp_vec);
   if (err) dserror("Multiply failed with err = %d", err);
 
-  Teuchos::RCP<Epetra_Vector> tmp_vec_exp = LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+  Teuchos::RCP<Epetra_Vector> tmp_vec_exp =
+      CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
 
   // build necessary exporter
   Epetra_Export exporter(tmp_vec_exp->Map(), tmp_vec->Map());
@@ -225,7 +226,8 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   tmp_vec_exp->Scale(0.0);
   tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
 
-  Teuchos::RCP<Epetra_Vector> dincr_exp = LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+  Teuchos::RCP<Epetra_Vector> dincr_exp =
+      CORE::LINALG::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
   err = dincr_exp->Import(dincr, exporter, Insert);
   if (err) dserror("Import failed with err = %d", err);
 
@@ -234,10 +236,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
   // --- 3rd summand
   AssembleGradientBBMatrixContribution(*dincr_exp, data_->LmN(), rhs);
 
-  Teuchos::RCP<Epetra_Vector> lmincr = LINALG::CreateVector(data_->GActiveNDofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> lmincr = CORE::LINALG::CreateVector(data_->GActiveNDofRowMap(), true);
 
-  Teuchos::RCP<LINALG::SparseMatrix> bbmat =
-      LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> bbmat =
+      CORE::LINALG::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);
 
   LinSolve(*bbmat, rhs, *lmincr);
 

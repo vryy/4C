@@ -26,7 +26,7 @@ namespace IO
   class DiscretizationReader;
 }  // namespace IO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -114,7 +114,7 @@ namespace STR
      *         time integration scheme for their terms (e.g. GenAlpha for the structure
      *         and OST for the remaining things). Furthermore, constraint/Lagrange
      *         multiplier blocks need no scaling anyway. */
-    virtual void AddViscoMassContributions(LINALG::SparseOperator& jac) const = 0;
+    virtual void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
     virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
@@ -124,7 +124,7 @@ namespace STR
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const = 0;
 
     //! Assemble Jacobian
-    virtual bool AssembleJac(LINALG::SparseOperator& jac,
+    virtual bool AssembleJac(CORE::LINALG::SparseOperator& jac,
         const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const
     {
       return false;

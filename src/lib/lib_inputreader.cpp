@@ -389,7 +389,7 @@ namespace DRT
                       (coords[2] > bbox[2] && coords[2] < bbox[5])))
                 dnodes.insert(node->Id());
             }
-            LINALG::GatherAll(dnodes, *comm_);
+            CORE::LINALG::GatherAll(dnodes, *comm_);
             topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
           }
 

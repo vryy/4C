@@ -160,17 +160,17 @@ namespace DRT
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
       );
 
       //! adaption of convective term for rhs
       //! the only difference to the base class version is, that there is no scaling with the
       //! density
-      virtual void RecomputeConvPhiForRhs(const int k,  //!< index of current scalar
-          const LINALG::Matrix<nsd_, 1>& sgvelint,      //!< subgrid-scale velocity at Gauss point
-          const double densnp,                          //!< density at time_(n+1)
-          const double densn,                           //!< density at time_(n)
-          const double vdiv                             //!< velocity divergence
+      virtual void RecomputeConvPhiForRhs(const int k,    //!< index of current scalar
+          const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const double densnp,                            //!< density at time_(n+1)
+          const double densn,                             //!< density at time_(n)
+          const double vdiv                               //!< velocity divergence
       );
 
       //! calculation of convective element matrix: add conservative contributions
@@ -196,8 +196,8 @@ namespace DRT
       //! gradient have to be included
       virtual void CalcConvODMesh(Epetra_SerialDenseMatrix& emat, const int k,
           const int ndofpernodemesh, const double fac, const double rhsfac, const double densnp,
-          const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
-          const LINALG::Matrix<nsd_, 1>& convelint);
+          const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint);
 
       //! calculation of linearized mass (off diagonal/shapederivative term mesh)
       //! difference to base class: linearization of porosity is included
@@ -212,7 +212,7 @@ namespace DRT
           const double phinp,   //!< scalar at time_(n+1)
           const double hist,    //!< history of time integartion
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -226,7 +226,7 @@ namespace DRT
           const double fac,                //!< domain-integration factor
           const double rhsint,             //!< rhs at Gauss point
           const double J,                  //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh,        //!< derivative of det(dx/ds) w.r.t. mesh displacement
           const double densnp  //!< density
       );
@@ -240,9 +240,9 @@ namespace DRT
           const double fac,           //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -255,7 +255,7 @@ namespace DRT
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -267,7 +267,7 @@ namespace DRT
                                        //!< variable
           const double timefacfac,     //!< domain-integration factor times time-integration factor
           const double densnp,         //!< density at time_(n+1)
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
       );
 
       //! calculation of convective element matrix in convective form -- additional conservative
@@ -329,7 +329,7 @@ namespace DRT
           const int k,                     //!< index of current scalar
           const int ndofpernodemesh,       //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       //! fill coupling vector and add variables to reaction in order to compute reaction values and
@@ -350,20 +350,20 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double taufac,                    //!< domain-integration factor times tau
-          const double densnp,                    //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const double taufac,                          //!< domain-integration factor times tau
+          const double densnp,                          //!< density at time_(n+1)
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       //! "shapederivatives" pressure gradient
       virtual void ApplyShapeDerivsPressureGrad(Epetra_SerialDenseMatrix& emat, const int k,
-          const double vrhs, const LINALG::Matrix<nsd_, 1>& gradphi,
-          const LINALG::Matrix<nsd_, 1> refgradpres);
+          const double vrhs, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+          const CORE::LINALG::Matrix<nsd_, 1> refgradpres);
 
      protected:
       //! nodal flux values at t_(n+1)
-      std::vector<LINALG::Matrix<nsd_, nen_>> efluxnp_;
+      std::vector<CORE::LINALG::Matrix<nsd_, nen_>> efluxnp_;
 
       //! a vector containing all quantities, the equation is coupled with
       //! (i.e. pressures, saturations and porosity)
@@ -414,25 +414,26 @@ namespace DRT
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void SetInternalVariablesMultiPoro(
-          const LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NSD, NEN>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const LINALG::Matrix<NSD, NSD>& xjm, const LINALG::Matrix<NSD, NEN>& xyze0,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,   //! scalar at t_(n)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const CORE::LINALG::Matrix<NSD, NSD>& xjm, const CORE::LINALG::Matrix<NSD, NEN>& xyze0,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist  //! history vector of transported scalars
       )
       {
         // call base class (scatra) with dummy variable econvelnp
-        const LINALG::Matrix<NSD, NEN> econvelnp(true);
+        const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
         my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"
-        LINALG::Matrix<NSD, NSD> xjm0;
+        CORE::LINALG::Matrix<NSD, NSD> xjm0;
         xjm0.MultiplyNT(deriv, xyze0);
 
         // inverse of transposed jacobian "ds/dX"
@@ -468,7 +469,8 @@ namespace DRT
         volfrac_.resize(numvolfrac);
         volfracpressure_.resize(numvolfrac);
 
-        const std::vector<LINALG::Matrix<NSD, 1>>& fluidgradphi = *(variablemanager_->GradPhinp());
+        const std::vector<CORE::LINALG::Matrix<NSD, 1>>& fluidgradphi =
+            *(variablemanager_->GradPhinp());
 
         volfrac_ = phasemanager_->VolFrac();
         volfracpressure_ = phasemanager_->VolFracPressure();
@@ -579,10 +581,10 @@ namespace DRT
 
       // adapt convective term in case of L2-projection
       void AdaptConvectiveTermForL2(
-          const LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NSD, NEN>>&
+          const std::vector<CORE::LINALG::Matrix<NSD, NEN>>&
               econvelnp  //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
       )
       {
@@ -650,7 +652,7 @@ namespace DRT
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const
+      virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const
       {
         switch (scalartophasemap_[k].species_type)
         {
@@ -673,7 +675,7 @@ namespace DRT
       };
 
       //! return convective part in convective form
-      virtual const LINALG::Matrix<NEN, 1>& Conv(const int k) const
+      virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const
       {
         switch (scalartophasemap_[k].species_type)
         {
@@ -1010,9 +1012,10 @@ namespace DRT
 
       //! get pre-factor needed for OD-fluid-linearization of convective term
       void GetPreFacLinConvODFluid(const int k, const unsigned ui,
-          std::vector<double>* prefaclinconvodfluid, const LINALG::Matrix<NSD, 1>& gradphi,
-          const LINALG::Matrix<1, NSD>& gradphiTdifftensor, const LINALG::Matrix<NEN, 1>& funct,
-          const LINALG::Matrix<NSD, NEN>& derxy, const int phase)
+          std::vector<double>* prefaclinconvodfluid, const CORE::LINALG::Matrix<NSD, 1>& gradphi,
+          const CORE::LINALG::Matrix<1, NSD>& gradphiTdifftensor,
+          const CORE::LINALG::Matrix<NEN, 1>& funct, const CORE::LINALG::Matrix<NSD, NEN>& derxy,
+          const int phase)
       {
         // reset to zero
         std::fill(prefaclinconvodfluid->begin(), prefaclinconvodfluid->end(), 0.0);
@@ -1034,15 +1037,15 @@ namespace DRT
           // derivative after relative permeabilty
           if (not phasemanager_->HasConstantRelPermeability(phase))
           {
-            const LINALG::Matrix<NSD, 1> gradpres = PressureGradient(phase);
+            const CORE::LINALG::Matrix<NSD, 1> gradpres = PressureGradient(phase);
             const double abspressgrad = AbsPressureGradient(phase);
 
-            static LINALG::Matrix<NSD, NSD> difftensor(true);
+            static CORE::LINALG::Matrix<NSD, NSD> difftensor(true);
             phasemanager_->PermeabilityTensor(phase, difftensor);
             difftensor.Scale(phasemanager_->RelPermeabilityDeriv(phase) /
                              phasemanager_->DynViscosity(phase, abspressgrad, 2));
 
-            static LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
+            static CORE::LINALG::Matrix<1, NSD> gradphiTdifftensor(true);
             gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
 
             double laplawf(0.0);
@@ -1255,7 +1258,8 @@ namespace DRT
       };
 
       //! get difftensor of fluid phases (permeability*relpermeability/mu)
-      void GetDiffTensorFluid(const int k, LINALG::Matrix<NSD, NSD>& difftensor, const int phase)
+      void GetDiffTensorFluid(
+          const int k, CORE::LINALG::Matrix<NSD, NSD>& difftensor, const int phase)
       {
         switch (scalartophasemap_[k].species_type)
         {
@@ -1277,8 +1281,8 @@ namespace DRT
       }
 
       //! compute gradient of pressure in reference configuration
-      void GetRefGradPres(const int k, const LINALG::Matrix<NSD, NSD>& xjm,
-          LINALG::Matrix<NSD, 1>& refgradpres, const int phase)
+      void GetRefGradPres(const int k, const CORE::LINALG::Matrix<NSD, NSD>& xjm,
+          CORE::LINALG::Matrix<NSD, 1>& refgradpres, const int phase)
       {
         refgradpres.Clear();
 
@@ -1288,12 +1292,12 @@ namespace DRT
         // fluid phase
         if (phase >= 0 && phase < numfluidphases)
         {
-          const std::vector<LINALG::Matrix<NSD, 1>>& fluidgradphi =
+          const std::vector<CORE::LINALG::Matrix<NSD, 1>>& fluidgradphi =
               *(variablemanager_->GradPhinp());
 
           // gradient of phi w.r.t. reference coordinates
-          std::vector<LINALG::Matrix<NSD, 1>> reffluidgradphi(
-              numfluidphases, LINALG::Matrix<NSD, 1>(true));
+          std::vector<CORE::LINALG::Matrix<NSD, 1>> reffluidgradphi(
+              numfluidphases, CORE::LINALG::Matrix<NSD, 1>(true));
           for (int idof = 0; idof < numfluidphases; ++idof)
             reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
 
@@ -1438,7 +1442,7 @@ namespace DRT
       };
 
       //! return pressure gradient of current phase
-      const LINALG::Matrix<NSD, 1>& PressureGradient(const int curphase) const
+      const CORE::LINALG::Matrix<NSD, 1>& PressureGradient(const int curphase) const
       {
         return pressuregrad_[curphase];
       };
@@ -1485,7 +1489,7 @@ namespace DRT
       // variablemanager
       void ExtractElementAndNodeValuesOfPoroFluid(DRT::Element* ele,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          LINALG::Matrix<NSD, NEN>& xyze)
+          CORE::LINALG::Matrix<NSD, NEN>& xyze)
       {
         // access from outside to the variablemananger: scatra-discretization has fluid-dis on
         // dofset 2
@@ -1510,17 +1514,17 @@ namespace DRT
 
      private:
       //! convective velocity
-      std::vector<LINALG::Matrix<NSD, 1>> multiconvelint_;
+      std::vector<CORE::LINALG::Matrix<NSD, 1>> multiconvelint_;
       //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      std::vector<LINALG::Matrix<NEN, 1>> multiconv_;
+      std::vector<CORE::LINALG::Matrix<NEN, 1>> multiconv_;
       //! zero convective velocity
-      LINALG::Matrix<NSD, 1> zeroconvelint_;
+      CORE::LINALG::Matrix<NSD, 1> zeroconvelint_;
       //! zero convective part in convective form
-      LINALG::Matrix<NEN, 1> zeroconv_;
+      CORE::LINALG::Matrix<NEN, 1> zeroconv_;
       //! temperature convective velocity
-      LINALG::Matrix<NSD, 1> temperatureconvelint_;
+      CORE::LINALG::Matrix<NSD, 1> temperatureconvelint_;
       //! temperature convective part in convective form
-      LINALG::Matrix<NEN, 1> temperatureconv_;
+      CORE::LINALG::Matrix<NEN, 1> temperatureconv_;
 
       //! phase pressure
       std::vector<double> pressure_;
@@ -1531,9 +1535,9 @@ namespace DRT
       //! solid pressure
       double solidpressure_;
       //! pressure gradient
-      std::vector<LINALG::Matrix<NSD, 1>> pressuregrad_;
+      std::vector<CORE::LINALG::Matrix<NSD, 1>> pressuregrad_;
       //! pressure gradient
-      std::vector<LINALG::Matrix<NSD, NSD>> difftensorsfluid_;
+      std::vector<CORE::LINALG::Matrix<NSD, NSD>> difftensorsfluid_;
       //! norm of pressure-gradient
       std::vector<double> abspressuregrad_;
       //! volume fraction

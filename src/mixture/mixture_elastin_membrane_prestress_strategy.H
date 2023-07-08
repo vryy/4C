@@ -72,7 +72,7 @@ namespace MIXTURE
      * \param eleGID (in) : Global element id
      */
     virtual void EvaluateMembraneStress(
-        LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
+        CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 }  // namespace MIXTURE
 #endif  // MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_H

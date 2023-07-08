@@ -66,22 +66,23 @@ namespace CORE::GEO
       virtual const std::vector<Node*>& Nodes() = 0;
 
       //! compute local coordinates of the element for a given point
-      const LINALG::Matrix<3, 1>& LocalCoordinates(Point* p)
+      const CORE::LINALG::Matrix<3, 1>& LocalCoordinates(Point* p)
       {
-        std::map<Point*, LINALG::Matrix<3, 1>>::iterator i = local_coordinates_.find(p);
+        std::map<Point*, CORE::LINALG::Matrix<3, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
         {
           return i->second;
         }
-        LINALG::Matrix<3, 1>& rst = local_coordinates_[p];
-        LINALG::Matrix<3, 1> xyz;
+        CORE::LINALG::Matrix<3, 1>& rst = local_coordinates_[p];
+        CORE::LINALG::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
         LocalCoordinates(xyz, rst);
         return rst;
       }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst) = 0;
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) = 0;
 
 
       //@}
@@ -242,7 +243,7 @@ namespace CORE::GEO
           const std::vector<CORE::GEO::CUT::Point*>& cpoints,
           Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp_ic);
 
-      std::map<Point*, LINALG::Matrix<3, 1>> local_coordinates_;
+      std::map<Point*, CORE::LINALG::Matrix<3, 1>> local_coordinates_;
 
      protected:
       /// dof set number of all element nodes, contains the dofset numbers for all nodes of the
@@ -301,7 +302,8 @@ namespace CORE::GEO
       virtual const std::vector<Node*>& Nodes() { return element_->Nodes(); }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
       {
         element_->LocalCoordinates(xyz, rst);
       }
@@ -630,7 +632,8 @@ namespace CORE::GEO
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
     };
 
     /// hex27 element handle
@@ -644,7 +647,8 @@ namespace CORE::GEO
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
     };
 
     /// tet10 element handle
@@ -658,7 +662,8 @@ namespace CORE::GEO
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
     };
 
     /// wedge15 element handle
@@ -672,7 +677,8 @@ namespace CORE::GEO
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
     };
 
   }  // namespace CUT

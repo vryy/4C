@@ -26,9 +26,9 @@ namespace CORE::GEO
     static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
-    LINALG::Matrix<1, 1> eleCoord;
-    LINALG::Matrix<1, numnode> deriv;
-    LINALG::Matrix<1, 3> xjm;
+    CORE::LINALG::Matrix<1, 1> eleCoord;
+    CORE::LINALG::Matrix<1, numnode> deriv;
+    CORE::LINALG::Matrix<1, 3> xjm;
 
     double length = 0.0;
 
@@ -64,10 +64,10 @@ namespace CORE::GEO
     static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
-    LINALG::Matrix<2, 1> eleCoord;
-    LINALG::Matrix<2, numnode> deriv;
-    LINALG::Matrix<2, 3> xjm;
-    LINALG::Matrix<2, 2> xjm_xjmt;
+    CORE::LINALG::Matrix<2, 1> eleCoord;
+    CORE::LINALG::Matrix<2, numnode> deriv;
+    CORE::LINALG::Matrix<2, 3> xjm;
+    CORE::LINALG::Matrix<2, 2> xjm_xjmt;
 
     double area = 0.0;
 
@@ -109,9 +109,9 @@ namespace CORE::GEO
     // gaussian points
     const CORE::DRT::UTILS::GaussIntegration intpoints(distype);
 
-    LINALG::Matrix<3, 1> eleCoord;
-    LINALG::Matrix<3, numnode> deriv;
-    LINALG::Matrix<3, 3> xjm;
+    CORE::LINALG::Matrix<3, 1> eleCoord;
+    CORE::LINALG::Matrix<3, numnode> deriv;
+    CORE::LINALG::Matrix<3, 3> xjm;
 
     double vol = 0.0;
 
@@ -159,8 +159,8 @@ namespace CORE::GEO
 
     // calculate the distance between the two given nodes and return
     // the value
-    LINALG::Matrix<3, 1> d(&xyze(0, 0));
-    const LINALG::Matrix<3, 1> x1(&xyze(0, 1));
+    CORE::LINALG::Matrix<3, 1> d(&xyze(0, 0));
+    const CORE::LINALG::Matrix<3, 1> x1(&xyze(0, 1));
 
     d.Update(1.0, x1, -1.0);
     return d.Norm2();

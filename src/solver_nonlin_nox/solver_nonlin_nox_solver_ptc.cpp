@@ -780,7 +780,7 @@ void NOX::NLN::Solver::PseudoTransient::throwError(
  *----------------------------------------------------------------------*/
 NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
       scalingDiagOpPtr_(scalingDiagOpPtr),
@@ -792,7 +792,7 @@ NOX::NLN::LinSystem::PrePostOp::PseudoTransient::PseudoTransient(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
-    LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+    CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   if (not ptcsolver_.isPtcSolve()) return;
 
@@ -803,9 +803,9 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
   {
     case NOX::NLN::LinSystem::LinalgSparseMatrix:
     {
-      // First cast the LINALG::SparseOperator and do an additional sanity
+      // First cast the CORE::LINALG::SparseOperator and do an additional sanity
       // check.
-      LINALG::SparseMatrix* jacPtr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+      CORE::LINALG::SparseMatrix* jacPtr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
       if (jacPtr == NULL)
         dserror(
             "Something strange happened: The jacobian has not the "
@@ -829,14 +829,15 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeFandJacobian(Epetra_Vector& rhs,
-    LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+    CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
 {
   runPostComputeJacobian(jac, x, linsys);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(LINALG::SparseMatrix& jac)
+void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
+    CORE::LINALG::SparseMatrix& jac)
 {
   // get the inverse pseudo time step
   const double& deltaInv = ptcsolver_.getInversePseudoTimeStep();
@@ -857,7 +858,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(LINALG::Spa
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(jac.RowMap(), false);
+      Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(jac.RowMap(), false);
       jac.ExtractDiagonalCopy(*diag);
       diag->Update(1.0, *v, 1.0);
       // Finally modify the jacobian
@@ -895,7 +896,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(LINALG::Spa
  *----------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOp::PseudoTransient::PseudoTransient(
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
     const NOX::NLN::Solver::PseudoTransient& ptcsolver)
     : ptcsolver_(ptcsolver),
       scalingDiagOpPtr_(scalingDiagOpPtr),

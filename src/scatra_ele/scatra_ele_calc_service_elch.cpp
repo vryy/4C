@@ -78,8 +78,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // extract local values of (convective) velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, my::econvelnp_, lmvel);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*vel, my::evelnp_, lmvel);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, my::econvelnp_, lmvel);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*vel, my::evelnp_, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->RotateMyValuesIfNecessary(my::econvelnp_);
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // -> extract local values from global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       //----------------------------------------------------------------------
       // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -150,7 +150,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
           // Thus, this method here DOES NOT YET provide flux values that are ready to use!!
 
           // allocate and initialize!
-          LINALG::Matrix<nsd_, 1> q(true);
+          CORE::LINALG::Matrix<nsd_, 1> q(true);
 
           if (writefluxid != my::numdofpernode_)
           {
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       CalErrorComparedToAnalytSolution(ele, params, elevec1_epetra);
 
@@ -337,16 +337,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from the global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp(my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get history variable (needed for double layer modeling)
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'hist'");
 
   // extract local values from the global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ehist(my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist, lm);
 
   // get current condition
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -447,9 +449,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
     Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.GetState("phidtnp");
     if (phidtnp == Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
     // extract local values from the global vector
-    std::vector<LINALG::Matrix<nen_, 1>> ephidtnp(
-        my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
+    std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(
+        my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phidtnp, ephidtnp, lm);
 
     if (not is_stationary)
     {
@@ -471,18 +473,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
-    const DRT::Element* ele,                             ///< current element
-    Epetra_SerialDenseMatrix& emat,                      ///< element matrix
-    Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-    const std::vector<LINALG::Matrix<nen_, 1>>& ehist,   ///< history variables at element nodes
-    double timefac,                                      ///< time factor
-    Teuchos::RCP<DRT::Condition> cond,                   ///< electrode kinetics boundary condition
-    const int nume,                                      ///< number of transferred electrons
-    const std::vector<int> stoich,                       ///< stoichiometry of the reaction
-    const int kinetics,                                  ///< desired electrode kinetics model
-    const double pot0,                                   ///< electrode potential on metal side
-    const double frt,                                    ///< factor F/RT
+    const DRT::Element* ele,                                   ///< current element
+    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
+    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+        ehist,                          ///< history variables at element nodes
+    double timefac,                     ///< time factor
+    Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
+    const int nume,                     ///< number of transferred electrons
+    const std::vector<int> stoich,      ///< stoichiometry of the reaction
+    const int kinetics,                 ///< desired electrode kinetics model
+    const double pot0,                  ///< electrode potential on metal side
+    const double frt,                   ///< factor F/RT
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -558,19 +561,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatusPoint(
-    const DRT::Element* ele,                               ///< current element
-    Epetra_SerialDenseVector& scalars,                     ///< scalars to be integrated
-    Teuchos::ParameterList& params,                        ///< parameter list
-    Teuchos::RCP<DRT::Condition> cond,                     ///< condition
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,    ///< state variables at element nodes
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
-    const int kinetics,                                    ///< desired electrode kinetics model
-    const std::vector<int> stoich,                         ///< stoichiometry of the reaction
-    const int nume,                                        ///< number of transferred electrons
-    const double pot0,                                     ///< electrode potential on metal side
-    const double frt,                                      ///< factor F/RT
-    const double timefac,                                  ///< time factor
-    const double scalar  ///< scaling factor for current related quantities
+    const DRT::Element* ele,                                   ///< current element
+    Epetra_SerialDenseVector& scalars,                         ///< scalars to be integrated
+    Teuchos::ParameterList& params,                            ///< parameter list
+    Teuchos::RCP<DRT::Condition> cond,                         ///< condition
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+    const int kinetics,             ///< desired electrode kinetics model
+    const std::vector<int> stoich,  ///< stoichiometry of the reaction
+    const int nume,                 ///< number of transferred electrons
+    const double pot0,              ///< electrode potential on metal side
+    const double frt,               ///< factor F/RT
+    const double timefac,           ///< time factor
+    const double scalar             ///< scaling factor for current related quantities
 )
 {
   // Warning:
@@ -671,12 +674,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
   std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
 
   // make a copy of state variables to undo perturbations later
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp_original(my::numdofpernode_);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp_original(my::numdofpernode_);
   for (int k = 0; k < my::numdofpernode_; ++k)
     for (unsigned i = 0; i < nen_; ++i) ephinp_original[k](i, 0) = my::ephinp_[k](i, 0);
 
   // generalized-alpha time integration requires a copy of history variables as well
-  std::vector<LINALG::Matrix<nen_, 1>> ehist_original(my::numscal_);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist_original(my::numscal_);
   if (my::scatraparatimint_->IsGenAlpha())
   {
     for (int k = 0; k < my::numscal_; ++k)

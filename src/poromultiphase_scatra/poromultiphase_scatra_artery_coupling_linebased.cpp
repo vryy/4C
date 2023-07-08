@@ -81,11 +81,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art)
 {
   // copy vector
   Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed = Teuchos::rcp(new Epetra_Vector(*rhs_art));
@@ -100,7 +101,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
 
 Teuchos::RCP<Epetra_Map>
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCForCollapsedEles(
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art,
     Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed)
 {
   // Zero flux is automatically assumed for nodes which border a collapsed element
@@ -158,7 +159,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
   condmaps.push_back(dbcmap_art->CondMap());
 
   // combined map
-  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
   return condmerged;
 }
@@ -231,7 +232,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCou
   // communicate the dummy map to all procs.
   std::vector<int> allproc(Comm().NumProc());
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<double>(duplicates, duplicates, (int)allproc.size(), allproc.data(), Comm());
 
   // loop over duplicates and delete one duplicate (the one where the 2D/3D element has the larger
   // id)
@@ -435,7 +436,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
   // global assembly and export
   if (unaffected_diams_artery_row->GlobalAssemble(Add, false) != 0)
     dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
-  LINALG::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
+  CORE::LINALG::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
 }
 
 /*----------------------------------------------------------------------*
@@ -609,7 +610,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
   // communicate it to all procs.
   std::vector<int> allproc(Comm().NumProc());
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
-  LINALG::Gather<double>(
+  CORE::LINALG::Gather<double>(
       gid_to_seglength, gid_to_seglength, (int)allproc.size(), allproc.data(), Comm());
 }
 
@@ -617,9 +618,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+        const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // call base class
   POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
@@ -640,7 +641,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     dserror("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
 
   // export to column format
-  LINALG::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
+  CORE::LINALG::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
 
   // fill the vector collecting the element diameter
   FillArteryEleDiamCol();
@@ -746,8 +747,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FindFreeHangin
       Teuchos::rcp(new Epetra_Vector(*artconncompdis->ElementColMap(), true));
   Teuchos::RCP<Epetra_Vector> ele_diams_artery_row =
       Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementRowMap(), true));
-  LINALG::Export(*ele_diams_artery_col_, *ele_diams_artery_row);
-  LINALG::Export(*ele_diams_artery_row, *ele_diams_artery_full_overlap);
+  CORE::LINALG::Export(*ele_diams_artery_col_, *ele_diams_artery_row);
+  CORE::LINALG::Export(*ele_diams_artery_row, *ele_diams_artery_full_overlap);
 
   // vector of connected components of 1D graph
   std::vector<std::vector<int>> connected_components;
@@ -897,7 +898,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     EvaluateAdditionalLinearizationofIntegratedDiam()
 {
   // linearizations
-  std::vector<LINALG::SerialDenseMatrix> elestiff(2);
+  std::vector<CORE::LINALG::SerialDenseMatrix> elestiff(2);
 
   // evaluate all pairs
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++)

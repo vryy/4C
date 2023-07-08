@@ -34,9 +34,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
     mortar>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+    CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+    CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -53,10 +53,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
-  LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
-  LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
-  LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  CORE::LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
   EvaluateDM(local_D, local_M, local_kappa, local_constraint);
@@ -72,10 +72,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  */
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
-    LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-    LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
-    LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+    CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    CORE::LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
   local_D.PutScalar(0.0);
@@ -84,12 +84,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   local_constraint.PutScalar(0.0);
 
   // Initialize variables for shape function values.
-  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, double> N_surface(true);
+  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  CORE::LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, double> N_surface(true);
 
   // Initialize variable for beam position derivative.
-  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian = 0.0;
@@ -166,8 +166,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
 
   // Add the local constraint contributions. For this we multiply the local mortar matrices with the
   // positions / displacements to get the actual constraint terms for this pair.
-  LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
-  LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
+  CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
+  CORE::LINALG::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
   switch (this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType())
   {
     case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:

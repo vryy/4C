@@ -24,11 +24,11 @@ namespace DRT
   class Condition;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -56,7 +56,7 @@ namespace ADAPTER
    public:
     /// Constructor
     FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
@@ -73,7 +73,7 @@ namespace ADAPTER
     virtual void Update();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver();
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver();
 
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
@@ -250,7 +250,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> interfaceforcen_;
 
     /// ALE dof map
-    Teuchos::RCP<LINALG::MapExtractor> meshmap_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> meshmap_;
 
     /// all velocity dofs not at the interface
     Teuchos::RCP<Epetra_Map> innervelmap_;

@@ -208,7 +208,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     std::vector<ParticleObjShrdPtr>& particlestocheck)
 {
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
+  CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // set of particles located outside bounding box
   std::set<int> particlesoutsideboundingbox;
@@ -843,7 +843,8 @@ double PARTICLEENGINE::ParticleEngine::LengthOfBinningDomainInASpatialDirection(
   return binstrategy_->LengthOfBinningDomainInASpatialDirection(dim);
 }
 
-LINALG::Matrix<3, 2> const& PARTICLEENGINE::ParticleEngine::DomainBoundingBoxCornerPositions() const
+CORE::LINALG::Matrix<3, 2> const& PARTICLEENGINE::ParticleEngine::DomainBoundingBoxCornerPositions()
+    const
 {
   return binstrategy_->DomainBoundingBoxCornerPositions();
 }
@@ -1294,7 +1295,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
   if (not validownedparticles_) dserror("invalid relation of owned particles to bins!");
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
+  CORE::LINALG::Matrix<3, 2> boundingbox = binstrategy_->DomainBoundingBoxCornerPositions();
 
   // count particles that left the computational domain
   int numparticlesoutside = 0;

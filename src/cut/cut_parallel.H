@@ -110,15 +110,15 @@ namespace CORE::GEO
       /*!
       \brief Pack the point coordinates
        */
-      void packPoints(
-          ::DRT::PackBuffer& dataSend, std::vector<LINALG::Matrix<3, 1>>& points_coords) const;
+      void packPoints(::DRT::PackBuffer& dataSend,
+          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const;
 
       /*!
       \brief Unpack the point coordinates
        */
       void unpackPoints(std::vector<char>::size_type& posinData,  //!< position in data
           std::vector<char>& dataRecv,                            //!< received data
-          std::vector<LINALG::Matrix<3, 1>>& points_coords        //!< point coordinates
+          std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords  //!< point coordinates
       ) const;
 
       /*!

@@ -33,7 +33,7 @@ namespace FSI
   class Monolithic;
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
@@ -42,7 +42,7 @@ namespace LINALG
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FS3I
 {
@@ -155,27 +155,27 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> scatraincrement_;
 
     /// dof row map of scatra problems splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> scatraglobalex_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> scatraglobalex_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
-    std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>> scatrafieldexvec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> scatrafieldexvec_;
 
     /// coupling of dofs at the scatra interface
     Teuchos::RCP<CORE::ADAPTER::Coupling> scatracoup_;
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 
     /// coupling forces (in case of surface permeability)
     std::vector<Teuchos::RCP<Epetra_Vector>> scatracoupforce_;
 
     /// coupling matrices (in case of surface permeability)
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> scatracoupmat_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> scatracoupmat_;
 
     /// zero vector (needed for application of Dirichlet BC on coupling vector)
     std::vector<Teuchos::RCP<Epetra_Vector>> scatrazeros_;
 
     /// scatra solver
-    Teuchos::RCP<LINALG::Solver> scatrasolver_;
+    Teuchos::RCP<CORE::LINALG::Solver> scatrasolver_;
 
     /// flag for infinite surface permeability
     const bool infperm_;
@@ -202,10 +202,10 @@ namespace FS3I
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> sibtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> fbitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fbitransform_;
     ///@}
 
    private:

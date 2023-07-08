@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic creation methods for namespace LINALG
+\brief A collection of algebraic creation methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -22,7 +22,7 @@
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Create a new Epetra_CrsMatrix and return RefcountPtr to it
@@ -96,8 +96,8 @@ namespace LINALG
       \author u.kue
       \date 02/08
      */
-  void CreateMapExtractorFromDiscretization(
-      const DRT::DiscretizationInterface& dis, int ndim, LINALG::MultiMapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const ::DRT::DiscretizationInterface& dis, int ndim,
+      CORE::LINALG::MultiMapExtractor& extractor);
 
   /*!
     \brief Creates MapExtractor to split dofs at certain position
@@ -118,8 +118,8 @@ namespace LINALG
     \author u.kue
     \date 02/08
    */
-  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
-      const DRT::DofSetInterface& dofset, int ndim, LINALG::MapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis,
+      const ::DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor);
 
 
   /*!
@@ -139,9 +139,9 @@ namespace LINALG
     \author schott
     \date 12/11
    */
-  void CreateMapExtractorFromDiscretization(const DRT::Discretization& dis, int ndim_field1,
-      int ndim_field2, LINALG::MultiMapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis, int ndim_field1,
+      int ndim_field2, CORE::LINALG::MultiMapExtractor& extractor);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_CREATE_H

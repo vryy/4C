@@ -36,7 +36,7 @@ namespace CORE::LINEAR_SOLVER
     void Setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
         Epetra_MultiVector *b) override;
 
-    virtual void Setup(Teuchos::RCP<LINALG::BlockSparseMatrixBase> A);
+    virtual void Setup(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A);
 
     Epetra_Operator *PrecOperator() const override;
 
@@ -48,8 +48,8 @@ namespace CORE::LINEAR_SOLVER
 
    private:
     // Private variables
-    Teuchos::RCP<Epetra_Operator> P_;                // The underlying preconditioner object
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A_;  // A own copy of the system matrix
+    Teuchos::RCP<Epetra_Operator> P_;                      // The underlying preconditioner object
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;  // A own copy of the system matrix
     Teuchos::ParameterList &params_;
 
   };  // AMGnxn_Preconditioner
@@ -92,7 +92,7 @@ namespace CORE::LINEAR_SOLVER
   class AMGnxn_Operator : virtual public Epetra_Operator
   {
    public:
-    AMGnxn_Operator(Teuchos::RCP<LINALG::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
+    AMGnxn_Operator(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
         std::vector<int> null_spaces_dim,
         std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
         const Teuchos::ParameterList &amgnxn_params, const Teuchos::ParameterList &smoothers_params,
@@ -145,7 +145,7 @@ namespace CORE::LINEAR_SOLVER
     void Setup();
 
    private:
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
     std::vector<Teuchos::ParameterList> muelu_lists_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
@@ -163,8 +163,8 @@ namespace CORE::LINEAR_SOLVER
   class BlockSmoother_Operator : virtual public Epetra_Operator
   {
    public:
-    BlockSmoother_Operator(Teuchos::RCP<LINALG::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
-        std::vector<int> null_spaces_dim,
+    BlockSmoother_Operator(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A,
+        std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
         std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
         const Teuchos::ParameterList &amgnxn_params,
         const Teuchos::ParameterList &smoothers_params);
@@ -216,7 +216,7 @@ namespace CORE::LINEAR_SOLVER
     void Setup();  // TODO
 
    private:
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
     std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
@@ -232,7 +232,7 @@ namespace CORE::LINEAR_SOLVER
   class Merged_Operator : virtual public Epetra_Operator
   {
    public:
-    Merged_Operator(Teuchos::RCP<LINALG::BlockSparseMatrixBase> A,
+    Merged_Operator(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A,
         const Teuchos::ParameterList &amgnxn_params,
         const Teuchos::ParameterList &smoothers_params);
 
@@ -283,8 +283,8 @@ namespace CORE::LINEAR_SOLVER
     void Setup();  // TODO
 
    private:
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> A_;
-    Teuchos::RCP<LINALG::SparseMatrix> Asp_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Asp_;
     Teuchos::ParameterList amgnxn_params_;
     Teuchos::ParameterList smoothers_params_;
 

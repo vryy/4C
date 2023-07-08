@@ -185,7 +185,8 @@ void XFEM::MeshProjector::SetupSearchTree()
   searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of all elements of source discretization
-  const LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofPositions(src_nodepositions_n_);
+  const CORE::LINALG::Matrix<3, 2> sourceEleBox =
+      CORE::GEO::getXAABBofPositions(src_nodepositions_n_);
   searchTree_->initializeTree(sourceEleBox, *sourcedis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // TODO: find the bounding box of the nodes from the target discretization, that demand
@@ -209,11 +210,11 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
   projection_targetnodes.reserve(num_projection_nodes);
 
   // target node positions (in sequence of projection_targetnodes)
-  std::vector<LINALG::Matrix<3, 1>> tar_nodepositions_n;
+  std::vector<CORE::LINALG::Matrix<3, 1>> tar_nodepositions_n;
   tar_nodepositions_n.reserve(num_projection_nodes);
 
   // state vectors veln and accn (in sequence of projection_targetnodes)
-  std::vector<LINALG::Matrix<8, 1>> interpolated_vecs;
+  std::vector<CORE::LINALG::Matrix<8, 1>> interpolated_vecs;
   interpolated_vecs.reserve(num_projection_nodes);
 
   // set position of nodes in target cloud
@@ -232,7 +233,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
       DRT::UTILS::ExtractMyValues(*targetdisp, mydisp, tar_dofs);
     }
 
-    LINALG::Matrix<3, 1> pos;
+    CORE::LINALG::Matrix<3, 1> pos;
     for (int d = 0; d < 3; ++d)
     {
       pos(d) = node->X()[d] + mydisp.at(d);
@@ -243,7 +244,7 @@ void XFEM::MeshProjector::Project(std::map<int, std::set<int>>& projection_nodeT
 
     tar_nodepositions_n.push_back(pos);
     projection_targetnodes.push_back(i->first);
-    interpolated_vecs.push_back(LINALG::Matrix<8, 1>(true));
+    interpolated_vecs.push_back(CORE::LINALG::Matrix<8, 1>(true));
   }
 
   SetupSearchTree();
@@ -326,13 +327,13 @@ void XFEM::MeshProjector::ProjectInFullTargetDiscretization(
 
 template <DRT::Element::DiscretizationType distype>
 bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
-    const LINALG::Matrix<3, 1>& node_xyz, LINALG::Matrix<8, 1>& interpolatedvec)
+    const CORE::LINALG::Matrix<3, 1>& node_xyz, CORE::LINALG::Matrix<8, 1>& interpolatedvec)
 {
   // number of element's nodes
   const unsigned int src_numnodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   // nodal coordinates
-  LINALG::Matrix<3, src_numnodes> src_xyze(true);
+  CORE::LINALG::Matrix<3, src_numnodes> src_xyze(true);
 
   for (int in = 0; in < src_ele->NumNode(); ++in)
   {
@@ -352,11 +353,11 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
   if (inside)
   {
     // node position in covering element's local coordinates
-    LINALG::Matrix<3, 1> xsi;
+    CORE::LINALG::Matrix<3, 1> xsi;
     pos->LocalCoordinates(xsi);
 
     // Evaluate elements shape function at this point and fill values
-    LINALG::SerialDenseVector shp(src_numnodes);
+    CORE::LINALG::SerialDenseVector shp(src_numnodes);
     CORE::DRT::UTILS::shape_function_3D(shp, xsi(0, 0), xsi(1, 0), xsi(2, 0), distype);
 
     // extract state values and interpolate
@@ -393,9 +394,9 @@ bool XFEM::MeshProjector::CheckPositionAndProject(const DRT::Element* src_ele,
 }
 
 void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
-    std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-    std::vector<LINALG::Matrix<8, 1>>& interpolated_vecs, std::vector<int>& projection_targetnodes,
-    std::vector<int>& have_values)
+    std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+    std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+    std::vector<int>& projection_targetnodes, std::vector<int>& have_values)
 {
   // loop over the nodes (coordinates)
   for (unsigned int ni = 0; ni < projection_targetnodes.size(); ++ni)
@@ -403,9 +404,9 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
     bool insideelement = false;
 
     // node coordinate
-    const LINALG::Matrix<3, 1>& node_xyz = tar_nodepositions.at(ni);
+    const CORE::LINALG::Matrix<3, 1>& node_xyz = tar_nodepositions.at(ni);
     // interpolated vector which is zero at the beginning
-    LINALG::Matrix<8, 1> interpolatedvec(true);
+    CORE::LINALG::Matrix<8, 1> interpolatedvec(true);
 
     // search for near elements
     std::map<int, std::set<int>> closeeles = searchTree_->searchElementsInRadius(
@@ -466,9 +467,10 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
   return;
 }
 
-void XFEM::MeshProjector::CommunicateNodes(std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-    std::vector<LINALG::Matrix<8, 1>>& interpolated_vecs, std::vector<int>& projection_targetnodes,
-    std::vector<int>& have_values)
+void XFEM::MeshProjector::CommunicateNodes(
+    std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+    std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+    std::vector<int>& projection_targetnodes, std::vector<int>& have_values)
 {
   // get number of processors and the current processors id
   const int numproc = sourcedis_->Comm().NumProc();
@@ -578,9 +580,10 @@ void XFEM::MeshProjector::SendBlock(
   return;
 }
 
-void XFEM::MeshProjector::PackValues(std::vector<LINALG::Matrix<3, 1>>& tar_nodepositions,
-    std::vector<LINALG::Matrix<8, 1>>& interpolated_vecs, std::vector<int>& projection_targetnodes,
-    std::vector<int>& have_values, std::vector<char>& sblock)
+void XFEM::MeshProjector::PackValues(std::vector<CORE::LINALG::Matrix<3, 1>>& tar_nodepositions,
+    std::vector<CORE::LINALG::Matrix<8, 1>>& interpolated_vecs,
+    std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
+    std::vector<char>& sblock)
 {
   // Pack info into block to send
   DRT::PackBuffer data;
@@ -617,7 +620,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     for (int i = 0; i < targetdis_->NumMyColNodes(); ++i)
     {
       const DRT::Node* actnode = targetdis_->lColNode(i);
-      LINALG::Matrix<3, 1> pos(actnode->X(), false);
+      CORE::LINALG::Matrix<3, 1> pos(actnode->X(), false);
       if (targetdisp != Teuchos::null)
       {
         // get the current displacement

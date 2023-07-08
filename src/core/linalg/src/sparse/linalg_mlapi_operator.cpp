@@ -13,9 +13,9 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-LINALG::AMG_Operator::AMG_Operator(
+CORE::LINALG::AMG_Operator::AMG_Operator(
     Teuchos::RCP<Epetra_RowMatrix> A, Teuchos::ParameterList& params, const bool compute)
-    : Epetra_Operator(), label_("LINALG::AMG_Operator"), params_(params), nlevel_(0)
+    : Epetra_Operator(), label_("CORE::LINALG::AMG_Operator"), params_(params), nlevel_(0)
 {
   Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A.get());
   if (!tmp) dserror("Expected Epetra_CrsMatrix");
@@ -28,7 +28,7 @@ LINALG::AMG_Operator::AMG_Operator(
 /*----------------------------------------------------------------------*
  | v cycle (private)                                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-void LINALG::AMG_Operator::Vcycle(
+void CORE::LINALG::AMG_Operator::Vcycle(
     const MLAPI::MultiVector& b_f, MLAPI::MultiVector& x_f, const int level) const
 {
   // coarse grid solve
@@ -63,7 +63,7 @@ void LINALG::AMG_Operator::Vcycle(
 /*----------------------------------------------------------------------*
  |  setup phase (private)                                    mwgee 10/07|
  *----------------------------------------------------------------------*/
-void LINALG::AMG_Operator::SetupNonSymStab()
+void CORE::LINALG::AMG_Operator::SetupNonSymStab()
 {
   MLAPI::Init();
 
@@ -292,7 +292,8 @@ void LINALG::AMG_Operator::SetupNonSymStab()
 /*----------------------------------------------------------------------*
  |  apply operator (public)                                  mwgee 10/07|
  *----------------------------------------------------------------------*/
-int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int CORE::LINALG::AMG_Operator::ApplyInverse(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   // do not do anything for testing
   // Y.Update(1.0,X,0.0);
@@ -326,7 +327,7 @@ int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X, Epetra_Multi
 /*----------------------------------------------------------------------*
  |  build row wise 1-norm (private)                          mwgee 10/07|
  *----------------------------------------------------------------------*/
-MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(MLAPI::Operator& A)
+MLAPI::MultiVector CORE::LINALG::AMG_Operator::Row1Norm(MLAPI::Operator& A)
 {
   MLAPI::MultiVector norm(A.GetRangeSpace(), 1, true);
   const Epetra_RowMatrix* B = A.GetRowMatrix();

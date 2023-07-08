@@ -81,7 +81,7 @@ namespace ADAPTER
 
     //! create a second solver
     void CreateSecondSolver(
-        const Teuchos::RCP<LINALG::Solver> solver, const Teuchos::ParameterList& fdyn);
+        const Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::ParameterList& fdyn);
 
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;

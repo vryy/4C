@@ -912,18 +912,20 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
   if (alpha2_) col_filtered_alpha2_ = Teuchos::rcp(new Epetra_Vector(*nodecolmap, true));
 
   // export filtered vectors in rowmap to columnmap format
-  if (velocity_) LINALG::Export(*filtered_vel_, *col_filtered_vel_);
-  if (reynoldsstress_) LINALG::Export(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
+  if (velocity_) CORE::LINALG::Export(*filtered_vel_, *col_filtered_vel_);
+  if (reynoldsstress_)
+    CORE::LINALG::Export(*filtered_reynoldsstress_, *col_filtered_reynoldsstress_);
   if (modeled_subgrid_stress_)
-    LINALG::Export(*filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
-  if (finescale_velocity_) LINALG::Export(*fs_vel_, *col_fs_vel_);
-  if (densvelocity_) LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  if (density_) LINALG::Export(*filtered_dens_, *col_filtered_dens_);
-  if (densstrainrate_) LINALG::Export(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
-  if (strainrate_) LINALG::Export(*filtered_strainrate_, *col_filtered_strainrate_);
-  if (alphaij_) LINALG::Export(*filtered_alphaij_, *col_filtered_alphaij_);
-  if (expression_) LINALG::Export(*filtered_expression_, *col_filtered_expression_);
-  if (alpha2_) LINALG::Export(*filtered_alpha2_, *col_filtered_alpha2_);
+    CORE::LINALG::Export(*filtered_modeled_subgrid_stress_, *col_filtered_modeled_subgrid_stress_);
+  if (finescale_velocity_) CORE::LINALG::Export(*fs_vel_, *col_fs_vel_);
+  if (densvelocity_) CORE::LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  if (density_) CORE::LINALG::Export(*filtered_dens_, *col_filtered_dens_);
+  if (densstrainrate_)
+    CORE::LINALG::Export(*filtered_dens_strainrate_, *col_filtered_dens_strainrate_);
+  if (strainrate_) CORE::LINALG::Export(*filtered_strainrate_, *col_filtered_strainrate_);
+  if (alphaij_) CORE::LINALG::Export(*filtered_alphaij_, *col_filtered_alphaij_);
+  if (expression_) CORE::LINALG::Export(*filtered_expression_, *col_filtered_expression_);
+  if (alpha2_) CORE::LINALG::Export(*filtered_alpha2_, *col_filtered_alpha2_);
   return;
 }
 
@@ -1534,17 +1536,17 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
     col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
 
   // export filtered vectors in rowmap to columnmap format
-  LINALG::Export(*filtered_vel_, *col_filtered_vel_);
-  LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
-  LINALG::Export(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
-  LINALG::Export(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
-  LINALG::Export(*filtered_temp_, *col_filtered_temp_);
-  LINALG::Export(*filtered_dens_, *col_filtered_dens_);
-  LINALG::Export(*filtered_dens_temp_, *col_filtered_dens_temp_);
-  if (phi_) LINALG::Export(*filtered_phi_, *col_filtered_phi_);
-  if (phi2_) LINALG::Export(*filtered_phi2_, *col_filtered_phi2_);
-  if (phiexpression_) LINALG::Export(*filtered_phiexpression_, *col_filtered_phiexpression_);
-  if (alphaijsc_) LINALG::Export(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
+  CORE::LINALG::Export(*filtered_vel_, *col_filtered_vel_);
+  CORE::LINALG::Export(*filtered_dens_vel_, *col_filtered_dens_vel_);
+  CORE::LINALG::Export(*filtered_dens_vel_temp_, *col_filtered_dens_vel_temp_);
+  CORE::LINALG::Export(*filtered_dens_rateofstrain_temp_, *col_filtered_dens_rateofstrain_temp_);
+  CORE::LINALG::Export(*filtered_temp_, *col_filtered_temp_);
+  CORE::LINALG::Export(*filtered_dens_, *col_filtered_dens_);
+  CORE::LINALG::Export(*filtered_dens_temp_, *col_filtered_dens_temp_);
+  if (phi_) CORE::LINALG::Export(*filtered_phi_, *col_filtered_phi_);
+  if (phi2_) CORE::LINALG::Export(*filtered_phi2_, *col_filtered_phi2_);
+  if (phiexpression_) CORE::LINALG::Export(*filtered_phiexpression_, *col_filtered_phiexpression_);
+  if (alphaijsc_) CORE::LINALG::Export(*filtered_alphaijsc_, *col_filtered_alphaijsc_);
 
   return;
 }

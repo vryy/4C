@@ -17,7 +17,7 @@
 
 // forward declarations
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -133,7 +133,7 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class

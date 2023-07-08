@@ -190,7 +190,7 @@ void MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates, T>::SetState
 }
 
 template <int numstates, typename T>
-LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
+CORE::LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<numstates,
     T>::IntegrateLocalEvolutionEquationsImplicit(const T dt)
 {
   dsassert(state_is_set_, "You have to call SetState() before!");
@@ -230,7 +230,7 @@ LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<nums
     T residuum_growth = ImplicitIntegration<numstates, T>::GetResiduum(growth_state, dt);
     T residuum_remodel = ImplicitIntegration<numstates, T>::GetResiduum(remodel_state, dt);
 
-    LINALG::Matrix<2, 1, T> residuum(false);
+    CORE::LINALG::Matrix<2, 1, T> residuum(false);
     residuum(0, 0) = residuum_growth;
     residuum(1, 0) = residuum_remodel;
 
@@ -238,7 +238,7 @@ LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<nums
     const T lambda_r_np = states_.back().lambda_r;
 
     // evaluate growth and remodel matrices
-    LINALG::Matrix<2, 2, T> drdx(false);
+    CORE::LINALG::Matrix<2, 2, T> drdx(false);
     drdx(0, 0) = ImplicitIntegration<numstates, T>::GetPartialDerivativeXnp(growth_state, dt) +
                  ImplicitIntegration<numstates, T>::GetPartialDerivativeFnp(growth_state, dt) *
                      EvaluateDGrowthEvolutionEquationDtDGrowth(
@@ -255,12 +255,12 @@ LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementation<nums
     return std::make_tuple(drdx, residuum);
   };
 
-  LINALG::Matrix<2, 1, T> x_np(false);
+  CORE::LINALG::Matrix<2, 1, T> x_np(false);
   x_np(0) = states_.back().growth_scalar;
   x_np(1) = states_.back().lambda_r;
 
-  LINALG::Matrix<2, 2, T> K(false);
-  LINALG::Matrix<2, 1, T> b(false);
+  CORE::LINALG::Matrix<2, 2, T> K(false);
+  CORE::LINALG::Matrix<2, 1, T> b(false);
   std::tie(K, b) = EvaluateLocalNewtonLinearSystem();
 
   unsigned iteration = 0;
@@ -695,8 +695,8 @@ void MIXTURE::RemodelFiber<numstates>::SetState(const double lambda_f, const dou
 }
 
 template <int numstates>
-LINALG::Matrix<2, 2> MIXTURE::RemodelFiber<numstates>::IntegrateLocalEvolutionEquationsImplicit(
-    const double dt)
+CORE::LINALG::Matrix<2, 2>
+MIXTURE::RemodelFiber<numstates>::IntegrateLocalEvolutionEquationsImplicit(const double dt)
 {
   return impl_->IntegrateLocalEvolutionEquationsImplicit(dt);
 };

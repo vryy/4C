@@ -18,10 +18,10 @@
 #include "cardiovascular0d_manager.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {
@@ -63,7 +63,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void WriteRestart(
@@ -129,7 +130,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
       //! cardio contributions to the structural stiffness matrix
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_cardio_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_cardio_ptr_;
 
       //! structural rhs contributions of the cardio model at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> fstructcardio_np_ptr_;

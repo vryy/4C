@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic assemble methods for namespace LINALG
+\brief A collection of algebraic assemble methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -68,7 +68,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
 /*----------------------------------------------------------------------*
  |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
+void CORE::LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
@@ -92,7 +92,7 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void LINALG::AssembleMyVector(
+void CORE::LINALG::AssembleMyVector(
     double scalar_target, Epetra_Vector& target, double scalar_source, const Epetra_Vector& source)
 {
   for (int slid = 0; slid < source.Map().NumMyElements(); ++slid)
@@ -111,54 +111,55 @@ void LINALG::AssembleMyVector(
 }
 
 /*----------------------------------------------------------------------*
- |  assemble a vector  (wrapper for LINALG::Matrix<3,1>)     katta 10/16|
+ |  assemble a vector  (wrapper for CORE::LINALG::Matrix<3,1>)     katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
-    const std::vector<int>& lmowner)
+void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
+    const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const Epetra_SerialDenseVector VeleNew(::View, &(Vele(0)), 3);
-  LINALG::Assemble(V, VeleNew, lm, lmowner);
+  CORE::LINALG::Assemble(V, VeleNew, lm, lmowner);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper for 1 owner)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(
-    Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm, const int& lmowner)
+void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
+    const std::vector<int>& lm, const int& lmowner)
 {
   const std::vector<int> lmownerNew(3, lmowner);
-  LINALG::Assemble(V, Vele, lm, lmownerNew);
+  CORE::LINALG::Assemble(V, Vele, lm, lmownerNew);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector  (wrapper, node-based)                 katta 10/16|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
+void CORE::LINALG::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
 {
   const Epetra_SerialDenseVector VeleNew(::View, &Vele, 1);
   const std::vector<int> lmNew(1, lm);
   const std::vector<int> lmownerNew(1, lmowner);
-  LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
+  CORE::LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
-    const std::vector<int>& lm, const std::vector<int>& lmowner)
+void CORE::LINALG::Assemble(Epetra_MultiVector& V, const int n,
+    const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
+    const std::vector<int>& lmowner)
 {
-  LINALG::Assemble(*(V(n)), Vele, lm, lmowner);
+  CORE::LINALG::Assemble(*(V(n)), Vele, lm, lmowner);
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    const Teuchos::RCP<const Epetra_Vector> dbcval,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
+    Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,
     const Teuchos::RCP<const Epetra_Vector> dbctoggle)
 {
   const Epetra_Vector& dbct = *dbctoggle;
@@ -181,8 +182,9 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap)
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
+    Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,
+    const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) dserror("unique map required");
 
@@ -217,7 +219,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) dserror("unique map required");
@@ -257,7 +259,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
     Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector> dbcval,
     const Teuchos::RCP<const Epetra_Vector> dbctoggle)
@@ -268,7 +270,7 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
     Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
     const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
@@ -278,13 +280,13 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
     Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    Teuchos::RCP<const LINALG::SparseMatrix> trafo, const Teuchos::RCP<const Epetra_Vector>& dbcval,
-    const Epetra_Map& dbcmap)
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
+    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null
@@ -294,12 +296,12 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
-    Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
+    Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
     const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
 {
   if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
+    Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
         trafo, dbcmap);
   else
     // trafo==Teuchos::null
@@ -309,11 +311,11 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
+Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVectorToMaps(
     const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
-  // this copy is needed because the constructor of LINALG::MapExtractor
+  // this copy is needed because the constructor of CORE::LINALG::MapExtractor
   // accepts only Epetra_Map and not Epetra_BlockMap
   const Epetra_Map fullmap =
       Epetra_Map(fullblockmap.NumGlobalElements(), fullblockmap.NumMyElements(),
@@ -362,5 +364,5 @@ Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
-  return Teuchos::rcp(new LINALG::MapExtractor(fullmap, dbcmap, freemap));
+  return Teuchos::rcp(new CORE::LINALG::MapExtractor(fullmap, dbcmap, freemap));
 }

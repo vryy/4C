@@ -41,17 +41,17 @@ namespace STR
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
        * \remark Not implemented for the Generalized Energy Momentum time integrator. */
-      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
 
       //! Apply the rhs only (derived)
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! (derived)
       bool AssembleForce(Epetra_Vector& f,

@@ -25,7 +25,7 @@ namespace UTILS
   class ConstraintDofSet;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
 }
@@ -60,7 +60,7 @@ namespace FSI
     void GeneralSetup();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -73,16 +73,16 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //@}
 
@@ -248,19 +248,19 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector>
         dVstruct_;  ///< current change in structure volumes (for output purposes only)
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
         AddStructConstrMatrix_;  ///< matrix containing all structure constraint related stuff
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
         AddFluidShapeDerivMatrix_;  ///< additional constraint portion on block (1,2)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         FluidConstrMatrix_;  ///< rectangular fluid matrix associated with constraints K_fl
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         ConstrFluidMatrix_;  ///< rectangular fluid matrix associated with constraints K_lf
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
         AleConstrMatrix_;  ///< rectangular ale matrix associated with constraints K_al
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
         ConstrAleMatrix_;  ///< rectangular ale matrix associated with constraints K_la
 
     Teuchos::RCP<Epetra_Vector> AddStructRHS_;  ///< additional constraint portion on structural rhs

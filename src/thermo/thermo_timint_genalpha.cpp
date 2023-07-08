@@ -62,7 +62,7 @@ void THR::TimIntGenAlpha::VerifyCoeff()
  *----------------------------------------------------------------------*/
 THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       midavg_(DRT::INPUT::IntegralValue<INPAR::THR::MidAverageEnum>(
@@ -107,33 +107,33 @@ THR::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& ioparams,
   // create state vectors
 
   // mid-temperatures
-  tempm_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempm_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // mid-temperature rates
-  ratem_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  ratem_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fint_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // internal mid-force vector F_{int;n+alpha_f}
-  fintm_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintm_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // stored force vector F_{transient;n} at last time
-  fcap_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fcap_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // stored force vector F_{transient;n+\alpha_m} at new time
-  fcapm_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fcapm_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // stored force vector F_{transient;n+1} at new time
-  fcapn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fcapn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // set initial internal force vector
   ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_, fcap_, fint_, tang_);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fext_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // external mid-force vector F_{ext;n+alpha_f}
-  fextm_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextm_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*temp_)(0), fext_);
   // set initial external force vector of convective heat transfer boundary
@@ -327,7 +327,7 @@ void THR::TimIntGenAlpha::UpdateIterIncrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // further auxiliary variables
   // step size \f$\Delta t_{n}\f$
@@ -462,7 +462,7 @@ void THR::TimIntGenAlpha::ApplyForceTangInternal(const double time,  //!< evalua
     const Teuchos::RCP<Epetra_Vector> tempi,                         //!< residual temperatures
     Teuchos::RCP<Epetra_Vector> fcap,                                //!< capacity force
     Teuchos::RCP<Epetra_Vector> fint,                                //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix> tang                          //!< tangent matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                    //!< tangent matrix
 )
 {
   //! create the parameters for the discretization
@@ -514,7 +514,7 @@ void THR::TimIntGenAlpha::ApplyForceExternalConv(const double time,  //!< evalua
     const Teuchos::RCP<Epetra_Vector> tempn,                         //!< old temperature state T_n
     const Teuchos::RCP<Epetra_Vector> temp,                          //!< temperature state T_n+1
     Teuchos::RCP<Epetra_Vector> fext,                                //!< external force
-    Teuchos::RCP<LINALG::SparseMatrix> tang                          //!< tangent matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang                    //!< tangent matrix
 )
 {
   // create the parameters for the discretization

@@ -138,8 +138,8 @@ namespace GEOMETRYPAIR
      * @param r (out) Position on the face.
      * @param reference (in) If the reference position or the current position should be returned.
      */
-    virtual void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
+    virtual void EvaluateFacePositionDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const = 0;
 
     /**
      * \brief Return a normal on the element.
@@ -153,8 +153,8 @@ namespace GEOMETRYPAIR
      * @param averaged_normal (in) If an averaged normal or an geometrical normal should be
      * returned.
      */
-    virtual void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, const bool reference,
+    virtual void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const = 0;
 
     /**
@@ -234,7 +234,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference position of this face.
      */
-    const LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, double>& GetFaceReferencePosition() const
     {
       return face_reference_position_;
     }
@@ -242,7 +242,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current position of this face.
      */
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& GetFacePosition() const
     {
       return face_position_;
     }
@@ -250,7 +250,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference normals on this face.
      */
-    virtual const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const
+    virtual const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
+        const
     {
       return nullptr;
     }
@@ -258,7 +259,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    virtual const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const
+    virtual const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
+        const
     {
       return nullptr;
     }
@@ -266,22 +268,22 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the position on this face as a double. (derived)
      */
-    void EvaluateFacePositionDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
+    void EvaluateFacePositionDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& r, bool reference = false) const override;
 
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
    protected:
     //! Reference position.
-    LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
 
     //! Current position.
-    LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
 
     //! Number of DOFs used for a beam element.
     static const unsigned int n_beam_dof_ = 12;
@@ -358,7 +360,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const override
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
+        const override
     {
       return &reference_normals_;
     }
@@ -366,7 +369,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const override
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
+        const override
     {
       if (evaluate_current_normals_)
         return &current_normals_;
@@ -377,8 +381,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
    private:
@@ -389,8 +393,9 @@ namespace GEOMETRYPAIR
      * element.
      */
     template <typename T>
-    void AverageNodalNormals(LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, T>>& normals,
-        LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
+    void AverageNodalNormals(
+        CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, T>>& normals,
+        CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
 
    protected:
     //! Store the relevant information of the connected faces. The key of this map is the GID of the
@@ -402,10 +407,10 @@ namespace GEOMETRYPAIR
     bool evaluate_current_normals_;
 
     //! Reference normals.
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
 
     //! Current normals.
-    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
   };
 
 
@@ -469,14 +474,15 @@ namespace GEOMETRYPAIR
      */
     template <typename scalar_type_normal>
     void CalculateNormals(
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>& volume_position,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
-        LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>& volume_position,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+        CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
 
     /**
      * \brief Return the reference normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const override
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
+        const override
     {
       return &reference_normals_;
     }
@@ -484,7 +490,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const override
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
+        const override
     {
       return &current_normals_;
     }
@@ -492,8 +499,8 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a normal on the element. (derived)
      */
-    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-        LINALG::Matrix<3, 1, double>& n, const bool reference,
+    void EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+        CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
    protected:
@@ -501,30 +508,30 @@ namespace GEOMETRYPAIR
      * \brief Convert the face element parameter coordinates to the volume element parameter
      * coordinates.
      */
-    void XiFaceToXiVolume(
-        const LINALG::Matrix<2, 1, double>& xi_face, LINALG::Matrix<3, 1, double>& xi_volume) const;
+    void XiFaceToXiVolume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
+        CORE::LINALG::Matrix<3, 1, double>& xi_volume) const;
 
    protected:
     //! Map between surface DOFs and volume DOFs.
-    LINALG::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
 
     //! Reference normals.
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
 
     //! Current normals.
-    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
 
     //! Reference position.
-    LINALG::Matrix<volume::n_dof_, 1, double> volume_reference_position_;
+    CORE::LINALG::Matrix<volume::n_dof_, 1, double> volume_reference_position_;
 
     //! Current position.
-    LINALG::Matrix<volume::n_dof_, 1, scalar_type> volume_position_;
+    CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type> volume_position_;
 
     //! Map the face coordinate axis to the volume coordinate axis.
-    LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;
+    CORE::LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;
 
     //! Factor for the transformed coordinate axis.
-    LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_factor_;
+    CORE::LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_factor_;
 
     //! Third, i.e. normal direction.
     int third_direction_;

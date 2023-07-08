@@ -17,11 +17,11 @@
 #include <Epetra_Vector.h>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FLD
 {
@@ -31,24 +31,24 @@ namespace FLD
     {
      public:
       //! constructor
-      FluidInfNormScaling(LINALG::MapExtractor& mapextractor);
+      FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor);
 
       //! destructor
       virtual ~FluidInfNormScaling(){};
 
       //! perform infnorm-scaling of linear system
-      void ScaleSystem(Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& b);
+      void ScaleSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b);
 
       //! perform un-scaling of solution (and the system, just to be on the safe side)
       void UnscaleSolution(
-          Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
+          Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b);
 
      private:
       //! processor id
       const int myrank_;
 
       //! Extractor for splitting of velocity and pressure dofs
-      LINALG::MapExtractor& velpressplitter_;
+      CORE::LINALG::MapExtractor& velpressplitter_;
 
       Teuchos::RCP<Epetra_Vector> srowsum_;
       Teuchos::RCP<Epetra_Vector> scolsum_;

@@ -30,7 +30,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J, const NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<LINALG::Solver> solver, const Teuchos::RCP<NOX::Epetra::Scaling> s)
+    Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::RCP<NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jacInterfacePtr_(iJac),
       jacType_(EpetraOperator),
@@ -58,11 +58,11 @@ NOX::FSI::LinearSystem::OperatorType NOX::FSI::LinearSystem::getOperatorType(
   // check via dynamic cast, which type of Jacobian was broadcast
   const Epetra_Operator* testOperator = nullptr;
 
-  testOperator =
-      dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&Op);
+  testOperator = dynamic_cast<
+      const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&Op);
   if (testOperator != 0) return BlockSparseMatrix;
 
-  testOperator = dynamic_cast<const LINALG::SparseMatrix*>(&Op);
+  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&Op);
   if (testOperator != 0) return SparseMatrix;
 
   testOperator = dynamic_cast<const Epetra_CrsMatrix*>(&Op);

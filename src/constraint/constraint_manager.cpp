@@ -124,12 +124,13 @@ void UTILS::ConstrManager::Setup(
     double time = params.get<double>("total time", 0.0);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     // initialize constrMatrix
-    constrMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, numConstrID_, false, true));
+    constrMatrix_ =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, numConstrID_, false, true));
     // build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
     constrmap_ = Teuchos::rcp(new Epetra_Map(*(constrdofset_->DofRowMap())));
     // build an all reduced version of the constraintmap, since sometimes all processors
     // have to know all values of the constraints and Lagrange multipliers
-    redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);
+    redconstrmap_ = CORE::LINALG::AllreduceEMap(*constrmap_);
     // importer
     conimpo_ = Teuchos::rcp(new Epetra_Export(*redconstrmap_, *constrmap_));
     // sum up initial values
@@ -195,7 +196,7 @@ void UTILS::ConstrManager::Setup(
     }
     // initialize maps and importer
     monitormap_ = Teuchos::rcp(new Epetra_Map(numMonitorID_, nummyele, 0, actdisc_->Comm()));
-    redmonmap_ = LINALG::AllreduceEMap(*monitormap_);
+    redmonmap_ = CORE::LINALG::AllreduceEMap(*monitormap_);
     monimpo_ = Teuchos::rcp(new Epetra_Export(*redmonmap_, *monitormap_));
     monitorvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_ = Teuchos::rcp(new Epetra_Vector(*monitormap_));
@@ -224,7 +225,7 @@ void UTILS::ConstrManager::Setup(
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::EvaluateForceStiff(const double time,
     Teuchos::RCP<const Epetra_Vector> displast, Teuchos::RCP<const Epetra_Vector> disp,
-    Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<LINALG::SparseOperator> stiff,
+    Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
     Teuchos::ParameterList scalelist)
 {
   CheckIsInit();
@@ -237,8 +238,8 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
   Teuchos::ParameterList p;
   std::vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_
-      ->Zero();  //=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
+  constrMatrix_->Zero();  //=Teuchos::rcp(new
+                          // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
   // other parameters that might be needed by the elements
   p.set("total time", time);
@@ -252,7 +253,7 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
   // Convert Epetra_Vector containing lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   Teuchos::RCP<Epetra_Vector> lagrMultVecDense = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
-  LINALG::Export(*lagrMultVec_, *lagrMultVecDense);
+  CORE::LINALG::Export(*lagrMultVec_, *lagrMultVecDense);
   p.set("LagrMultVector", lagrMultVecDense);
   // Construct a redundant time curve factor and put it into parameter list
   Teuchos::RCP<Epetra_Vector> factredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
@@ -294,7 +295,7 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
   actdisc_->ClearState();
   // finalize the constraint matrix
   std::string label(constrMatrix_->Label());
-  if (label == "LINALG::BlockSparseMatrixBase")
+  if (label == "CORE::LINALG::BlockSparseMatrixBase")
     constrMatrix_->Complete();
   else
     constrMatrix_->Complete(*constrmap_, *dofrowmap);
@@ -317,7 +318,7 @@ void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector>
   actdisc_->SetState("displacement", disp);
 
   Teuchos::RCP<Epetra_Vector> actredundant = Teuchos::rcp(new Epetra_Vector(*redconstrmap_));
-  LINALG::Export(*actvalues_, *actredundant);
+  CORE::LINALG::Export(*actvalues_, *actredundant);
   // Compute current values and assemble them to the completely redundant vector
   // We will always use the third systemvector for this purpose
   p.set("OffsetID", offsetID_);
@@ -356,7 +357,7 @@ void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const d
   //  double uzawatemp = reader.ReadDouble("uzawaparameter");
   //  consolv_->SetUzawaParameter(uzawatemp);
   Teuchos::RCP<Epetra_Map> constrmap = GetConstraintMap();
-  Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*constrmap, true);
+  Teuchos::RCP<Epetra_Vector> tempvec = CORE::LINALG::CreateVector(*constrmap, true);
   reader.ReadVector(tempvec, "lagrmultiplier");
   SetLagrMultVector(tempvec);
   reader.ReadVector(tempvec, "refconval");
@@ -461,9 +462,9 @@ void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector
   {
     // build merged dof row map
     Teuchos::RCP<Epetra_Map> largemap =
-        LINALG::MergeMap(*actdisc_->DofRowMap(), *constrmap_, false);
+        CORE::LINALG::MergeMap(*actdisc_->DofRowMap(), *constrmap_, false);
 
-    LINALG::MapExtractor conmerger;
+    CORE::LINALG::MapExtractor conmerger;
     conmerger.Setup(*largemap, Teuchos::rcp(actdisc_->DofRowMap(), false), constrmap_);
     actdisc_->SetState("displacement", conmerger.ExtractCondVector(disp));
   }
@@ -523,7 +524,7 @@ void UTILS::ConstrManager::BuildMoniType()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  LINALG::Export(*dummymondist, *dummymonredundant);
+  CORE::LINALG::Export(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 1.0;
@@ -536,7 +537,7 @@ void UTILS::ConstrManager::BuildMoniType()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  LINALG::Export(*dummymondist, *dummymonredundant);
+  CORE::LINALG::Export(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 2.0;
@@ -549,7 +550,7 @@ void UTILS::ConstrManager::BuildMoniType()
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
-  LINALG::Export(*dummymondist, *dummymonredundant);
+  CORE::LINALG::Export(*dummymondist, *dummymonredundant);
   for (int i = 0; i < dummymonredundant->MyLength(); i++)
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 3.0;
@@ -560,12 +561,14 @@ void UTILS::ConstrManager::BuildMoniType()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void UTILS::ConstrManager::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+void UTILS::ConstrManager::UseBlockMatrix(
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   // (re)allocate system matrix
-  constrMatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *domainmaps, *rangemaps, 81, false, true));
+  constrMatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *domainmaps, *rangemaps, 81, false, true));
 
   return;
 }

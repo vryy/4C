@@ -54,8 +54,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>*
         line_triad_interpolation) const
@@ -76,13 +76,13 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // Initilaize variables for the projection.
   scalar_type eta;
   double alpha;
-  LINALG::Matrix<3, 1, scalar_type> r_line;
-  LINALG::Matrix<3, 3, scalar_type> triad;
-  LINALG::Matrix<3, 1, scalar_type> r_cross_section;
-  LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> eta_cross_section(true);
-  LINALG::Matrix<2, 1, scalar_type> eta_cross_section_2d;
-  LINALG::Matrix<3, 1, scalar_type> xi_solid;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
+  CORE::LINALG::Matrix<3, 3, scalar_type> triad;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_cross_section;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> eta_cross_section(true);
+  CORE::LINALG::Matrix<2, 1, scalar_type> eta_cross_section_2d;
+  CORE::LINALG::Matrix<3, 1, scalar_type> xi_solid;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
@@ -159,8 +159,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.

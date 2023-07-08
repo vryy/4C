@@ -125,9 +125,10 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   if (bnen != nen_) dserror("Number of element nodes do not match!");
 
   // get local node coordinates
-  LINALG::Matrix<pnsd, pnen> pxyze(true);
-  LINALG::Matrix<pnsd, pnen> pxyze0(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze0);
+  CORE::LINALG::Matrix<pnsd, pnen> pxyze(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pxyze0(true);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, CORE::LINALG::Matrix<pnsd, pnen>>(
+      pele, pxyze0);
   pxyze = pxyze0;
 
   if (my::scatraparams_->IsAle())
@@ -152,10 +153,10 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
         plmdisp[inode * pnsd + idim] = pla[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // we deal with a nsd_-dimensional flow field
-    LINALG::Matrix<pnsd, pnen> pedispnp(true);
+    CORE::LINALG::Matrix<pnsd, pnen> pedispnp(true);
 
     // extract local values of convective velocity field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*dispnp, pedispnp, plmdisp);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     // my::rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd,pnen>(pedispnp);
@@ -191,8 +192,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
         pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());
 
 
-  LINALG::Matrix<pnsd, 1> pxsi(true);
-  LINALG::Matrix<pnsd, pnen> pderiv(true);
+  CORE::LINALG::Matrix<pnsd, 1> pxsi(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pderiv(true);
 
   // reference coordinates of integration point from parent element
   for (int idim = 0; idim < pnsd; idim++)
@@ -204,12 +205,12 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
   // Jacobian matrix and determinant of parent element (including check)
-  LINALG::Matrix<pnsd, pnsd> dxds(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> dxds(true);
   dxds.MultiplyNT(pderiv, pxyze);
   const double detdxds = dxds.Determinant();
 
   // Jacobian matrix and determinant of parent element (including check)
-  LINALG::Matrix<pnsd, pnsd> dXds(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> dXds(true);
   dXds.MultiplyNT(pderiv, pxyze0);
   const double detdXds = dXds.Determinant();
 

@@ -12,7 +12,7 @@
 
 #include <array>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    * @class FourTensor
@@ -102,6 +102,6 @@ namespace LINALG
 #endif
     return GetConst()[i1][i2][i3][i4];
   }
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

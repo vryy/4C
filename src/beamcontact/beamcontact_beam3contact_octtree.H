@@ -28,7 +28,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -51,7 +51,7 @@ class Beam3ContactOctTree
    * \param currentposition (in) node positions in column map format (fully overlapping)
    * \param step            (in) time step (needed for output)*/
   std::vector<std::vector<DRT::Element*>> OctTreeSearch(
-      std::map<int, LINALG::Matrix<3, 1>>& currentpositions, int step = -1);
+      std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, int step = -1);
 
   //!\brief checks in which octant a given bounding box lies
   std::vector<int> InWhichOctantLies(const int& thisBBoxID);
@@ -81,9 +81,9 @@ class Beam3ContactOctTree
   /*!\brief generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
    * \param currentpositions (in) map holding node positions
    */
-  void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+  void CreateBoundingBoxes(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
   //!\brief get the dimensions of the root octant
-  LINALG::Matrix<6, 1> GetRootBox();
+  CORE::LINALG::Matrix<6, 1> GetRootBox();
   /*!\brief create axis aligned bounding boxes
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
@@ -113,8 +113,8 @@ class Beam3ContactOctTree
    * \param bboxesinoctants   (in/out) vector mapping bounding boxes to octants
    * \param bbox2octant       (in/out) vector mapping bounding boxes to octants they lie in
    * \param treedepth         (in) current tree depth*/
-  void locateBox(std::vector<std::vector<double>>& allbboxesstdvec, LINALG::Matrix<6, 1>& lim,
-      std::vector<LINALG::Matrix<6, 1>>& octreelimits,
+  void locateBox(std::vector<std::vector<double>>& allbboxesstdvec, CORE::LINALG::Matrix<6, 1>& lim,
+      std::vector<CORE::LINALG::Matrix<6, 1>>& octreelimits,
       std::vector<std::vector<int>>& bboxesinoctants, std::vector<std::vector<int>>& bbox2octant,
       int& treedepth);
 
@@ -122,25 +122,28 @@ class Beam3ContactOctTree
    *  \param parentoctlimits  (in)  limits of the parent octant
    *  \param suboctedgelength (out) edge length of the sub octants
    *  \param suboctlimits     (out) limits of the 8 sub octants*/
-  void CreateSubOctants(LINALG::Matrix<6, 1>& parentoctlimits,
-      LINALG::Matrix<3, 1>& suboctedgelength, std::vector<LINALG::Matrix<6, 1>>& suboctlimits);
+  void CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoctlimits,
+      CORE::LINALG::Matrix<3, 1>& suboctedgelength,
+      std::vector<CORE::LINALG::Matrix<6, 1>>& suboctlimits);
 
   //! \brief Check if axis aligned bounding box is in the current octant
   bool AABBIsInThisOctant(
-      LINALG::Matrix<6, 1>& suboctlimits, std::vector<double>& bboxcoords, int& shift);
+      CORE::LINALG::Matrix<6, 1>& suboctlimits, std::vector<double>& bboxcoords, int& shift);
   //! \brief Check if cylindrical oriented bounding box is in the current octant
-  bool COBBIsInThisOctant(LINALG::Matrix<3, 1>& octcenter, LINALG::Matrix<3, 1>& newedgelength,
-      std::vector<double>& bboxcoords, double& extrusionvalue, int& lid, int& shift);
+  bool COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcenter,
+      CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords,
+      double& extrusionvalue, int& lid, int& shift);
   //! \brief Check if spherical bounding box is in the current octant
-  bool SPBBIsInThisOctant(LINALG::Matrix<3, 1>& octcenter, LINALG::Matrix<3, 1>& newedgelength,
-      std::vector<double>& bboxcoords, int& lid, int& shift);
+  bool SPBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcenter,
+      CORE::LINALG::Matrix<3, 1>& newedgelength, std::vector<double>& bboxcoords, int& lid,
+      int& shift);
 
   /*!\brief Manages the intersection of bounding boxes of an octant
    * \param currentpositions  (in)  node positions in column map format (fully overlapping)
    * \param contactpaits      (out) vector holding all contact pairs considered after octree
    * evaluation
    */
-  void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+  void BoundingBoxIntersection(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       std::vector<std::vector<DRT::Element*>>& contactpairelements);
 
   /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to
@@ -175,8 +178,9 @@ class Beam3ContactOctTree
       bool zerofy = false, bool doexport = true, bool doimport = true);
 
   /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
-  void CalcCornerPos(DRT::Element* element, std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-      LINALG::SerialDenseMatrix& coord);
+  void CalcCornerPos(DRT::Element* element,
+      std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+      CORE::LINALG::SerialDenseMatrix& coord);
 
   /*! \brief Undo the shifts due periodic BCs and make coord continuous */
   void UndoEffectOfPeriodicBoundaryCondition(
@@ -244,10 +248,10 @@ class Beam3ContactOctTree
   Teuchos::RCP<std::vector<double>> periodlength_;
 
   //!\brief Matrix holding the spatial limits of the root box
-  LINALG::Matrix<6, 1> rootbox_;
+  CORE::LINALG::Matrix<6, 1> rootbox_;
 
   //!\brief Matrix holding the spatial limits of the root box in reference configuration
-  LINALG::Matrix<6, 1> initbox_;
+  CORE::LINALG::Matrix<6, 1> initbox_;
 
   //!\brief problem discretization
   DRT::Discretization& discret_;
@@ -280,7 +284,7 @@ class Beam3ContactOctTree
   Teuchos::RCP<Epetra_MultiVector> bbox2octant_;
 
   //!\brief storage vector for octree octant limits
-  std::vector<LINALG::Matrix<6, 1>> octreelimits_;
+  std::vector<CORE::LINALG::Matrix<6, 1>> octreelimits_;
 
   //!\brief vector holding information on how many times a bounding box is shifted due to periodic
   //! boundary conditions

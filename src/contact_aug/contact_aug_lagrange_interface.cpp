@@ -34,7 +34,7 @@ CONTACT::AUG::LAGRANGE::Interface::Interface(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::LAGRANGE::Interface::AssembleDGGLinMatrix(
-    LINALG::SparseMatrix& dGGSlLinMatrix, const Epetra_Vector& cnVec) const
+    CORE::LINALG::SparseMatrix& dGGSlLinMatrix, const Epetra_Vector& cnVec) const
 {
   /* do nothing */
 }

@@ -46,9 +46,9 @@ namespace TUTORIAL
     structures as often as possible.
 
     */
-    inline void DoDirichletCond(LINALG::Matrix<7, 7>* stiff, LINALG::Matrix<7, 1>* RHS,
-        LINALG::Matrix<7, 1>* inc, LINALG::Matrix<7, 1>* disp, LINALG::Matrix<7, 1>* freact,
-        const LINALG::Matrix<7, 1>* dirichcond)
+    inline void DoDirichletCond(CORE::LINALG::Matrix<7, 7>* stiff, CORE::LINALG::Matrix<7, 1>* RHS,
+        CORE::LINALG::Matrix<7, 1>* inc, CORE::LINALG::Matrix<7, 1>* disp,
+        CORE::LINALG::Matrix<7, 1>* freact, const CORE::LINALG::Matrix<7, 1>* dirichcond)
     {
       // do dirichlet
       for (int dirich = 0; dirich < (int)dirichcond->Rows(); dirich++)
@@ -88,7 +88,8 @@ namespace TUTORIAL
     \return void
 
     */
-    inline void DoNeumannCond(LINALG::Matrix<7, 1>* RHS, const LINALG::Matrix<7, 1>* neumanncond)
+    inline void DoNeumannCond(
+        CORE::LINALG::Matrix<7, 1>* RHS, const CORE::LINALG::Matrix<7, 1>* neumanncond)
     {
       // do neumann
       for (int neum = 0; neum < (int)RHS->Rows(); neum++)
@@ -121,7 +122,8 @@ namespace TUTORIAL
 
     */
     inline std::map<int, ELEMENTS::TutorialElement*>* BuildDiscretization(
-        const int numberofelements, const LINALG::Matrix<6, 1> E, const LINALG::Matrix<7, 1> X)
+        const int numberofelements, const CORE::LINALG::Matrix<6, 1> E,
+        const CORE::LINALG::Matrix<7, 1> X)
     {
       // build map containing element id and pointer to element
       std::map<int, ELEMENTS::TutorialElement*>* discret =

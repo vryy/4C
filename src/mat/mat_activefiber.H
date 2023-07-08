@@ -178,11 +178,11 @@ namespace MAT
     void ResetStep() override;
 
     /// Evaluate material
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain,                          ///< green lagrange strain
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress,  ///< 2nd PK-stress
-        LINALG::Matrix<6, 6>* cmat,  ///< material stiffness matrix
-        int gp,                      ///< Gauss point
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain,  ///< green lagrange strain
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd PK-stress
+        CORE::LINALG::Matrix<6, 6>* cmat,  ///< material stiffness matrix
+        int gp,                            ///< Gauss point
         const int eleGID) override;
 
     /// Return density
@@ -208,9 +208,9 @@ namespace MAT
     MAT::PAR::ActiveFiber* params_;
 
     /// (current) fiber activation level
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp, twice>>> etacurr_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<numbgp, twice>>> etacurr_;
     /// fiber activation level of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp, twice>>> etalast_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<numbgp, twice>>> etalast_;
     /// average intensity level at every point of the cytoplasm
     Teuchos::RCP<std::vector<double>> etahat_;
     /// average intensity levels at three different directions
@@ -224,14 +224,14 @@ namespace MAT
     //    Teuchos::RCP<std::vector<double> > dyz_;
     //    Teuchos::RCP<std::vector<double> > dxz_;
     /// (current) stress in (omega,phi) direction
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp, twice>>> sigmaomegaphicurr_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<numbgp, twice>>> sigmaomegaphicurr_;
     /// stress in (omega,phi) direction of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<numbgp, twice>>> sigmaomegaphilast_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<numbgp, twice>>> sigmaomegaphilast_;
     /// (current) deformation gradient
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>>
         histdefgrdcurr_;  ///< active history deformation gradient
     /// deformation gradient of old timestep (last converged state)
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>>
         histdefgrdlast_;  ///< active history of deformation gradient
     /// passive material
     Teuchos::RCP<MAT::So3Material> matpassive_;
@@ -240,10 +240,11 @@ namespace MAT
 
 
     /// Setup defgrd rate, rotation tensor, strain rate and rotation rate
-    void SetupRates(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 3>& invdefgrd,
-        Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
-        LINALG::Matrix<6, 1>& strainrate, LINALG::Matrix<3, 3>& rotationrate, const int& gp,
-        const double& dt);
+    void SetupRates(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 3>& invdefgrd, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<3, 3>& defgrdrate, CORE::LINALG::Matrix<3, 3>& R,
+        CORE::LINALG::Matrix<6, 1>& strainrate, CORE::LINALG::Matrix<3, 3>& rotationrate,
+        const int& gp, const double& dt);
 
     /// Calculate activation signal of current and last timestep
     void CalcActivationSignal(double* Csignal,  ///< activation signal at current timestep
@@ -252,32 +253,33 @@ namespace MAT
     );
 
     /// Convert spatial stress to material stress
-    void CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,  ///< active material stress
-        LINALG::Matrix<3, 3>& cauchystress,          ///< cauchy stress in matrix notation
-        const LINALG::Matrix<3, 3>& defgrd,          ///< deformation gradient
-        const LINALG::Matrix<3, 3>& invdefgrd,       ///< inverse deformation gradient
-        LINALG::Matrix<6, 1> sigma                   ///< active spatial stress
+    void CauchytoPK2(CORE::LINALG::Matrix<6, 1>& Sactive,  ///< active material stress
+        CORE::LINALG::Matrix<3, 3>& cauchystress,          ///< cauchy stress in matrix notation
+        const CORE::LINALG::Matrix<3, 3>& defgrd,          ///< deformation gradient
+        const CORE::LINALG::Matrix<3, 3>& invdefgrd,       ///< inverse deformation gradient
+        CORE::LINALG::Matrix<6, 1> sigma                   ///< active spatial stress
     );
 
     /// Convert material strain to spatial strain
-    void GLtoEA(LINALG::Matrix<6, 1> glstrain, LINALG::Matrix<3, 3> invdefgrd,
-        LINALG::Matrix<3, 3>& eastrain);
+    void GLtoEA(CORE::LINALG::Matrix<6, 1> glstrain, CORE::LINALG::Matrix<3, 3> invdefgrd,
+        CORE::LINALG::Matrix<3, 3>& eastrain);
 
     /// computes elasticity tensor for the active stress part in matrix notion for 3d
-    void SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive, const LINALG::Matrix<3, 3>& rotationrate,
-        LINALG::Matrix<6, 1> strainrate, const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 3>& defgrdrate, const LINALG::Matrix<3, 3>& R,
-        const LINALG::Matrix<3, 3>& invdefgrd, LINALG::Matrix<numbgp, twice> etanew,
-        const LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
-        const LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
-        double Csignal);
+    void SetupCmatActive(CORE::LINALG::Matrix<6, 6>& cmatactive,
+        const CORE::LINALG::Matrix<3, 3>& rotationrate, CORE::LINALG::Matrix<6, 1> strainrate,
+        const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 3>& defgrdrate,
+        const CORE::LINALG::Matrix<3, 3>& R, const CORE::LINALG::Matrix<3, 3>& invdefgrd,
+        CORE::LINALG::Matrix<numbgp, twice> etanew,
+        const CORE::LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
+        const CORE::LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params,
+        double theta, double Csignal);
 
     /// Calculate root of a 3x3 matrix (symmetric or non-symmetric)
-    void MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut);
+    void MatrixRoot3x3(CORE::LINALG::Matrix<3, 3>& MatrixInOut);
 
     /// Calculate derivative of the root of a symmetric 3x3 matrix
     void MatrixRootDerivativeSym3x3(
-        const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv);
+        const CORE::LINALG::Matrix<3, 3>& MatrixIn, CORE::LINALG::Matrix<6, 6>& MatrixRootDeriv);
 
   };  // class ActiveFiber
 

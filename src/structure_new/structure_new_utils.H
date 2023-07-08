@@ -22,10 +22,10 @@
 // forward declaration
 class Epetra_Vector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace NOX
 {
@@ -71,9 +71,10 @@ namespace STR
      *  supposed to be restricted to structural problems only.
      */
     void ConvertModelType2SolType(std::vector<enum NOX::NLN::SolutionType>& soltypes,
-        std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& slinsolvers,
+        std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& slinsolvers,
         const std::set<enum INPAR::STR::ModelType>& modeltypes,
-        const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>& mlinsolvers);
+        const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
+            mlinsolvers);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator

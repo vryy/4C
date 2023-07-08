@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+void CORE::LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != dim) dserror("Dimension supplied does not match matrix");
@@ -43,14 +43,15 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 /*----------------------------------------------------------------------*
  |  Solve soe with me*ae^T = de^T and return me^-1           farah 07/14|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
-    LINALG::SerialDenseMatrix& me, LINALG::SerialDenseMatrix& de, LINALG::SerialDenseMatrix& ae)
+CORE::LINALG::SerialDenseMatrix CORE::LINALG::InvertAndMultiplyByCholesky(
+    CORE::LINALG::SerialDenseMatrix& me, CORE::LINALG::SerialDenseMatrix& de,
+    CORE::LINALG::SerialDenseMatrix& ae)
 {
   const int n = me.N();
 
-  LINALG::SerialDenseMatrix y(n, n);
-  LINALG::SerialDenseMatrix y_identity(n, n, true);
-  LINALG::SerialDenseMatrix meinv(n, n, true);
+  CORE::LINALG::SerialDenseMatrix y(n, n);
+  CORE::LINALG::SerialDenseMatrix y_identity(n, n, true);
+  CORE::LINALG::SerialDenseMatrix meinv(n, n, true);
 
   // calc G with me=G*G^T
   for (int z = 0; z < n; ++z)

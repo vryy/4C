@@ -35,9 +35,9 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam,
 
 template <typename beam, typename fluid>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
-    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
+    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
+    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22)
 {
   // Call Evaluate on the geometry Pair
   if (!this->meshtying_is_evaluated_)
@@ -51,18 +51,18 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for position and force vectors.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> r_beam;
-  LINALG::Matrix<3, 1, scalar_type> r_fluid;
-  LINALG::Matrix<3, 1, scalar_type> v_beam;
-  LINALG::Matrix<3, 1, scalar_type> v_fluid;
-  LINALG::Matrix<3, 1, scalar_type> force;
-  LINALG::Matrix<3, 1, scalar_type> force2;
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
-  LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_fluid;
+  CORE::LINALG::Matrix<3, 1, scalar_type> v_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type> v_fluid;
+  CORE::LINALG::Matrix<3, 1, scalar_type> force;
+  CORE::LINALG::Matrix<3, 1, scalar_type> force2;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
+  CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
+  CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
+  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
   if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);

@@ -17,7 +17,7 @@
 // #define BLOCKMATRIXMERGE
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -34,12 +34,12 @@ namespace FSI
     LungSchurComplement(){};
 
     /// determination of the Schur complement
-    Teuchos::RCP<LINALG::SparseMatrix> CalculateSchur(const LINALG::SparseMatrix& A,
-        const LINALG::SparseMatrix& B, const LINALG::SparseMatrix& C);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> CalculateSchur(const CORE::LINALG::SparseMatrix& A,
+        const CORE::LINALG::SparseMatrix& B, const CORE::LINALG::SparseMatrix& C);
 
    private:
-    Teuchos::RCP<LINALG::SparseMatrix> temp_;
-    Teuchos::RCP<LINALG::SparseMatrix> res_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> temp_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> res_;
   };
 
 
@@ -50,7 +50,7 @@ namespace FSI
   {
    public:
     /// construction
-    LungOverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
+    LungOverlappingBlockMatrix(const CORE::LINALG::MultiMapExtractor& maps,
         ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
         bool structuresplit, int symmetric, double omega = 1.0, int iterations = 1,
         double somega = 1.0, int siterations = 0, double fomega = 1.0, int fiterations = 0,
@@ -76,12 +76,12 @@ namespace FSI
 
     Teuchos::RCP<LungSchurComplement> StructSchur_;
     Teuchos::RCP<LungSchurComplement> FluidSchur_;
-    Teuchos::RCP<LINALG::SparseMatrix> interconA_;
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> invDiag_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> interconA_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> invDiag_;
 
-    Teuchos::RCP<LINALG::Solver> constraintsolver_;
+    Teuchos::RCP<CORE::LINALG::Solver> constraintsolver_;
     Teuchos::RCP<Epetra_Map> overallfsimap_;
-    LINALG::MultiMapExtractor fsiextractor_;
+    CORE::LINALG::MultiMapExtractor fsiextractor_;
 
     double alpha_;                 /// "relaxation" parameter in SIMPLE approximation of matrix
     int simpleiter_;               /// number of iterations in SIMPLE preconditioner

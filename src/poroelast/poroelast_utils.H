@@ -24,10 +24,10 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace MAT
 {
@@ -55,7 +55,8 @@ namespace POROELAST
     //! check if element is a poro-p1-element
     bool IsPoroP1Element(const DRT::Element* actele);
 
-    Teuchos::RCP<LINALG::MapExtractor> BuildPoroSplitter(Teuchos::RCP<DRT::Discretization> dis);
+    Teuchos::RCP<CORE::LINALG::MapExtractor> BuildPoroSplitter(
+        Teuchos::RCP<DRT::Discretization> dis);
 
     //! create solution algorithm depending on input file
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
@@ -63,7 +64,7 @@ namespace POROELAST
         const Epetra_Comm& comm,                   //!< communicator(i)
         bool setup_solve = true,  //!< setup linear solver for Poroelastic problem (only required if
                                   //!< Solve() is called) (i)
-        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter =
+        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter =
             Teuchos::null  //! select porosity splitter
     );
 

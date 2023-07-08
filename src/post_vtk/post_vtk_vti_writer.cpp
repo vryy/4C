@@ -150,8 +150,8 @@ void PostVtiWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     ghostedData = data;
   else
   {
-    ghostedData = LINALG::CreateVector(*colmap, false);
-    LINALG::Export(*data, *ghostedData);
+    ghostedData = CORE::LINALG::CreateVector(*colmap, false);
+    CORE::LINALG::Export(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -244,7 +244,7 @@ void PostVtiWriter::WriteNodalResultStep(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    LINALG::Export(*data, *ghostedData);
+    CORE::LINALG::Export(*data, *ghostedData);
   }
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
@@ -330,7 +330,7 @@ void PostVtiWriter::WriteElementResultStep(std::ofstream& file,
   {
     importedData =
         Teuchos::rcp(new Epetra_MultiVector(*dis->ElementColMap(), data->NumVectors(), false));
-    LINALG::Export(*data, *importedData);
+    CORE::LINALG::Export(*data, *importedData);
   }
 
   for (int e = 0; e < dis->NumMyColElements(); ++e)

@@ -23,12 +23,12 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   //  class DefaultBlockMatrixStrategy;
   //  class BlockSparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace UTILS
 {
   class MOR
@@ -55,9 +55,11 @@ namespace UTILS
      */
     void ReadMatrix(std::string filename, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
 
-    Teuchos::RCP<LINALG::SparseMatrix> ReduceDiagnoal(Teuchos::RCP<LINALG::SparseMatrix> M);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ReduceDiagnoal(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> M);
 
-    Teuchos::RCP<LINALG::SparseMatrix> ReduceOffDiagonal(Teuchos::RCP<LINALG::SparseMatrix> M);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ReduceOffDiagonal(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> M);
 
     Teuchos::RCP<Epetra_MultiVector> ReduceRHS(Teuchos::RCP<Epetra_MultiVector> v);
 
@@ -78,7 +80,7 @@ namespace UTILS
 
     void EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_MultiVector> multivect,
         Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
-        Teuchos::RCP<LINALG::SparseMatrix> sparsemat);
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat);
 
     bool IsOrthogonal(Teuchos::RCP<Epetra_MultiVector> M);
 

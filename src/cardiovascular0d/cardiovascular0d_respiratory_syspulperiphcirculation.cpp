@@ -239,11 +239,11 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
 void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
-    Teuchos::ParameterList& params, Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
-    Teuchos::RCP<LINALG::SparseOperator> sysmat2, Teuchos::RCP<LINALG::SparseOperator> sysmat3,
-    Teuchos::RCP<Epetra_Vector> sysvec1, Teuchos::RCP<Epetra_Vector> sysvec2,
-    Teuchos::RCP<Epetra_Vector> sysvec3, const Teuchos::RCP<Epetra_Vector> sysvec4,
-    Teuchos::RCP<Epetra_Vector> sysvec5)
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
+    const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
   if (!actdisc_->Filled()) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -1075,7 +1075,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
         if (*conditiontype == "atrium_left") cardiovascular0dlm.push_back(gindex[0]);
         if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
         cardiovascular0downer.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        CORE::LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -9142,7 +9142,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
       if (*conditiontype == "atrium_right") cardiovascular0dlm.push_back(gindex[24]);
       cardiovascular0downer.push_back(curr->second->Owner());
       if (assvec1 and *conditiontype != "dummy")
-        LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

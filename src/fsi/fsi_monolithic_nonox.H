@@ -174,7 +174,7 @@ namespace FSI
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     /// setup list with default parameters
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
@@ -200,7 +200,7 @@ namespace FSI
     /// access type-cast pointer to problem-specific ALE-wrapper
     const Teuchos::RCP<ADAPTER::AleXFFsiWrapper>& AleField() { return ale_; }
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;  //!< block system matrix
 
     bool firstcall_;
 
@@ -253,10 +253,10 @@ namespace FSI
     double norminterfaceincInf_;  //!< norm of interface residual forces
     //--------------------------------------------------------------------------//
 
-    Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
-    Teuchos::RCP<Epetra_Vector> rhs_;      //!< rhs of FSI system
-    Teuchos::RCP<Epetra_Vector> zeros_;    //!< a zero vector of full length
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<Epetra_Vector> iterinc_;        //!< increment between Newton steps k and k+1
+    Teuchos::RCP<Epetra_Vector> rhs_;            //!< rhs of FSI system
+    Teuchos::RCP<Epetra_Vector> zeros_;          //!< a zero vector of full length
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
 
     /// type-cast pointer to problem-specific fluid-wrapper
     Teuchos::RCP<ADAPTER::FluidFluidFSI> fluid_;
@@ -270,7 +270,7 @@ namespace FSI
     void ValidateParameters();
 
     /// dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     /// output stream
     Teuchos::RCP<std::ofstream> log_;

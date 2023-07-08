@@ -80,7 +80,7 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
 
     /// system matrix of coupled artery porofluid problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
@@ -138,7 +138,7 @@ namespace POROMULTIPHASE
     };
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver)
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver)
     {
       dserror("BuildBlockNullSpaces() only available for monolithic schemes!");
       return;
@@ -146,7 +146,7 @@ namespace POROMULTIPHASE
 
     //! build the block null spaces
     virtual void BuildArteryBlockNullSpace(
-        Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum)
+        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum)
     {
       dserror("BuildArteryBlockNullSpace() only available for monolithic schemes!");
       return;
@@ -184,14 +184,14 @@ namespace POROMULTIPHASE
     };
 
     //! get extractor
-    virtual Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const
+    virtual Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
     {
       dserror("Extractor() only available for monolithic schemes!");
       return Teuchos::null;
     };
 
     //! get monolithic block system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
     {
       dserror("BlockSystemMatrix() only available for monolithic schemes!");
       return Teuchos::null;

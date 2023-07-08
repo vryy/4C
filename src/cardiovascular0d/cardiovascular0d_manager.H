@@ -37,14 +37,14 @@ namespace DRT
   class Structure;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
   class MapExtractor;
   class MultiMapExtractor;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace UTILS
 {
@@ -64,7 +64,7 @@ namespace UTILS
         Teuchos::ParameterList
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
-        LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
+        CORE::LINALG::Solver& solver,       ///< Solver to solve linear subproblem in iteration
         Teuchos::RCP<UTILS::MOR> mor        ///< model order reduction
     );
     /*!
@@ -76,10 +76,10 @@ namespace UTILS
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
-    void EvaluateForceStiff(const double time,       ///< time at end of time step
-        Teuchos::RCP<const Epetra_Vector> disp,      ///< displacement at end of time step
-        Teuchos::RCP<Epetra_Vector> fint,            ///< vector of internal structural forces
-        Teuchos::RCP<LINALG::SparseOperator> stiff,  ///< structural stiffness matrix
+    void EvaluateForceStiff(const double time,             ///< time at end of time step
+        Teuchos::RCP<const Epetra_Vector> disp,            ///< displacement at end of time step
+        Teuchos::RCP<Epetra_Vector> fint,                  ///< vector of internal structural forces
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  ///< structural stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -144,8 +144,8 @@ namespace UTILS
     ///
     void EvaluateNeumannCardiovascular0DCoupling(
         Teuchos::ParameterList params, const Teuchos::RCP<Epetra_Vector> actpres,
-        Teuchos::RCP<Epetra_Vector> systemvector,          ///< structural rhs
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix  ///< structural stiffness matrix
+        Teuchos::RCP<Epetra_Vector> systemvector,                ///< structural rhs
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix  ///< structural stiffness matrix
     );
 
     /*!
@@ -160,19 +160,19 @@ namespace UTILS
     Teuchos::RCP<Epetra_Map> GetCardiovascular0DMap() const { return cardiovascular0dmap_full_; };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatDcardvasc0dDd()  // const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatDcardvasc0dDd()  // const
     {
       return mat_dcardvasc0d_dd_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatDstructDcv0ddof()  // const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatDstructDcv0ddof()  // const
     {
       return mat_dstruct_dcv0ddof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseMatrix> GetCardiovascular0DStiffness()  // const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCardiovascular0DStiffness()  // const
     {
       return cardiovascular0dstiffness_;
     };
@@ -232,7 +232,7 @@ namespace UTILS
     */
     Teuchos::ParameterList& Cardvasc0DParams() { return cv0dparams_; }
 
-    Teuchos::RCP<LINALG::Solver>& GetSolver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver>& GetSolver() { return solver_; }
 
     /// Reset reference base values for restart computations
     void Set0D_v_n(Teuchos::RCP<Epetra_Vector> newval  ///< new reference base values
@@ -269,17 +269,17 @@ namespace UTILS
 
 
     //! switch Cardiovascular0D matrix to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
 
 
-    void SolverSetup(LINALG::Solver& solver, Teuchos::ParameterList params);
+    void SolverSetup(CORE::LINALG::Solver& solver, Teuchos::ParameterList params);
 
 
-    int Solve(Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Epetra_Vector> dispinc,             ///< displacement increment to compute
-        const Teuchos::RCP<Epetra_Vector> rhsstandard,   ///< standard right hand side
-        const double k_ptc                               ///< for 3D-0D PTC
+    int Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+        Teuchos::RCP<Epetra_Vector> dispinc,            ///< displacement increment to compute
+        const Teuchos::RCP<Epetra_Vector> rhsstandard,  ///< standard right hand side
+        const double k_ptc                              ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> GetCardvasc0D4ElementWindkessel()
@@ -331,7 +331,7 @@ namespace UTILS
     Teuchos::RCP<DRT::Discretization>
         actdisc_;  ///< discretization where elements of cardiovascular0d boundary live in
     int myrank_;   ///< processor
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Cardiovascular0DDofSet>
         cardiovascular0ddofset_full_;  ///< degrees of freedom of pressures
     Teuchos::RCP<Cardiovascular0DDofSet>
@@ -381,11 +381,13 @@ namespace UTILS
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
     Teuchos::RCP<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
-    Teuchos::RCP<LINALG::Solver> solver_;  ///< solver for linear standard linear system
-    Teuchos::RCP<LINALG::SparseMatrix>
-        cardiovascular0dstiffness_;                            ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseMatrix> mat_dcardvasc0d_dd_;    ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  ///< solver for linear standard linear system
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        cardiovascular0dstiffness_;  ///< additional rectangular matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
     int counter_;               ///< counts how often #Solve is called
     bool isadapttol_;           ///< adaptive tolerance for solver?
     double adaptolbetter_;      ///< adaptive tolerance for solver useful?

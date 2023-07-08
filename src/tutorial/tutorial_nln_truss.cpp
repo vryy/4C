@@ -48,7 +48,7 @@ void TUTORIAL::NonlinearTruss::PrintTutorialType()
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-std::vector<LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
+std::vector<CORE::LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
 {
   /// print tutorial type
   PrintTutorialType();
@@ -65,25 +65,25 @@ std::vector<LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
   //
   // Do this in the header of this file. In line 20 you find
   // the global definition of numele which equals 6 as default value.
-  // this needs to be done, since the size of LINALG::Matrix needs to
+  // this needs to be done, since the size of CORE::LINALG::Matrix needs to
   // known at compile time. You cannot put a variable as template argument.
-  // try for example to declare a LINALG::Matrix like:
+  // try for example to declare a CORE::LINALG::Matrix like:
   //
   // int numrows = 6;
-  // LINALG::MATRIX<numrows,1> mytestmatrix(true);
+  // CORE::LINALG::MATRIX<numrows,1> mytestmatrix(true);
   //
   // You will see, that this results in an compile error !
   //
-  // A remedy could be to use matrix objects other than LINALG::Matrix,
+  // A remedy could be to use matrix objects other than CORE::LINALG::Matrix,
   // which allow a dynamic adaption of their size.
   //
 
   // BOUNDARY CONDITIONS
 
   // initialize variables
-  LINALG::Matrix<numele + 1, 1> dirichletcond(true);
+  CORE::LINALG::Matrix<numele + 1, 1> dirichletcond(true);
   dirichletcond.PutScalar(-1234.0);  // initialized with -1234.0
-  LINALG::Matrix<numele + 1, 1> neumanncond(true);
+  CORE::LINALG::Matrix<numele + 1, 1> neumanncond(true);
   neumanncond.PutScalar(-1234.0);  // initialized with -1234.0
 
   // DIRICHLET conditions
@@ -97,7 +97,7 @@ std::vector<LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
   // NODE LOCATIONS
 
   // material configuration
-  LINALG::Matrix<numele + 1, 1> X(true);
+  CORE::LINALG::Matrix<numele + 1, 1> X(true);
   X(0) = 0.0;
   X(1) = 1.0;
   X(2) = 2.0;
@@ -110,14 +110,14 @@ std::vector<LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
   // MATERIAL DEFINITION
 
   // Young's Modulus
-  LINALG::Matrix<numele, 1> E(true);
+  CORE::LINALG::Matrix<numele, 1> E(true);
   E.PutScalar(900.0);
 
   /**************************************************************/
   // DO NOT TOUCH
 
   // save condition matices in vector and return this vector
-  std::vector<LINALG::Matrix<numele + 1, 1>> vector_of_condition_matrices;
+  std::vector<CORE::LINALG::Matrix<numele + 1, 1>> vector_of_condition_matrices;
   vector_of_condition_matrices.push_back(dirichletcond);
   vector_of_condition_matrices.push_back(neumanncond);
 
@@ -142,7 +142,7 @@ std::vector<LINALG::Matrix<7, 1>> TUTORIAL::NonlinearTruss::ProblemDefinition()
 void TUTORIAL::NonlinearTruss::SetupProblem()
 {
   // define geometry and bc's and save conditions in vector 'vector_of_condition_matrices'
-  static std::vector<LINALG::Matrix<numele + 1, 1>> vector_of_condition_matrices =
+  static std::vector<CORE::LINALG::Matrix<numele + 1, 1>> vector_of_condition_matrices =
       ProblemDefinition();
 
 
@@ -197,13 +197,13 @@ void TUTORIAL::NonlinearTruss::TimeLoop()
 template <unsigned int numrow, unsigned int numcol>
 void TUTORIAL::NonlinearTruss::SetupSolver()
 {
-  nxnsolver_ = Teuchos::rcp(new LINALG::FixedSizeSerialDenseSolver<numrow, numcol, 1>());
+  nxnsolver_ = Teuchos::rcp(new CORE::LINALG::FixedSizeSerialDenseSolver<numrow, numcol, 1>());
 }
 
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::NonlinearTruss::PrintProblem(std::vector<LINALG::Matrix<7, 1>>& conditions)
+void TUTORIAL::NonlinearTruss::PrintProblem(std::vector<CORE::LINALG::Matrix<7, 1>>& conditions)
 {
   std::cout << "This is your Geometry and your Boundary Conditions:\n" << std::endl;
   std::cout << "D := Dirichlet Node" << std::endl;
@@ -315,16 +315,16 @@ void TUTORIAL::NonlinearTruss::Newton()
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::NonlinearTruss::Evaluate(LINALG::Matrix<numele + 1, 1>* rhs,
-    LINALG::Matrix<numele + 1, numele + 1>* stiff, bool eval_rhs, bool eval_stiff)
+void TUTORIAL::NonlinearTruss::Evaluate(CORE::LINALG::Matrix<numele + 1, 1>* rhs,
+    CORE::LINALG::Matrix<numele + 1, numele + 1>* stiff, bool eval_rhs, bool eval_stiff)
 {
   // initialize element stiffness matrix that is filled during element evaluation.
   // Static objects are built only once. The second time we arrive here, this line is skipped.
   // Thus, the memory for this matrix is allocated only once.
-  static LINALG::Matrix<2, 2> ele_stiff(true);
+  static CORE::LINALG::Matrix<2, 2> ele_stiff(true);
 
   // initialize element residual vector that is filled during element evaluation.
-  static LINALG::Matrix<2, 1> ele_rhs(true);
+  static CORE::LINALG::Matrix<2, 1> ele_rhs(true);
 
   // get iterator to first map entry of discretization
   std::map<int, TUTORIAL::ELEMENTS::TutorialElement*>::iterator ele = discretization_->begin();
@@ -354,8 +354,8 @@ void TUTORIAL::NonlinearTruss::Evaluate(LINALG::Matrix<numele + 1, 1>* rhs,
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::NonlinearTruss::Solve(LINALG::Matrix<numele + 1, 1> rhs,
-    LINALG::Matrix<numele + 1, numele + 1> stiff, LINALG::Matrix<numele + 1, 1> inc)
+void TUTORIAL::NonlinearTruss::Solve(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+    CORE::LINALG::Matrix<numele + 1, numele + 1> stiff, CORE::LINALG::Matrix<numele + 1, 1> inc)
 {
   // solve
 
@@ -422,7 +422,8 @@ void TUTORIAL::NonlinearTruss::TutorialDone()
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
 void TUTORIAL::NonlinearTruss::AssembleMatrix(TUTORIAL::ELEMENTS::TutorialElement* ele,
-    LINALG::Matrix<2, 2>* ele_stiff_mat, LINALG::Matrix<numele + 1, numele + 1>* glob_stiff)
+    CORE::LINALG::Matrix<2, 2>* ele_stiff_mat,
+    CORE::LINALG::Matrix<numele + 1, numele + 1>* glob_stiff)
 {
   // get number of nodes from element
   int numnode = ele->NumNode();
@@ -453,7 +454,7 @@ void TUTORIAL::NonlinearTruss::AssembleMatrix(TUTORIAL::ELEMENTS::TutorialElemen
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
 void TUTORIAL::NonlinearTruss::AssembleVector(TUTORIAL::ELEMENTS::TutorialElement* ele,
-    LINALG::Matrix<2, 1>* ele_rhs_vec, LINALG::Matrix<numele + 1, 1>* glob_rhs)
+    CORE::LINALG::Matrix<2, 1>* ele_rhs_vec, CORE::LINALG::Matrix<numele + 1, 1>* glob_rhs)
 {
   // get number of nodes from element
   int numnode = ele->NumNode();

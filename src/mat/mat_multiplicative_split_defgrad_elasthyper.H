@@ -96,7 +96,7 @@ namespace MAT
      * @param[out] iFinM    inverse inelastic deformation gradient
      */
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM);
+        const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM);
 
     /// Returns all inelastic factors as a vector
     const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>&
@@ -106,7 +106,7 @@ namespace MAT
     }
 
     /// Return vector of all inelastic deformation gradients
-    const std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>>& GetiFinj() const
+    const std::vector<std::pair<PAR::InelasticSource, CORE::LINALG::Matrix<3, 3>>>& GetiFinj() const
     {
       return iFinj_;
     }
@@ -123,7 +123,7 @@ namespace MAT
         facdefgradin_;
 
     /// vector that holds pairs of inelastic deformation gradients and respective source
-    std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>> iFinj_;
+    std::vector<std::pair<PAR::InelasticSource, CORE::LINALG::Matrix<3, 3>>> iFinj_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -178,20 +178,23 @@ namespace MAT
 
     MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
-    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
-        int gp, int eleGID, const double* concentration, const double* temp,
-        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
+    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+        const double* concentration, const double* temp, double* d_cauchyndir_dT,
+        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
 
-    void EvaluateLinearizationOD(const LINALG::Matrix<3, 3>& defgrd, double concentration,
-        LINALG::Matrix<9, 1>* d_F_dx) override;
+    void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd, double concentration,
+        CORE::LINALG::Matrix<9, 1>* d_F_dx) override;
 
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
@@ -207,8 +210,8 @@ namespace MAT
      * @param[out] dstressdx  Derivative of 2nd Piola Kirchhoff stresses w.r.t. primary variable of
      *                        different field
      */
-    void EvaluateODStiffMat(PAR::InelasticSource source, const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<6, 9>& dSdiFin, LINALG::Matrix<6, 1>& dstressdx);
+    void EvaluateODStiffMat(PAR::InelasticSource source, const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<6, 9>& dSdiFin, CORE::LINALG::Matrix<6, 1>& dstressdx);
 
     /*!
      * @brief Evaluate additional terms of the elasticity tensor
@@ -224,9 +227,9 @@ namespace MAT
      *                     deformation gradient
      * @param[out] cmatadd Additional elasticity tensor \f$ cmat_{add} \f$
      */
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFin,
-        LINALG::Matrix<6, 6>& cmatadd);
+    void EvaluateAdditionalCmat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFin,
+        CORE::LINALG::Matrix<6, 6>& cmatadd);
 
     /*!
      * @brief  Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
@@ -255,12 +258,13 @@ namespace MAT
      * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
      *                          deformation gradient
      */
-    void EvaluatedSdiFin(const LINALG::Matrix<3, 1>& gamma, const LINALG::Matrix<8, 1>& delta,
-        const LINALG::Matrix<3, 3>& iFinM, const LINALG::Matrix<3, 3>& iCinCM,
-        const LINALG::Matrix<6, 1>& iCinV, const LINALG::Matrix<9, 1>& CiFin9x1,
-        const LINALG::Matrix<9, 1>& CiFinCe9x1, const LINALG::Matrix<6, 1>& iCinCiCinV,
-        const LINALG::Matrix<9, 1>& CiFiniCe9x1, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<3, 3>& iFinCeM, double detFin, LINALG::Matrix<6, 9>& dSdiFin) const;
+    void EvaluatedSdiFin(const CORE::LINALG::Matrix<3, 1>& gamma,
+        const CORE::LINALG::Matrix<8, 1>& delta, const CORE::LINALG::Matrix<3, 3>& iFinM,
+        const CORE::LINALG::Matrix<3, 3>& iCinCM, const CORE::LINALG::Matrix<6, 1>& iCinV,
+        const CORE::LINALG::Matrix<9, 1>& CiFin9x1, const CORE::LINALG::Matrix<9, 1>& CiFinCe9x1,
+        const CORE::LINALG::Matrix<6, 1>& iCinCiCinV, const CORE::LINALG::Matrix<9, 1>& CiFiniCe9x1,
+        const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<3, 3>& iFinCeM,
+        double detFin, CORE::LINALG::Matrix<6, 9>& dSdiFin) const;
 
     /*!
      * @brief Evaluates stress and cmat
@@ -322,10 +326,11 @@ namespace MAT
      * @param[out] stress   2nd Piola--Kirchhoff stress tensor
      * @param[out] cmatiso  part of the elasticity tensor as shown above
      */
-    void EvaluateStressCmatIso(const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 1>& iCinV,
-        const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<3, 1>& gamma,
-        const LINALG::Matrix<8, 1>& delta, double detFin, LINALG::Matrix<6, 1>& stress,
-        LINALG::Matrix<6, 6>& cmatiso) const;
+    void EvaluateStressCmatIso(const CORE::LINALG::Matrix<6, 1>& iCV,
+        const CORE::LINALG::Matrix<6, 1>& iCinV, const CORE::LINALG::Matrix<6, 1>& iCinCiCinV,
+        const CORE::LINALG::Matrix<3, 1>& gamma, const CORE::LINALG::Matrix<8, 1>& delta,
+        double detFin, CORE::LINALG::Matrix<6, 1>& stress,
+        CORE::LINALG::Matrix<6, 6>& cmatiso) const;
 
     /*!
      * @brief Evaluates some kinematic quantities that are used in stress and elasticity tensor
@@ -349,12 +354,12 @@ namespace MAT
      *                           \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
      * @param[out] prinv         Principal invariants of the elastic right Cauchy-Green tensor
      */
-    void EvaluateKinQuantElast(const LINALG::Matrix<3, 3>* defgrad,
-        const LINALG::Matrix<3, 3>& iFinM, LINALG::Matrix<6, 1>& iCinV,
-        LINALG::Matrix<6, 1>& iCinCiCinV, LINALG::Matrix<6, 1>& iCV, LINALG::Matrix<3, 3>& iCinCM,
-        LINALG::Matrix<3, 3>& iFinCeM, LINALG::Matrix<9, 1>& CiFin9x1,
-        LINALG::Matrix<9, 1>& CiFinCe9x1, LINALG::Matrix<9, 1>& CiFiniCe9x1,
-        LINALG::Matrix<3, 1>& prinv) const;
+    void EvaluateKinQuantElast(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<3, 3>& iFinM, CORE::LINALG::Matrix<6, 1>& iCinV,
+        CORE::LINALG::Matrix<6, 1>& iCinCiCinV, CORE::LINALG::Matrix<6, 1>& iCV,
+        CORE::LINALG::Matrix<3, 3>& iCinCM, CORE::LINALG::Matrix<3, 3>& iFinCeM,
+        CORE::LINALG::Matrix<9, 1>& CiFin9x1, CORE::LINALG::Matrix<9, 1>& CiFinCe9x1,
+        CORE::LINALG::Matrix<9, 1>& CiFiniCe9x1, CORE::LINALG::Matrix<3, 1>& prinv) const;
 
     /*!
      * @brief calculates the derivatives of the hyper-elastic laws with respect to the invariants
@@ -365,8 +370,8 @@ namespace MAT
      * @param[out] dPI    First derivative w.r.t. principle invariants
      * @param[out] ddPII  Second derivative w.r.t. principle invariants
      */
-    void EvaluateInvariantDerivatives(const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
-        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII) const;
+    void EvaluateInvariantDerivatives(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
+        CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII) const;
 
     /*!
      * @brief pre-evaluation, intended to be used for stuff that have to be done only once

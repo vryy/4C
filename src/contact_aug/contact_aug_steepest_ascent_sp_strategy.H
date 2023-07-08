@@ -182,7 +182,7 @@ namespace CONTACT
             const Epetra_Vector& xold, const Epetra_Vector& dir);
 
         /// used to add the modified diagonal entries
-        void AddContributionsToMatrixBlockLmLm(LINALG::SparseMatrix& kzz) const override;
+        void AddContributionsToMatrixBlockLmLm(CORE::LINALG::SparseMatrix& kzz) const override;
 
         /// Returns the diagonal modification vector for the active dofs
         Teuchos::RCP<Epetra_Vector> GetKzzDiagModification() const;

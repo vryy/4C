@@ -24,7 +24,7 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
   class MapExtractor;
@@ -36,7 +36,7 @@ namespace LINALG
   class MatrixRowTransform;
   class Equilibration;
   enum class MatrixType;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STI
 {
@@ -62,7 +62,7 @@ namespace STI
     //! output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix
     //! components in ascending order across all processors
     static void OutputMatrixToFile(
-        const Teuchos::RCP<const LINALG::SparseOperator>
+        const Teuchos::RCP<const CORE::LINALG::SparseOperator>
             sparseoperator,           //!< sparse or block sparse matrix to be output
         const int precision = 16,     //!< output precision
         const double tolerance = -1.  //!< output omission tolerance
@@ -76,17 +76,18 @@ namespace STI
     );
 
     //! return algebraic solver for global system of equations
-    const LINALG::Solver& Solver() const { return *solver_; };
+    const CORE::LINALG::Solver& Solver() const { return *solver_; };
 
    private:
     //! Apply Dirichlet conditions to assembled OD blocks
-    void ApplyDirichletOffDiag(Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
+    void ApplyDirichletOffDiag(
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
 
     //! Assemble interface and domain contributions of OD blocks
     void AssembleDomainInterfaceOffDiag(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrathermo_domain_interface,
-        Teuchos::RCP<LINALG::SparseOperator>& thermoscatra_domain_interface);
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& scatrathermo_domain_interface,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& thermoscatra_domain_interface);
 
     //! assemble global system of equations
     void AssembleMatAndRHS();
@@ -124,38 +125,38 @@ namespace STI
     const double restol_;
 
     //! global map extractor (0: scatra, 1: thermo)
-    Teuchos::RCP<LINALG::MapExtractor> maps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> maps_;
 
     // flag for double condensation of linear equations associated with temperature field
     const bool condensationthermo_;
 
     //! global system matrix
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix_;
 
     //! type of global system matrix in global system of equations
-    const LINALG::MatrixType matrixtype_;
+    const CORE::LINALG::MatrixType matrixtype_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
     //! degrees of freedom), domain contributions
-    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockdomain_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockdomain_;
 
     //! scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo
     //! degrees of freedom), interface contributions
-    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface_;
 
     //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
     //! degrees of freedom), domain contributions
-    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockdomain_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockdomain_;
 
     //! thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra
     //! degrees of freedom), interface contributions
-    Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface_;
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_;
 
     //! map extractor associated with all degrees of freedom inside temperature field
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermo_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmapthermo_;
 
     //! global increment vector for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Vector> increment_;
@@ -170,7 +171,7 @@ namespace STI
     double dtsolve_;
 
     //! algebraic solver for global system of equations
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! inverse sums of absolute values of row entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invrowsums_;
@@ -182,20 +183,20 @@ namespace STI
     Teuchos::RCP<const CORE::ADAPTER::Coupling> icoupthermo_;
 
     //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
-    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformscatraod_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> islavetomasterrowtransformscatraod_;
 
     //! slave-to-master column transformation operator for thermo-scatra block of global system
     //! matrix
-    Teuchos::RCP<LINALG::MatrixColTransform> islavetomastercoltransformthermood_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> islavetomastercoltransformthermood_;
 
     //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
-    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> islavetomasterrowtransformthermood_;
 
     //! evaluation of OD blocks for scatra-thermo coupling
     Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> scatrathermooffdiagcoupling_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
   };  // class Monolithic : public Algorithm
 }  // namespace STI
 #endif

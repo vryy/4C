@@ -255,7 +255,7 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
 {
   const int iel = deriv.N();
   const int NSD = deriv.M();
-  LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
+  CORE::LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = mymesh.GetNode(nodes.at(inode));
@@ -267,9 +267,9 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   // actually compute its transpose....
   if (NSD == 3)
   {
-    LINALG::SerialDenseMatrix xjm(NSD, NSD);
+    CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
     xjm.Multiply('N', 'T', 1.0, deriv, xyze, 0.0);
-    LINALG::Matrix<3, 3> jac(xjm.A(), true);
+    CORE::LINALG::Matrix<3, 3> jac(xjm.A(), true);
     const double det = jac.Determinant();
 
     if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f", eleid, det);
@@ -294,7 +294,7 @@ int EXODUS::EleSaneSign(
 {
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
-  LINALG::SerialDenseMatrix local_nodecoords(iel, 3);
+  CORE::LINALG::SerialDenseMatrix local_nodecoords(iel, 3);
   DRT::Element::DiscretizationType distype;
   switch (iel)
   {
@@ -354,7 +354,7 @@ int EXODUS::EleSaneSign(
   const int NSD = 3;
   Epetra_SerialDenseMatrix deriv(NSD, iel);
 
-  LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
+  CORE::LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = nodecoords.find(nodes[inode])->second;
@@ -364,7 +364,7 @@ int EXODUS::EleSaneSign(
   }
   // get Jacobian matrix and determinant
   // actually compute its transpose....
-  LINALG::SerialDenseMatrix xjm(NSD, NSD);
+  CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
   int n_posdet = 0;
   int n_negdet = 0;
 

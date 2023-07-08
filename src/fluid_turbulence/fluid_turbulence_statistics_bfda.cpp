@@ -12,7 +12,7 @@
 #include "fluid_turbulence_statistics_bfda.H"
 
 
-//#define COMBINE_SAMPLES
+// #define COMBINE_SAMPLES
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -73,8 +73,8 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  togglew_ = LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = LINALG::CreateVector(*dofrowmap, true);
+  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
 
   //----------------------------------------------------------------------

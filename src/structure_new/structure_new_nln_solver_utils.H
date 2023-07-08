@@ -23,7 +23,7 @@ namespace Teuchos
 {
   class ParameterList;
 }
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }

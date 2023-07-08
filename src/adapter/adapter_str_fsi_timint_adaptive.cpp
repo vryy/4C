@@ -47,7 +47,7 @@ ADAPTER::StructureFSITimIntAda::StructureFSITimIntAda(
   intersectionmaps.push_back(sti->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   numdbcdofs_ = sti->GetDBCMapExtractor()->CondMap()->NumGlobalElements();
   numdbcfsidofs_ = intersectionmap->NumGlobalElements();

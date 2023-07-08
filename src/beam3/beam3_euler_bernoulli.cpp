@@ -95,7 +95,7 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
 
   // Compute tangent vector with unit length from nodal coordinates.
   // Note: Tangent vector is the same at both nodes due to straight initial configuration.
-  LINALG::Matrix<spacedim, 1> tangent(true);
+  CORE::LINALG::Matrix<spacedim, 1> tangent(true);
   {
     const DRT::Node* firstnode = beam3eb->Nodes()[0];
     const DRT::Node* secondnode = beam3eb->Nodes()[1];
@@ -107,12 +107,12 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
   }
 
   // Form a Cartesian basis
-  std::array<LINALG::Matrix<spacedim, 1>, spacedim> basis;
-  LINALG::Matrix<spacedim, 1> e1(true);
+  std::array<CORE::LINALG::Matrix<spacedim, 1>, spacedim> basis;
+  CORE::LINALG::Matrix<spacedim, 1> e1(true);
   e1(0) = 1.0;
-  LINALG::Matrix<spacedim, 1> e2(true);
+  CORE::LINALG::Matrix<spacedim, 1> e2(true);
   e2(1) = 1.0;
-  LINALG::Matrix<spacedim, 1> e3(true);
+  CORE::LINALG::Matrix<spacedim, 1> e3(true);
   e3(2) = 1.0;
   basis[0] = e1;
   basis[1] = e2;
@@ -136,8 +136,8 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
   }
 
   // Compute two vectors orthogonal to the tangent vector
-  LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
-  LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
+  CORE::LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
+  CORE::LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
   omegaOne.CrossProduct(tangent, someVector);
   omegaTwo.CrossProduct(tangent, omegaOne);
 
@@ -146,16 +146,16 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
   if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
     dserror("omegaTwo not orthogonal to tangent vector.");
 
-  LINALG::Matrix<3, 1> nodeCoords(true);
+  CORE::LINALG::Matrix<3, 1> nodeCoords(true);
   for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
 
   // Compute rotations in displacement DOFs
-  LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
+  CORE::LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
   rotOne.CrossProduct(omegaOne, nodeCoords);
   rotTwo.CrossProduct(omegaTwo, nodeCoords);
 
   // Compute rotations in tangent DOFs
-  LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
+  CORE::LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
   rotTangOne.CrossProduct(omegaOne, tangent);
   rotTangTwo.CrossProduct(omegaTwo, tangent);
 
@@ -277,10 +277,10 @@ DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner)
       firstcall_(true),
       Ekin_(0.0),
       Eint_(0.0),
-      L_(LINALG::Matrix<3, 1>(true)),
-      P_(LINALG::Matrix<3, 1>(true)),
-      t0_(LINALG::Matrix<3, 2>(true)),
-      t_(LINALG::Matrix<3, 2>(true)),
+      L_(CORE::LINALG::Matrix<3, 1>(true)),
+      P_(CORE::LINALG::Matrix<3, 1>(true)),
+      t0_(CORE::LINALG::Matrix<3, 2>(true)),
+      t_(CORE::LINALG::Matrix<3, 2>(true)),
       kappa_max_(0.0),
       epsilon_max_(0.0),
       axial_strain_GP_(0),
@@ -460,7 +460,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
 
 
     // create Matrix for the derivates of the shapefunctions at the GP
-    LINALG::Matrix<1, nnode> shapefuncderiv;
+    CORE::LINALG::Matrix<1, nnode> shapefuncderiv;
 
     // Loop through all GPs and compute jacobi at the GPs
     for (int numgp = 0; numgp < gausspoints.nquad; numgp++)
@@ -521,7 +521,7 @@ void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-std::vector<LINALG::Matrix<3, 1>> DRT::ELEMENTS::Beam3eb::Tref() const { return Tref_; }
+std::vector<CORE::LINALG::Matrix<3, 1>> DRT::ELEMENTS::Beam3eb::Tref() const { return Tref_; }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -530,7 +530,7 @@ double DRT::ELEMENTS::Beam3eb::jacobi() const { return jacobi_; }
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
-    LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
+    CORE::LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
     dserror(
@@ -539,7 +539,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
         disp.size());
 
   // add reference positions and tangents => total Lagrangean state vector
-  LINALG::Matrix<12, 1> disp_totlag(true);
+  CORE::LINALG::Matrix<12, 1> disp_totlag(true);
   UpdateDispTotlag<2, 6>(disp, disp_totlag);
 
   Beam3Base::GetPosAtXi<2, 2, double>(pos, xi, disp_totlag);
@@ -548,7 +548,7 @@ void DRT::ELEMENTS::Beam3eb::GetPosAtXi(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
-    LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
+    CORE::LINALG::Matrix<3, 3>& triad, const double& xi, const std::vector<double>& disp) const
 {
   if (disp.size() != 12)
     dserror(
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::Beam3eb::GetTriadAtXi(
         disp.size());
 
   // add reference positions and tangents => total Lagrangean state vector
-  LINALG::Matrix<12, 1> disp_totlag(true);
+  CORE::LINALG::Matrix<12, 1> disp_totlag(true);
   UpdateDispTotlag<2, 6>(disp, disp_totlag);
 
   triad.Clear();

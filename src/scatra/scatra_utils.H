@@ -31,7 +31,7 @@ namespace SCATRA::SCATRAUTILS
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim, DRT::Element::DiscretizationType DISTYPE>
-  LINALG::Matrix<dim, 1> DoMeanValueAveragingOfElementGradientNode(
+  CORE::LINALG::Matrix<dim, 1> DoMeanValueAveragingOfElementGradientNode(
       Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
       Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid);
 

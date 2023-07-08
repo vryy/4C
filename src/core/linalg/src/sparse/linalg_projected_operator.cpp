@@ -16,28 +16,29 @@
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
-LINALG::LinalgProjectedOperator::LinalgProjectedOperator(
-    Teuchos::RCP<Epetra_Operator> A, bool project, Teuchos::RCP<LINALG::KrylovProjector> projector)
+CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A,
+    bool project, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
     : project_(project), A_(A), projector_(projector)
 {
   if (project_ && (projector == Teuchos::null))
     dserror("Kernel projection enabled but got no projector object");
 
   return;
-}  // LINALG::LinalgProjectedOperator::LinalgProjectedOperator
+}  // CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                            Destructor
    -------------------------------------------------------------------- */
-LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
+CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
 {
   return;
-}  // LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
+}  // CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                       (Modified) Apply call
    -------------------------------------------------------------------- */
-int LINALG::LinalgProjectedOperator::Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+int CORE::LINALG::LinalgProjectedOperator::Apply(
+    const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
   int ierr = 0;
 
@@ -53,4 +54,4 @@ int LINALG::LinalgProjectedOperator::Apply(const Epetra_MultiVector &X, Epetra_M
   }
 
   return (ierr);
-}  // LINALG::LinalgProjectedOperator::Apply
+}  // CORE::LINALG::LinalgProjectedOperator::Apply

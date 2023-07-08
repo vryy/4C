@@ -37,9 +37,9 @@ void MAT::ELASTIC::Coup1Pow::AddElastOptParams(std::map<std::string, int>* pname
   pnames->insert(std::pair<std::string, int>("Coup1Pow_D", MAT::ELASTIC::PAR::coup1pow_d));
 }
 
-void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
+    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+    const int gp, const int eleGID)
 {
   // material Constants c and beta
   const double c = params_->c_;
@@ -50,8 +50,9 @@ void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3
   psi += c * pow((prinv(0) - 3.), d);
 }
 
-void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   double c = 0.;
   int d = 0;

@@ -143,15 +143,15 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
 
   // values of scatra field are always in first dofset
   const std::vector<int>& lm = la[0].lm_;
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, my::ehist_, lm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   if (my::scatraparatimint_->IsGenAlpha() and not my::scatraparatimint_->IsIncremental())
   {
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
 
   //---------------------------------------------------------------------------------------------
@@ -168,12 +168,12 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
 
     const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
 
-    static LINALG::Matrix<probdim, 1> arteryrefpos0;
+    static CORE::LINALG::Matrix<probdim, 1> arteryrefpos0;
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos0(d) = my::xyze_(d, 0);
-    static LINALG::Matrix<probdim, 1> arteryrefpos1;
+    static CORE::LINALG::Matrix<probdim, 1> arteryrefpos1;
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos1(d) = my::xyze_(d, 1);
 
-    static LINALG::Matrix<probdim, 1> dist0;
+    static CORE::LINALG::Matrix<probdim, 1> dist0;
     dist0.Update(-1.0, arteryrefpos0, 1.0, arteryrefpos1, 0.0);
     const double arteryreflength = dist0.Norm2();
 
@@ -202,7 +202,8 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
         discretization.GetState(ndsscatra_artery, "one_d_artery_pressure");
     // values of scatra field are always in first dofset
     const std::vector<int>& lm_artery = la[ndsscatra_artery].lm_;
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*arterypn, earterypressurenp_, lm_artery);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
+        *arterypn, earterypressurenp_, lm_artery);
   }
   else
     dserror("Something went wrong here, scatra-dis does not have artery primary variable");
@@ -226,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ExtractElementAndNode
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::CalcMatConvODFluid(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
-    const double timefacfac, const double densnp, const LINALG::Matrix<nsd_, 1>& gradphi)
+    const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
   const double prefac = timefacfac * VarManager()->Diam() * VarManager()->Diam() / 32.0 /
                         VarManager()->Visc() * (-1.0);

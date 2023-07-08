@@ -74,8 +74,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   std::vector<int>::iterator it_vcr;
 
   // construct views
-  LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
   // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------
@@ -107,8 +107,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   DRT::UTILS::ExtractMyValues(*qanp, myqanp, la[0].lm_);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> eareanp;
-  LINALG::Matrix<numnode, 1> eqnp;
+  CORE::LINALG::Matrix<numnode, 1> eareanp;
+  CORE::LINALG::Matrix<numnode, 1> eqnp;
   for (int i = 0; i < numnode; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -196,8 +196,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
   std::vector<int>::iterator it_vcr;
 
   // construct views
-  LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
   // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------
@@ -238,13 +238,13 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
   //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> eareanp;
-  LINALG::Matrix<numnode, 1> earean;
-  LINALG::Matrix<numnode, 1> eqnp;
-  LINALG::Matrix<numnode, 1> eqn;
-  LINALG::Matrix<2 * numnode, 1> escatran;
-  LINALG::Matrix<numnode, 1> ewfnp;
-  LINALG::Matrix<numnode, 1> ewbnp;
+  CORE::LINALG::Matrix<numnode, 1> eareanp;
+  CORE::LINALG::Matrix<numnode, 1> earean;
+  CORE::LINALG::Matrix<numnode, 1> eqnp;
+  CORE::LINALG::Matrix<numnode, 1> eqn;
+  CORE::LINALG::Matrix<2 * numnode, 1> escatran;
+  CORE::LINALG::Matrix<numnode, 1> ewfnp;
+  CORE::LINALG::Matrix<numnode, 1> ewbnp;
   for (int i = 0; i < numnode; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -385,11 +385,12 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Initial(Artery* ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
-    const LINALG::Matrix<my::iel_, 1>& eqnp, const LINALG::Matrix<my::iel_, 1>& eareanp,
-    LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat, LINALG::Matrix<2 * my::iel_, 1>& rhs,
-    Teuchos::RCP<const MAT::Material> material, double dt)
+    const CORE::LINALG::Matrix<my::iel_, 1>& eqnp, const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
+    CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
+    double dt)
 {
-  LINALG::Matrix<2 * my::iel_, 1> qan;
+  CORE::LINALG::Matrix<2 * my::iel_, 1> qan;
   for (int i = 0; i < my::iel_; i++)
   {
     qan(2 * i, 0) = eareanp(i);
@@ -399,7 +400,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
   const int numnode = my::iel_;
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, my::iel_> xyze;
+  CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -473,24 +474,24 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
   // defining some redundantly used matrices
 
   // Defining the shape functions
-  LINALG::Matrix<2 * my::iel_, 2> Nxi;
+  CORE::LINALG::Matrix<2 * my::iel_, 2> Nxi;
   Nxi.Clear();
   // Defining the derivative of shape functions
-  LINALG::Matrix<2 * my::iel_, 2> dNdxi;
+  CORE::LINALG::Matrix<2 * my::iel_, 2> dNdxi;
   dNdxi.Clear();
 
-  LINALG::Matrix<2 * my::iel_, 1> temp1;
-  LINALG::Matrix<2, 1> temp2;
-  LINALG::Matrix<2 * my::iel_, 1> rhs_temp;
+  CORE::LINALG::Matrix<2 * my::iel_, 1> temp1;
+  CORE::LINALG::Matrix<2, 1> temp2;
+  CORE::LINALG::Matrix<2 * my::iel_, 1> rhs_temp;
   rhs_temp.Clear();
 
-  LINALG::Matrix<2, 1> BLW;
-  LINALG::Matrix<2, 1> FLW;
-  LINALG::Matrix<2, 1> dFdxi;
-  LINALG::Matrix<2, 2> H;
-  LINALG::Matrix<2, 2> Bu;
-  LINALG::Matrix<2, 1> B;
-  LINALG::Matrix<2, 1> F;
+  CORE::LINALG::Matrix<2, 1> BLW;
+  CORE::LINALG::Matrix<2, 1> FLW;
+  CORE::LINALG::Matrix<2, 1> dFdxi;
+  CORE::LINALG::Matrix<2, 2> H;
+  CORE::LINALG::Matrix<2, 2> Bu;
+  CORE::LINALG::Matrix<2, 1> B;
+  CORE::LINALG::Matrix<2, 1> F;
 
   // Defining essential variables at the Gauss points
   double th;
@@ -848,14 +849,16 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
-    const LINALG::Matrix<2 * my::iel_, 1>& escatran, const LINALG::Matrix<my::iel_, 1>& ewfnp,
-    const LINALG::Matrix<my::iel_, 1>& ewbnp, const LINALG::Matrix<my::iel_, 1>& vec2,
-    const LINALG::Matrix<my::iel_, 1>& vec3, LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-    LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material, double dt)
+    const CORE::LINALG::Matrix<2 * my::iel_, 1>& escatran,
+    const CORE::LINALG::Matrix<my::iel_, 1>& ewfnp, const CORE::LINALG::Matrix<my::iel_, 1>& ewbnp,
+    const CORE::LINALG::Matrix<my::iel_, 1>& vec2, const CORE::LINALG::Matrix<my::iel_, 1>& vec3,
+    CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
+    CORE::LINALG::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const MAT::Material> material,
+    double dt)
 {
   // get the nodal coordinates of the element
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, my::iel_> xyze;
+  CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -978,8 +981,8 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> earean;
-  LINALG::Matrix<numnode, 1> eqn;
+  CORE::LINALG::Matrix<numnode, 1> earean;
+  CORE::LINALG::Matrix<numnode, 1> eqn;
 
   // get time step size
   const double dt = params.get<double>("time step size");
@@ -996,7 +999,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
 
   // get the nodal coordinates of the element
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, my::iel_> xyze;
+  CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -1216,8 +1219,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
   DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> eareanp;
-  LINALG::Matrix<numnode, 1> eqnp;
+  CORE::LINALG::Matrix<numnode, 1> eareanp;
+  CORE::LINALG::Matrix<numnode, 1> eqnp;
 
   // get time step size
   //  const double dt = params.get<double>("time step size");
@@ -1597,8 +1600,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::CalcPostprocessingValues(Arter
   DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> eareanp;
-  LINALG::Matrix<numnode, 1> eqnp;
+  CORE::LINALG::Matrix<numnode, 1> eareanp;
+  CORE::LINALG::Matrix<numnode, 1> eqnp;
 
   // get time step size
   //  const double dt = params.get<double>("time step size");
@@ -1767,8 +1770,8 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   DRT::UTILS::ExtractMyValues(*qanp, myqanp, lm);
 
   // create objects for element arrays
-  LINALG::Matrix<numnode, 1> earean;
-  LINALG::Matrix<numnode, 1> eqn;
+  CORE::LINALG::Matrix<numnode, 1> earean;
+  CORE::LINALG::Matrix<numnode, 1> eqn;
 
   // get time step size
   //  const double dt = params.get<double>("time step size");
@@ -1785,7 +1788,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
 
   // get the nodal coordinates of the element
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, my::iel_> xyze;
+  CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
     const double* x = nodes[inode]->X();
@@ -1866,9 +1869,9 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
   //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
 
   // create objects for element arrays
-  LINALG::Matrix<2 * numnode, 1> escatran;
-  LINALG::Matrix<numnode, 1> ewfn;
-  LINALG::Matrix<numnode, 1> ewbn;
+  CORE::LINALG::Matrix<2 * numnode, 1> escatran;
+  CORE::LINALG::Matrix<numnode, 1> ewfn;
+  CORE::LINALG::Matrix<numnode, 1> ewbn;
   for (int i = 0; i < numnode; ++i)
   {
     escatran(2 * i) = myescatran[2 * i];
@@ -1883,7 +1886,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
   // Get length of the element
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
-  LINALG::Matrix<3, my::iel_> xyze;
+  CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
     const double* x = nodes[inode]->X();

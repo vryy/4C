@@ -102,11 +102,12 @@ namespace DRT
       //! @param[out] nodal_concentration nodal concentrations
       void PrepCalcInternalForceStiffTotLagScaTra(
           const std::map<std::string, std::vector<double>>& ele_state,
-          LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
-          LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration);
+          CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
+          CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx,
+          CORE::LINALG::Matrix<2, 1>& nodal_concentration);
 
       //! calculation of concentration at Gauss Points, given concentration at nodes
-      double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;
+      double ProjectScalarToGaussPoint(double xi, const CORE::LINALG::Matrix<2, 1>& c) const;
 
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);

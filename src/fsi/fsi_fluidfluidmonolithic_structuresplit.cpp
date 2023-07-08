@@ -102,13 +102,13 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupDBCMapExtractor()
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
   aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
 
-  Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     dserror("Creation of Dirichlet map extractor failed.");

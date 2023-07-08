@@ -356,11 +356,11 @@ namespace DRT
       };
 
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>> invJ_;
       //! vector of inverses of the jacobian in material frame
       std::vector<double> detJ_;
       //! Gauss point coordinates
-      std::vector<LINALG::Matrix<NUMDIM_SOH18, 1>> xsi_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH18, 1>> xsi_;
       //! Gauss point weights
       std::vector<double> wgt_;
 
@@ -377,28 +377,29 @@ namespace DRT
       virtual void InitGp();
 
       //! Calculate nonlinear stiffness and mass matrix
-      virtual void nlnstiffmass(std::vector<int>& lm,               ///< location matrix
-          std::vector<double>& disp,                                ///< current displacements
-          std::vector<double>& residual,                            ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,                   ///< current displacements
+          std::vector<double>& residual,               ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option
       );                                          ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void Lumpmass(LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
+      void Lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
       void FlipT();
 
       // parameter space coords of one node
-      LINALG::Matrix<3, 1> NodeParamCoord(const int node);
+      CORE::LINALG::Matrix<3, 1> NodeParamCoord(const int node);
       // parameter space coords of all nodes
-      LINALG::Matrix<18, 3> NodeParamCoord();
+      CORE::LINALG::Matrix<18, 3> NodeParamCoord();
 
       // Update the element
       void Update(){/* do nothing */};

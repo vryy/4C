@@ -20,24 +20,24 @@
 // forward declaration
 class Epetra_Vector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   // forward declarations
   class BlockSparseMatrixBase;
   class SparseMatrixBase;
   class SparseMatrix;
 
-  /*! \enum LINALG::DataAccess
+  /*! \enum CORE::LINALG::DataAccess
    *  \brief Handling of data access (Copy or View)
    *
-   *  If set to LINALG::Copy, user data will be copied at construction.
-   *  If set to LINALG::View, user data will be encapsulated and used throughout
+   *  If set to CORE::LINALG::Copy, user data will be copied at construction.
+   *  If set to CORE::LINALG::View, user data will be encapsulated and used throughout
    *  the life of the object.
    *
-   *  \note A separate LINALG::DataAccess is necessary in order to resolve
+   *  \note A separate CORE::LINALG::DataAccess is necessary in order to resolve
    *  possible ambiguity conflicts with the Epetra_DataAccess.
    *
-   *  Use LINALG::DataAccess for construction of any LINALG matrix object.
+   *  Use CORE::LINALG::DataAccess for construction of any CORE::LINALG matrix object.
    *  Use plain 'Copy' or 'View' for construction of any Epetra matrix object.
    *
    *  \author mayr.mt \date 10/2015
@@ -60,7 +60,7 @@ namespace LINALG
                             a block matrix, then of course N is the number of all sub matrix blocks*/
     block_condition,     /*!< System matrix is a block matrix that consists of NxN sparse matrices.
                             How the system matrix is divided has to be defined by a condition (e.g.
-                            \link DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink.)*/
+                            \link ::DRT::Condition::ScatraPartitioning ScatraPartitioning \endlink.)*/
     block_condition_dof, /*!< System matrix is a block matrix that consists of NxN sparse
                             matrices. Each of the blocks as created by block_condition is
                             further subdivided by the dofs, meaning e.g. for two dofs per node
@@ -220,21 +220,21 @@ namespace LINALG
      *
      *  \author hiermeier \date 01/18 */
     virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const LINALG::SparseMatrix* trafo = NULL) const = 0;
+        const CORE::LINALG::SparseMatrix* trafo = NULL) const = 0;
 
     /// Returns the Epetra_Map object associated with the (full) domain of this operator.
     virtual const Epetra_Map& DomainMap() const = 0;
 
     /// Add one operator to another
-    virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,
-        const double scalarB) = 0;
+    virtual void Add(const CORE::LINALG::SparseOperator& A, const bool transposeA,
+        const double scalarA, const double scalarB) = 0;
 
     /// Add one SparseMatrixBase to another
-    virtual void AddOther(LINALG::SparseMatrixBase& A, const bool transposeA, const double scalarA,
-        const double scalarB) const = 0;
+    virtual void AddOther(CORE::LINALG::SparseMatrixBase& A, const bool transposeA,
+        const double scalarA, const double scalarB) const = 0;
 
     /// Add one BlockSparseMatrix to another
-    virtual void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA,
+    virtual void AddOther(CORE::LINALG::BlockSparseMatrixBase& A, const bool transposeA,
         const double scalarA, const double scalarB) const = 0;
 
     /// Multiply all values by a constant value (in place: A <- ScalarConstant * A).
@@ -245,7 +245,7 @@ namespace LINALG
   };
 
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif
 /*LINALG_SPARSEOPERATOR_H_*/

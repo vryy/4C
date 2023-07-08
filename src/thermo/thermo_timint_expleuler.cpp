@@ -20,7 +20,7 @@
  *----------------------------------------------------------------------*/
 THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntExpl(ioparams, tdynparams, xparams, actdis, solver, output),
       fextn_(Teuchos::null),
@@ -38,8 +38,8 @@ THR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
   DetermineCapaConsistTempRate();
 
   // allocate force vectors
-  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fextn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fintn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // let it rain
   return;
@@ -87,7 +87,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Epetra_Vector> frimpn = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> frimpn = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
   // obtain new temperature rates \f$R_{n+1}\f$
@@ -98,7 +98,7 @@ void THR::TimIntExplEuler::IntegrateStep()
   }
 
   if ((lumpcapa_ == false) or
-      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_) == Teuchos::null))
+      (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_) == Teuchos::null))
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
@@ -109,9 +109,9 @@ void THR::TimIntExplEuler::IntegrateStep()
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
-        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->RowMap(), false);
-    (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
+    Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(
+        (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_))->RowMap(), false);
+    (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(tang_))->ExtractDiagonalCopy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }

@@ -40,8 +40,8 @@ TUTORIAL::ELEMENTS::TutorialEleCalc::TutorialEleCalc() {}
  * evaluate terms                                                       |
  *----------------------------------------------------------------------*/
 void TUTORIAL::ELEMENTS::TutorialEleCalc::Evaluate(TUTORIAL::ELEMENTS::TutorialElement* element,
-    LINALG::Matrix<7, 1>* state, LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector,
-    bool eval_mat, bool eval_vec)
+    CORE::LINALG::Matrix<7, 1>* state, CORE::LINALG::Matrix<2, 2>* elematrix,
+    CORE::LINALG::Matrix<2, 1>* elevector, bool eval_mat, bool eval_vec)
 {
   // get number of nodes from the element
   int numnodeperele = element->NumNode();
@@ -51,7 +51,7 @@ void TUTORIAL::ELEMENTS::TutorialEleCalc::Evaluate(TUTORIAL::ELEMENTS::TutorialE
   // number of gp per ele
   int numgp = 2;
   // gp coordinates
-  LINALG::Matrix<2, 1> gpcoord(true);
+  CORE::LINALG::Matrix<2, 1> gpcoord(true);
   gpcoord(0) = -1.0 / sqrt(3.0);
   gpcoord(1) = 1.0 / sqrt(3.0);
 
@@ -59,17 +59,17 @@ void TUTORIAL::ELEMENTS::TutorialEleCalc::Evaluate(TUTORIAL::ELEMENTS::TutorialE
   for (int gp = 0; gp < numgp; gp++)
   {
     // eval shape functions at gp
-    LINALG::Matrix<2, 1> N(true);
+    CORE::LINALG::Matrix<2, 1> N(true);
     N(0) = 0.5 * (1 - gpcoord(gp));
     N(1) = 0.5 * (1 + gpcoord(gp));
     // eval shape function derivs w.r.t. xi at gp
-    LINALG::Matrix<2, 1> N_xi(true);
+    CORE::LINALG::Matrix<2, 1> N_xi(true);
     N_xi(0) = -0.5;
     N_xi(1) = 0.5;
     // dX_dxi
     double dX_dxi = N_xi(0) * (element->X(0)) + N_xi(1) * (element->X(1));
     // eval shape function derivs w.r.t. X at gp
-    LINALG::Matrix<2, 1> N_X(true);
+    CORE::LINALG::Matrix<2, 1> N_X(true);
     N_X(0) = N_xi(0) / dX_dxi;
     N_X(1) = N_xi(1) / dX_dxi;
     // evaluate defgrd
@@ -80,7 +80,7 @@ void TUTORIAL::ELEMENTS::TutorialEleCalc::Evaluate(TUTORIAL::ELEMENTS::TutorialE
     // integral transform
     double J = dX_dxi;
     // dF/dd
-    LINALG::Matrix<2, 1> B(true);
+    CORE::LINALG::Matrix<2, 1> B(true);
     B(0) = N_xi(0) / J;
     B(1) = N_xi(1) / J;
 
@@ -92,7 +92,7 @@ void TUTORIAL::ELEMENTS::TutorialEleCalc::Evaluate(TUTORIAL::ELEMENTS::TutorialE
     double Spassive = -1234.0;
 
     // initialize linearization of material law
-    static LINALG::Matrix<2, 2> cmat(true);
+    static CORE::LINALG::Matrix<2, 2> cmat(true);
     cmat.Clear();
 
     // call evaluate

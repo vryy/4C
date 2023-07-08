@@ -24,11 +24,11 @@
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -73,11 +73,11 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22, const std::vector<DRT::Condition*> linechargeconds,
-        const double k, const double m);
+    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22,
+        const std::vector<DRT::Condition*> linechargeconds, const double k, const double m);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -90,13 +90,13 @@ namespace BEAMINTERACTION
     \brief Get coordinates of all interacting points on element1 and element2
     */
     virtual void GetAllInteractingPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetAllInteractingPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
     {
       dserror("not implemented yet");
     }
@@ -105,13 +105,13 @@ namespace BEAMINTERACTION
     \brief Get forces at all interacting points on element1 and element2
     */
     virtual void GetForcesAtAllInteractingPointsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& forces) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetForcesAtAllInteractingPointsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& forces) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const
     {
       dserror("not implemented yet");
     }
@@ -120,13 +120,13 @@ namespace BEAMINTERACTION
     \brief Get moments at all interacting points on element1 and element2
     */
     virtual void GetMomentsAtAllInteractingPointsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& moments) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const
     {
       dserror("not implemented yet");
     }
 
     virtual void GetMomentsAtAllInteractingPointsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& moments) const
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const
     {
       dserror("not implemented yet");
     }
@@ -175,8 +175,8 @@ namespace BEAMINTERACTION
     double time_;
 
     //! current absolute Dof values of the two elements
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
-    LINALG::Matrix<3, 1, TYPE> ele2pos_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
+    CORE::LINALG::Matrix<3, 1, TYPE> ele2pos_;
 
     //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
     double k_;
@@ -192,13 +192,13 @@ namespace BEAMINTERACTION
     double radius2_;
 
     //! resulting forces on element 1 and 2
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
-    LINALG::Matrix<3, 1, TYPE> fpot2_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
+    CORE::LINALG::Matrix<3, 1, TYPE> fpot2_;
 
     //! stiffness contributions
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3, TYPE>
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3, TYPE>
         stiffpot1_;
-    LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE> stiffpot2_;
+    CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE> stiffpot2_;
 
     //! total interaction potential of this pair
     double interaction_potential_;
@@ -216,17 +216,17 @@ namespace BEAMINTERACTION
     \brief Calculate shape function values for given parameter values
         Todo call more general utils method
     */
-    void GetShapeFunctions(std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
-        std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+    void GetShapeFunctions(std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+        std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
         CORE::DRT::UTILS::IntegrationPoints1D& gausspoints);
 
     /*!
     \brief Compute coordinates of centreline points from the discretization
         Todo call more general utils method
     */
-    void ComputeCoords(LINALG::Matrix<3, 1, TYPE>& r,
-        const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
+    void ComputeCoords(CORE::LINALG::Matrix<3, 1, TYPE>& r,
+        const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+        const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
 
     //@}
   };

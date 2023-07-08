@@ -72,9 +72,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate this contact element pair.
      */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override
     {
       return false;
     }
@@ -90,7 +91,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
@@ -118,7 +119,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("GetAllActiveContactPointCoordsElement1 not yet implemented!");
     }
@@ -127,7 +128,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("GetAllActiveContactPointCoordsElement2 not yet implemented!");
     }
@@ -180,7 +181,7 @@ namespace BEAMINTERACTION
     void EvaluateAndAssemblePositionalCoupling(
         const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
 
     /**
@@ -195,7 +196,7 @@ namespace BEAMINTERACTION
     void EvaluateAndAssembleRotationalCoupling(
         const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const;
 
    private:

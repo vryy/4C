@@ -66,7 +66,7 @@ bool POROELAST::UTILS::IsPoroP1Element(const DRT::Element* actele)
 
 Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
-    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -134,10 +134,10 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
 }
 
 
-Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
+Teuchos::RCP<CORE::LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
     Teuchos::RCP<DRT::Discretization> dis)
 {
-  Teuchos::RCP<LINALG::MapExtractor> porositysplitter = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::MapExtractor> porositysplitter = Teuchos::null;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
@@ -149,9 +149,9 @@ Teuchos::RCP<LINALG::MapExtractor> POROELAST::UTILS::BuildPoroSplitter(
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::rcp(new LINALG::MapExtractor());
+    porositysplitter = Teuchos::rcp(new CORE::LINALG::MapExtractor());
     const int ndim = DRT::Problem::Instance()->NDim();
-    LINALG::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
+    CORE::LINALG::CreateMapExtractorFromDiscretization(*dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;
@@ -205,7 +205,8 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
     // Fill rdata with existing colmap
 
     const Epetra_Map* elecolmap = voldi->ElementColMap();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap = LINALG::AllreduceEMap(*voldi->ElementRowMap());
+    const Teuchos::RCP<Epetra_Map> allredelecolmap =
+        CORE::LINALG::AllreduceEMap(*voldi->ElementRowMap());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
     {
@@ -398,7 +399,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
       DRT::Element* actele2 = dis2->gElement(id_2);
       std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(actele2);
 
-      LINALG::Matrix<3, 1> diffcoords(true);
+      CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
@@ -448,7 +449,7 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
       DRT::Element* actele1 = dis1->gElement(id_1);
       std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
 
-      LINALG::Matrix<3, 1> diffcoords(true);
+      CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 

@@ -88,13 +88,15 @@ void STRUMULTI::np_support_drt()
         // extract received data from the container
         const Epetra_SerialDenseMatrix* defgrdcopy =
             condnamemap[0]->Get<Epetra_SerialDenseMatrix>("defgrd");
-        LINALG::Matrix<3, 3> defgrd(*(const_cast<Epetra_SerialDenseMatrix*>(defgrdcopy)), true);
+        CORE::LINALG::Matrix<3, 3> defgrd(
+            *(const_cast<Epetra_SerialDenseMatrix*>(defgrdcopy)), true);
         const Epetra_SerialDenseMatrix* cmatcopy =
             condnamemap[0]->Get<Epetra_SerialDenseMatrix>("cmat");
-        LINALG::Matrix<6, 6> cmat(*(const_cast<Epetra_SerialDenseMatrix*>(cmatcopy)), true);
+        CORE::LINALG::Matrix<6, 6> cmat(*(const_cast<Epetra_SerialDenseMatrix*>(cmatcopy)), true);
         const Epetra_SerialDenseMatrix* stresscopy =
             condnamemap[0]->Get<Epetra_SerialDenseMatrix>("stress");
-        LINALG::Matrix<6, 1> stress(*(const_cast<Epetra_SerialDenseMatrix*>(stresscopy)), true);
+        CORE::LINALG::Matrix<6, 1> stress(
+            *(const_cast<Epetra_SerialDenseMatrix*>(stresscopy)), true);
         int gp = condnamemap[0]->GetInt("gp");
         int microdisnum = condnamemap[0]->GetInt("microdisnum");
         double V0 = condnamemap[0]->GetDouble("V0");

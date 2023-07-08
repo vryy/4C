@@ -158,7 +158,7 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    virtual void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+    virtual void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID)
     {
     }
@@ -173,8 +173,8 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    virtual void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
-        const int gp, const int eleGID)
+    virtual void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd,
+        Teuchos::ParameterList& params, const int gp, const int eleGID)
     {
       // Do nothing in the default case
     }
@@ -191,8 +191,9 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void UpdateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFext,
-        Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
+    virtual void UpdateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, const double dt,
+        const int gp, const int eleGID)
     {
       // do nothing
     }
@@ -227,12 +228,12 @@ namespace MIXTURE
      *
      * @param gp (in) : Gauss point id
      * @param eleGID (in) : Global element id
-     * @return LINALG::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green deformation
-     * tensor
+     * @return CORE::LINALG::Matrix<1, 6> Derivative of the growth scalar w.r.t. Cauchy-Green
+     * deformation tensor
      */
-    [[nodiscard]] virtual LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
+    [[nodiscard]] virtual CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const
     {
-      const LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+      const CORE::LINALG::Matrix<1, 6> dGrowthScalarDC(true);
       return dGrowthScalarDC;
     };
 
@@ -258,9 +259,9 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    virtual void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
-        const LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID);
+    virtual void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID);
 
     /*!
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
@@ -278,9 +279,10 @@ namespace MIXTURE
      * @param gp (in) : Number of Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) = 0;
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) = 0;
 
     /// Returns the refenrence mass density. Needs to be implemented by the deriving class.
 

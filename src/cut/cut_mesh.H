@@ -188,7 +188,7 @@ namespace CORE::GEO
       /// creates a new ??? boundary cell
       ArbitraryBoundaryCell* NewArbitraryCell(VolumeCell* volume, Facet* facet,
           const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
-          const LINALG::Matrix<3, 1>& normal);
+          const CORE::LINALG::Matrix<3, 1>& normal);
 
 
       /*========================================================================*/
@@ -524,7 +524,7 @@ namespace CORE::GEO
       const Teuchos::RCP<CORE::GEO::SearchTree>& SelfCutTree() const { return selfcuttree_; }
 
       /// Returns the bounding volumes of all sides of the cutmesh
-      const std::map<int, LINALG::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
+      const std::map<int, CORE::LINALG::Matrix<3, 2>>& SelfCutBvs() const { return selfcutbvs_; }
 
       /// Returns the map of all sides of the cutmesh
       const std::map<int, Side*>& ShadowSides() const { return shadow_sides_; }
@@ -604,13 +604,13 @@ namespace CORE::GEO
       Teuchos::RCP<CORE::GEO::SearchTree> selfcuttree_;
 
       /// the bounding volumes for a fast collision detection in the self cut
-      std::map<int, LINALG::Matrix<3, 2>> selfcutbvs_;
+      std::map<int, CORE::LINALG::Matrix<3, 2>> selfcutbvs_;
 
       /// the spatial partitioning octree for a fast collision detection
       Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;
 
       /// the bounding volumes for a fast collision detection
-      std::map<int, LINALG::Matrix<3, 2>> boundingvolumes_;
+      std::map<int, CORE::LINALG::Matrix<3, 2>> boundingvolumes_;
 
       /*========================================================================*/
       //! @name Containers that hold all those mesh objects

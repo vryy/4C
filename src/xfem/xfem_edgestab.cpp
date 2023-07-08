@@ -42,12 +42,12 @@ continuous interior penalty) scheme
  |  and calls evaluate routine                             schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
-    Teuchos::ParameterList& eleparams,                ///< element parameter list
-    Teuchos::RCP<DRT::Discretization> discret,        ///< discretization
-    DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
-    Teuchos::RCP<CORE::GEO::CutWizard> wizard,        ///< cut wizard
+    Teuchos::ParameterList& eleparams,                      ///< element parameter list
+    Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
+    DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
+    Teuchos::RCP<CORE::GEO::CutWizard> wizard,              ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
     bool gmsh_eos_out          ///< stabilization gmsh output
@@ -597,8 +597,8 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty(
     std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
     std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
     DRT::DiscretizationFaces& xdiscret,       ///< XFEM discretization
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
@@ -662,11 +662,11 @@ void XFEM::XFEM_EdgeStab::Reset()
  |  prepares edge based stabilization for standard fluid   schott 05/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
-    Teuchos::ParameterList& eleparams,                ///< element parameter list
-    Teuchos::RCP<DRT::Discretization> discret,        ///< discretization
-    DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+    Teuchos::ParameterList& eleparams,                      ///< element parameter list
+    Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
+    DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =
@@ -717,9 +717,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabBoundaryGP(
     Teuchos::RCP<DRT::Discretization> discret,  ///< discretization
     Teuchos::RCP<DRT::Discretization>
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-    DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+    DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
   Teuchos::RCP<DRT::DiscretizationFaces> xdiscret =

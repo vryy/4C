@@ -89,10 +89,10 @@ namespace CORE::GEO
 
   /*!
   \brief sum up the absolute value of all entries of a vector
-  \param v (in) : LINALG::Matrix<3,1>
+  \param v (in) : CORE::LINALG::Matrix<3,1>
   \return sum
   */
-  inline double SumOfFabsEntries(const LINALG::Matrix<3, 1>& v)
+  inline double SumOfFabsEntries(const CORE::LINALG::Matrix<3, 1>& v)
   {
     return fabs(v(0)) + fabs(v(1)) + fabs(v(2));
   }
@@ -100,26 +100,26 @@ namespace CORE::GEO
 
 
   /*!
-  \brief computes the cross product of two LINALG::Matrix<3,1> a x b
+  \brief computes the cross product of two CORE::LINALG::Matrix<3,1> a x b
   \param a (in) : arbitrary vector
   \param b (in) : arbitrary vector
-  \return cross product of two LINALG::Matrix<3,1> a x b
+  \return cross product of two CORE::LINALG::Matrix<3,1> a x b
   */
-  LINALG::Matrix<3, 1> computeCrossProduct(
-      const LINALG::Matrix<3, 1>& a, const LINALG::Matrix<3, 1>& b);
+  CORE::LINALG::Matrix<3, 1> computeCrossProduct(
+      const CORE::LINALG::Matrix<3, 1>& a, const CORE::LINALG::Matrix<3, 1>& b);
 
 
   /*!
-  \brief computes the cross product of two LINALG::Matrix<3,1,T> a x b
+  \brief computes the cross product of two CORE::LINALG::Matrix<3,1,T> a x b
   \param a (in) : arbitrary vector
   \param b (in) : arbitrary vector
-  \return cross product of two LINALG::Matrix<3,1,T> a x b
+  \return cross product of two CORE::LINALG::Matrix<3,1,T> a x b
   */
   template <typename T>
-  LINALG::Matrix<3, 1, T> computeCrossProductT(
-      const LINALG::Matrix<3, 1, T>& a, const LINALG::Matrix<3, 1, T>& b)
+  CORE::LINALG::Matrix<3, 1, T> computeCrossProductT(
+      const CORE::LINALG::Matrix<3, 1, T>& a, const CORE::LINALG::Matrix<3, 1, T>& b)
   {
-    LINALG::Matrix<3, 1, T> c;
+    CORE::LINALG::Matrix<3, 1, T> c;
 
     c(0) = a(1) * b(2) - a(2) * b(1);
     c(1) = a(2) * b(0) - a(0) * b(2);
@@ -162,8 +162,8 @@ namespace CORE::GEO
   \param V    (in)        : decomposed matrix V
   \param dim  (in)        : dimension
   */
-  void test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U, LINALG::Matrix<3, 1>& W,
-      LINALG::Matrix<3, 3>& V, int dim);
+  void test_svdcmp(CORE::LINALG::Matrix<3, 3>& A, CORE::LINALG::Matrix<3, 3>& U,
+      CORE::LINALG::Matrix<3, 1>& W, CORE::LINALG::Matrix<3, 3>& V, int dim);
 
 
 }  // namespace CORE::GEO

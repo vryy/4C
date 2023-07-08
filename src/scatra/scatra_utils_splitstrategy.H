@@ -24,7 +24,7 @@ namespace SCATRA
   {
    public:
     /// construct with a block matrix base
-    explicit SplitStrategy(LINALG::BlockSparseMatrixBase& mat)
+    explicit SplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
         : mat_(mat),
           matrix00_(mat_.Matrix(0, 0)),
           matrix01_(mat_.Matrix(0, 1)),
@@ -236,7 +236,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
             // values for block matrix A01:
@@ -246,7 +246,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -258,7 +258,7 @@ namespace SCATRA
               int cgid = lmcol[lcol];
               int cblock = ColBlock(rblock, lcol, cgid);
 
-              LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+              CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
               matrix.Assemble(val, rgid, cgid);
             }
           }
@@ -271,7 +271,7 @@ namespace SCATRA
     {
       int rblock = RowBlock(0, rgid);
       int cblock = ColBlock(rblock, 0, cgid);
-      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
+      CORE::LINALG::SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
       matrix.Assemble(val, rgid, cgid);
     }
 
@@ -287,13 +287,13 @@ namespace SCATRA
 
    private:
     /// my block matrix base
-    LINALG::BlockSparseMatrixBase& mat_;
+    CORE::LINALG::BlockSparseMatrixBase& mat_;
 
     // the four sub-matrices of the whole matrix
-    LINALG::SparseMatrix& matrix00_;
-    LINALG::SparseMatrix& matrix01_;
-    LINALG::SparseMatrix& matrix10_;
-    LINALG::SparseMatrix& matrix11_;
+    CORE::LINALG::SparseMatrix& matrix00_;
+    CORE::LINALG::SparseMatrix& matrix01_;
+    CORE::LINALG::SparseMatrix& matrix10_;
+    CORE::LINALG::SparseMatrix& matrix11_;
 
     /// number of concentration dofs
     int numscal_;

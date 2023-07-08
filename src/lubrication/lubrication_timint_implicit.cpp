@@ -39,7 +39,7 @@
  | constructor                                     (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
 LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     :  // call constructor for "nontrivial" objects
       solver_(solver),
@@ -114,22 +114,22 @@ void LUBRICATION::TimIntImpl::Init()
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1 and n
-  prenp_ = LINALG::CreateVector(*dofrowmap, true);
+  prenp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -143,20 +143,20 @@ void LUBRICATION::TimIntImpl::Init()
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = LINALG::CreateVector(*dofrowmap, true);
+  neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = LINALG::CreateVector(*dofrowmap, true);
+  trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = LINALG::CreateVector(*dofrowmap, true);
+  increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // iterative pressure increments Incp_{n+1}
   // also known as residual pressures
-  prei_ = LINALG::CreateVector(*dofrowmap, true);
+  prei_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   return;
 }  // TimIntImpl::Init()
@@ -281,7 +281,7 @@ void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize height vectors
-  Teuchos::RCP<Epetra_Vector> height = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> height = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds), true);
 
   int err(0);
   const int heightfuncno = params_->get<int>("HFUNCNO");
@@ -324,7 +324,7 @@ void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
   eleparams.set("total time", time_);
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+  Teuchos::RCP<Epetra_Vector> vel = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds), true);
 
   int err(0);
   const int velfuncno = params_->get<int>("VELFUNCNO");
@@ -496,7 +496,7 @@ void LUBRICATION::TimIntImpl::Output(const int num)
   {
     std::ostringstream filename;
     filename << "Result_Step" << step_ << ".m";
-    LINALG::PrintVectorInMatlabFormat(filename.str(), *prenp_);
+    CORE::LINALG::PrintVectorInMatlabFormat(filename.str(), *prenp_);
   }
   // NOTE:
   // statistics output for normal fluxes at boundaries was already done during Update()
@@ -707,13 +707,14 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
       if (inf_gap_toggle_lub_ != Teuchos::null)
-        LINALG::ApplyDirichlettoSystem(sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
+        CORE::LINALG::ApplyDirichlettoSystem(
+            sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
     }
 
     // abort nonlinear iteration if desired
@@ -1226,9 +1227,9 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
 }
 
 
@@ -1240,19 +1241,21 @@ void LUBRICATION::TimIntImpl::Evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    LINALG::ApplyDirichlettoSystem(prenp_, residual_, zeros_, inf_gap_toggle_lub_);
+    CORE::LINALG::ApplyDirichlettoSystem(prenp_, residual_, zeros_, inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries
-  LINALG::ApplyDirichlettoSystem(sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(
+      sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    LINALG::ApplyDirichlettoSystem(sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
+    CORE::LINALG::ApplyDirichlettoSystem(
+        sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
 }
 
 /*----------------------------------------------------------------------*

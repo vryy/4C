@@ -29,7 +29,7 @@ boundary of the actual domain
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
     : dis_(dis), dbcmaps_(dbcmaps), curve_(-1), numveldof_(3)
 {
   active_ = false;
@@ -710,7 +710,7 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 6;
@@ -958,7 +958,7 @@ void FLD::TransferTurbulentInflowConditionXW::SetValuesAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 1;

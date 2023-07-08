@@ -27,10 +27,10 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {
@@ -75,7 +75,8 @@ namespace STR
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
 
       //! derived
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      virtual bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
       //! derived
       virtual void WriteRestart(
@@ -153,16 +154,17 @@ namespace STR
       bool ApplyForceStiffExternal();
 
       //! evaluate brownian specific neumann conditions
-      void EvaluateNeumannBrownianDyn(
-          Teuchos::RCP<Epetra_Vector> eval_vec, Teuchos::RCP<LINALG::SparseOperator> eval_mat);
+      void EvaluateNeumannBrownianDyn(Teuchos::RCP<Epetra_Vector> eval_vec,
+          Teuchos::RCP<CORE::LINALG::SparseOperator> eval_mat);
 
       //! evaluate brownian (stochastic and damping forces)
-      void EvaluateBrownian(
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void EvaluateBrownian(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! evaluate brownian (stochastic and damping forces)
       void EvaluateBrownian(Teuchos::ParameterList& p,
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       //! \brief retrieve random numbers per element
       void RandomNumbersPerElement();
@@ -192,7 +194,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> f_ext_np_ptr_;
 
       //! stiffness contributions from brownian dynamics simulations
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_brownian_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_brownian_ptr_;
 
       //! \brief maximal number of random numbers to be generated in each time step per element
       int maxrandnumelement_;

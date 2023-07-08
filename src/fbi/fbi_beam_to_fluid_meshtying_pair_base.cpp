@@ -180,12 +180,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, scalar_type> r;
-    LINALG::Matrix<3, 1, scalar_type> r_fluid;
-    LINALG::Matrix<3, 1, scalar_type> v_beam;
-    LINALG::Matrix<3, 1, scalar_type> force_integration_point;
+    CORE::LINALG::Matrix<3, 1, scalar_type> X;
+    CORE::LINALG::Matrix<3, 1, scalar_type> u;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r_fluid;
+    CORE::LINALG::Matrix<3, 1, scalar_type> v_beam;
+    CORE::LINALG::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -216,9 +216,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
   if (visualization != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, scalar_type> r;
+    CORE::LINALG::Matrix<3, 1, scalar_type> X;
+    CORE::LINALG::Matrix<3, 1, scalar_type> u;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
@@ -249,7 +249,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
 template <typename beam, typename fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::EvaluateBeamPosition(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-    LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
+    CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(

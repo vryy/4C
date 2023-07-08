@@ -205,7 +205,7 @@ void INVANA::MatParManager::SetParams()
   FillParameters(getparams);
 
   // export to column layout to be able to run column elements
-  LINALG::Export(*getparams, *params_);
+  CORE::LINALG::Export(*getparams, *params_);
 
   // set parameters to the elements
   PushParamsToElements();
@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_MultiVector> INVANA::MatParManager::GetMatParams()
   Teuchos::RCP<Epetra_MultiVector> getparams = GetRawParams();
 
   // export to column layout to be able to run column elements
-  LINALG::Export(*getparams, *params_);
+  CORE::LINALG::Export(*getparams, *params_);
 
   Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*params_));
   metaparams_.Meta2Material(params_, tmp);
@@ -417,7 +417,7 @@ void INVANA::MatParManager::AddEvaluateFD(double time, Teuchos::RCP<Epetra_Multi
 
   // export to column layout to be able to run column elements
   Comm().Barrier();
-  LINALG::Export(*getparams, *params_);
+  CORE::LINALG::Export(*getparams, *params_);
 
   // a backup copy
   Epetra_MultiVector paramsbak(*params_);

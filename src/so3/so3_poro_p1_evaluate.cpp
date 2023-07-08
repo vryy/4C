@@ -19,10 +19,10 @@
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ComputePorosityAndLinearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
-    const LINALG::Matrix<Base::numnod_, 1>& shapfct,
-    const LINALG::Matrix<Base::numnod_, 1>* myporosity,
-    const LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
-    LINALG::Matrix<1, Base::numdof_>& dphi_dus)
+    const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity,
+    const CORE::LINALG::Matrix<1, Base::numdof_>& dJ_dus, double& porosity,
+    CORE::LINALG::Matrix<1, Base::numdof_>& dphi_dus)
 {
   if (myporosity == nullptr)
     dserror("no porosity values given!");
@@ -35,8 +35,8 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ComputePorosityAndLinearizati
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ComputePorosityAndLinearizationOD(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
-    const LINALG::Matrix<Base::numnod_, 1>& shapfct,
-    const LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
+    const CORE::LINALG::Matrix<Base::numnod_, 1>& shapfct,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
 {
   dphi_dp = 0.0;
 
@@ -82,17 +82,17 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
     case Base::interpolate_porosity_to_given_point:
     {
       // given point
-      std::vector<LINALG::Matrix<Base::numdim_, 1>> xsi(1);
+      std::vector<CORE::LINALG::Matrix<Base::numdim_, 1>> xsi(1);
       (xsi[0])(0, 0) = elevec2_epetra(0);
       (xsi[0])(1, 0) = elevec2_epetra(1);
       (xsi[0])(2, 0) = elevec2_epetra(2);
 
       //  evalulate shape functions at given point
-      LINALG::Matrix<Base::numnod_, 1> shapefct;
+      CORE::LINALG::Matrix<Base::numnod_, 1> shapefct;
       CORE::DRT::UTILS::shape_function<distype>(xsi[0], shapefct);
 
-      LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
-      LINALG::Matrix<Base::numnod_, 1> myporosity(true);
+      CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
+      CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
       Base::ExtractValuesFromGlobalVector(
           discretization, 0, la[0].lm_, nullptr, &myporosity, "displacement");
 
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::PreEvaluate(Teuchos::Paramete
 
   if (discretization.HasState(0, "displacement") and (not is_init_porosity_))
   {
-    init_porosity_ = Teuchos::rcp(new LINALG::Matrix<Base::numnod_, 1>(true));
+    init_porosity_ = Teuchos::rcp(new CORE::LINALG::Matrix<Base::numnod_, 1>(true));
     Base::ExtractValuesFromGlobalVector(
         discretization, 0, la[0].lm_, nullptr, &(*init_porosity_), "displacement");
     is_init_porosity_ = true;
@@ -237,37 +237,37 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
       if (la.Size() > 1)
       {
         // stiffness
-        LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
         // damping
-        LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
         // internal force vector
-        LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
         // elevec2+3 are not used anyway
 
         // build the location vector only for the structure field
         std::vector<int> lm = la[0].lm_;
 
-        LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
-        LINALG::Matrix<Base::numnod_, 1> myporosity(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
+        CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
         Base::ExtractValuesFromGlobalVector(
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
-        LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
+        CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
         if (elemat1.IsInitialized()) matptr = &elemat1;
 
         enum INPAR::STR::DampKind damping =
             params.get<enum INPAR::STR::DampKind>("damping", INPAR::STR::damp_none);
-        LINALG::Matrix<numdof_, numdof_>* matptr2 = nullptr;
+        CORE::LINALG::Matrix<numdof_, numdof_>* matptr2 = nullptr;
         if (elemat2.IsInitialized() and (damping == INPAR::STR::damp_material)) matptr2 = &elemat2;
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
         // disassemble velocities and pressures
 
-        LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
 
-        LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
-        LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
+        CORE::LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
 
         if (discretization.HasState(0, "velocity"))
           Base::ExtractValuesFromGlobalVector(
@@ -292,14 +292,14 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
     case Base::calc_struct_multidofsetcoupling:
     {
       // stiffness
-      LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_> elemat1(
+      CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_> elemat1(
           elemat1_epetra.A(), true);
       // elemat2,elevec1-3 are not used anyway
 
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      LINALG::Matrix<numdof_, (Base::numdim_ + 1)* Base::numnod_>* matptr = nullptr;
+      CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1)* Base::numnod_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       // need current fluid state,
@@ -307,12 +307,12 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
       // disassemble velocities and pressures
       if (discretization.HasState(1, "fluidvel"))
       {
-        LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
-        LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
-        LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
+        CORE::LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
 
-        LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
-        LINALG::Matrix<Base::numnod_, 1> myporosity(true);
+        CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
+        CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
         Base::ExtractValuesFromGlobalVector(
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
@@ -338,21 +338,21 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
     case Base::calc_struct_internalforce:
     {
       // internal force vector
-      LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
       // elemat1+2,elevec2+3 are not used anyway
 
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
 
-      LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
-      LINALG::Matrix<Base::numnod_, 1> myporosity(true);
+      CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> mydisp(true);
+      CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);
       Base::ExtractValuesFromGlobalVector(
           discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
-      LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
+      CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myvel(true);
 
-      LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
-      LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
+      CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> myfluidvel(true);
+      CORE::LINALG::Matrix<Base::numnod_, 1> myepreaf(true);
 
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
@@ -388,18 +388,20 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::InitElement()
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::NonlinearStiffnessPoroelast(std::vector<int>& lm,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
-    LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp, LINALG::Matrix<Base::numnod_, 1>& epreaf,
-    LINALG::Matrix<numdof_, numdof_>* stiffmatrix, LINALG::Matrix<numdof_, numdof_>* reamatrix,
-    LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
+    CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+    CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+    CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,
+    CORE::LINALG::Matrix<numdof_, numdof_>* reamatrix, CORE::LINALG::Matrix<numdof_, 1>* force,
+    Teuchos::ParameterList& params)
 {
   Base::GetMaterials();
 
   // update element geometry
-  LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
-  LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
@@ -413,13 +415,13 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::NonlinearStiffnessPoroelast(s
   }
 
   // initialize element matrizes and vectors
-  LINALG::Matrix<Base::numdof_, Base::numdof_> erea_v(true);
-  LINALG::Matrix<Base::numdof_, Base::numdof_> sub_stiff(true);
-  LINALG::Matrix<Base::numdof_, 1> sub_force(true);
+  CORE::LINALG::Matrix<Base::numdof_, Base::numdof_> erea_v(true);
+  CORE::LINALG::Matrix<Base::numdof_, Base::numdof_> sub_stiff(true);
+  CORE::LINALG::Matrix<Base::numdof_, 1> sub_force(true);
 
-  LINALG::Matrix<Base::numdof_, Base::numnod_> ecoupl_p1(true);
-  LINALG::Matrix<Base::numnod_, numdof_> estiff_p1(true);
-  LINALG::Matrix<Base::numnod_, 1> ecoupl_force_p1(true);
+  CORE::LINALG::Matrix<Base::numdof_, Base::numnod_> ecoupl_p1(true);
+  CORE::LINALG::Matrix<Base::numnod_, numdof_> estiff_p1(true);
+  CORE::LINALG::Matrix<Base::numnod_, 1> ecoupl_force_p1(true);
 
   GaussPointLoopP1(params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity_dof, erea_v,
       &sub_stiff, &sub_force, ecoupl_p1, estiff_p1, ecoupl_force_p1);
@@ -509,29 +511,29 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::NonlinearStiffnessPoroelast(s
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::ParameterList& params,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
-    const LINALG::Matrix<Base::numnod_, 1>& epreaf,
-    const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-    LINALG::Matrix<Base::numdof_, Base::numdof_>& erea_v,
-    LINALG::Matrix<Base::numdof_, Base::numdof_>* sub_stiff,
-    LINALG::Matrix<Base::numdof_, 1>* sub_force,
-    LINALG::Matrix<Base::numdof_, Base::numnod_>& ecoupl_p1,
-    LINALG::Matrix<Base::numnod_, numdof_>& estiff_p1,
-    LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1)
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+    CORE::LINALG::Matrix<Base::numdof_, Base::numdof_>& erea_v,
+    CORE::LINALG::Matrix<Base::numdof_, Base::numdof_>* sub_stiff,
+    CORE::LINALG::Matrix<Base::numdof_, 1>* sub_force,
+    CORE::LINALG::Matrix<Base::numdof_, Base::numnod_>& ecoupl_p1,
+    CORE::LINALG::Matrix<Base::numnod_, numdof_>& estiff_p1,
+    CORE::LINALG::Matrix<Base::numnod_, 1>& ecoupl_force_p1)
 {
-  LINALG::Matrix<Base::numdim_, Base::numnod_> N_XYZ;
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
-  LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd(true);
-  LINALG::Matrix<Base::numnod_, 1> shapefct;
-  LINALG::Matrix<Base::numdim_, Base::numnod_> deriv;
+  CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd(true);
+  CORE::LINALG::Matrix<Base::numnod_, 1> shapefct;
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> deriv;
 
-  LINALG::Matrix<Base::numstr_, 1> fstress(true);
+  CORE::LINALG::Matrix<Base::numstr_, 1> fstress(true);
 
   for (int gp = 0; gp < Base::numgpt_; ++gp)
   {
@@ -542,18 +544,18 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
     Base::ComputeDefGradient(defgrd, N_XYZ, xcurr);
 
     // inverse deformation gradient F^-1
-    static LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
+    static CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
     //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) =
     // dJ/dF : dF/dus = J * F^-T * N,X
-    static LINALG::Matrix<1, Base::numdof_> dJ_dus;
+    static CORE::LINALG::Matrix<1, Base::numdof_> dJ_dus;
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
     //------linearization of volume change w.r.t. structure displacement
-    static LINALG::Matrix<1, Base::numdof_> dvolchange_dus;
+    static CORE::LINALG::Matrix<1, Base::numdof_> dvolchange_dus;
 
     // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
     Base::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
@@ -563,33 +565,33 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
     double press = shapefct.Dot(epreaf);
 
     // structure velocity at integration point
-    LINALG::Matrix<Base::numdim_, 1> velint(true);
+    CORE::LINALG::Matrix<Base::numdim_, 1> velint(true);
 
     for (int i = 0; i < Base::numnod_; i++)
       for (int j = 0; j < Base::numdim_; j++) velint(j) += nodalvel(j, i) * shapefct(i);
 
     // fluid velocity at integration point
-    LINALG::Matrix<Base::numdim_, 1> fvelint;
+    CORE::LINALG::Matrix<Base::numdim_, 1> fvelint;
     fvelint.Multiply(evelnp, shapefct);
 
     // material fluid velocity gradient at integration point
-    LINALG::Matrix<Base::numdim_, Base::numdim_> fvelder;
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> fvelder;
     fvelder.MultiplyNT(evelnp, N_XYZ);
 
     // pressure gradient at integration point
-    LINALG::Matrix<Base::numdim_, 1> Gradp;
+    CORE::LINALG::Matrix<Base::numdim_, 1> Gradp;
     Gradp.Multiply(N_XYZ, epreaf);
 
     // non-linear B-operator
-    LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
+    CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
     Base::ComputeBOperator(bop, defgrd, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
-    LINALG::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture
@@ -599,13 +601,13 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
 
     // compute some auxiliary matrixes for computation of linearization
     // dF^-T/dus
-    LINALG::Matrix<Base::numdim_ * Base::numdim_, Base::numdof_> dFinvTdus(true);
+    CORE::LINALG::Matrix<Base::numdim_ * Base::numdim_, Base::numdof_> dFinvTdus(true);
     // F^-T * Grad p
-    LINALG::Matrix<Base::numdim_, 1> Finvgradp;
+    CORE::LINALG::Matrix<Base::numdim_, 1> Finvgradp;
     // dF^-T/dus * Grad p
-    LINALG::Matrix<Base::numdim_, Base::numdof_> dFinvdus_gradp(true);
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdof_> dFinvdus_gradp(true);
     // dC^-1/dus * Grad p
-    LINALG::Matrix<Base::numstr_, Base::numdof_> dCinv_dus(true);
+    CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> dCinv_dus(true);
 
     Base::ComputeAuxiliaryValues(
         N_XYZ, defgrd_inv, C_inv, Gradp, dFinvTdus, Finvgradp, dFinvdus_gradp, dCinv_dus);
@@ -613,7 +615,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
     //--------------------------------------------------------------------
 
     // linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
-    LINALG::Matrix<1, Base::numdof_> dphi_dus;
+    CORE::LINALG::Matrix<1, Base::numdof_> dphi_dus;
     double porosity = 0.0;
 
     ComputePorosityAndLinearization(
@@ -673,11 +675,11 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
     if (Base::fluid_mat_->Type() == MAT::PAR::darcy_brinkman)
     {
       double visc = Base::fluid_mat_->Viscosity();
-      LINALG::Matrix<Base::numdim_, Base::numdim_> CinvFvel;
-      LINALG::Matrix<Base::numdim_, Base::numdim_> visctress1;
+      CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> CinvFvel;
+      CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> visctress1;
       CinvFvel.Multiply(C_inv, fvelder);
       visctress1.MultiplyNT(CinvFvel, defgrd_inv);
-      LINALG::Matrix<Base::numdim_, Base::numdim_> visctress2(visctress1);
+      CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> visctress2(visctress1);
       visctress1.UpdateT(1.0, visctress2, 1.0);
 
       fstress(0) = visctress1(0, 0);
@@ -690,7 +692,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
       fstress.Scale(detJ_w * visc * J);
 
       // B^T . C^-1
-      LINALG::Matrix<Base::numdof_, 1> fstressb(true);
+      CORE::LINALG::Matrix<Base::numdof_, 1> fstressb(true);
       fstressb.MultiplyTN(bop, fstress);
 
       for (int k = 0; k < Base::numnod_; k++)
@@ -709,12 +711,14 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1(Teuchos::Par
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector<int>& lm,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& vel, LINALG::Matrix<Base::numnod_, 1>* porosity,
-    LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp, LINALG::Matrix<Base::numnod_, 1>& epreaf,
-    LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* stiffmatrix,
-    [[maybe_unused]] LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
-    [[maybe_unused]] LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& disp,
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& vel,
+    CORE::LINALG::Matrix<Base::numnod_, 1>* porosity,
+    CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+    CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+    CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* stiffmatrix,
+    [[maybe_unused]] CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_>* reamatrix,
+    [[maybe_unused]] CORE::LINALG::Matrix<numdof_, 1>* force, Teuchos::ParameterList& params)
 {
   //=============================get parameters
 
@@ -723,8 +727,8 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector
   //=======================================================================
 
   // update element geometry
-  LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
-  LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> xcurr;  // current  coord. of element
 
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
@@ -737,9 +741,9 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector
     }
   }
   // initialize element matrizes
-  LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_> ecoupl(true);
+  CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_> ecoupl(true);
 
-  LINALG::Matrix<Base::numnod_, Base::numnod_> ecoupl_p1_p(true);
+  CORE::LINALG::Matrix<Base::numnod_, Base::numnod_> ecoupl_p1_p(true);
 
   GaussPointLoopP1OD(
       params, xrefe, xcurr, disp, vel, evelnp, epreaf, porosity, ecoupl_p1_p, &ecoupl);
@@ -770,25 +774,25 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1OD(
-    Teuchos::ParameterList& params, const LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
-    const LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
-    const LINALG::Matrix<Base::numnod_, 1>& epreaf,
-    const LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-    LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
-    LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff)
+    Teuchos::ParameterList& params, const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xrefe,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& xcurr,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& nodalvel,
+    const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
+    const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
+    CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
+    CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>* sub_stiff)
 {
-  LINALG::Matrix<Base::numdim_, Base::numnod_>
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>
       N_XYZ;  //  first derivatives at gausspoint w.r.t. X, Y,Z
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
-  LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd(
-      true);                                  //  deformation gradiant evaluated at gauss point
-  LINALG::Matrix<Base::numnod_, 1> shapefct;  //  shape functions evalulated at gauss point
-  LINALG::Matrix<Base::numdim_, Base::numnod_> deriv(
+  CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd(
+      true);  //  deformation gradiant evaluated at gauss point
+  CORE::LINALG::Matrix<Base::numnod_, 1> shapefct;  //  shape functions evalulated at gauss point
+  CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> deriv(
       true);  //  first derivatives at gausspoint w.r.t. r,s,t
 
   for (int gp = 0; gp < Base::numgpt_; ++gp)
@@ -800,51 +804,51 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::GaussPointLoopP1OD(
     defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
 
     // inverse deformation gradient F^-1
-    static LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
+    static CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
     //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) =
     // dJ/dF : dF/dus = J * F^-T * N,X
-    static LINALG::Matrix<1, numdof_> dJ_dus;
+    static CORE::LINALG::Matrix<1, numdof_> dJ_dus;
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
     //------linearization of volume change w.r.t. structure displacement
-    static LINALG::Matrix<1, numdof_> dvolchange_dus;
+    static CORE::LINALG::Matrix<1, numdof_> dvolchange_dus;
 
     // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
     Base::ComputeJacobianDeterminantVolumeChange(J, volchange, defgrd, N_XYZ, nodaldisp);
 
     // non-linear B-operator
-    LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
+    CORE::LINALG::Matrix<Base::numstr_, Base::numdof_> bop;
     Base::ComputeBOperator(bop, defgrd, N_XYZ);
 
     // -----------------Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     //------------------ inverse Right Cauchy-Green tensor
-    LINALG::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
 
     //---------------- get pressure at integration point
     double press = shapefct.Dot(epreaf);
 
     //------------------ get material pressure gradient at integration point
-    LINALG::Matrix<Base::numdim_, 1> Gradp;
+    CORE::LINALG::Matrix<Base::numdim_, 1> Gradp;
     Gradp.Multiply(N_XYZ, epreaf);
 
     //--------------------- get fluid velocity at integration point
-    LINALG::Matrix<Base::numdim_, 1> fvelint;
+    CORE::LINALG::Matrix<Base::numdim_, 1> fvelint;
     fvelint.Multiply(evelnp, shapefct);
 
     //----------------------- material fluid velocity gradient at integration point
-    LINALG::Matrix<Base::numdim_, Base::numdim_> fvelder;
+    CORE::LINALG::Matrix<Base::numdim_, Base::numdim_> fvelder;
     fvelder.MultiplyNT(evelnp, N_XYZ);
 
     //---------------- structure velocity at integration point
-    LINALG::Matrix<Base::numdim_, 1> velint;
+    CORE::LINALG::Matrix<Base::numdim_, 1> velint;
     velint.Multiply(nodalvel, shapefct);
 
     //**************************************************+auxilary variables for computing the

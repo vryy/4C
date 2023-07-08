@@ -22,7 +22,7 @@
  *----------------------------------------------------------------------*/
 THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
       pred_(DRT::INPUT::IntegralValue<INPAR::THR::PredEnum>(tdynparams, "PREDICT")),
@@ -52,17 +52,17 @@ THR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       freact_(Teuchos::null)
 {
   // create empty residual force vector
-  fres_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
+  fres_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
 
   // create empty reaction force vector of full length
-  freact_ = LINALG::CreateVector(*discret_->DofRowMap(), false);
+  freact_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
 
   // iterative temperature increments IncT_{n+1}
   // also known as residual temperatures
-  tempi_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempi_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // incremental temperature increments IncT_{n+1}
-  tempinc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempinc_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // setup mortar coupling
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::thermo)
@@ -267,7 +267,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
@@ -287,7 +287,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     tang_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -308,7 +308,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
   tang_->Complete();
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       tang_, tempi_, fres_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
 
   // solve for tempi_
@@ -490,7 +490,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         tang_, tempi_, fres_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
 
     // Solve for tempi_
@@ -677,7 +677,7 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
   // at dofs with DBC change tang_:
   // blank all off-diagonal terms and put 1s at diagonal terms of tang_
-  LINALG::ApplyDirichlettoSystem(tang_, tempi_, fres_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(tang_, tempi_, fres_, zeros_, *(dbcmaps_->CondMap()));
 
   // final sip
   return;
@@ -1030,7 +1030,7 @@ void THR::TimIntImpl::FDCheck()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Epetra_Vector> disturbtempi = LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> disturbtempi = CORE::LINALG::CreateVector(*DofRowMap(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
@@ -1043,10 +1043,10 @@ void THR::TimIntImpl::FDCheck()
       Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(), true));
 
   // initialise approximation of tangent
-  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = LINALG::CreateMatrix((tang_->RowMap()), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = CORE::LINALG::CreateMatrix((tang_->RowMap()), 81);
 
-  Teuchos::RCP<LINALG::SparseMatrix> tang_copy =
-      Teuchos::rcp(new LINALG::SparseMatrix(tang_->EpetraMatrix(), LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_copy =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(tang_->EpetraMatrix(), CORE::LINALG::Copy));
   std::cout << "\n****************** THR finite difference check ******************" << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
 
@@ -1065,7 +1065,7 @@ void THR::TimIntImpl::FDCheck()
     Evaluate(disturbtempi);
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         tang_copy, disturbtempi, rhs_copy, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
@@ -1094,8 +1094,8 @@ void THR::TimIntImpl::FDCheck()
   Evaluate(disturbtempi);
   tang_approx->FillComplete();
   // copy tang_approx
-  Teuchos::RCP<LINALG::SparseMatrix> tang_approx_sparse =
-      Teuchos::rcp(new LINALG::SparseMatrix(tang_approx, LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_approx_sparse =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(tang_approx, CORE::LINALG::Copy));
   // tang_approx_sparse = tang_approx_sparse - tang_copy
   tang_approx_sparse->Add(*tang_copy, false, -1.0, 1.0);
 

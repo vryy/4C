@@ -723,9 +723,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
   int nodemaster = meles[0]->NumNode();
 
   // create empty vectors for shape fct. evaluation
-  static LINALG::Matrix<ns_, 1> sval;
-  static LINALG::Matrix<nm_, 1> mval;
-  static LINALG::Matrix<ns_, 1> lmval;
+  static CORE::LINALG::Matrix<ns_, 1> sval;
+  static CORE::LINALG::Matrix<nm_, 1> mval;
+  static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
@@ -863,9 +863,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
-  static LINALG::Matrix<ns_, 1> sval;
-  static LINALG::Matrix<nm_, 1> mval;
-  static LINALG::Matrix<ns_, 1> lmval;
+  static CORE::LINALG::Matrix<ns_, 1> sval;
+  static CORE::LINALG::Matrix<nm_, 1> mval;
+  static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
@@ -875,7 +875,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
   // this is element-specific (is there a boundary node in this element?)
   //---------------------------------
   // do trafo for bound elements
-  LINALG::SerialDenseMatrix trafo(nrow, nrow, true);
+  CORE::LINALG::SerialDenseMatrix trafo(nrow, nrow, true);
   bool bound = false;
 
   // get number of bound nodes
@@ -955,7 +955,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
     // transform shape functions for bound case
     if (bound)
     {
-      LINALG::SerialDenseVector tempval(nrow, true);
+      CORE::LINALG::SerialDenseVector tempval(nrow, true);
       for (int i = 0; i < nrow; ++i)
         for (int j = 0; j < nrow; ++j) tempval(i) += trafo(i, j) * lmval(j);
 
@@ -983,9 +983,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::Matrix<ns_, 1>& lmval, LINALG::Matrix<ns_, 1>& sval,
-    LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
-    bool& bound, const Epetra_Comm& comm)
+    MORTAR::MortarElement& mele, CORE::LINALG::Matrix<ns_, 1>& lmval,
+    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
+    double& wgt, int& nrow, int& ncol, int& ndof, bool& bound, const Epetra_Comm& comm)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1116,9 +1116,9 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(MORTAR::Mort
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseVector& lmintval,
-    LINALG::Matrix<ns_, 1>& sval, LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow,
-    int& nintrow, int& ncol, int& ndof, bool& bound)
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
+    CORE::LINALG::Matrix<ns_, 1>& sval, CORE::LINALG::Matrix<nm_, 1>& mval, double& jac,
+    double& wgt, int& nrow, int& nintrow, int& ncol, int& ndof, bool& bound)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -1283,12 +1283,12 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
       Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow * nrowdof, ncol * ncoldof));
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 1);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol, 1);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector mval(ncol);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 1);
 
   // loop over all Gauss points for integration
   for (int gp = 0; gp < nGP(); ++gp)
@@ -1410,9 +1410,9 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
-  static LINALG::Matrix<ns_, 1> sval;
-  static LINALG::Matrix<nm_, 1> mval;
-  static LINALG::Matrix<ns_, 1> lmval;
+  static CORE::LINALG::Matrix<ns_, 1> sval;
+  static CORE::LINALG::Matrix<nm_, 1> mval;
+  static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -1537,13 +1537,13 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
-  static LINALG::Matrix<ns_, 1> sval;
-  static LINALG::Matrix<nm_, 1> mval;
-  static LINALG::Matrix<ns_, 1> lmval;
+  static CORE::LINALG::Matrix<ns_, 1> sval;
+  static CORE::LINALG::Matrix<nm_, 1> mval;
+  static CORE::LINALG::Matrix<ns_, 1> lmval;
 
   //---------------------------------
   // do trafo for bound elements
-  LINALG::SerialDenseMatrix trafo(nrow, nrow, true);
+  CORE::LINALG::SerialDenseMatrix trafo(nrow, nrow, true);
   bool bound = false;
 
   // get number of bound nodes
@@ -1654,7 +1654,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlane(
     // transform shape functions for bound case
     if (bound)
     {
-      LINALG::SerialDenseVector tempval(nrow, true);
+      CORE::LINALG::SerialDenseVector tempval(nrow, true);
       for (int i = 0; i < nrow; ++i)
         for (int j = 0; j < nrow; ++j) tempval(i) += trafo(i, j) * lmval(j);
 
@@ -1723,12 +1723,12 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
-  LINALG::Matrix<ns_, 1> sval;
-  LINALG::Matrix<nm_, 1> mval;
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
-  LINALG::SerialDenseVector lmintval(nintrow);
-  LINALG::SerialDenseMatrix lmintderiv(nintrow, 2, true);
+  CORE::LINALG::Matrix<ns_, 1> sval;
+  CORE::LINALG::Matrix<nm_, 1> mval;
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector lmintval(nintrow);
+  CORE::LINALG::SerialDenseMatrix lmintderiv(nintrow, 2, true);
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();

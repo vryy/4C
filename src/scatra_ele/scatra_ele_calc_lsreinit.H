@@ -88,7 +88,7 @@ namespace DRT
        *
        *  \author hiermeier \date 12/16 */
       void EllipticNewtonSystem(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-          const LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
+          const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
           const CORE::GEO::BoundaryIntCellPtrs& bcell);
 
      private:
@@ -122,7 +122,7 @@ namespace DRT
       void CalcRHSDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                  //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       /*========================================================================*/
@@ -130,12 +130,12 @@ namespace DRT
       /*========================================================================*/
 
       //! sign function
-      void SignFunction(double& sign_phi,              //!< sign of phi
-          const double charelelength,                  //!< characteristic element length
-          const double phizero,                        //!< initial phi
-          const LINALG::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
-          const double phi,                            //!< phi at time n+1
-          const LINALG::Matrix<nsd_, 1>& gradphi       //!< gradient of phi at time n+1
+      void SignFunction(double& sign_phi,                    //!< sign of phi
+          const double charelelength,                        //!< characteristic element length
+          const double phizero,                              //!< initial phi
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphizero,  //!< gradient of initial phi
+          const double phi,                                  //!< phi at time n+1
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi       //!< gradient of phi at time n+1
       );
 
       //! derivative of sign function
@@ -145,8 +145,8 @@ namespace DRT
       );
 
       //! calculation of characteristic element length, i.e., interface thickness
-      double CalcCharEleLengthReinit(const double vol,  //!< element volume
-          const LINALG::Matrix<nsd_, 1>& gradphizero    //!< gradient of initial phi
+      double CalcCharEleLengthReinit(const double vol,      //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphizero  //!< gradient of initial phi
       );
 
       /*========================================================================*/
@@ -224,7 +224,7 @@ namespace DRT
       /*========================================================================*/
 
       //! scalar at before reinitialization
-      std::vector<LINALG::Matrix<nen_, 1>> ephizero_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephizero_;
 
       //! parameter class for reinitialization
       const ScaTraEleParameterLsReinit* lsreinitparams_;
@@ -257,7 +257,7 @@ namespace DRT
         return;
       }
 
-      void SetVelocityForCrossWindDiff(const LINALG::Matrix<NSD, 1> velocity)
+      void SetVelocityForCrossWindDiff(const CORE::LINALG::Matrix<NSD, 1> velocity)
       {
         if (NSD != 3) dserror("Currently only 3d problems supported for crosswind diffusion");
 
@@ -302,13 +302,13 @@ namespace DRT
         return;
       }
 
-      LINALG::Matrix<NSD, NSD> GetCrosswindTensor() { return diffdirectiontensor_; }
+      CORE::LINALG::Matrix<NSD, NSD> GetCrosswindTensor() { return diffdirectiontensor_; }
 
       bool HaveCrossWindDiff() { return have_cross_wind_diff_; }
 
      private:
       //! velocity for crosswind diffusion
-      LINALG::Matrix<NSD, NSD> diffdirectiontensor_;
+      CORE::LINALG::Matrix<NSD, NSD> diffdirectiontensor_;
 
       //! flag for crosswind diffusion
       bool have_cross_wind_diff_;
@@ -343,11 +343,12 @@ namespace DRT
        * \param ephin      (in) : scalar at t_(n)
        * \param econvelnp  (in) : nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
        * \param ehist      (in) : history vector of transported scalars */
-      void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,
-          const LINALG::Matrix<NSD, NEN>& derxy, const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,
-          const LINALG::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ehist)
+      void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,
+          const CORE::LINALG::Matrix<NSD, NEN>& derxy,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephinp,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,
+          const CORE::LINALG::Matrix<NSD, NEN>& econvelnp,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist)
       {
         dserror("Setting all members at once is not allowed for reinitialization!");
         return;
@@ -375,7 +376,7 @@ namespace DRT
         return;
       };
       //! set spatial gradient of current scalar value
-      void SetGradPhi(const int k, LINALG::Matrix<NSD, 1>& gradphi)
+      void SetGradPhi(const int k, CORE::LINALG::Matrix<NSD, 1>& gradphi)
       {
         my::gradphi_[k] = gradphi;
         return;
@@ -387,7 +388,7 @@ namespace DRT
         return;
       };
       //! set convective velocity
-      void SetConVel(LINALG::Matrix<NSD, 1>& convel)
+      void SetConVel(CORE::LINALG::Matrix<NSD, 1>& convel)
       {
         my::convelint_ = convel;
         return;
@@ -399,7 +400,7 @@ namespace DRT
         return;
       };
       //! set convective part in convective form
-      virtual void SetConv(LINALG::Matrix<NEN, 1>& conv)
+      virtual void SetConv(CORE::LINALG::Matrix<NEN, 1>& conv)
       {
         my::conv_ = conv;
         return;

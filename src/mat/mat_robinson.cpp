@@ -209,23 +209,23 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
   if (numgp == 0) isinit_ = false;
 
   // unpack strain vectors
-  strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  strainplcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  backstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
 
   // unpack matrices needed for condensed system
-  kvarva_ = Teuchos::rcp(new std::vector<LINALG::Matrix<2 * NUM_STRESS_3D, 1>>);
-  kvakvae_ = Teuchos::rcp(new std::vector<LINALG::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>);
+  kvarva_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<2 * NUM_STRESS_3D, 1>>);
+  kvakvae_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>);
   strain_last_.resize(0);
 
   for (int var = 0; var < numgp; ++var)
   {
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> tmp(true);
-    LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> tmp1(true);
-    LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> tmp2(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> tmp(true);
+    CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> tmp1(true);
+    CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> tmp2(true);
 
     // unpack strain/stress vectors of last converged state
     ExtractfromPack(position, data, tmp);
@@ -263,27 +263,27 @@ void MAT::Robinson::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
   std::string buffer;
 
   // initialise history variables
-  strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  strainplcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
 
-  backstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  backstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
 
-  kvarva_ = Teuchos::rcp(new std::vector<LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1>>);
-  kvakvae_ =
-      Teuchos::rcp(new std::vector<LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>>);
+  kvarva_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1>>);
+  kvakvae_ = Teuchos::rcp(
+      new std::vector<CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>>);
 
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> emptymat(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> emptymat(true);
   strainpllast_->resize(numgp);
   strainplcurr_->resize(numgp);
-  strain_last_.resize(numgp, LINALG::Matrix<6, 1>(true));
+  strain_last_.resize(numgp, CORE::LINALG::Matrix<6, 1>(true));
 
   backstresslast_->resize(numgp);
   backstresscurr_->resize(numgp);
 
-  LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> emptymat2(true);
+  CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> emptymat2(true);
   kvarva_->resize(numgp);
-  LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> emptymat3(true);
+  CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> emptymat3(true);
   kvakvae_->resize(numgp);
 
   for (int i = 0; i < numgp; i++)
@@ -317,8 +317,8 @@ void MAT::Robinson::Update()
   // the matrices do not have to be updated. They are reset after each time step
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  strainplcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
+  backstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>);
 
   // get size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -326,9 +326,9 @@ void MAT::Robinson::Update()
   strainplcurr_->resize(numgp);
   backstresscurr_->resize(numgp);
 
-  const LINALG::Matrix<MAT::NUM_STRESS_3D, 1> emptymat(true);
-  const LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> emptymat1(true);
-  const LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> emptymat2(true);
+  const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> emptymat(true);
+  const CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 1> emptymat1(true);
+  const CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> emptymat2(true);
 
   for (int i = 0; i < numgp; i++)
   {
@@ -347,11 +347,12 @@ void MAT::Robinson::Update()
  | stress and material tangent                                          |
  | CCARAT: so3_mat_robinson_be_sel() and so3_mat_robinson_be_stress     |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* strain,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-    const int gp, const int eleGID)
+void MAT::Robinson::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc(*strain);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc(*strain);
   straininc.Update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;
   // if no temperature has been set use the initial value
@@ -380,13 +381,13 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   const double dt_ = params.get<double>("delta time");
 
   // build Cartesian identity 2-tensor I_{AB}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> id2(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
   // set Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
   // this is a 'mixed co- and contra-variant' identity 4-tensor, ie I^{AB}_{CD}
   // REMARK: rows are stress-like 6-Voigt
   //         columns are strain-like 6-Voigt
-  LINALG::Matrix<6, 6> id4(true);
+  CORE::LINALG::Matrix<6, 6> id4(true);
   for (int i = 0; i < 6; i++) id4(i, i) = 1.0;
 
   // -------------------------------- temperatures and thermal strain
@@ -398,7 +399,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   const double thermexpans = params_->thermexpans_;
   // thermal strain vector
   // CCARAT: stnthr
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_t(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_t(true);
   // update current temperature at Gauss point
   // CCARAT: tempr --> so3_tsi_temper()
   for (int i = 0; i < 3; ++i) strain_t(i) = thermexpans * (scalartemp - tempinit);
@@ -409,16 +410,16 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   // use the newest plastic strains here, i.e., from latest Newton iteration
   // (strainplcurr_), not necessarily equal to newest temporal strains (last_)
   // CCARAT: stnvscn
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pn(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pn(false);
   strain_pn.Update(strainplcurr_->at(gp));
   // get history vector of old visco-plastic strain at t_n
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_p(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_p(false);
   strain_p.Update(strainpllast_->at(gp));
 
   // ------------------------------------------------- elastic strain
   // elastic strain at t_{n+1}
   // strain^{e}_{n+1}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_e(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_e(false);
 
   // strain^e_{n+1} = strain_n+1 - strain^p_n - strain^t
   strain_e.Update(*strain);
@@ -435,7 +436,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
 
   // kev = pd(sigma)/pd(eps^v)
   // tangent term resulting from linearisation \frac{\pd sig}{\pd eps^v}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kev(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kev(true);
   // CCARAT: so3_mv6_m_assscl(-1.0, cmat, kev);
   // assign vector by another vector and scale it
   // (i): scale (-1.0)
@@ -445,7 +446,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
 
   // kea = pd(sigma)/pd(backstress)
   // tangent term resulting from linearisation \frac{\pd sig}{\pd al}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kea(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kea(true);
   // initialise with 1 on the diagonals
   // CCARAT: so3_mv6_m_id(kea);
   kea.Update(id4);
@@ -464,7 +465,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   // calculate the deviator from stress
   // CAUTION: s = 2G . devstrain only in case of small strain
   // CCARAT: so3_mv6_v_dev(stress, devstsn);
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> devstress(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> devstress(false);
   // trace of stress vector
   double tracestress = ((*stress)(0) + (*stress)(1) + (*stress)(2));
   for (int i = 0; i < 3; i++) devstress(i) = (*stress)(i)-tracestress / 3.0;
@@ -476,10 +477,10 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   // ---------------------------------------------------- back stress
   // new back stress at t_{n+1} backstress_{n+1}^i
   // CCARAT: actso3->miv_rob->bacstsn.a.da[ip]
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_n(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_n(false);
   backstress_n.Update(backstresscurr_->at(gp));
   // old back stress at t_{n} backstress_{n}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress(false);
   backstress.Update(backstresslast_->at(gp));
 
   // ------------------------------------------ over/relativestress
@@ -489,7 +490,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   // (o): output vector stsovr: subtract 2 vectors
   // CCARAT: so3_mv6_v_sub(devstsn, actso3->miv_rob->bacstsn.a.da[ip], stsovrn);
   // eta_{n+1} = devstress_{n+1} - backstress_{n+1}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eta(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eta(true);
   RelDevStress(devstress, backstress_n, eta);
 
   // to calculate the new history vectors (strainplcurr_, backstresscurr_), the
@@ -504,14 +505,14 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   //                                     &(actso3->miv_rob->vscstns.a.iv[ip]),
   //                                     vscstnr, kve, kvv, kva);
   // tangent term resulting from linearisation \frac{\pd res^v}{\pd eps}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kve(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kve(true);
   // tangent term resulting from linearisation \frac{\pd res^v}{\pd eps^v}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kvv(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kvv(true);
   // tangent term resulting from linearisation \frac{\pd res^v}{\pd al}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kva(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kva(true);
   // initialise the visco-plastic strain residual
   // CCARAT: strain_pres --> vscstnr;
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pres(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pres(true);
   CalcBEViscousStrainRate(
       dt_, scalartemp, strain_p, strain_pn, devstress, eta, strain_pres, kve, kvv, kva);
 
@@ -528,14 +529,14 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
   // initialise the sub matrices needed for evaluation of the complete coupled
   // problem
   // tangent term resulting from linearisation \frac{\pd res^al}{\pd eps}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kae(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kae(true);
   // tangent term resulting from linearisation \frac{\pd res^al}{\pd eps^v}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kav(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kav(true);
   // tangent term resulting from linearisation \frac{\pd res^al}{\pd al}
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kaa(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kaa(true);
   // initialise the back stress residual
   // back stress (residual): beta/backstress --> bckstsr
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_res(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_res(true);
   CalcBEBackStressFlow(dt_, scalartemp, strain_p, strain_pn, devstress, backstress, backstress_n,
       backstress_res, kae, kav, kaa);
 
@@ -554,10 +555,10 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
       (kvakvae_->at(gp)));
 
   // pass the current plastic strains to the element (for visualisation)
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plstrain(false);
   plstrain.Update(strainplcurr_->at(gp));
   // set in parameter list
-  params.set<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
+  params.set<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
 
 }  // Evaluate()
 
@@ -567,7 +568,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::M
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::SetupCmat(
-    double tempnp, LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat)
+    double tempnp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat)
 {
   // get material parameters
   // Young's modulus
@@ -609,9 +610,9 @@ void MAT::Robinson::SetupCmat(
 /*----------------------------------------------------------------------*
  | computes linear stress tensor                             dano 11/11 |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::Stress(const double p,                   //!< volumetric stress
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
+void MAT::Robinson::Stress(const double p,                         //!< volumetric stress
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
 )
 {
   // total stress = deviatoric + hydrostatic pressure . I
@@ -626,9 +627,9 @@ void MAT::Robinson::Stress(const double p,                   //!< volumetric str
  | compute relative deviatoric stress tensor                 dano 11/11 |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::RelDevStress(
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,     // (i) deviatoric stress tensor
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_n,  // (i) back stress tensor
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& eta                  // (o) relative stress
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,  // (i) deviatoric stress tensor
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_n,  // (i) back stress tensor
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& eta                  // (o) relative stress
 )
 {
   // relative stress = deviatoric - back stress
@@ -642,16 +643,18 @@ void MAT::Robinson::RelDevStress(
  | residual of BE-discretised viscous strain rate            dano 11/11 |
  | at Gauss point                                                       |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step size
-    double tempnp,                                            // (i) current temperature
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,    // (i) viscous strain at t_n
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pn,   // (i) viscous strain at t_{n+1}^<i>
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,   // (i) stress deviator at t_{n+1}^<i>
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& eta,         // (i) over stress at t_{n+1}^<i>
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pres,       // (i,o) viscous strain residual
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kve,  // (i,o)
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kvv,  // (i,o)
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kva   // (i,o)
+void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time step size
+    double tempnp,                                                // (i) current temperature
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,  // (i) viscous strain at t_n
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
+        strain_pn,  // (i) viscous strain at t_{n+1}^<i>
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
+        devstress,                                             // (i) stress deviator at t_{n+1}^<i>
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& eta,    // (i) over stress at t_{n+1}^<i>
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pres,  // (i,o) viscous strain residual
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kve,  // (i,o)
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kvv,  // (i,o)
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kva   // (i,o)
 )
 {
   // strain_pn' = f^v in a plastic load step
@@ -665,7 +668,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
   double nn = params_->hrdn_expo_;
 
   // identity tensor in vector notation
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> id2(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> id2(true);
   for (int i = 0; i < 3; i++) id2(i) = 1.0;
 
   // -------------------------------------------------- preliminaries
@@ -727,7 +730,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
 
   // viscous strain rate
   // CCARAT: dvscstn[NUMSTR_SOLID3]
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainrate_p(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainrate_p(true);
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
@@ -787,7 +790,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
   // kvs = d(strain_pres) / d (eta)
   // CCARAT: kvs = pd(res^v)/pd(Sig) -- d eps^v/d Sig
   // kvs[NUMSTR_SOLID3][NUMSTR_SOLID3];
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kvs(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kvs(true);
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
@@ -841,12 +844,12 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
     // CCARAT: so3_mat_robinson_elmat(mat_robin, tmpr, kse);
     // kse = (pd eta) / (pd strain)
     // CCARAT: kse = pd(Sig)/pd(eps) */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kse(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> kse(true);
     // pass the current temperature to calculate the current youngs modulus
     SetupCmat(tempnp, kse);
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     // CCARAT: so3_mv6_v_assmvp(kse, iv, civ);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);
     cid2.Multiply(kse, id2);
     // update matrix with scaled dyadic vector product
     // CCARAT: so3_mv6_m_upddydscl(-1.0/3.0, iv, civ, kse);
@@ -879,14 +882,14 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
   {
     // derivative ksv = (pd eta) / (pd strain_p)
     // CCARAT: ksv = pd(Sig)/pd(eps^v)
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> ksv(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> ksv(true);
     // CCARAT: so3_mat_robinson_elmat(mat_robin, tmpr, ksv);
     // pass the current temperature to calculate the current youngs modulus
     SetupCmat(tempnp, ksv);
 
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     // CCARAT: so3_mv6_v_assmvp(ksv, iv, civ);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> cid2(false);
     cid2.Multiply(ksv, id2);
     // update matrix with scaled dyadic vector product
     // CCARAT: so3_mv6_m_upddydscl(-1.0/3.0, iv, civ, ksv);
@@ -945,15 +948,15 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,  // (i) time step s
  | consistent tangent according to the flow rule at Gauss point         |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pn,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_n,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_res,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kae,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kav,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kaa)
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_p,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pn,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& devstress,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_n,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_res,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kae,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kav,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kaa)
 {
   // backstress_n' = f^alpha in a plastic load step
   // at the end of a time step, i.e. equilibrium, the residual has to vanish
@@ -967,7 +970,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // this is fully 'contra-variant' identity tensor, ie I^{ABCD}
   // REMARK: rows are stress-like 6-Voigt
   //         columns are stress-like 6-Voigt
-  LINALG::Matrix<6, 6> id4sharp(true);
+  CORE::LINALG::Matrix<6, 6> id4sharp(true);
   for (unsigned i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
   for (unsigned i = 3; i < 6; i++) id4sharp(i, i) = 0.5;
 
@@ -1094,7 +1097,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   //  \incr \eps^v = \eps_{n+1}^v - \eps_{n}^v
   //  with halved entries to conform with stress vectors */
   // CCARAT: so3_mv6_v_sub(vscstnn, vscstn, vscstnd05);
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pd05(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pd05(false);
   strain_pd05.Update(1.0, strain_pn, (-1.0), strain_p);
   // Due to the fact that strain vector component have a doubled shear
   // components, i.e.
@@ -1193,7 +1196,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // this is a 'mixed co- and contra-variant' identity 4-tensor, ie I^{AB}_{CD}
   // REMARK: rows are stress-like 6-Voigt
   //         columns are strain-like 6-Voigt
-  LINALG::Matrix<6, 6> id4(true);
+  CORE::LINALG::Matrix<6, 6> id4(true);
   for (int i = 0; i < 6; i++) id4(i, i) = 1.0;
   //-------------------------------------------------------------------
   // IF plastic step (G > G_0, 1/2 (devstress . backstress) > 0.0)
@@ -1295,21 +1298,22 @@ double MAT::Robinson::GetMatParameterAtTempnp(
  | backstress to purely strain                                          |
  *----------------------------------------------------------------------*/
 void MAT::Robinson::CalculateCondensedSystem(
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,  // (io): updated stress with condensed terms
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
+        stress,  // (io): updated stress with condensed terms
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
         cmat,  // (io): updated tangent with condensed terms
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kev,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kea,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pres,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kve,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kvv,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kva,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_res,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kae,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kav,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kaa,
-    LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), 1>& kvarva,  // (io) solved/condensed residual
-    LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), MAT::NUM_STRESS_3D>&
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kev,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kea,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& strain_pres,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kve,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kvv,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kva,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& backstress_res,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kae,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kav,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& kaa,
+    CORE::LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), 1>& kvarva,  // (io) solved/condensed residual
+    CORE::LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), MAT::NUM_STRESS_3D>&
         kvakvae  // (io) solved/condensed tangent
 )
 {
@@ -1331,12 +1335,12 @@ void MAT::Robinson::CalculateCondensedSystem(
   // kvvkvakavkaa = [          ] and its inverse after factorisation
   //                [ kav  kaa ]
   // CCARAT: DOUBLE* kvvvaavaa = (DOUBLE*) calloc(numstr_2*numstr_2, sizeof(DOUBLE));
-  LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kvvkvakavkaa(true);
+  CORE::LINALG::Matrix<2 * MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kvvkvakavkaa(true);
 
   // build the matrix kevea (6x12)
   // kevea = [ kev  kea ] stored in column-major order
   // CCARAT: DOUBLE* kevea = (DOUBLE*) calloc(numstr*numstr_2, sizeof(DOUBLE));
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kevea(true);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 2 * MAT::NUM_STRESS_3D> kevea(true);
 
   // ------------------ build tangent and right hand side to reduce
   {
@@ -1404,7 +1408,7 @@ void MAT::Robinson::CalculateCondensedSystem(
   //           [ kvv  kva ]^{-1} [ res^v  ]^i
   // kvarva =  [          ]      [        ]
   //           [ kav  kaa ]      [ res^al ]
-  LINALG::FixedSizeSerialDenseSolver<(2 * MAT::NUM_STRESS_3D), (2 * MAT::NUM_STRESS_3D), 1>
+  CORE::LINALG::FixedSizeSerialDenseSolver<(2 * MAT::NUM_STRESS_3D), (2 * MAT::NUM_STRESS_3D), 1>
       solver_res;
   solver_res.SetMatrix(kvvkvakavkaa);
   // No need for a separate rhs. We assemble the rhs to the solution vector.
@@ -1420,7 +1424,7 @@ void MAT::Robinson::CalculateCondensedSystem(
   //            [ kvv  kva ]^{-1} [ kve ]^i
   // kvakvae =  [          ]      [     ]
   //            [ kav  kaa ]      [ kae ]
-  LINALG::FixedSizeSerialDenseSolver<(2 * MAT::NUM_STRESS_3D), (2 * MAT::NUM_STRESS_3D),
+  CORE::LINALG::FixedSizeSerialDenseSolver<(2 * MAT::NUM_STRESS_3D), (2 * MAT::NUM_STRESS_3D),
       MAT::NUM_STRESS_3D>
       solver_tang;
   solver_tang.SetMatrix(kvvkvakavkaa);
@@ -1449,8 +1453,8 @@ void MAT::Robinson::CalculateCondensedSystem(
  | iterative update of material internal variables that      dano 01/12 |
  | are condensed out of the system within CalculateCondensedSystem()    |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::IterativeUpdateOfInternalVariables(
-    const int gp, const LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc  // total strain increment
+void MAT::Robinson::IterativeUpdateOfInternalVariables(const int gp,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straininc  // total strain increment
 )
 {
   // get the condensed / reduced residual vector
@@ -1459,7 +1463,7 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
   //           [ kav  kaa ]      [ res^al ]
   // CCARAT: DOUBLE* kvarva = actso3->miv_rob->kvarva.a.da[ip];
   // condensed vector of residual
-  LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), 1> kvarva(false);
+  CORE::LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), 1> kvarva(false);
   kvarva = kvarva_->at(gp);
 
   // get the condensed / reduced scaled tangent
@@ -1467,16 +1471,16 @@ void MAT::Robinson::IterativeUpdateOfInternalVariables(
   // kvakvae =  [          ]      [     ]
   //            [ kav  kaa ]      [ kae ]
   // CCARAT: DOUBLE* kvakvae = actso3->miv_rob->kvakvae.a.da[ip];
-  LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), MAT::NUM_STRESS_3D> kvakvae(false);
+  CORE::LINALG::Matrix<(2 * MAT::NUM_STRESS_3D), MAT::NUM_STRESS_3D> kvakvae(false);
   kvakvae = kvakvae_->at(gp);
 
   // initialise updated vector with newest values strainp_np = strainp_n
   // strainp_np = strainp_n + Delta strain_np
   // viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pn(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strain_pn(false);
   strain_pn.Update(strainplcurr_->at(gp));
   // back stress \f$alpha_{n+1}\f$ at t_{n+1}^i
-  LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_n(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> backstress_n(false);
   backstress_n.Update(backstresscurr_->at(gp));
 
   // ---------------------------------  update current viscous strain

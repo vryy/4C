@@ -115,7 +115,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard
       Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
 
   // get constant diffusivity
-  LINALG::Matrix<nsd_, nsd_> difftensor(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> difftensor(true);
   actmat->Diffusivity(difftensor);
 
   diffmanageraniso->SetAnisotropicDiff(difftensor, k);
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
         double rhsint(0.0);
         advreac::GetRhsInt(rhsint, densnp[k], k);
 
-        LINALG::Matrix<nen_, 1> dummy(true);
+        CORE::LINALG::Matrix<nen_, 1> dummy(true);
         const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
 
         // reactive terms on integration point on rhs
@@ -264,7 +264,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
       // 3) element matrix: reactive term
       //----------------------------------------------------------------
 
-      LINALG::Matrix<nen_, 1> dummy(true);
+      CORE::LINALG::Matrix<nen_, 1> dummy(true);
       if (not my::scatrapara_->MatGP())
         advreac::CalcMatReact(emat, k, timefacfac, 0., 0., densnp[k], dummy, dummy);
 
@@ -317,7 +317,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ExtractEle
   // extract additional local values from global vector
   Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
   if (phin == Teuchos::null) dserror("Cannot get state vector 'phin'");
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 
 

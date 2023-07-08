@@ -121,7 +121,7 @@ void SCATRA::MeshtyingStrategyArtery::SetupMeshtying()
 
   // initialize scatra-artery_scatra-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *arttoscatracoupling_->GlobalExtractor(), *arttoscatracoupling_->GlobalExtractor(), 81,
           false, true));
 
@@ -199,7 +199,7 @@ Teuchos::RCP<const Epetra_Map> SCATRA::MeshtyingStrategyArtery::ArtScatraDofRowM
 /*-------------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   kremheller 04/18 |
  *-------------------------------------------------------------------------------*/
-const LINALG::Solver& SCATRA::MeshtyingStrategyArtery::Solver() const
+const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyArtery::Solver() const
 {
   if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
 
@@ -220,13 +220,14 @@ void SCATRA::MeshtyingStrategyArtery::InitConvCheckStrategy()
 /*------------------------------------------------------------------------------------------*
  | solve linear system of equations for scatra-scatra interface coupling   kremheller 04/18 |
  *------------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+void SCATRA::MeshtyingStrategyArtery::Solve(
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,                //!< solver
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>& phinp,                        //!< state vector at time n+1
     const int& iteration,  //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
 ) const
 {
   // setup the system (evaluate mesh tying)
@@ -259,8 +260,8 @@ void SCATRA::MeshtyingStrategyArtery::Solve(const Teuchos::RCP<LINALG::Solver>& 
  | solve linear system of equations for scatra-scatra interface coupling   kremheller 04/18 |
  *------------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyArtery::SetupSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& residual                //!< residual vector
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& residual                      //!< residual vector
 ) const
 {
   arttoscatracoupling_->SetSolutionVectors(
@@ -274,7 +275,7 @@ void SCATRA::MeshtyingStrategyArtery::SetupSystem(
 
   // setup the entire system
   arttoscatracoupling_->SetupSystem(comb_systemmatrix_, rhs_,
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix),
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(systemmatrix),
       artscatratimint_->SystemMatrix(), residual, artscatratimint_->Residual(),
       scatratimint_->DirichMaps(), artscatratimint_->DirichMaps());
 }

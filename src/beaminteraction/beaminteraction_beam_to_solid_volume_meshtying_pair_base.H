@@ -20,11 +20,11 @@
 
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename volume>
@@ -144,8 +144,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Force acting on the beam (the negative force acts on the solid).
      */
-    virtual void EvaluatePenaltyForceDouble(const LINALG::Matrix<3, 1, double>& r_beam,
-        const LINALG::Matrix<3, 1, double>& r_solid, LINALG::Matrix<3, 1, double>& force) const;
+    virtual void EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+        const CORE::LINALG::Matrix<3, 1, double>& r_solid,
+        CORE::LINALG::Matrix<3, 1, double>& force) const;
 
     /**
      * \brief Get the reference position to be used for the evaluation of the coupling terms.
@@ -153,25 +154,26 @@ namespace BEAMINTERACTION
      * @param beam_coupling_ref (out) shifted reference position of the beam.
      * @param solid_coupling_ref (out) shifted reference position of the solid.
      */
-    void GetCouplingReferencePosition(LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
-        LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const;
+    void GetCouplingReferencePosition(
+        CORE::LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
+        CORE::LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the solid.
-    LINALG::Matrix<solid::n_dof_, 1, scalar_type> ele2pos_;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the solid.
-    LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_;
 
     //! Offset of solid DOFs for coupling. This will be used when the state that should be coupled
     //! is not the undeformed reference position, i.e. in restart simulations where the restart
     //! state is coupled. This only makes sense for volume mesh tying, which is why we also define
     //! the beam restart DOFs here.
-    LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
-    LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
   };
 }  // namespace BEAMINTERACTION
 

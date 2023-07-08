@@ -49,12 +49,12 @@ namespace CORE::DRT::UTILS
       gp_.push_back(Entry(x, y, z, w));
     }
 
-    void Append(const LINALG::Matrix<2, 1>& xi, double w)
+    void Append(const CORE::LINALG::Matrix<2, 1>& xi, double w)
     {
       gp_.push_back(Entry(xi(0), xi(1), 0., w));
     }
 
-    void Append(const LINALG::Matrix<3, 1>& xi, double w)
+    void Append(const CORE::LINALG::Matrix<3, 1>& xi, double w)
     {
       gp_.push_back(Entry(xi(0), xi(1), xi(2), w));
     }
@@ -280,7 +280,7 @@ namespace CORE::DRT::UTILS
     /// Create Gauss integration rule of given degree
     template <::DRT::Element::DiscretizationType distype>
     static Teuchos::RCP<GaussPoints> CreateProjected(
-        const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
         int degree)
     {
@@ -299,23 +299,23 @@ namespace CORE::DRT::UTILS
     /// coordinate system
     template <::DRT::Element::DiscretizationType distype>
     static void ProjectGaussPointsLocalToGlobal(
-        const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
         GaussIntegration& intpoints, Teuchos::RCP<CollectedGaussPoints>& cgp)
     {
       const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
       const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-      LINALG::Matrix<nen, 1> funct;
-      LINALG::Matrix<nsd, nen> deriv;
+      CORE::LINALG::Matrix<nen, 1> funct;
+      CORE::LINALG::Matrix<nsd, nen> deriv;
 
-      LINALG::Matrix<nsd, nsd> xjm;
-      LINALG::Matrix<nsd, 1> xi;
+      CORE::LINALG::Matrix<nsd, nsd> xjm;
+      CORE::LINALG::Matrix<nsd, 1> xi;
 
       for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
-        LINALG::Matrix<nsd, 1> eta(iquad.Point());
+        CORE::LINALG::Matrix<nsd, 1> eta(iquad.Point());
 
         // cell shape functions and their first derivatives
         CORE::DRT::UTILS::shape_function<distype>(eta, funct);
@@ -338,18 +338,18 @@ namespace CORE::DRT::UTILS
     /// coordinate system
     template <::DRT::Element::DiscretizationType distype>
     static Teuchos::RCP<GaussPoints> ProjectGaussPointsGlobalToLocal(
-        const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+        const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
             ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xie,
         GaussIntegration& intpoints, const bool& throw_error = true)
     {
       const int nsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
       const int nen = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-      LINALG::Matrix<nen, 1> funct;
-      LINALG::Matrix<nsd, nen> deriv;
+      CORE::LINALG::Matrix<nen, 1> funct;
+      CORE::LINALG::Matrix<nsd, nen> deriv;
 
-      LINALG::Matrix<nsd, nsd> xjm;
-      LINALG::Matrix<nsd, 1> xi;
+      CORE::LINALG::Matrix<nsd, nsd> xjm;
+      CORE::LINALG::Matrix<nsd, 1> xi;
 
       Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
           Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(intpoints.NumPoints()));
@@ -357,7 +357,7 @@ namespace CORE::DRT::UTILS
       for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = intpoints.begin();
            iquad != intpoints.end(); ++iquad)
       {
-        LINALG::Matrix<nsd, 1> glo(iquad.Point());
+        CORE::LINALG::Matrix<nsd, 1> glo(iquad.Point());
 
         bool insideele = CORE::GEO::currentToVolumeElementCoordinates(distype, xie, glo, xi);
         if (not insideele && throw_error)

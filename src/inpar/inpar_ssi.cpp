@@ -132,42 +132,47 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "LINEAR_SOLVER", -1, "ID of linear solver for global system of equations", &ssidynmono);
 
   // type of global system matrix in global system of equations
-  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "undefined",
+  setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "undefined",
       "type of global system matrix in global system of equations",
       tuple<std::string>("undefined", "block", "sparse"),
-      tuple<LINALG::MatrixType>(LINALG::MatrixType::undefined, LINALG::MatrixType::block_field,
-          LINALG::MatrixType::sparse),
+      tuple<CORE::LINALG::MatrixType>(CORE::LINALG::MatrixType::undefined,
+          CORE::LINALG::MatrixType::block_field, CORE::LINALG::MatrixType::sparse),
       &ssidynmono);
 
-  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
+  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
       tuple<std::string>("none", "rows_full", "rows_maindiag", "columns_full", "columns_maindiag",
           "rowsandcolumns_full", "rowsandcolumns_maindiag", "local"),
-      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
-          LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
-          LINALG::EquilibrationMethod::columns_full, LINALG::EquilibrationMethod::columns_maindiag,
-          LINALG::EquilibrationMethod::rowsandcolumns_full,
-          LINALG::EquilibrationMethod::rowsandcolumns_maindiag, LINALG::EquilibrationMethod::local),
+      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
+          CORE::LINALG::EquilibrationMethod::rows_full,
+          CORE::LINALG::EquilibrationMethod::rows_maindiag,
+          CORE::LINALG::EquilibrationMethod::columns_full,
+          CORE::LINALG::EquilibrationMethod::columns_maindiag,
+          CORE::LINALG::EquilibrationMethod::rowsandcolumns_full,
+          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          CORE::LINALG::EquilibrationMethod::local),
       &ssidynmono);
 
-  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_STRUCTURE", "none",
+  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION_STRUCTURE", "none",
       "flag for equilibration of structural equations",
       tuple<std::string>(
           "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
-      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
-          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
-          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
-          LINALG::EquilibrationMethod::symmetry),
+      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
+          CORE::LINALG::EquilibrationMethod::rows_maindiag,
+          CORE::LINALG::EquilibrationMethod::columns_maindiag,
+          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          CORE::LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
 
-  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_SCATRA", "none",
+  setStringToIntegralParameter<CORE::LINALG::EquilibrationMethod>("EQUILIBRATION_SCATRA", "none",
       "flag for equilibration of scatra equations",
       tuple<std::string>(
           "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
-      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
-          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
-          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
-          LINALG::EquilibrationMethod::symmetry),
+      tuple<CORE::LINALG::EquilibrationMethod>(CORE::LINALG::EquilibrationMethod::none,
+          CORE::LINALG::EquilibrationMethod::rows_maindiag,
+          CORE::LINALG::EquilibrationMethod::columns_maindiag,
+          CORE::LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          CORE::LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
 
   BoolParameter("PRINT_MAT_RHS_MAP_MATLAB", "no",

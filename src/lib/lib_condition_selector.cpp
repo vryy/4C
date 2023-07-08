@@ -121,8 +121,8 @@ DRT::UTILS::MultiConditionSelector::MultiConditionSelector() : overlapping_(fals
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::MultiConditionSelector::SetupExtractor(
-    const DRT::Discretization& dis, const Epetra_Map& fullmap, LINALG::MultiMapExtractor& extractor)
+void DRT::UTILS::MultiConditionSelector::SetupExtractor(const DRT::Discretization& dis,
+    const Epetra_Map& fullmap, CORE::LINALG::MultiMapExtractor& extractor)
 {
   SetupCondDofSets(dis);
 
@@ -145,10 +145,10 @@ void DRT::UTILS::MultiConditionSelector::SetupExtractor(
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
-  maps.emplace_back(LINALG::CreateMap(otherdofset, dis.Comm()));
+  maps.emplace_back(CORE::LINALG::CreateMap(otherdofset, dis.Comm()));
   for (auto& conddofset : conddofset_)
   {
-    maps.emplace_back(LINALG::CreateMap(conddofset, dis.Comm()));
+    maps.emplace_back(CORE::LINALG::CreateMap(conddofset, dis.Comm()));
   }
 
   // MultiMapExtractor setup

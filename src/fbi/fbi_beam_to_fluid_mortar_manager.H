@@ -45,10 +45,10 @@ namespace BEAMINTERACTION
   class BeamContactPair;
 }  // namespace BEAMINTERACTION
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
@@ -165,9 +165,9 @@ namespace BEAMINTERACTION
      * @param[out] beam_force Global force vector acting on the beam
      */
     void AddGlobalForceStiffnessContributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
-        Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<LINALG::SparseMatrix> kbb,
-        Teuchos::RCP<LINALG::SparseMatrix> kbf, Teuchos::RCP<LINALG::SparseMatrix> kff,
-        Teuchos::RCP<LINALG::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,
+        Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<CORE::LINALG::SparseMatrix> kbb,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kbf, Teuchos::RCP<CORE::LINALG::SparseMatrix> kff,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kfb, Teuchos::RCP<const Epetra_Vector> beam_vel,
         Teuchos::RCP<const Epetra_Vector> fluid_vel) const;
 
     /**
@@ -279,10 +279,10 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global \f$D\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_D_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_D_;
 
     //! Global \f$M\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_M_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> global_M_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

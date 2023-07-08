@@ -222,41 +222,43 @@ namespace MAT
     virtual double GetYoung();
 
     /// evaluate strain energy function
-    void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-        double& psi,                                         ///< Strain energy function
-        int gp,                                              ///< Gauss point
-        int eleGID                                           ///< Element GID
+    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                               ///< Strain energy function
+        int gp,                                                    ///< Gauss point
+        int eleGID                                                 ///< Element GID
         ) override;
 
     /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,                ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
-        int gp,                                        ///< Gauss point
-        int eleGID                                     ///< Element GID
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,      ///< Container for additional information
+        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
+        int gp,                              ///< Gauss point
+        int eleGID                           ///< Element GID
         ) override;
 
     /// evaluate for GEMM
-    void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,                  ///< Constitutive matrix
-        double* density,                             ///< Density
-        LINALG::Matrix<6, 1>* glstrain_m,            ///< Green-Lagrange strain at t_{n+1/2}
-        LINALG::Matrix<6, 1>* glstrain_new,          ///< Green-Lagrange strain at t_{n+1}
-        LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
-        LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
-        LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
-        int gp,                                      ///< Gauss point
-        int eleGID) override;                        ///< Element GID
+    void EvaluateGEMM(CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        CORE::LINALG::Matrix<6, 6>* cmat,                  ///< Constitutive matrix
+        double* density,                                   ///< Density
+        CORE::LINALG::Matrix<6, 1>* glstrain_m,            ///< Green-Lagrange strain at t_{n+1/2}
+        CORE::LINALG::Matrix<6, 1>* glstrain_new,          ///< Green-Lagrange strain at t_{n+1}
+        CORE::LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
+        CORE::LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
+        CORE::LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
+        int gp,                                            ///< Gauss point
+        int eleGID) override;                              ///< Element GID
 
-    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
-        int gp, int eleGID, const double* concentration, const double* temp,
-        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
+    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+        const double* concentration, const double* temp, double* d_cauchyndir_dT,
+        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
 
     /**
      * \brief The derivatives of the strain energy function w.r.t. the principle invariants are
@@ -271,9 +273,9 @@ namespace MAT
      * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
      * \param temp[in]        temperature
      */
-    virtual void EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
-        LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII, LINALG::Matrix<10, 1>& dddPIII,
-        const double* temp);
+    virtual void EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
+        CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
+        CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp);
 
     /**
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
@@ -304,12 +306,12 @@ namespace MAT
                              \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d}
      \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void EvaluateCauchyTempDeriv(const LINALG::Matrix<3, 1>& prinv, const double ndt,
+    virtual void EvaluateCauchyTempDeriv(const CORE::LINALG::Matrix<3, 1>& prinv, const double ndt,
         const double bdndt, const double ibdndt, const double* temp, double* DsntDT,
-        const LINALG::Matrix<9, 1>& iFTV, const LINALG::Matrix<9, 1>& DbdndtDFV,
-        const LINALG::Matrix<9, 1>& DibdndtDFV, const LINALG::Matrix<9, 1>& DI1DF,
-        const LINALG::Matrix<9, 1>& DI2DF, const LINALG::Matrix<9, 1>& DI3DF,
-        LINALG::Matrix<9, 1>* D2sntDFDT)
+        const CORE::LINALG::Matrix<9, 1>& iFTV, const CORE::LINALG::Matrix<9, 1>& DbdndtDFV,
+        const CORE::LINALG::Matrix<9, 1>& DibdndtDFV, const CORE::LINALG::Matrix<9, 1>& DI1DF,
+        const CORE::LINALG::Matrix<9, 1>& DI2DF, const CORE::LINALG::Matrix<9, 1>& DI3DF,
+        CORE::LINALG::Matrix<9, 1>* D2sntDFDT)
     {
     }
 
@@ -338,12 +340,12 @@ namespace MAT
     virtual bool AnisotropicModified() const { return summandProperties_.anisomod; }
 
     /// get fiber vectors
-    virtual void GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs);
+    virtual void GetFiberVecs(std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs);
 
     /// evaluate fiber directions from locsys and alignment angle, pull back
     virtual void EvaluateFiberVecs(double newgamma,  ///< new angle
-        const LINALG::Matrix<3, 3>& locsys,          ///< local coordinate system
-        const LINALG::Matrix<3, 3>& defgrd           ///< deformation gradient
+        const CORE::LINALG::Matrix<3, 3>& locsys,    ///< local coordinate system
+        const CORE::LINALG::Matrix<3, 3>& defgrd     ///< deformation gradient
     );
 
     /// Return potential summand pointer for the given material type

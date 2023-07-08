@@ -37,7 +37,7 @@
 #include "utils_exceptions.H"
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
   \brief A multipurpose experimental multigrid operator
@@ -119,7 +119,7 @@ namespace LINALG
     */
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
     {
-      dserror("Apply does not make sense for LINALG::AMG_Operator");
+      dserror("Apply does not make sense for CORE::LINALG::AMG_Operator");
       return (-1);
     }
 
@@ -228,7 +228,7 @@ namespace LINALG
 
 
   };  // class  AMG_Operator : public virtual Epetra_Operator
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 #endif  // LINALG_MLAPI_OPERATOR_H

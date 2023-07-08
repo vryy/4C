@@ -15,11 +15,11 @@
 #include "adapter_fld_fluid_fsi.H"
 #include "fluid_meshtying.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -39,7 +39,7 @@ namespace ADAPTER
    public:
     /// Constructor
     FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
@@ -51,7 +51,7 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
 
     /**
      * \brief Resets the external forces acting on the fluid to zero

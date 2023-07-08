@@ -18,11 +18,11 @@
 #include "linalg_serialdensematrix.H"
 
 
-void CORE::GEO::test_svdcmp(LINALG::Matrix<3, 3>& A, LINALG::Matrix<3, 3>& U,
-    LINALG::Matrix<3, 1>& W, LINALG::Matrix<3, 3>& V, int dim)
+void CORE::GEO::test_svdcmp(CORE::LINALG::Matrix<3, 3>& A, CORE::LINALG::Matrix<3, 3>& U,
+    CORE::LINALG::Matrix<3, 1>& W, CORE::LINALG::Matrix<3, 3>& V, int dim)
 {
-  LINALG::Matrix<3, 3> H1;
-  LINALG::Matrix<3, 3> H2;
+  CORE::LINALG::Matrix<3, 3> H1;
+  CORE::LINALG::Matrix<3, 3> H2;
 
   printf("W U\n");
   for (int i = 0; i < dim; i++)
@@ -112,7 +112,7 @@ void CORE::GEO::svdcmpSerialDense(
   if (!((W.M() == n) && (V.M() == n && V.N() == n)))
     dserror("Dimensionen der Matrizen nicht korrekt");
 
-  LINALG::SerialDenseMatrix rv1(n, 1);
+  CORE::LINALG::SerialDenseMatrix rv1(n, 1);
 
   // Householder reduction to bidiagonal form.
   double g = 0.0;

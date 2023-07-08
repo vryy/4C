@@ -291,7 +291,7 @@ namespace DRT
 
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
             const std::vector<double>& valnp, const std::vector<double>& valn,
-            const double avgPressure, const LINALG::Matrix<nsd_, nen_>& ebodyforce,
+            const double avgPressure, const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce,
             const std::vector<double>& intebodyforce, Epetra_SerialDenseVector& eleVec,
             const std::vector<double>& interiorecorrectionterm,
             const std::vector<double>& interiorebodyforce);
@@ -403,11 +403,11 @@ namespace DRT
           const Epetra_SerialDenseVector& updateG, const Epetra_SerialDenseVector& updateUp);
 
       void EvaluateVelocity(const int start_func, const INPAR::FLUID::InitialField initfield,
-          const LINALG::Matrix<nsd_, 1>& xyz, LINALG::Matrix<nsd_, 1>& u) const;
+          const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u) const;
 
       void EvaluateAll(const int start_func, const INPAR::FLUID::InitialField initfield,
-          const LINALG::Matrix<nsd_, 1>& xyz, LINALG::Matrix<nsd_, 1>& u,
-          LINALG::Matrix<nsd_, nsd_>& grad, double& p) const;
+          const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::Matrix<nsd_, 1>& u,
+          CORE::LINALG::Matrix<nsd_, nsd_>& grad, double& p) const;
 
       /// local data object
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
@@ -416,10 +416,10 @@ namespace DRT
       /// local solver object
       Teuchos::RCP<LocalSolver> localSolver_;
 
-      LINALG::Matrix<nsd_, nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
-      LINALG::Matrix<nsd_, nen_> eprescpgaf_;  /// pressure gradient body force
-      LINALG::Matrix<nen_, 1> escabofoaf_;     /// scalar body force for loma
-      std::vector<double> interiorebofoaf_;    /// extracted body force at n+alpha_f
+      CORE::LINALG::Matrix<nsd_, nen_> ebofoaf_;     /// body force (see fluid_ele_calc.cpp)
+      CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf_;  /// pressure gradient body force
+      CORE::LINALG::Matrix<nen_, 1> escabofoaf_;     /// scalar body force for loma
+      std::vector<double> interiorebofoaf_;          /// extracted body force at n+alpha_f
 
       std::vector<double>
           interiorecorrectionterm_;  /// local correction term for the weakly compressible benchmark

@@ -24,9 +24,10 @@ equations
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] static inline LINALG::Matrix<3, 3> EvaluateC(const LINALG::Matrix<3, 3>& F)
+  [[nodiscard]] static inline CORE::LINALG::Matrix<3, 3> EvaluateC(
+      const CORE::LINALG::Matrix<3, 3>& F)
   {
-    LINALG::Matrix<3, 3> C(false);
+    CORE::LINALG::Matrix<3, 3> C(false);
     C.MultiplyTN(F, F);
     return C;
   }
@@ -167,13 +168,15 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Setup(
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::UpdatePrestress(
-    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   Update(F, params, gp, eleGID);
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Update(
-    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   MixtureConstituent::Update(F, params, gp, eleGID);
 
@@ -236,18 +239,20 @@ bool MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateVtkOutputD
   return MixtureConstituent::EvaluateVtkOutputData(name, data);
 }
 
-LINALG::Matrix<1, 6> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateDLambdafsqDC(
+CORE::LINALG::Matrix<1, 6>
+MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateDLambdafsqDC(
     int gp, int eleGID) const
 {
-  LINALG::Matrix<1, 6> dLambdafDC(false);
+  CORE::LINALG::Matrix<1, 6> dLambdafDC(false);
   dLambdafDC.UpdateT(anisotropy_extension_.GetStructuralTensor_stress(gp, 0));
   return dLambdafDC;
 }
 
-LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateCurrentPK2(
+CORE::LINALG::Matrix<6, 1>
+MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateCurrentPK2(
     int gp, int eleGID) const
 {
-  LINALG::Matrix<6, 1> S_stress(false);
+  CORE::LINALG::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = full_constrained_mixture_fiber_[gp].EvaluateCurrentSecondPKStress();
 
   S_stress.Update(fiber_pk2, anisotropy_extension_.GetStructuralTensor_stress(gp, 0));
@@ -255,13 +260,14 @@ LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Ev
   return S_stress;
 }
 
-LINALG::Matrix<6, 6> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateCurrentCmat(
+CORE::LINALG::Matrix<6, 6>
+MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateCurrentCmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
       full_constrained_mixture_fiber_[gp].EvaluateDCurrentFiberPK2StressDLambdafsq();
 
-  LINALG::Matrix<6, 6> cmat(false);
+  CORE::LINALG::Matrix<6, 6> cmat(false);
   cmat.MultiplyNN(2.0 * dPK2dlambdafsq, anisotropy_extension_.GetStructuralTensor_stress(gp, 0),
       EvaluateDLambdafsqDC(gp, eleGID));
 
@@ -269,13 +275,13 @@ LINALG::Matrix<6, 6> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Ev
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Evaluate(
-    const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    int gp, int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   const double time = GetTotalTime(params);
 
-  LINALG::Matrix<3, 3> C = EvaluateC(F);
+  CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
   full_constrained_mixture_fiber_[gp].RecomputeState(lambda_f, time);
@@ -285,9 +291,9 @@ void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::Evaluate(
 }
 
 void MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateElasticPart(
-    const LINALG::Matrix<3, 3>& FM, const LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    int gp, int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& FM, const CORE::LINALG::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   dserror(
       "The full constrained mixture fiber cannot be evaluated with an additional inelastic "
@@ -299,11 +305,12 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::GetGrowthScalar(
   return full_constrained_mixture_fiber_[gp].computed_growth_scalar_;
 }
 
-LINALG::Matrix<1, 6> MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::GetDGrowthScalarDC(
+CORE::LINALG::Matrix<1, 6>
+MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::GetDGrowthScalarDC(
     int gp, int eleGID) const
 {
-  if (!params_->growth_enabled_) return LINALG::Matrix<1, 6>(true);
-  LINALG::Matrix<1, 6> dGrowthScalarDE = EvaluateDLambdafsqDC(gp, eleGID);
+  if (!params_->growth_enabled_) return CORE::LINALG::Matrix<1, 6>(true);
+  CORE::LINALG::Matrix<1, 6> dGrowthScalarDE = EvaluateDLambdafsqDC(gp, eleGID);
   dGrowthScalarDE.Scale(
       2.0 * full_constrained_mixture_fiber_[gp].computed_dgrowth_scalar_dlambda_f_sq_);
   return dGrowthScalarDE;
@@ -324,7 +331,7 @@ double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateInitialD
 }
 
 double MIXTURE::MixtureConstituent_FullConstrainedMixtureFiber::EvaluateLambdaf(
-    const LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
+    const CORE::LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }

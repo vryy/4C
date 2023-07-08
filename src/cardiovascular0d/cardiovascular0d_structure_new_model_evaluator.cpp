@@ -55,9 +55,9 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   stiff_cardio_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  Teuchos::RCP<LINALG::Solver> dummysolver(new LINALG::Solver(disnp_ptr_->Comm()));
+  Teuchos::RCP<CORE::LINALG::Solver> dummysolver(new CORE::LINALG::Solver(disnp_ptr_->Comm()));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
@@ -148,7 +148,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
   // assemble and scale with str time-integrator dependent value
-  LINALG::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fstructcardio_np_ptr_);
 
   // assemble 0D model rhs - already at the generalized mid-point t_{n+theta} !
   block_vec_ptr = cardvasc0dman_->GetCardiovascular0DRHS();
@@ -163,7 +163,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
   const int max_gid = GetBlockDofRowMapPtr()->MaxAllGID();
   // only call when f is the full rhs of the coupled problem (not for structural
   // equilibriate initial state call)
-  if (elements_f == max_gid + 1) LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
+  if (elements_f == max_gid + 1) CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *block_vec_ptr);
 
   return true;
 }
@@ -171,12 +171,12 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdd - block - scale with str time-integrator dependent value---
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_cardio_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_cardio_ptr_->Zero();

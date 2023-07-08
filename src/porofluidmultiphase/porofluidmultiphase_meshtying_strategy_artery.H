@@ -42,11 +42,11 @@ namespace POROFLUIDMULTIPHASE
     virtual void Output();
 
     //! Initialize the linear solver
-    void InitializeLinearSolver(Teuchos::RCP<LINALG::Solver> solver) override;
+    void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     //! solve linear system of equations
-    virtual void LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+    virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
         Teuchos::RCP<Epetra_Vector> residual);
 
     //! calculate norms for convergence checks
@@ -76,7 +76,7 @@ namespace POROFLUIDMULTIPHASE
     virtual Teuchos::RCP<const Epetra_Vector> ArteryPorofluidRHS() const;
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
     //! get global (combined) increment of coupled problem
     virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
@@ -108,7 +108,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! global rhs
     Teuchos::RCP<Epetra_Vector> rhs_;

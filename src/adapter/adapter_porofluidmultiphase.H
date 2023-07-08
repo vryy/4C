@@ -134,7 +134,7 @@ namespace ADAPTER
     virtual int GetDofSetNumberOfSolidPressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
@@ -155,16 +155,18 @@ namespace ADAPTER
     virtual void Evaluate() = 0;
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
-    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_fs) = 0;
+    virtual void AssembleFluidStructCouplingMat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs) = 0;
 
     // Assemble Off-Diagonal Fluid-scatra Coupling matrix
-    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_pfs) = 0;
+    virtual void AssembleFluidScatraCouplingMat(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs) = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     //! direct access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const = 0;
 
     // return arterial network time integrator
     virtual Teuchos::RCP<ADAPTER::ArtNet> ArtNetTimInt() = 0;

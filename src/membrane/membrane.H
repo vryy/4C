@@ -460,47 +460,50 @@ namespace DRT
       Membrane<distype>& operator=(const Membrane<distype>& old);
 
       //! calculate nonlinear stiffness and mass matrix
-      void mem_nlnstiffmass(std::vector<int>& lm,         // location matrix
-          std::vector<double>& disp,                      // current displacements
-          LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
-          LINALG::Matrix<numdof_, numdof_>* massmatrix,   // element mass matrix
-          LINALG::Matrix<numdof_, 1>* force,              // element internal force vector
-          LINALG::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
-          LINALG::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
-          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,          // stress output option
-          const INPAR::STR::StrainType iostrain);         // strain output option
+      void mem_nlnstiffmass(std::vector<int>& lm,               // location matrix
+          std::vector<double>& disp,                            // current displacements
+          CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
+          CORE::LINALG::Matrix<numdof_, numdof_>* massmatrix,   // element mass matrix
+          CORE::LINALG::Matrix<numdof_, 1>* force,              // element internal force vector
+          CORE::LINALG::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
+          CORE::LINALG::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
+          Teuchos::ParameterList& params,                       // algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,                // stress output option
+          const INPAR::STR::StrainType iostrain);               // strain output option
 
       //! get reference and current configuration
       void mem_configuration(const std::vector<double>& disp,
-          LINALG::Matrix<numnod_, noddof_>& xrefe, LINALG::Matrix<numnod_, noddof_>& xcurr);
+          CORE::LINALG::Matrix<numnod_, noddof_>& xrefe,
+          CORE::LINALG::Matrix<numnod_, noddof_>& xcurr);
 
       //! introduce orthonormal base in the undeformed configuration at current Gauss point
-      void mem_orthonormalbase(const LINALG::Matrix<numnod_, noddof_>& xrefe,
-          const LINALG::Matrix<numnod_, noddof_>& xcurr,
-          const LINALG::Matrix<numdim_, numnod_>& derivs,
-          LINALG::Matrix<numdim_, numnod_>& derivs_ortho, double& G1G2_cn,
-          LINALG::Matrix<noddof_, 1>& dXds1, LINALG::Matrix<noddof_, 1>& dXds2,
-          LINALG::Matrix<noddof_, 1>& dxds1, LINALG::Matrix<noddof_, 1>& dxds2,
-          LINALG::Matrix<noddof_, noddof_>& Q_trafo) const;
+      void mem_orthonormalbase(const CORE::LINALG::Matrix<numnod_, noddof_>& xrefe,
+          const CORE::LINALG::Matrix<numnod_, noddof_>& xcurr,
+          const CORE::LINALG::Matrix<numdim_, numnod_>& derivs,
+          CORE::LINALG::Matrix<numdim_, numnod_>& derivs_ortho, double& G1G2_cn,
+          CORE::LINALG::Matrix<noddof_, 1>& dXds1, CORE::LINALG::Matrix<noddof_, 1>& dXds2,
+          CORE::LINALG::Matrix<noddof_, 1>& dxds1, CORE::LINALG::Matrix<noddof_, 1>& dxds2,
+          CORE::LINALG::Matrix<noddof_, noddof_>& Q_trafo) const;
 
       //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
-      void mem_PK2toCauchy(const LINALG::Matrix<3, 3>& pkstress_global,
-          const LINALG::Matrix<noddof_, noddof_>& defgrd, LINALG::Matrix<3, 3>& cauchy) const;
+      void mem_PK2toCauchy(const CORE::LINALG::Matrix<3, 3>& pkstress_global,
+          const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
+          CORE::LINALG::Matrix<3, 3>& cauchy) const;
 
       // pushforward of Green-Lagrange to Euler-Almansi strains at Gauss point
-      void mem_GLtoEA(const LINALG::Matrix<3, 3>& glstrain_global,
-          const LINALG::Matrix<noddof_, noddof_>& defgrd,
-          LINALG::Matrix<3, 3>& euler_almansi) const;
+      void mem_GLtoEA(const CORE::LINALG::Matrix<3, 3>& glstrain_global,
+          const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
+          CORE::LINALG::Matrix<3, 3>& euler_almansi) const;
 
       // determine deformation gradient in global frame on membrane surface
-      void mem_defgrd_global(const LINALG::Matrix<noddof_, 1>& dXds1,
-          const LINALG::Matrix<noddof_, 1>& dXds2, const LINALG::Matrix<noddof_, 1>& dxds1,
-          const LINALG::Matrix<noddof_, 1>& dxds2, const double& lambda3,
-          LINALG::Matrix<noddof_, noddof_>& defgrd_global) const;
+      void mem_defgrd_global(const CORE::LINALG::Matrix<noddof_, 1>& dXds1,
+          const CORE::LINALG::Matrix<noddof_, 1>& dXds2,
+          const CORE::LINALG::Matrix<noddof_, 1>& dxds1,
+          const CORE::LINALG::Matrix<noddof_, 1>& dxds2, const double& lambda3,
+          CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_global) const;
 
       // determine extrapolation matrix for postprocessing purposes
-      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
           THR::DisTypeToNumGaussPoints<distype>::nquad>
       mem_extrapolmat() const;
 

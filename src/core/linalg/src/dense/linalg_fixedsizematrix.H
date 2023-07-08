@@ -22,10 +22,10 @@
 
 #include "utils_exceptions.H"
 
-// Attention: In the case a LINALG::Matrix is created with float_type ClnWrapper,
+// Attention: In the case a CORE::LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.
 
-namespace LINALG
+namespace CORE::LINALG
 {
   namespace DENSEERROR
   {
@@ -35,9 +35,9 @@ namespace LINALG
       template argument is the expression to be checked, if it
       evaluates to true nothing happens. If it is false a compile
       error similiar to
-      "'Matrix_dimensions_cannot_be_zero' is not a member of 'LINALG::DENSEERROR::Checker<false>'"
-      is generated (with gcc).
-      Obviously the test expression must be known at compile time.
+      "'Matrix_dimensions_cannot_be_zero' is not a member of
+      'CORE::LINALG::DENSEERROR::Checker<false>'" is generated (with gcc). Obviously the test
+      expression must be known at compile time.
 
       This is the (general) definition that is used for expr==true. It
       defines all known errors als empty static inline functions, so
@@ -2182,7 +2182,7 @@ namespace LINALG
     inline double determinant_large_matrix<double>(
         unsigned int i, unsigned int j, const double* mat)
     {
-      // taken from src/linalg/linalg_utils_densematrix_eigen.cpp: LINALG::DeterminantLU,
+      // taken from src/linalg/linalg_utils_densematrix_eigen.cpp: CORE::LINALG::DeterminantLU,
       // only with minor changes.
       std::vector<double> tmp(i * j);
       std::copy(mat, mat + i * j, tmp.data());
@@ -4877,6 +4877,6 @@ namespace LINALG
   Teuchos::BLAS<unsigned int, double> FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::blas_;
 
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_FIXEDSIZEMATRIX_H

@@ -49,27 +49,28 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
   CheckInitSetup();
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(DataGlobalState().GetMutableJacobian());
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(
+      DataGlobalState().GetMutableJacobian());
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::BlockSystemMatrix()
 {
   CheckInitSetup();
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
       DataGlobalState().GetMutableJacobian());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::UseBlockMatrix(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   dserror("Currently disabled!");
 }
@@ -83,7 +84,7 @@ INPAR::STR::STC_Scale STR::TIMINT::ImplicitBase::GetSTCAlgo()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 {
   dserror("Not yet implemented!");
   /* See the scaling object in the NOX::NLN::Epetra::LinearSystem class.

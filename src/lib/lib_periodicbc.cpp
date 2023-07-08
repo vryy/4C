@@ -1378,7 +1378,7 @@ void PeriodicBoundaryConditions::BalanceLoad()
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
     // weights for graph partition
-    auto node_weights = LINALG::CreateVector(*noderowmap, true);
+    auto node_weights = CORE::LINALG::CreateVector(*noderowmap, true);
     node_weights->PutScalar(1.0);
 
     // apply weight of special elements

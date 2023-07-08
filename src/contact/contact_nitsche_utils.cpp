@@ -17,7 +17,7 @@
 template <DRT::Element::DiscretizationType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::MortarElement* mele,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
             num_dof_per_node,
         1>& rhs,
@@ -41,11 +41,11 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Morta
 template <DRT::Element::DiscretizationType parent_distype>
 template <int num_dof_per_node>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
-    const std::unordered_map<int,
-        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
-                           num_dof_per_node,
-            1>>& k,
-    std::vector<int>& dofs, Teuchos::RCP<LINALG::SparseMatrix> kc)
+    const std::unordered_map<int, CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                                           parent_distype>::numNodePerElement *
+                                                           num_dof_per_node,
+                                      1>>& k,
+    std::vector<int>& dofs, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
@@ -55,7 +55,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
     {
       for (int n = 0; n < nen; ++n)
       {
-        if (LINALG::Matrix<num_dof_per_node, 1>(&(p.second.A()[n * num_dof_per_node]), true)
+        if (CORE::LINALG::Matrix<num_dof_per_node, 1>(&(p.second.A()[n * num_dof_per_node]), true)
                 .NormInf() < 1e-16)
           continue;
         for (int d = 0; d < num_dof_per_node; ++d)
@@ -101,7 +101,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
 
 template <DRT::Element::DiscretizationType parent_distype>
 void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::MortarElement* mele,
-    DRT::UTILS::MatBlockType block, Teuchos::RCP<LINALG::SparseMatrix> kc)
+    DRT::UTILS::MatBlockType block, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (block)
   {

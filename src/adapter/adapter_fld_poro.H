@@ -33,7 +33,7 @@ namespace ADAPTER
    public:
     //! Constructor
     FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     //! Evaluate no penetration constraint
@@ -46,13 +46,13 @@ namespace ADAPTER
                                          (0== fluid-fluid, 1== fluid -structure)
      */
     void EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
-        Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
-        Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix,
         Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
         POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
-    virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter();
+    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter();
 
     /*!
       \brief Write extra output for specified step and time.

@@ -69,8 +69,8 @@ namespace TUTORIAL
       const Teuchos::RCP<TUTORIAL::MATERIAL::TutorialMat> Material() const { return material_; };
 
       /// enter the evaluation of this element
-      void Evaluate(LINALG::Matrix<7, 1>* state, LINALG::Matrix<2, 2>* elematrix,
-          LINALG::Matrix<2, 1>* elevector, bool eval_mat, bool eval_vec);
+      void Evaluate(CORE::LINALG::Matrix<7, 1>* state, CORE::LINALG::Matrix<2, 2>* elematrix,
+          CORE::LINALG::Matrix<2, 1>* elevector, bool eval_mat, bool eval_vec);
 
 
      private:

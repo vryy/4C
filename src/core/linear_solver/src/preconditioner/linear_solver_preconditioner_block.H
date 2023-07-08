@@ -17,7 +17,7 @@ namespace CORE::LINEAR_SOLVER
   /// SIMPLE(R) block preconditioner
   /*!
     Block preconditioners assume the Epetra_Operator to be a
-    LINALG::BlockSparseMatrix.
+    CORE::LINALG::BlockSparseMatrix.
    */
   class SimplePreconditioner : public PreconditionerType
   {

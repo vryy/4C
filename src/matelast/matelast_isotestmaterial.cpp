@@ -20,9 +20,9 @@ MAT::ELASTIC::IsoTestMaterial::IsoTestMaterial(MAT::ELASTIC::PAR::IsoTestMateria
 {
 }
 
-void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi,
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   const double c1 = params_->c1_;
   const double c2 = params_->c2_;
@@ -39,8 +39,8 @@ void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi, const LINALG::M
          d * (modinv(0) - 3) * (modinv(1) - 3);
 }
 
-void MAT::ELASTIC::IsoTestMaterial::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+void MAT::ELASTIC::IsoTestMaterial::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   const double c1 = params_->c1_;

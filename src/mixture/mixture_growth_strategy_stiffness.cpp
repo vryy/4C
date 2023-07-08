@@ -33,7 +33,7 @@ MIXTURE::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
 }
 
 void MIXTURE::StiffnessGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
-    LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
+    CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
   MAT::IdentityMatrix(iFgM);
@@ -41,16 +41,16 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
 
 void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(
     const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
-    const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
-    const int eleGID) const
+    const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
-  LINALG::Matrix<3, 3> iC(false);
+  CORE::LINALG::Matrix<3, 3> iC(false);
   iC.MultiplyTN(F, F);
   iC.Invert();
 
-  LINALG::Matrix<6, 1> iC_stress(false);
+  CORE::LINALG::Matrix<6, 1> iC_stress(false);
   UTILS::VOIGT::Stresses::MatrixToVector(iC, iC_stress);
 
   const double kappa = params_->kappa_;

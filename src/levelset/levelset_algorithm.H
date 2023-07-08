@@ -26,7 +26,7 @@
 #define USE_PHIN_FOR_VEL  // TODO
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }
@@ -38,8 +38,8 @@ namespace SCATRA
   {
    public:
     /// Standard Constructor
-    LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
+    LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -239,23 +239,23 @@ namespace SCATRA
 
     /// compute normal vector of interface patch (helper function for ReinitGeo())
     void ComputeNormalVectorToInterface(const CORE::GEO::BoundaryIntCell& patch,
-        const LINALG::SerialDenseMatrix& patchcoord, LINALG::Matrix<3, 1>& normal);
+        const CORE::LINALG::SerialDenseMatrix& patchcoord, CORE::LINALG::Matrix<3, 1>& normal);
 
     /// compute distance to vertex of patch (helper function for ReinitGeo())
-    void ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node,
-        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    void ComputeDistanceToPatch(const CORE::LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& vertexdist);
 
     /// compute distance to edge of patch (helper function for ReinitGeo())
-    void ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node,
-        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+    void ComputeDistanceToEdge(const CORE::LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
         double& edgedist);
 
     /// find a facing interface patch by projection of node into boundary cell space (helper
     /// function for ReinitGeo())
-    void FindFacingPatchProjCellSpace(const LINALG::Matrix<3, 1>& node,
-        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
-        const LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
+    void FindFacingPatchProjCellSpace(const CORE::LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
+        const CORE::LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist);
 
     /// compares the second entry of a pair<int,double>. To be passed to the sorting algo (helper
     /// function for ReinitGeo())
@@ -270,9 +270,9 @@ namespace SCATRA
 
     /// project node into the boundary cell space (2D) (helper function for ReinitGeo())
     template <DRT::Element::DiscretizationType DISTYPE>
-    bool ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node,
-        const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
-        const LINALG::Matrix<3, 1>& normal, LINALG::Matrix<2, 1>& eta, double& alpha);
+    bool ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
+        const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
+        const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha);
 
     /// correct the volume of the minus domain after reinitialization
     void CorrectVolume();

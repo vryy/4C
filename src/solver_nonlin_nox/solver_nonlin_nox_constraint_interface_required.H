@@ -24,11 +24,11 @@
 
 
 // forward declaration...
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SerialDenseVector;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 class Epetra_Operator;
 class Epetra_Vector;

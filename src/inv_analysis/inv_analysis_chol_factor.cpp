@@ -35,7 +35,7 @@ INVANA::CholFactor::CholFactor(Teuchos::RCP<Epetra_CrsMatrix> A)
 int INVANA::CholFactor::Initialize()
 {
   // map living on proc 0
-  serialmap_ = LINALG::AllreduceEMap(A_->RowMap(), 0);
+  serialmap_ = CORE::LINALG::AllreduceEMap(A_->RowMap(), 0);
 
   // original matrix layout
   distributedmap_ = Teuchos::rcp(new Epetra_Map(A_->RowMap()));

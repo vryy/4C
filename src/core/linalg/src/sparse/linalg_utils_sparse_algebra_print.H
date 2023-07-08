@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of sparse matrix printing methods for namespace LINALG
+\brief A collection of sparse matrix printing methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -18,12 +18,12 @@
 #include "lib_exporter.H"
 
 // Forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Print sparsity pattern of a matrix to postscript file
@@ -82,6 +82,6 @@ namespace LINALG
   void WriteEpetraMultiVectorAsXpetra(
       const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H

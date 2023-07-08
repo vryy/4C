@@ -124,7 +124,7 @@ void STR::IMPLICIT::Generic::PrintJacobianInMatlabFormat(const NOX::NLN::Group& 
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Generic::ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
     const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-    Epetra_Vector& f, LINALG::SparseOperator& jac)
+    Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
 
@@ -319,7 +319,7 @@ int NOX::NLN::PrePostOp::IMPLICIT::Generic::getNumberOfModifiedNewtonCorrections
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Generic::ComputeJacobianContributionsFromElementLevelForPTC(
-    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
   ModelEval().ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 }

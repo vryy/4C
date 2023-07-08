@@ -142,14 +142,14 @@ namespace CORE::GEO
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     valtype EvalDerivsInParameterSpace(
-        const LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
-        const LINALG::Matrix<dim, 1, valtype>& rst,
-        LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
-        LINALG::Matrix<dim, dim, valtype>& metrictensor,
-        LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        LINALG::Matrix<probdim, probdim, valtype>* xij,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
+        const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
+        CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        CORE::LINALG::Matrix<dim, dim, valtype>& metrictensor,
+        CORE::LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        CORE::LINALG::Matrix<probdim, probdim, valtype>* xij,
+        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
       valtype det = 0.0;
 
@@ -181,7 +181,7 @@ namespace CORE::GEO
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
 
-        LINALG::Matrix<dim, numNodesElement, valtype> deriv1_red;
+        CORE::LINALG::Matrix<dim, numNodesElement, valtype> deriv1_red;
         CORE::DRT::UTILS::shape_function_deriv1<distype>(rst, deriv1_red);
         // the metric tensor and the area of an infinitesimal surface/line element
         // optional-1 : get unit normal at integration point as well
@@ -192,7 +192,7 @@ namespace CORE::GEO
 
         /* transform the derivatives and Jacobians to the higher dimensional
          * coordinates (problem dimension) */
-        LINALG::Matrix<dim, probdim, valtype> xjm_red;
+        CORE::LINALG::Matrix<dim, probdim, valtype> xjm_red;
         xjm_red.MultiplyNT(deriv1_red, xyze);
 
         for (unsigned i = 0; i < probdim; ++i)
@@ -259,15 +259,15 @@ namespace CORE::GEO
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
     inline valtype EvalDerivsInParameterSpace(
-        const LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
-        const LINALG::Matrix<dim, 1, valtype>& rst,
-        LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
-        LINALG::Matrix<probdim, probdim, valtype>& xjm,
-        LINALG::Matrix<probdim, probdim, valtype>* xij,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec1,
-        LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
+        const CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& xyze,
+        const CORE::LINALG::Matrix<dim, 1, valtype>& rst,
+        CORE::LINALG::Matrix<probdim, numNodesElement, valtype>& deriv1,
+        CORE::LINALG::Matrix<probdim, probdim, valtype>& xjm,
+        CORE::LINALG::Matrix<probdim, probdim, valtype>* xij,
+        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec1,
+        CORE::LINALG::Matrix<probdim, 1, valtype>* normalvec2, bool unit_normal)
     {
-      LINALG::Matrix<dim, dim, valtype> metrictensor;
+      CORE::LINALG::Matrix<dim, dim, valtype> metrictensor;
       return EvalDerivsInParameterSpace<probdim, distype, valtype>(
           xyze, rst, deriv1, metrictensor, xjm, xij, normalvec1, normalvec2, unit_normal);
     }
@@ -294,12 +294,12 @@ namespace CORE::GEO
     {
       scale = 0;
       const int numNodes = xyze.N();
-      LINALG::Matrix<probdim, 1> d;
+      CORE::LINALG::Matrix<probdim, 1> d;
 
       for (int i = 0; i < numNodes; ++i)
       {
-        const LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
-        const LINALG::Matrix<probdim, 1> x2(&xyze(0, (i + 1) % numNodes), true);
+        const CORE::LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
+        const CORE::LINALG::Matrix<probdim, 1> x2(&xyze(0, (i + 1) % numNodes), true);
         d.Update(1, x2, -1, x1, 0);
         scale += d.Norm2();
       }
@@ -326,13 +326,13 @@ namespace CORE::GEO
      *
      *  \author hiermeier */
     template <unsigned probdim, class T>
-    void GetElementShift(const T& xyze, LINALG::Matrix<probdim, 1>& shift)
+    void GetElementShift(const T& xyze, CORE::LINALG::Matrix<probdim, 1>& shift)
     {
       shift = 0.0;
       const unsigned numNodes = static_cast<unsigned>(xyze.N());
       for (unsigned i = 0; i < numNodes; ++i)
       {
-        const LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
+        const CORE::LINALG::Matrix<probdim, 1> x1(&xyze(0, i), true);
         shift.Update(1, x1, 1);
       }
       shift.Scale(1. / numNodes);
@@ -347,12 +347,12 @@ namespace CORE::GEO
      *   is the correction of a \e xyze matrix in the case of 2-dimensional problems.
      *   Please note, that the correction of a vector is in general unnecessary,
      *   since a vector can be corrected by using the view constructor of a new
-     *   LINALG::(T)Matrix.
+     *   CORE::LINALG::(T)Matrix.
      *
      *  \param wrong_shape   (in) : matrix with the wrong shape (Epetra_SerialDenseMatrix
-     *                              or LINALG::(T)Matrix)
+     *                              or CORE::LINALG::(T)Matrix)
      *  \param correct_shape (out): matrix with the desired number of rows and columns.
-     *                              (Epetra_SerialDenseMatrix or LINALG::(T)Matrix)
+     *                              (Epetra_SerialDenseMatrix or CORE::LINALG::(T)Matrix)
      *
      *  \author hiermeier \date 11/16 */
     template <class T1, class T2>
@@ -387,11 +387,11 @@ namespace CORE::GEO
     {
       if (dim >= probdim) dserror("This function is only meaningful for the embedded case!");
 
-      LINALG::Matrix<dim, dim> metrictensor;
-      LINALG::Matrix<probdim, numNodesElement> deriv1;
-      LINALG::Matrix<probdim, probdim> xjm;
+      CORE::LINALG::Matrix<dim, dim> metrictensor;
+      CORE::LINALG::Matrix<probdim, numNodesElement> deriv1;
+      CORE::LINALG::Matrix<probdim, probdim> xjm;
 
-      LINALG::Matrix<probdim, numNodesElement> xyze_linalg;
+      CORE::LINALG::Matrix<probdim, numNodesElement> xyze_linalg;
       if (xyze.M() == probdim and xyze.N() == numNodesElement)
         xyze_linalg.SetView(xyze.A());
       else
@@ -399,17 +399,17 @@ namespace CORE::GEO
 
       if (static_cast<unsigned>(rst.M()) < dim)
         dserror("The local coordinates have the wrong dimension!");
-      LINALG::Matrix<dim, 1> rst_linalg(rst.A(), true);
+      CORE::LINALG::Matrix<dim, 1> rst_linalg(rst.A(), true);
 
       if (static_cast<unsigned>(normalvec1.M()) < probdim or
           (normalvec2 and static_cast<unsigned>(normalvec2->M()) < probdim))
         dserror("The normal vectors have the wrong dimenison!");
 
-      LINALG::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
+      CORE::LINALG::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
 
       if (normalvec2)
       {
-        LINALG::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
+        CORE::LINALG::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
         EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
             NULL, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 

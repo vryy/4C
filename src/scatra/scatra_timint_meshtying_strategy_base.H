@@ -25,13 +25,13 @@ namespace IO
   class InputControl;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class KrylovProjector;
   class Solver;
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -116,7 +116,7 @@ namespace SCATRA
      * @param residual            residual vector
      * @param calcinittimederiv   flag for calculation of initial time derivative
      */
-    virtual void CondenseMatAndRHS(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    virtual void CondenseMatAndRHS(const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
@@ -150,8 +150,8 @@ namespace SCATRA
     \author rauch
     */
     virtual void EvaluateCondition(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
     {
@@ -178,10 +178,10 @@ namespace SCATRA
     virtual bool SystemMatrixInitializationNeeded() const = 0;
 
     //! initialize system matrix
-    virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const = 0;
 
     //! return interface map extractor
-    virtual const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
+    virtual const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const = 0;
 
     //! output solution for post-processing
     virtual void Output() const { return; };
@@ -243,14 +243,14 @@ namespace SCATRA
      * @param iteration     number of current Newton-Raphson iteration
      * @param projector     Krylov projector
      */
-    virtual void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    virtual void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const = 0;
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const = 0;
 
     //! return linear solver for global system of linear equations
-    virtual const LINALG::Solver& Solver() const = 0;
+    virtual const CORE::LINALG::Solver& Solver() const = 0;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void Update() const { return; };

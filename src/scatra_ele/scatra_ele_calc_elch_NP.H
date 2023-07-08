@@ -56,7 +56,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -109,7 +109,7 @@ namespace DRT
       //! Calculate quantities used for stabilization
       void PrepareStabilization(
           std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
-          std::vector<LINALG::Matrix<nen_, 1>>&
+          std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
@@ -118,14 +118,15 @@ namespace DRT
       //! Calculate derivative of tau w.r.t. electric potential according to Taylor, Hughes and
       //! Zarins
       void CalcTauDerPotTaylorHughesZarins(
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& tau,    //!< stabilization parameter
-          const double densnp,                   //!< density at t_(n+1)
-          const double frt,                      //!< F/(RT)
-          const double diffusvalence,            //!< diffusion coefficient times valence
-          const LINALG::Matrix<nsd_, 1>& veleff  //!< effective convective velocity (fluid velocity
-                                                 //!< plus migration velocity if applicable)
+          const double densnp,         //!< density at t_(n+1)
+          const double frt,            //!< F/(RT)
+          const double diffusvalence,  //!< diffusion coefficient times valence
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              veleff  //!< effective convective velocity (fluid velocity
+                      //!< plus migration velocity if applicable)
       );
 
       /*========================================================================*/
@@ -138,7 +139,7 @@ namespace DRT
           const double hist,       //!< history value at GP
           const double convphi,    //!< convective term (without convective part of migration term)
           const double frt,        //!< F/(RT)
-          const LINALG::Matrix<nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
               migconv,         //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
           const double rhsint  //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at
                                //!< Gauss point
@@ -151,15 +152,15 @@ namespace DRT
           const double taufac,      //!< stabilization parameter tau times domain-integration factor
           const double
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,     //!< derivatives of stabilization parameter w.r.t. electric potential
           const double frt,  //!< F/(RT)
-          const LINALG::Matrix<nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
               conv,  //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
-          const LINALG::Matrix<nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
               migconv,          //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
           const double conint,  //!< concentration at GP
-          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
           const double residual  //!< residual of Nernst-Planck equation in strong form
       );
 
@@ -168,8 +169,8 @@ namespace DRT
           const int k,                                  //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
-          const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-          const double conint                      //!< concentration at GP
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint                            //!< concentration at GP
       );
 
       //! CalcMat: Electroneutrality condition in PDE form
@@ -177,8 +178,8 @@ namespace DRT
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
-          const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-          const double conint                      //!< concentration at GP
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint                            //!< concentration at GP
       );
 
       //! CalcMat: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
@@ -187,8 +188,8 @@ namespace DRT
           const int k,                                              //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
-          const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-          const double conint                      //!< concentration at GP
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint                            //!< concentration at GP
       );
 
       //! CalcMat: Poisson equation for electric potential
@@ -217,9 +218,9 @@ namespace DRT
           const int k,                                      //!< index of current scalar
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          const LINALG::Matrix<nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
               conv,  //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
-          const LINALG::Matrix<nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
               migconv,           //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
           const double residual  //!< residual of Nernst-Planck equation in strong form
       );
@@ -228,17 +229,17 @@ namespace DRT
       void CalcRhsMigr(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                  //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-          const double conint                      //!< concentration at GP
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint                            //!< concentration at GP
       );
 
       //! CalcRhs: Electroneutrality condition in PDE form
       void CalcRhsPotEquENCPDE(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                          //!< index of current scalar
           const double fac,                                     //!< domain-integration factor
-          const LINALG::Matrix<nen_, 1>& migconv,               //!< migration operator
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,         //!< migration operator
           const double conint,                                  //!< concentration at GP
-          const LINALG::Matrix<nsd_, 1>& gradphi                //!< gradient of concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi          //!< gradient of concentration at GP
       );
 
       //! CalcRhs: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
@@ -246,9 +247,9 @@ namespace DRT
       void CalcRhsPotEquENCPDEElim(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const int k,                                              //!< index of current scalar
           const double fac,                                         //!< domain-integration factor
-          const LINALG::Matrix<nen_, 1>& migconv,                   //!< migration operator
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,             //!< migration operator
           const double conint,                                      //!< concentration at GP
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< gradient of concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< gradient of concentration at GP
       );
 
       //! CalcRhs: Poisson equation for electric potential
@@ -258,13 +259,13 @@ namespace DRT
           const double epsilon,                                  //!< dielectric constant
           const double faraday,                                  //!< Faraday constant
           const double conint,                                   //!< concentration at GP
-          const LINALG::Matrix<nsd_, 1>& gradpot                 //!< gradient of potential at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot           //!< gradient of potential at GP
       );
 
       //! CalcRhs: Laplace equation for electric potential
       void CalcRhsPotEquLaplace(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double fac,                                      //!< domain-integration factor
-          const LINALG::Matrix<nsd_, 1>& gradpot                 //!< gradient of potential at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot           //!< gradient of potential at GP
       );
 
       /*========================================================================*/
@@ -279,9 +280,10 @@ namespace DRT
       //! evaluate an electrode boundary kinetics point condition
       void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
           Epetra_SerialDenseMatrix& emat,                              ///< element matrix
-          Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<nen_, 1>>&
+          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+              ephinp,  ///< state variables at element nodes
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ehist,                          ///< history variables at element nodes
           double timefac,                     ///< time factor
           Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
@@ -304,9 +306,9 @@ namespace DRT
       );
 
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,     //!< type fo flux
-          const int k                                 //!< index of current scalar
+      void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,           //!< type fo flux
+          const int k                                       //!< index of current scalar
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -375,15 +377,16 @@ namespace DRT
 
       //! compute and set internal variables for the Nernst-Planck formulation
       void SetInternalVariablesElchNP(
-          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
-          const LINALG::Matrix<NSD, NEN>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephin,  //!< nodal state variables at t_(n)
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {
@@ -409,11 +412,11 @@ namespace DRT
       /*========================================================================*/
 
       //! return migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-      const LINALG::Matrix<NSD, 1>& MigVelInt() const { return migvelint_; };
+      const CORE::LINALG::Matrix<NSD, 1>& MigVelInt() const { return migvelint_; };
 
       //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} *
       //! \grad{N}
-      const LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
+      const CORE::LINALG::Matrix<NEN, 1> MigConv() { return migconv_; };
 
      private:
       /*========================================================================*/
@@ -426,10 +429,10 @@ namespace DRT
       /*========================================================================*/
 
       //! migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-      LINALG::Matrix<NSD, 1> migvelint_;
+      CORE::LINALG::Matrix<NSD, 1> migvelint_;
 
       //! convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} * \grad{N}
-      LINALG::Matrix<NEN, 1> migconv_;
+      CORE::LINALG::Matrix<NEN, 1> migconv_;
 
     };  // class ScaTraEleInternalVariableManagerElchNP
 

@@ -64,7 +64,7 @@ namespace INVANA
     //! dofrowmap of measured dofs only
     Teuchos::RCP<Epetra_Map> mdofrowmap_;
 
-    Teuchos::RCP<LINALG::MapExtractor> mextractor_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> mextractor_;
 
     //! measured displacements/state
     Teuchos::RCP<Epetra_MultiVector> mstate_;

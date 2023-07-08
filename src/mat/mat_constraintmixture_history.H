@@ -70,15 +70,15 @@ namespace MAT
       *dt = dt_;
     };
     /// set stretches
-    void SetStretches(int gp, LINALG::Matrix<4, 1> stretches);
+    void SetStretches(int gp, CORE::LINALG::Matrix<4, 1> stretches);
     /// get stretches
-    void GetStretches(int gp, LINALG::Matrix<4, 1>* stretches);
+    void GetStretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches);
     /// set mass production rates
-    void SetMass(int gp, LINALG::Matrix<4, 1> massprod);
+    void SetMass(int gp, CORE::LINALG::Matrix<4, 1> massprod);
     /// set mass production rate of single fiber
     void SetMass(int gp, double massprod, int idfiber);
     /// get mass production rates
-    void GetMass(int gp, LINALG::Matrix<4, 1>* massprod);
+    void GetMass(int gp, CORE::LINALG::Matrix<4, 1>* massprod);
     /// set vardegrad
     void SetVarDegrad(int gp, int idfiber, double vardegrad);
     /// get vardegrad

@@ -123,8 +123,9 @@ void CORE::ADAPTER::CouplingMortar::Setup(
   inputmortar.setParameters(mortar);
 
   // interface displacement (=0) has to be merged from slave and master discretization
-  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Map> dofrowmap =
+      CORE::LINALG::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->SetState(MORTAR::state_new_displacement, *dispn);
@@ -200,8 +201,8 @@ void CORE::ADAPTER::CouplingMortar::CheckSlaveDirichletOverlap(
   bool overlap = false;
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new LINALG::MapExtractor());
-  Teuchos::RCP<Epetra_Vector> temp = LINALG::CreateVector(*(slavedis->DofRowMap()), true);
+  Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(slavedis->DofRowMap()), true);
   slavedis->EvaluateDirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
 
   // loop over all slave row nodes of the interface
@@ -522,8 +523,8 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // (0) check constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  Teuchos::RCP<Epetra_Vector> xs = LINALG::CreateVector(*slavedofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> xm = LINALG::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xs = CORE::LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> xm = CORE::LINALG::CreateVector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
@@ -562,7 +563,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     }
 
     // do assembly
-    LINALG::Assemble(*xs, val, lm, lmowner);
+    CORE::LINALG::Assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
@@ -601,7 +602,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     }
 
     // do assembly
-    LINALG::Assemble(*xm, val, lm, lmowner);
+    CORE::LINALG::Assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -609,7 +610,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   D_->Multiply(false, *xs, *Dxs);
   Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->Multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gold = LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gold = CORE::LINALG::CreateVector(*slavedofrowmap, true);
   gold->Update(1.0, *Dxs, 1.0);
   gold->Update(-1.0, *Mxm, 1.0);
   double gnorm = 0.0;
@@ -670,7 +671,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*masterdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = CORE::LINALG::CreateVector(*masterdofrowmap, true);
 
   // loop over all master row nodes on the current interface
   for (int j = 0; j < interface_->MasterRowNodes()->NumMyElements(); ++j)
@@ -699,7 +700,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // relocate modified slave positions
-  Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = CORE::LINALG::CreateVector(*slavedofrowmap, true);
 
   // this is trivial for dual Lagrange multipliers
   P_->Multiply(false, *Xmaster, *Xslavemod);
@@ -709,10 +710,10 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // (3) perform mesh relocation node by node
   //**********************************************************************
   // export Xslavemod to fully overlapping column map for current interface
-  Teuchos::RCP<Epetra_Map> fullsdofs = LINALG::AllreduceEMap(*(interface_->SlaveRowDofs()));
-  Teuchos::RCP<Epetra_Map> fullsnodes = LINALG::AllreduceEMap(*(interface_->SlaveRowNodes()));
+  Teuchos::RCP<Epetra_Map> fullsdofs = CORE::LINALG::AllreduceEMap(*(interface_->SlaveRowDofs()));
+  Teuchos::RCP<Epetra_Map> fullsnodes = CORE::LINALG::AllreduceEMap(*(interface_->SlaveRowNodes()));
   Epetra_Vector Xslavemodcol(*fullsdofs, false);
-  LINALG::Export(*Xslavemod, Xslavemodcol);
+  CORE::LINALG::Export(*Xslavemod, Xslavemodcol);
 
   // loop over all slave nodes on the current interface
   for (int j = 0; j < fullsnodes->NumMyElements(); ++j)
@@ -884,8 +885,8 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   // (4) re-evaluate constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  xs = LINALG::CreateVector(*slavedofrowmap, true);
-  xm = LINALG::CreateVector(*masterdofrowmap, true);
+  xs = CORE::LINALG::CreateVector(*slavedofrowmap, true);
+  xm = CORE::LINALG::CreateVector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
   for (int j = 0; j < interface_->SlaveRowNodes()->NumMyElements(); ++j)
@@ -920,7 +921,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     }
 
     // do assembly
-    LINALG::Assemble(*xs, val, lm, lmowner);
+    CORE::LINALG::Assemble(*xs, val, lm, lmowner);
   }
 
   // loop over all master row nodes
@@ -956,7 +957,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     }
 
     // do assembly
-    LINALG::Assemble(*xm, val, lm, lmowner);
+    CORE::LINALG::Assemble(*xm, val, lm, lmowner);
   }
 
   // compute g-vector at global level
@@ -964,7 +965,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
   D_->Multiply(false, *xs, *Dxs);
   Mxm = Teuchos::rcp(new Epetra_Vector(*slavedofrowmap));
   M_->Multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Epetra_Vector> gnew = LINALG::CreateVector(*slavedofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> gnew = CORE::LINALG::CreateVector(*slavedofrowmap, true);
   gnew->Update(1.0, *Dxs, 1.0);
   gnew->Update(-1.0, *Mxm, 1.0);
   gnew->Norm2(&gnorm);
@@ -1016,8 +1017,8 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->Complete();
-  Dinv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap_, true);
+  Dinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D_));
+  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1046,7 +1047,7 @@ void CORE::ADAPTER::CouplingMortar::CreateP()
   Dinv_->Complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = LINALG::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = CORE::LINALG::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->Complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -1088,7 +1089,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
   idispsl->ReplaceMap(*slavedofrowmap_);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
-      LINALG::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
+      CORE::LINALG::MergeMap(*pmasterdofrowmap_, *pslavedofrowmap_, false);
   Teuchos::RCP<Epetra_Import> master_importer =
       Teuchos::rcp(new Epetra_Import(*dofrowmap, *pmasterdofrowmap_));
   Teuchos::RCP<Epetra_Import> slaveImporter =
@@ -1096,7 +1097,7 @@ void CORE::ADAPTER::CouplingMortar::Evaluate(
 
   // Import master and slave displacements into a single vector
   int err = 0;
-  Teuchos::RCP<Epetra_Vector> idisp_master_slave = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> idisp_master_slave = CORE::LINALG::CreateVector(*dofrowmap, true);
   err = idisp_master_slave->Import(*idispma, *master_importer, Add);
   if (err != 0)
     dserror("Import failed with error code %d. See Epetra source code for details.", err);
@@ -1148,10 +1149,10 @@ void CORE::ADAPTER::CouplingMortar::Evaluate()
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 10));
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 100));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 10));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1219,10 +1220,10 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<LINALG::SparseMatrix> dmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 10));
-  Teuchos::RCP<LINALG::SparseMatrix> mmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 100));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 10));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 100));
   interface_->AssembleDM(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1232,10 +1233,10 @@ void CORE::ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   M_ = mmatrix;
 
   // Build Dinv
-  Dinv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
+  Dinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D_));
 
   // extract diagonal of invd into diag
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*slavedofrowmap_, true);
   Dinv_->ExtractDiagonalCopy(*diag);
 
   // set zero diagonal values to dummy 1.0
@@ -1486,7 +1487,7 @@ Teuchos::RCP<Epetra_MultiVector> CORE::ADAPTER::CouplingMortar::SlaveToMaster(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::MortarCondensation(
-    Teuchos::RCP<LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& rhs) const
 {
   MORTAR::UTILS::MortarMatrixCondensation(k, P_, P_);
   MORTAR::UTILS::MortarRhsCondensation(rhs, P_);
@@ -1498,7 +1499,7 @@ void CORE::ADAPTER::CouplingMortar::MortarCondensation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::ADAPTER::CouplingMortar::MortarRecover(
-    Teuchos::RCP<LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& k, Teuchos::RCP<Epetra_Vector>& inc) const
 {
   MORTAR::UTILS::MortarRecover(inc, P_);
   return;

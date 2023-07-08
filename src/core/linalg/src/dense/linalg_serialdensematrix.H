@@ -13,7 +13,7 @@
 #include <Epetra_SerialDenseMatrix.h>
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
   \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
@@ -193,7 +193,7 @@ namespace LINALG
     std::size_t allocatedSize_;  /// Remembers the amount of bytes allocated when changing layout
 
   };  // class SerialDenseMatrix
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 

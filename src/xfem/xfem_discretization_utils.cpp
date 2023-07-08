@@ -28,7 +28,7 @@
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> dis,
     const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol, bool faces,
-    bool facecol, std::ostream& s, std::map<int, LINALG::Matrix<3, 1>>* curr_pos)
+    bool facecol, std::ostream& s, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos)
 {
   if (elements)
   {
@@ -70,18 +70,18 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       for (int i = 0; i < dis->NumMyColNodes(); ++i)
       {
         const DRT::Node* actnode = dis->lColNode(i);
-        LINALG::Matrix<3, 1> pos(true);
+        CORE::LINALG::Matrix<3, 1> pos(true);
 
         if (curr_pos != NULL)
         {
-          const LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
+          const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
           pos(1) = curr_x(1);
           pos(2) = curr_x(2);
         }
         else
         {
-          const LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);
@@ -95,18 +95,18 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       for (int i = 0; i < dis->NumMyRowNodes(); ++i)
       {
         const DRT::Node* actnode = dis->lRowNode(i);
-        LINALG::Matrix<3, 1> pos(true);
+        CORE::LINALG::Matrix<3, 1> pos(true);
 
         if (curr_pos != NULL)
         {
-          const LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
+          const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
           pos(1) = curr_x(1);
           pos(2) = curr_x(2);
         }
         else
         {
-          const LINALG::Matrix<3, 1> x(actnode->X());
+          const CORE::LINALG::Matrix<3, 1> x(actnode->X());
           pos(0) = x(0);
           pos(1) = x(1);
           pos(2) = x(2);

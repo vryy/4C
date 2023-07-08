@@ -55,22 +55,22 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       dbc_handler_(Teuchos::null),
       dtele_(0.0),
       dtsolve_(0.0),
-      equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+      equilibration_method_{Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
-          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
-          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
       manifoldscatraflux_(Teuchos::null),
-      matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
+      matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       print_matlab_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
       scatrastructureOffDiagcoupling_(Teuchos::null),
-      solver_(Teuchos::rcp(
-          new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
-                                 globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
-              comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+      solver_(Teuchos::rcp(new CORE::LINALG::Solver(
+          DRT::Problem::Instance()->SolverParams(
+              globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
+          comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       ssi_maps_(Teuchos::null),
       ssi_matrices_(Teuchos::null),
       ssi_vectors_(Teuchos::null),
@@ -387,8 +387,8 @@ void SSI::SSIMono::BuildNullSpaces() const
 {
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       // equip smoother for scatra matrix blocks with null space
       ScaTraField()->BuildBlockNullSpaces(
@@ -401,7 +401,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
@@ -705,21 +705,21 @@ void SSI::SSIMono::Setup()
   const bool calc_initial_pot_ssi =
       DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
-  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  if (ScaTraField()->EquilibrationMethod() != CORE::LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
   }
-  if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
-      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
-          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+  if (equilibration_method_.global != CORE::LINALG::EquilibrationMethod::local and
+      (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none))
     dserror("Either global equilibration or local equilibration");
 
-  if (matrixtype_ == LINALG::MatrixType::sparse and
-      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
-          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+  if (matrixtype_ == CORE::LINALG::MatrixType::sparse and
+      (equilibration_method_.structure != CORE::LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != CORE::LINALG::EquilibrationMethod::none))
     dserror("Block based equilibration only for block matrices");
 
   if (!DRT::INPUT::IntegralValue<int>(
@@ -762,7 +762,7 @@ void SSI::SSIMono::SetupSystem()
   // perform initializations associated with global system matrix
   switch (matrixtype_)
   {
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       // safety check
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
@@ -775,7 +775,7 @@ void SSI::SSIMono::SetupSystem()
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       // safety check
       if (ScaTraField()->SystemMatrix() == Teuchos::null)
@@ -823,7 +823,7 @@ void SSI::SSIMono::SetupSystem()
         MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
   }
   // instantiate appropriate equilibration class
-  strategy_equilibration_ = LINALG::BuildEquilibration(
+  strategy_equilibration_ = CORE::LINALG::BuildEquilibration(
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 
   // instantiate appropriate contact class
@@ -1070,29 +1070,29 @@ void SSI::SSIMono::UpdateIterStructure()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
+std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
 {
-  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
+  std::vector<CORE::LINALG::EquilibrationMethod> equilibration_method_vector;
   switch (matrixtype_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       equilibration_method_vector =
-          std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
+          std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       break;
     }
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
-      if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
+      if (equilibration_method_.global != CORE::LINALG::EquilibrationMethod::local)
       {
         equilibration_method_vector =
-            std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global);
+            std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_.global);
       }
-      else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
-               equilibration_method_.scatra == LINALG::EquilibrationMethod::none)
+      else if (equilibration_method_.structure == CORE::LINALG::EquilibrationMethod::none and
+               equilibration_method_.scatra == CORE::LINALG::EquilibrationMethod::none)
       {
-        equilibration_method_vector =
-            std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none);
+        equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
+            1, CORE::LINALG::EquilibrationMethod::none);
       }
       else
       {
@@ -1101,10 +1101,10 @@ std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
         auto block_positions_scatra_manifold =
             IsScaTraManifold() ? ssi_maps_->GetBlockPositions(Subproblem::manifold) : Teuchos::null;
 
-        equilibration_method_vector = std::vector<LINALG::EquilibrationMethod>(
+        equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
             block_positions_scatra->size() + block_position_structure->size() +
                 (IsScaTraManifold() ? block_positions_scatra_manifold->size() : 0),
-            LINALG::EquilibrationMethod::none);
+            CORE::LINALG::EquilibrationMethod::none);
 
         for (const int block_position_scatra : *block_positions_scatra)
           equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
@@ -1262,20 +1262,20 @@ void SSI::SSIMono::CalcInitialPotentialField()
     Teuchos::RCP<Epetra_Map> pseudo_dbc_map;
     if (IsScaTraManifold())
     {
-      auto conc_map =
-          LINALG::MergeMap(scatra_elch_splitter->OtherMap(), manifold_elch_splitter->OtherMap());
-      pseudo_dbc_map = LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+      auto conc_map = CORE::LINALG::MergeMap(
+          scatra_elch_splitter->OtherMap(), manifold_elch_splitter->OtherMap());
+      pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
     }
     else
     {
       pseudo_dbc_map =
-          LINALG::MergeMap(scatra_elch_splitter->OtherMap(), StructureField()->DofRowMap());
+          CORE::LINALG::MergeMap(scatra_elch_splitter->OtherMap(), StructureField()->DofRowMap());
     }
 
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
 
     auto rhs = ssi_vectors_->Residual();
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         ssi_matrices_->SystemMatrix(), rhs, Teuchos::null, dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
@@ -1350,37 +1350,38 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
   // prepare mass matrices of sub problems and global system
   auto massmatrix_scatra =
-      ScaTraField()->MatrixType() == LINALG::MatrixType::sparse
-          ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+      ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse
+          ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
                 UTILS::SSIMatrices::SetupSparseMatrix(ScaTraField()->DofRowMap()))
-          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(UTILS::SSIMatrices::SetupBlockMatrix(
-                ScaTraField()->BlockMaps(), ScaTraField()->BlockMaps()));
+          : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
+                UTILS::SSIMatrices::SetupBlockMatrix(
+                    ScaTraField()->BlockMaps(), ScaTraField()->BlockMaps()));
 
   auto massmatrix_manifold =
       IsScaTraManifold()
-          ? (ScaTraManifold()->MatrixType() == LINALG::MatrixType::sparse
-                    ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+          ? (ScaTraManifold()->MatrixType() == CORE::LINALG::MatrixType::sparse
+                    ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
                           UTILS::SSIMatrices::SetupSparseMatrix(ScaTraManifold()->DofRowMap()))
-                    : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                    : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
                           UTILS::SSIMatrices::SetupBlockMatrix(
                               ScaTraManifold()->BlockMaps(), ScaTraManifold()->BlockMaps())))
           : Teuchos::null;
 
-  auto massmatrix_system =
-      MatrixType() == LINALG::MatrixType::sparse
-          ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
-                UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
-          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(UTILS::SSIMatrices::SetupBlockMatrix(
-                BlockMapSystemMatrix(), BlockMapSystemMatrix()));
+  auto massmatrix_system = MatrixType() == CORE::LINALG::MatrixType::sparse
+                               ? Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
+                                     UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
+                               : Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseOperator>(
+                                     UTILS::SSIMatrices::SetupBlockMatrix(
+                                         BlockMapSystemMatrix(), BlockMapSystemMatrix()));
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
   ones_struct->PutScalar(1.0);
-  MatrixType() == LINALG::MatrixType::sparse
-      ? LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
-            *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system), *ones_struct)
-      : LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
-            LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system)
+  MatrixType() == CORE::LINALG::MatrixType::sparse
+      ? CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
+            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system), *ones_struct)
+      : CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
+            CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system)
                 ->Matrix(ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0),
                     ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0)),
             *ones_struct);
@@ -1417,18 +1418,18 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   // assemble global mass matrix from
   switch (MatrixType())
   {
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       switch (ScaTraField()->MatrixType())
       {
-        case LINALG::MatrixType::block_condition:
-        case LINALG::MatrixType::block_condition_dof:
+        case CORE::LINALG::MatrixType::block_condition:
+        case CORE::LINALG::MatrixType::block_condition_dof:
         {
           auto massmatrix_system_block =
-              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
+              CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
 
           auto massmatrix_scatra_block =
-              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_scatra);
+              CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_scatra);
 
           auto positions_scatra = ssi_maps_->GetBlockPositions(Subproblem::scalar_transport);
 
@@ -1443,7 +1444,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
             auto positions_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold);
 
             auto massmatrix_manifold_block =
-                LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_manifold);
+                CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_manifold);
 
             for (int i = 0; i < static_cast<int>(positions_manifold->size()); ++i)
             {
@@ -1456,24 +1457,25 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
           break;
         }
 
-        case LINALG::MatrixType::sparse:
+        case CORE::LINALG::MatrixType::sparse:
         {
           auto massmatrix_system_block =
-              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
+              CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
 
           const int position_scatra =
               ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0);
 
           massmatrix_system_block->Matrix(position_scatra, position_scatra)
-              .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
+              .Add(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0,
+                  1.0);
 
           if (IsScaTraManifold())
           {
             const int position_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0);
 
             massmatrix_system_block->Matrix(position_manifold, position_manifold)
-                .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0,
-                    1.0);
+                .Add(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false,
+                    1.0, 1.0);
           }
           break;
         }
@@ -1487,15 +1489,16 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
       massmatrix_system->Complete();
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      auto massmatrix_system_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system);
+      auto massmatrix_system_sparse =
+          CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system);
       massmatrix_system_sparse->Add(
-          *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
+          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
 
       if (IsScaTraManifold())
         massmatrix_system_sparse->Add(
-            *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0, 1.0);
+            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0, 1.0);
 
       massmatrix_system->Complete(*DofRowMap(), *DofRowMap());
       break;
@@ -1521,13 +1524,13 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   if (IsScaTraManifold() and is_elch)
   {
     auto conc_map =
-        LINALG::MergeMap(scatra_elch_splitter->CondMap(), manifold_elch_splitter->CondMap());
-    pseudo_dbc_map = LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+        CORE::LINALG::MergeMap(scatra_elch_splitter->CondMap(), manifold_elch_splitter->CondMap());
+    pseudo_dbc_map = CORE::LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
   }
   else if (is_elch)
   {
     pseudo_dbc_map =
-        LINALG::MergeMap(scatra_elch_splitter->CondMap(), StructureField()->DofRowMap());
+        CORE::LINALG::MergeMap(scatra_elch_splitter->CondMap(), StructureField()->DofRowMap());
   }
   else
     pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap()));
@@ -1536,7 +1539,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
   // temporal derivative of transported scalars
   auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       massmatrix_system, phidtnp_system, rhs_system, dbc_zeros, *(pseudo_dbc_map));
 
   // solve global system of equations for initial time derivative of state variables
@@ -1567,35 +1570,35 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() const
 {
   return ssi_maps_->MapsSubProblems();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra() const
 {
   return ssi_maps_->BlockMapScaTra();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTraManifold() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTraManifold() const
 {
   return ssi_maps_->BlockMapScaTraManifold();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() const
 {
   return ssi_maps_->BlockMapStructure();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
+Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
 {
   return ssi_maps_->BlockMapSystemMatrix();
 }
@@ -1620,10 +1623,10 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
   // print system matrix
   switch (matrixtype_)
   {
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
-      auto block_matrix =
-          LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(ssi_matrices_->SystemMatrix());
+      auto block_matrix = CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+          ssi_matrices_->SystemMatrix());
 
       for (int row = 0; row < block_matrix->Rows(); ++row)
       {
@@ -1633,22 +1636,22 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
           filename << DRT::Problem::Instance()->OutputControlFile()->FileName()
                    << "_block_system_matrix_" << row << "_" << col << ".csv";
 
-          LINALG::PrintMatrixInMatlabFormat(
+          CORE::LINALG::PrintMatrixInMatlabFormat(
               filename.str(), *block_matrix->Matrix(row, col).EpetraMatrix(), true);
         }
       }
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       auto sparse_matrix =
-          LINALG::CastToConstSparseMatrixAndCheckSuccess(ssi_matrices_->SystemMatrix());
+          CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(ssi_matrices_->SystemMatrix());
 
       const std::string filename =
           DRT::Problem::Instance()->OutputControlFile()->FileName() + "_sparse_system_matrix.csv";
 
-      LINALG::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix(), true);
+      CORE::LINALG::PrintMatrixInMatlabFormat(filename, *sparse_matrix->EpetraMatrix(), true);
       break;
     }
 
@@ -1663,14 +1666,14 @@ void SSI::SSIMono::PrintSystemMatrixRHSToMatLabFormat()
   {
     const std::string filename =
         DRT::Problem::Instance()->OutputControlFile()->FileName() + "_system_vector.csv";
-    LINALG::PrintVectorInMatlabFormat(filename, *ssi_vectors_->Residual(), true);
+    CORE::LINALG::PrintVectorInMatlabFormat(filename, *ssi_vectors_->Residual(), true);
   }
 
   // print full map
   {
     const std::string filename =
         DRT::Problem::Instance()->OutputControlFile()->FileName() + "_full_map.csv";
-    LINALG::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
+    CORE::LINALG::PrintMapInMatlabFormat(filename, *ssi_maps_->MapSystemMatrix(), true);
   }
 }
 
@@ -1680,7 +1683,7 @@ void SSI::SSIMono::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> p
 {
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =
-      LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
 
   for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
   {

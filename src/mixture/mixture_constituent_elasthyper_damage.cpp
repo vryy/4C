@@ -72,11 +72,11 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::ReadElement(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  gprefecoord = params.get<LINALG::Matrix<1, 3>>("gprefecoord");
+  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
+  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
 
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
@@ -97,20 +97,20 @@ double MIXTURE::MixtureConstituent_ElastHyperDamage::GetGrowthScalar(int gp) con
   return current_reference_growth_[gp];
 }
 
-void MIXTURE::MixtureConstituent_ElastHyperDamage::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyperDamage::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   dserror("This constituent does not support Evaluation without an elastic part.");
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperDamage::EvaluateElasticPart(
-    const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    int gp, int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   // Compute total inelastic deformation gradient
-  static LINALG::Matrix<3, 3> iFin(false);
+  static CORE::LINALG::Matrix<3, 3> iFin(false);
   iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
 
   // Evaluate 3D elastic part

@@ -22,7 +22,7 @@
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
 
@@ -152,7 +152,7 @@ namespace LINALG
     Teuchos::RCP<Epetra_Export> rexporter_;  // export the other direction
 
   };  // class  DownwindMatrix
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 #endif  // LINALG_DOWNWINDMATRIX_H

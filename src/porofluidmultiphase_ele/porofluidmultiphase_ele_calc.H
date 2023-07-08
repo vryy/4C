@@ -233,26 +233,26 @@ namespace DRT
       /*========================================================================*/
 
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_, 1> xsi_;
       //! initial node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze0_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze0_;
       //! current node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
       //! array for second derivatives of shape function w.r.t r,s,t
-      LINALG::Matrix<numderiv2_, nen_> deriv2_;
+      CORE::LINALG::Matrix<numderiv2_, nen_> deriv2_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<numderiv2_, nen_> derxy2_;
+      CORE::LINALG::Matrix<numderiv2_, nen_> derxy2_;
 
       //! transposed jacobian "dx/ds"
-      LINALG::Matrix<nsd_, nsd_> xjm_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<nsd_, nsd_> xij_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xij_;
       //! determinant of jacobian "dx/ds"
       double det_;
       //! determinant of deformation gradient "dx/dX"

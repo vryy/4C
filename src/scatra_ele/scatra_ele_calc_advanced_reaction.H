@@ -94,10 +94,10 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double taufac,                    //!< domain-integration factor times tau
-          const double densnp,                    //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const double taufac,                          //!< domain-integration factor times tau
+          const double densnp,                          //!< density at time_(n+1)
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
 
@@ -111,7 +111,7 @@ namespace DRT
       virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
       //! array for shape function at element center
-      LINALG::Matrix<nen_, 1> funct_elementcenter_;
+      CORE::LINALG::Matrix<nen_, 1> funct_elementcenter_;
 
       //! get current Gauss-point coordinates
       virtual const double* GetGpCoord() const { return gpcoord_; }

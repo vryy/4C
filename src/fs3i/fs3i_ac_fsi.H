@@ -19,7 +19,7 @@
 #include "utils_exceptions.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -211,7 +211,7 @@ namespace FS3I
     //@}
 
     /// Build map extractor which extracts the j-th dof
-    std::vector<Teuchos::RCP<LINALG::MapExtractor>> BuildMapExtractor();
+    std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> BuildMapExtractor();
 
     /// optional safety check for times and dt's of all fields
     void CheckIfTimesAndStepsAndDtsMatch();
@@ -261,7 +261,7 @@ namespace FS3I
     bool fsineedsupdate_;
 
     /// Extract the j-th out of numscal_ dof
-    std::vector<Teuchos::RCP<LINALG::MapExtractor>> extractjthstructscalar_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> extractjthstructscalar_;
 
     /// pointer to mean manager object
     Teuchos::RCP<FS3I::MeanManager> meanmanager_;

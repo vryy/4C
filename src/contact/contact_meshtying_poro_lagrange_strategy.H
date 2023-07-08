@@ -37,12 +37,12 @@ namespace CONTACT
     /*!
     /brief initial Poro Meshtying calculations
     */
-    void InitializePoroMt(Teuchos::RCP<LINALG::SparseMatrix>& kteffoffdiag);
+    void InitializePoroMt(Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag);
 
     /*!
     /brief modify off diagonal system matrix for structural displacement meshtying
      */
-    void EvaluateMeshtyingPoroOffDiag(Teuchos::RCP<LINALG::SparseMatrix>& kteffoffdiag);
+    void EvaluateMeshtyingPoroOffDiag(Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffoffdiag);
 
     /*!
     \brief Recovery method
@@ -53,7 +53,7 @@ namespace CONTACT
 
     void RecoverCouplingMatrixPartofLMP(Teuchos::RCP<Epetra_Vector> veli);
 
-    Teuchos::RCP<LINALG::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
 
     Teuchos::RCP<Epetra_Map> fvelrow_;  // fluid row map (needed for splitting)
 

@@ -207,16 +207,16 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   }
 
   // unpack deformation gradient matrices
-  histdefgrdlast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  histdefgrdcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  histdefgrdlast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  histdefgrdcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
   // unpack formation level eta for n=240 different fiber orientations
-  etalast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  etacurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  etalast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  etacurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
   // unpack fiber stress sigma for n=240 different fiber orientations
-  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
   // unpack average intensity level at every point in the cytoplasm
   etahat_ = Teuchos::rcp(new std::vector<double>);
@@ -234,8 +234,8 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   for (int var = 0; var < histsize; ++var)
   {
     // initialize
-    LINALG::Matrix<3, 3> tmp_matrix3x3(true);
-    LINALG::Matrix<numbgp, twice> tmp_matrix(true);
+    CORE::LINALG::Matrix<3, 3> tmp_matrix3x3(true);
+    CORE::LINALG::Matrix<numbgp, twice> tmp_matrix(true);
     double tmp_scalar = 0.0;
 
     // matrices of last converged state are unpacked
@@ -299,14 +299,14 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
 void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // initialize history variables
-  histdefgrdlast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  histdefgrdcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  histdefgrdlast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  histdefgrdcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
-  etalast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  etacurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  etalast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  etacurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
-  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
   etahat_ = Teuchos::rcp(new std::vector<double>);
   etahor_ = Teuchos::rcp(new std::vector<double>);
@@ -342,9 +342,9 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   //  dyz_->resize(numgp);
   //  dxz_->resize(numgp);
 
-  LINALG::Matrix<numbgp, twice> emptymat(true);
+  CORE::LINALG::Matrix<numbgp, twice> emptymat(true);
 
-  LINALG::Matrix<3, 3> emptymat3x3(true);
+  CORE::LINALG::Matrix<3, 3> emptymat3x3(true);
   for (int i = 0; i < 3; i++) emptymat3x3(i, i) = 1.0;
 
   for (int i = 0; i < numgp; i++)
@@ -386,14 +386,14 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 void MAT::ActiveFiber::ResetAll(const int numgp)
 {
   // initialize history variables
-  histdefgrdlast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  histdefgrdcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  histdefgrdlast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  histdefgrdcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
-  etalast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  etacurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  etalast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  etacurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
-  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphilast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
   etahat_ = Teuchos::rcp(new std::vector<double>);
   etahor_ = Teuchos::rcp(new std::vector<double>);
@@ -422,8 +422,8 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
   etaver_->resize(numgp);
   etadiag_->resize(numgp);
 
-  LINALG::Matrix<numbgp, twice> emptymat(true);
-  LINALG::Matrix<3, 3> emptymat3x3(true);
+  CORE::LINALG::Matrix<numbgp, twice> emptymat(true);
+  CORE::LINALG::Matrix<3, 3> emptymat3x3(true);
   for (int i = 0; i < 3; i++) emptymat3x3(i, i) = 1.0;
 
   for (int i = 0; i < numgp; i++)
@@ -468,10 +468,10 @@ void MAT::ActiveFiber::Update()
   sigmaomegaphilast_ = sigmaomegaphicurr_;
 
   // empty vectors of current data
-  histdefgrdcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  histdefgrdcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
-  etacurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
-  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<numbgp, twice>>);
+  etacurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
+  sigmaomegaphicurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<numbgp, twice>>);
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -481,8 +481,8 @@ void MAT::ActiveFiber::Update()
   etacurr_->resize(histsize);
   sigmaomegaphicurr_->resize(histsize);
 
-  LINALG::Matrix<numbgp, twice> emptymat(true);
-  LINALG::Matrix<3, 3> emptymat3x3(true);
+  CORE::LINALG::Matrix<numbgp, twice> emptymat(true);
+  CORE::LINALG::Matrix<3, 3> emptymat3x3(true);
   for (int i = 0; i < 3; i++) emptymat3x3(i, i) = 1.0;
   for (int i = 0; i < histsize; i++)
   {
@@ -507,9 +507,10 @@ void MAT::ActiveFiber::ResetStep() { matpassive_->ResetStep(); }  // ResetStep()
  The stress response is decomposed into a passive and an active part:
      \sigma = \sigma_{passive} + \sigma_{active}
  */
-void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::ActiveFiber::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   //
   //          C1111 C1122 C1133 C1123 C1113 C1112
@@ -534,8 +535,8 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // PASSIVE PART
   //******************
   // Initialize passive stress and elasticity tensor
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatpassive(true);
-  LINALG::Matrix<NUM_STRESS_3D, 1> Spassive(true);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatpassive(true);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Spassive(true);
 
   if (cmat != nullptr)
   {
@@ -563,42 +564,42 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
 
   // Setup inverse of deformation gradient
-  LINALG::Matrix<3, 3> invdefgrd(*defgrd);
+  CORE::LINALG::Matrix<3, 3> invdefgrd(*defgrd);
   invdefgrd.Invert();
 
   // Setup deformation gradient rate, rotation tensor, strain rate and rotation rate
   // \dot{F} = \frac {F^n - F^{n-1}} {\Delta t}
-  LINALG::Matrix<3, 3> defgrdrate(true);
+  CORE::LINALG::Matrix<3, 3> defgrdrate(true);
   // R = F * U^{-1}
-  LINALG::Matrix<3, 3> R(true);
+  CORE::LINALG::Matrix<3, 3> R(true);
   // \dot{\epsilon} = d = 0.5 * (\dot{F}F^{-1} + (\dot{F}F^{-1})^{T}
-  LINALG::Matrix<6, 1> strainrate(true);
+  CORE::LINALG::Matrix<6, 1> strainrate(true);
   // \dot{R} = \frac {R^n - R^{n-1}} {\Delta t}
-  LINALG::Matrix<3, 3> rotationrate(true);
+  CORE::LINALG::Matrix<3, 3> rotationrate(true);
 
   //  // e = F^{-T} * E * F^{-1}
-  //  LINALG::Matrix<3,3> eastrain(true);
+  //  CORE::LINALG::Matrix<3,3> eastrain(true);
   //  GLtoEA(*glstrain,invdefgrd,eastrain);
 
   SetupRates(*defgrd, invdefgrd, params, defgrdrate, R, strainrate, rotationrate, gp, dt);
 
   // Evaluate active stress
-  LINALG::Matrix<NUM_STRESS_3D, 1> sigma(true);  // 6x1
-  LINALG::Matrix<3, 3> cauchystress(true);       // 3x3
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> sigma(true);  // 6x1
+  CORE::LINALG::Matrix<3, 3> cauchystress(true);       // 3x3
 
   // Setup history variables
-  LINALG::Matrix<numbgp, twice> emptymat(true);
+  CORE::LINALG::Matrix<numbgp, twice> emptymat(true);
 
-  const LINALG::Matrix<numbgp, twice> etalast = etalast_->at(gp);
-  LINALG::Matrix<numbgp, twice> etanew;
+  const CORE::LINALG::Matrix<numbgp, twice> etalast = etalast_->at(gp);
+  CORE::LINALG::Matrix<numbgp, twice> etanew;
 
   double etahat = 0.0;
   double etahor = 0.0;
   double etaver = 0.0;
   double etadiag = 0.0;
 
-  const LINALG::Matrix<numbgp, twice> sigmaomegaphilast = sigmaomegaphilast_->at(gp);
-  LINALG::Matrix<numbgp, twice> sigmaomegaphinew(true);
+  const CORE::LINALG::Matrix<numbgp, twice> sigmaomegaphilast = sigmaomegaphilast_->at(gp);
+  CORE::LINALG::Matrix<numbgp, twice> sigmaomegaphinew(true);
 
   // Calculation of activation signal at current and last time step
   // C = \exp(frac{-t}{\theta})
@@ -657,11 +658,11 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
           ((1.0 - etalast(i, j)) * kforwards * Csignalold -
               kbackwards * (etalast(i, j) - (sigmaomegaphilast(i, j) * onebys * onebysigmax)));
 
-      LINALG::Matrix<3, 1> m(true);
+      CORE::LINALG::Matrix<3, 1> m(true);
       m(0) = sin(omega) * cos(phi);
       m(1) = sin(omega) * sin(phi);
       m(2) = cos(omega);
-      LINALG::Matrix<numbgp, twice> epsomegaphi(true);
+      CORE::LINALG::Matrix<numbgp, twice> epsomegaphi(true);
 
       // Transform strain rate at each point to fiber strain rate in (omega,phi) direction
       // \dot{\epsilon} = \dot{\epsilon}_{ij} m_{i} m_{j}
@@ -838,7 +839,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // Transform Cauchy stress to PK2 stress
   // S = J * F^{-1} sigma F^{-T}
-  LINALG::Matrix<NUM_STRESS_3D, 1> Sactive(true);  // 6x1
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Sactive(true);  // 6x1
   CauchytoPK2(Sactive, cauchystress, *defgrd, invdefgrd, sigma);
 
   // Stress including active and passive part
@@ -856,7 +857,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   if (cmat != nullptr and analyticalmaterialtangent)
   {
     // Setup active elasticity tensor cmatactive
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
+    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
     SetupCmatActive(cmatactive, rotationrate, strainrate, *defgrd, defgrdrate, R, invdefgrd, etanew,
         sigmaomegaphinew, cauchystress, params, theta, Csignal);
 
@@ -868,7 +869,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   if (cmat != NULL)
   {
     // Setup active elasticity tensor cmatactive
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
+    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
     SetupCmatActive(cmatactive, rotationrate, strainrate, *defgrd, defgrdrate, R, invdefgrd, etanew,
         sigmaomegaphinew, cauchystress, params, theta, Csignal);
 
@@ -884,16 +885,17 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  | rotation rate (finite difference scheme)                            rauch  07/14 |
  *----------------------------------------------------------------------------------*/
 // see also: viscoelasthyper.cpp line 781 ff
-void MAT::ActiveFiber::SetupRates(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 3>& invdefgrd, Teuchos::ParameterList& params,
-    LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R, LINALG::Matrix<6, 1>& strainrate,
-    LINALG::Matrix<3, 3>& rotationrate, const int& gp, const double& dt)
+void MAT::ActiveFiber::SetupRates(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    const CORE::LINALG::Matrix<3, 3>& invdefgrd, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<3, 3>& defgrdrate, CORE::LINALG::Matrix<3, 3>& R,
+    CORE::LINALG::Matrix<6, 1>& strainrate, CORE::LINALG::Matrix<3, 3>& rotationrate, const int& gp,
+    const double& dt)
 {
   // Read history
-  LINALG::Matrix<3, 3> defgrdlast = histdefgrdlast_->at(gp);
+  CORE::LINALG::Matrix<3, 3> defgrdlast = histdefgrdlast_->at(gp);
 
-  //  LINALG::Matrix<3,3> scaleddefgrd(defgrd);
-  //  LINALG::Matrix<3,3> scaleddefgrdinv(scaleddefgrd.Invert());
+  //  CORE::LINALG::Matrix<3,3> scaleddefgrd(defgrd);
+  //  CORE::LINALG::Matrix<3,3> scaleddefgrdinv(scaleddefgrd.Invert());
   //  scaleddefgrd.Scale(params_->epsilonnull_);
 
   // Rate of deformation gradient: \dot{F} = \frac {F^n - F^{n-1}} {\Delta t}
@@ -902,7 +904,7 @@ void MAT::ActiveFiber::SetupRates(const LINALG::Matrix<3, 3>& defgrd,
   defgrdrate.Scale(1.0 / dt);
 
   // Calculate velocity gradient l = \dot{F}.F^{-1}
-  LINALG::Matrix<3, 3> velgradient(true);
+  CORE::LINALG::Matrix<3, 3> velgradient(true);
   velgradient.MultiplyNN(defgrdrate, invdefgrd);
 
   // Rate of strain/symmetric part of velocity gradient
@@ -925,12 +927,12 @@ void MAT::ActiveFiber::SetupRates(const LINALG::Matrix<3, 3>& defgrd,
 
   // Rate of rotation tensor (!= skew part w of velocity gradient l, see Holzapfel S.99)
   // Determine rotation tensor R from F (F=R*U) -> polar decomposition of displacement based F
-  LINALG::Matrix<3, 3> Q(true);
-  LINALG::Matrix<3, 3> S(true);
-  LINALG::Matrix<3, 3> VT(true);
+  CORE::LINALG::Matrix<3, 3> Q(true);
+  CORE::LINALG::Matrix<3, 3> S(true);
+  CORE::LINALG::Matrix<3, 3> VT(true);
 
   // Calculate rotcurr from defgrd
-  LINALG::SVD<3, 3>(defgrd, Q, S,
+  CORE::LINALG::SVD<3, 3>(defgrd, Q, S,
       VT);  // Singular Value Decomposition,analogously to micromaterial_evaluate.cpp lines 81ff
   R.MultiplyNN(Q, VT);
 
@@ -969,9 +971,9 @@ void MAT::ActiveFiber::CalcActivationSignal(
 /*----------------------------------------------------------------------*
  | pull back of spatial stresses                           rauch  07/14 |
  *----------------------------------------------------------------------*/
-void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
-    LINALG::Matrix<3, 3>& cauchystress, const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 3>& invdefgrd, LINALG::Matrix<6, 1> sigma)
+void MAT::ActiveFiber::CauchytoPK2(CORE::LINALG::Matrix<6, 1>& Sactive,
+    CORE::LINALG::Matrix<3, 3>& cauchystress, const CORE::LINALG::Matrix<3, 3>& defgrd,
+    const CORE::LINALG::Matrix<3, 3>& invdefgrd, CORE::LINALG::Matrix<6, 1> sigma)
 {
   // calculate the Jacobi-determinant
   const double detF = defgrd.Determinant();  // const???
@@ -988,8 +990,8 @@ void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
   cauchystress(2, 2) = sigma(2);
 
   // S = J * F^{-1} * sigma * F^{-T}
-  LINALG::Matrix<3, 3> temp(true);
-  LINALG::Matrix<3, 3> S(true);
+  CORE::LINALG::Matrix<3, 3> temp(true);
+  CORE::LINALG::Matrix<3, 3> S(true);
   temp.MultiplyNN(invdefgrd, cauchystress);
   S.MultiplyNT(temp, invdefgrd);
   S.Scale(detF);
@@ -1017,12 +1019,12 @@ void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
 // | pull back of spatial stresses                           rauch  07/14 |
 // *----------------------------------------------------------------------*/
 // void MAT::ActiveFiber::GLtoEA(
-//  LINALG::Matrix<6,1> glstrain,
-//  LINALG::Matrix<3,3> invdefgrd,
-//  LINALG::Matrix<3,3>& eastrain)    // muss noch initialisiert werden
+//  CORE::LINALG::Matrix<6,1> glstrain,
+//  CORE::LINALG::Matrix<3,3> invdefgrd,
+//  CORE::LINALG::Matrix<3,3>& eastrain)    // muss noch initialisiert werden
 //{
 //  // Convert strain like 6x1-Voigt vector to 3x3 matrix
-//  LINALG::Matrix<3,3> greenlagrange(true);
+//  CORE::LINALG::Matrix<3,3> greenlagrange(true);
 //  greenlagrange(0,0) = glstrain(0);
 //  greenlagrange(0,1) = 0.5*glstrain(3);            // 0.5???
 //  greenlagrange(0,2) = 0.5*glstrain(5);            // 0.5???
@@ -1035,7 +1037,7 @@ void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
 //
 //
 //  // e = F^{-T} * E * F^{-1}
-//  LINALG::Matrix<3,3> temp(true);
+//  CORE::LINALG::Matrix<3,3> temp(true);
 //  temp.MultiplyTN(invdefgrd,greenlagrange);
 //  eastrain.MultiplyNT(temp,invdefgrd);
 //
@@ -1044,7 +1046,7 @@ void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
 /*---------------------------------------------------------------*
  |  matrix root                                     rauch  07/14 |
  *---------------------------------------------------------------*/
-void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
+void MAT::ActiveFiber::MatrixRoot3x3(CORE::LINALG::Matrix<3, 3>& MatrixInOut)
 {
   double Norm = MatrixInOut.Norm2();
   // direct calculation for zero-matrix
@@ -1055,11 +1057,11 @@ void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
   }
   else
   {
-    LINALG::Matrix<3, 3> EV(MatrixInOut);
-    LINALG::Matrix<3, 3> EW;
+    CORE::LINALG::Matrix<3, 3> EV(MatrixInOut);
+    CORE::LINALG::Matrix<3, 3> EW;
 
     // MatixInOut = EV * EW * EV^{-1}
-    LINALG::SYEV(EV, EW, EV);
+    CORE::LINALG::SYEV(EV, EW, EV);
 
     // sqrt(MatrixInOut) = EV * sqrt(EW) * EVT
     // loop over all eigenvalues
@@ -1068,7 +1070,7 @@ void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
     MatrixInOut.Clear();
 
     // temp = sqrt(EW) * EVT
-    LINALG::Matrix<3, 3> temp;
+    CORE::LINALG::Matrix<3, 3> temp;
     temp.MultiplyNT(EW, EV);
 
     // sqrt(MatrixInOut) = EV * sqrt(EW) * EV^{-1} = EV * temp
@@ -1081,11 +1083,11 @@ void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
  |  matrix root derivative of a symmetric 3x3 matrix                       rauch  07/14|
  *-------------------------------------------------------------------------------------*/
 void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
-    const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv)
+    const CORE::LINALG::Matrix<3, 3>& MatrixIn, CORE::LINALG::Matrix<6, 6>& MatrixRootDeriv)
 {
   double Norm = MatrixIn.Norm2();
 
-  LINALG::Matrix<6, 6> id4sharp(true);  // souza S.31 eq. (2.110)???
+  CORE::LINALG::Matrix<6, 6> id4sharp(true);  // souza S.31 eq. (2.110)???
   for (int i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
   for (int i = 3; i < 6; i++) id4sharp(i, i) = 0.5;
 
@@ -1101,9 +1103,9 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
   {
     double EWtolerance = 1.e-12;  // see souza S.737 Remark A.2
 
-    LINALG::Matrix<3, 3> EV(MatrixIn);
-    LINALG::Matrix<3, 3> EW;
-    LINALG::SYEV(EV, EW, EV);
+    CORE::LINALG::Matrix<3, 3> EV(MatrixIn);
+    CORE::LINALG::Matrix<3, 3> EW;
+    CORE::LINALG::SYEV(EV, EW, EV);
 
     MatrixRootDeriv.Clear();
     // souza eq. (A.52)
@@ -1115,7 +1117,7 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
     // y_i = sqrt(x_i)
     // dy_i / dx_j = delta_ij 1/(2*sqrt(x_i))
 
-    LINALG::Matrix<3, 3> id2(true);
+    CORE::LINALG::Matrix<3, 3> id2(true);
     for (int i = 0; i < 3; i++) id2(i, i) = 1.0;
     //  // --------------------------------- switch by number of equal eigenvalues
 
@@ -1195,20 +1197,20 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
         int b = (a + 1) % 3;  // b=1 || b=2 || b=0     even (cyclic) permutations of (a,b,c)
         int c = (a + 2) % 3;  // c=2 || c=0 || c=1
 
-        LINALG::Matrix<3, 1> ea;
-        LINALG::Matrix<3, 1> eb;
-        LINALG::Matrix<3, 1> ec;
+        CORE::LINALG::Matrix<3, 1> ea;
+        CORE::LINALG::Matrix<3, 1> eb;
+        CORE::LINALG::Matrix<3, 1> ec;
         for (int i = 0; i < 3; i++)
         {
           ea(i) = EV(i, a);
           eb(i) = EV(i, b);
           ec(i) = EV(i, c);
         }
-        LINALG::Matrix<3, 3> Ea;
+        CORE::LINALG::Matrix<3, 3> Ea;
         Ea.MultiplyNT(ea, ea);  // souza S.26 eq. (2.63)
-        LINALG::Matrix<3, 3> Eb;
+        CORE::LINALG::Matrix<3, 3> Eb;
         Eb.MultiplyNT(eb, eb);
-        LINALG::Matrix<3, 3> Ec;
+        CORE::LINALG::Matrix<3, 3> Ec;
         Ec.MultiplyNT(ec, ec);
 
         double fac = sqrt(EW(a, a)) / ((EW(a, a) - EW(b, b)) * (EW(a, a) - EW(c, c)));
@@ -1239,12 +1241,13 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
 /*-------------------------------------------------------------------------------------------*
  |  Computes active elasticity tensor in 6x6-Voigt notation                      rauch  07/14|
  *-------------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
-    const LINALG::Matrix<3, 3>& rotationrate, LINALG::Matrix<6, 1> strainrate,
-    const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 3>& defgrdrate,
-    const LINALG::Matrix<3, 3>& R, const LINALG::Matrix<3, 3>& invdefgrd,
-    LINALG::Matrix<numbgp, twice> etanew, const LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
-    const LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
+void MAT::ActiveFiber::SetupCmatActive(CORE::LINALG::Matrix<6, 6>& cmatactive,
+    const CORE::LINALG::Matrix<3, 3>& rotationrate, CORE::LINALG::Matrix<6, 1> strainrate,
+    const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 3>& defgrdrate,
+    const CORE::LINALG::Matrix<3, 3>& R, const CORE::LINALG::Matrix<3, 3>& invdefgrd,
+    CORE::LINALG::Matrix<numbgp, twice> etanew,
+    const CORE::LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
+    const CORE::LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
     double Csignal)
 {
   // Parameters of constitutive law
@@ -1266,33 +1269,33 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   const double detF = defgrd.Determinant();
 
   // Right-Cauchy-Green tensor(3x3): C = F^{T} * F
-  LINALG::Matrix<3, 3> C(true);
+  CORE::LINALG::Matrix<3, 3> C(true);
   C.MultiplyTN(defgrd, defgrd);
   // Inverse of C: C^{-1}
-  LINALG::Matrix<3, 3> Cinv(C);
+  CORE::LINALG::Matrix<3, 3> Cinv(C);
   Cinv.Invert();
   // Root of C: \sqrt{C}
-  LINALG::Matrix<3, 3> RootC(C);
+  CORE::LINALG::Matrix<3, 3> RootC(C);
   MatrixRoot3x3(RootC);
 
   // Inverse of sqrt(C): \sqrt(C)^{-1}
-  LINALG::Matrix<3, 3> RootCInv(RootC);
+  CORE::LINALG::Matrix<3, 3> RootCInv(RootC);
   RootCInv.Invert();
 
 
   // Derivative of \sqrt{C} with respect to C: DerviC =  d sqrt(C) / d C
-  // LINALG::Matrix<6,6> DerivC(true);// 6x6 Voigt matrix
+  // CORE::LINALG::Matrix<6,6> DerivC(true);// 6x6 Voigt matrix
   // MatrixRootDerivativeSym3x3(C,DerivC);
-  LINALG::FourTensor<3> TensorDerivC(true);  // initialize 81 4-Tensor values
+  CORE::LINALG::FourTensor<3> TensorDerivC(true);  // initialize 81 4-Tensor values
   // Setup4Tensor(TensorDerivC,DerivC);// 3x3x3x3 Tensor
 
   // FDCHECK for d sqrt{C}/ d C
   double delta = 1e-8;
-  LINALG::Matrix<3, 3> Ccopy(C);
-  LINALG::Matrix<3, 3> RootCcopy(true);
-  LINALG::Matrix<3, 3> InvRootCcopy(true);
+  CORE::LINALG::Matrix<3, 3> Ccopy(C);
+  CORE::LINALG::Matrix<3, 3> RootCcopy(true);
+  CORE::LINALG::Matrix<3, 3> InvRootCcopy(true);
 
-  LINALG::FourTensor<3> RootCInvDerivCRootCInv(true);
+  CORE::LINALG::FourTensor<3> RootCInvDerivCRootCInv(true);
   for (int k = 0; k < 3; ++k)
   {
     for (int l = 0; l < 3; ++l)
@@ -1336,31 +1339,31 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   //          }
 
   // Setup transposed matrices
-  LINALG::Matrix<3, 3> Rtrans(true);
+  CORE::LINALG::Matrix<3, 3> Rtrans(true);
   Rtrans.UpdateT(R);
-  LINALG::Matrix<3, 3> rotationratetrans(true);
+  CORE::LINALG::Matrix<3, 3> rotationratetrans(true);
   rotationratetrans.UpdateT(rotationrate);
-  LINALG::Matrix<3, 3> defgrdratetrans(true);
+  CORE::LINALG::Matrix<3, 3> defgrdratetrans(true);
   defgrdratetrans.UpdateT(defgrdrate);
-  LINALG::Matrix<3, 3> invdefgrdtrans(true);
+  CORE::LINALG::Matrix<3, 3> invdefgrdtrans(true);
   invdefgrdtrans.UpdateT(invdefgrd);
 
   // 3x3x3x3 Tensor auxiliary variables
-  LINALG::FourTensor<3> temptens1(true);
-  LINALG::FourTensor<3> temptens3(true);
-  LINALG::FourTensor<3> temptens4(true);
-  LINALG::FourTensor<3> temptens5(true);
-  LINALG::FourTensor<3> temptens7(true);
-  LINALG::FourTensor<3> temptens8(true);
-  LINALG::FourTensor<3> temptens10(true);
-  LINALG::FourTensor<3> temptensgauss(true);
+  CORE::LINALG::FourTensor<3> temptens1(true);
+  CORE::LINALG::FourTensor<3> temptens3(true);
+  CORE::LINALG::FourTensor<3> temptens4(true);
+  CORE::LINALG::FourTensor<3> temptens5(true);
+  CORE::LINALG::FourTensor<3> temptens7(true);
+  CORE::LINALG::FourTensor<3> temptens8(true);
+  CORE::LINALG::FourTensor<3> temptens10(true);
+  CORE::LINALG::FourTensor<3> temptensgauss(true);
   // 3x3 matrix auxiliary variables
-  LINALG::Matrix<3, 3> tempmat1(true);
-  LINALG::Matrix<3, 3> tempmat2(true);
+  CORE::LINALG::Matrix<3, 3> tempmat1(true);
+  CORE::LINALG::Matrix<3, 3> tempmat2(true);
   // 6x6 matrix auxiliary variables
-  LINALG::Matrix<6, 6> tempvoigt1(true);
-  LINALG::Matrix<6, 6> tempvoigt2(true);
-  LINALG::Matrix<6, 6> tempvoigtgauss(true);
+  CORE::LINALG::Matrix<6, 6> tempvoigt1(true);
+  CORE::LINALG::Matrix<6, 6> tempvoigt2(true);
+  CORE::LINALG::Matrix<6, 6> tempvoigtgauss(true);
 
 
   ///////////////////////////////////
@@ -1449,13 +1452,13 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
       double omega = acos(gausspoints.qxg[i][0]);
       double phi = ((double)(j + 1) * M_PI) / ((double)gausspoints.nquad);
 
-      LINALG::Matrix<3, 1> m(true);
+      CORE::LINALG::Matrix<3, 1> m(true);
       m(0) = sin(omega) * cos(phi);
       m(1) = sin(omega) * sin(phi);
       m(2) = cos(omega);
-      LINALG::Matrix<3, 3> M(true);
+      CORE::LINALG::Matrix<3, 3> M(true);
       M.MultiplyNT(m, m);
-      LINALG::Matrix<numbgp, twice> epsomegaphi(true);
+      CORE::LINALG::Matrix<numbgp, twice> epsomegaphi(true);
 
       // Transform strain rate at each point to fiber strain rate in (omega,phi) direction
       // \dot{\epsilon} = \dot{\epsilon}_{ij} m_{i} m_{j}

@@ -14,21 +14,21 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(bool set_object_label)
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(bool set_object_label)
     : Epetra_SerialDenseMatrix(false), allocatedSize_(0)
 {
-  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (set_object_label) SetLabel("CORE::LINALG::SerialDenseMatrix");
 }
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(
     int NumRows, int NumCols, bool init, bool set_object_label)
     : Epetra_SerialDenseMatrix(false), allocatedSize_(0)
 {
-  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (set_object_label) SetLabel("CORE::LINALG::SerialDenseMatrix");
   if (NumRows < 0) throw ReportError("NumRows = " + toString(NumRows) + ". Should be >= 0", -1);
   if (NumCols < 0) throw ReportError("NumCols = " + toString(NumCols) + ". Should be >= 0", -1);
 
@@ -45,11 +45,11 @@ LINALG::SerialDenseMatrix::SerialDenseMatrix(
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(
     Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols, bool set_object_label)
     : Epetra_SerialDenseMatrix(CV, A, LDA, NumRows, NumCols, false), allocatedSize_(0)
 {
-  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (set_object_label) SetLabel("CORE::LINALG::SerialDenseMatrix");
   if (CV_ == Copy) allocatedSize_ = LDA_ * N_;
 }
 
@@ -58,12 +58,12 @@ LINALG::SerialDenseMatrix::SerialDenseMatrix(
 /*----------------------------------------------------------------------*
  | ctor (public)                                              nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(
     Epetra_SerialDenseMatrix& Source, Epetra_DataAccess CV, bool set_object_label)
     : Epetra_SerialDenseMatrix(CV, Source.A(), Source.LDA(), Source.M(), Source.N(), false),
       allocatedSize_(0)
 {
-  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+  if (set_object_label) SetLabel("CORE::LINALG::SerialDenseMatrix");
   if (CV_ == Copy) allocatedSize_ = LDA_ * N_;
 }
 
@@ -71,7 +71,7 @@ LINALG::SerialDenseMatrix::SerialDenseMatrix(
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source)
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source)
     : Epetra_SerialDenseMatrix(Source), allocatedSize_(Source.allocatedSize_)
 {
   if (CV_ == Copy) allocatedSize_ = LDA_ * N_;
@@ -81,12 +81,12 @@ LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                         nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source)
+CORE::LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source)
     : Epetra_SerialDenseMatrix(Source), allocatedSize_(0)
 {
   if (Source.Label())
   {
-    SetLabel("LINALG::SerialDenseMatrix");
+    SetLabel("CORE::LINALG::SerialDenseMatrix");
   }
   if (CV_ == Copy) allocatedSize_ = std::size_t(LDA_) * N_;
 }
@@ -95,8 +95,8 @@ LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Sou
 /*----------------------------------------------------------------------*
  | assignment operator (public)                       kronbichler Oct14 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix& LINALG::SerialDenseMatrix::operator=(
-    const LINALG::SerialDenseMatrix& Source)
+CORE::LINALG::SerialDenseMatrix& CORE::LINALG::SerialDenseMatrix::operator=(
+    const CORE::LINALG::SerialDenseMatrix& Source)
 {
   if (this == &Source) return *this;
   // if we copy and already have enough memory, use a more efficient route that
@@ -120,14 +120,14 @@ LINALG::SerialDenseMatrix& LINALG::SerialDenseMatrix::operator=(
 /*----------------------------------------------------------------------*
  | dtor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::~SerialDenseMatrix() {}
+CORE::LINALG::SerialDenseMatrix::~SerialDenseMatrix() {}
 
 /*----------------------------------------------------------------------*
  |                                                         vlf 06/07    |
  | recursive computation of determinant of a  matrix using Sarrus rule  |
  | (uses long double to boost accuracy). Do not use for n > 4.          |
  *----------------------------------------------------------------------*/
-long double LINALG::SerialDenseMatrix::Det_long(void)
+long double CORE::LINALG::SerialDenseMatrix::Det_long(void)
 {
   if (N() == 1)
   {
@@ -170,7 +170,7 @@ long double LINALG::SerialDenseMatrix::Det_long(void)
 /*----------------------------------------------------------------------*
  |  shape the matrix (reuse old memory) (public)       kronbichler 08/14|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::Shape(int NumRows, int NumCols)
+int CORE::LINALG::SerialDenseMatrix::Shape(int NumRows, int NumCols)
 {
   int err = LightShape(NumRows, NumCols);
   Zero();
@@ -182,7 +182,7 @@ int LINALG::SerialDenseMatrix::Shape(int NumRows, int NumCols)
 /*----------------------------------------------------------------------*
  |  shape the matrix but do not init to zero  (public)       mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
+int CORE::LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 {
   // check if nothing to do
   if (NumRows == M_ && NumCols == N_) return 0;
@@ -217,7 +217,7 @@ int LINALG::SerialDenseMatrix::LightShape(int NumRows, int NumCols)
 /*----------------------------------------------------------------------*
  |  reshape the matrix but do not init to zero  (public)     mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
+int CORE::LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 {
   return DoReshape(NumRows, NumCols, true);
 }
@@ -227,7 +227,7 @@ int LINALG::SerialDenseMatrix::LightReshape(int NumRows, int NumCols)
 /*----------------------------------------------------------------------*
  |  reshape the matrix   (public)                      kronbichler 08/14|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::Reshape(int NumRows, int NumCols)
+int CORE::LINALG::SerialDenseMatrix::Reshape(int NumRows, int NumCols)
 {
   return DoReshape(NumRows, NumCols, false);
 }
@@ -236,7 +236,8 @@ int LINALG::SerialDenseMatrix::Reshape(int NumRows, int NumCols)
 /*----------------------------------------------------------------------*
  |  internal reshape function of matrix (protected)    kronbichler 08/14|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseMatrix::DoReshape(const int NumRows, const int NumCols, const bool light)
+int CORE::LINALG::SerialDenseMatrix::DoReshape(
+    const int NumRows, const int NumCols, const bool light)
 {
   if (NumRows < 0 || NumCols < 0) return (-1);
 
@@ -315,9 +316,9 @@ int LINALG::SerialDenseMatrix::DoReshape(const int NumRows, const int NumCols, c
  |   Update matrix components with scaled values of B,                  |
  |   this = ScalarThis * this + ScalarB * B         (public) bborn 08/08|
  *----------------------------------------------------------------------*/
-void LINALG::SerialDenseMatrix::Update(const double& ScalarB, /*!< scale for input matrix */
-    const Epetra_SerialDenseMatrix& B,                        /*!< input matrix */
-    const double& ScalarThis                                  /*!< scale for this matrix */
+void CORE::LINALG::SerialDenseMatrix::Update(const double& ScalarB, /*!< scale for input matrix */
+    const Epetra_SerialDenseMatrix& B,                              /*!< input matrix */
+    const double& ScalarThis                                        /*!< scale for this matrix */
 )
 {
   Scale(ScalarThis);
@@ -328,7 +329,7 @@ void LINALG::SerialDenseMatrix::Update(const double& ScalarB, /*!< scale for inp
  |   Set matrix components to zero                                      |
  |   this = 0.0                                     (public) bborn 08/08|
  *----------------------------------------------------------------------*/
-void LINALG::SerialDenseMatrix::Zero()
+void CORE::LINALG::SerialDenseMatrix::Zero()
 {
   const std::size_t size = M_ * N_ * sizeof(double);
   if (size > 0) memset(A_, 0, size);

@@ -796,7 +796,7 @@ void INVANA::Triangulation::SetDataGlobally(
   // reduce assemble vector to myrank
   Epetra_Map bla(
       -1, vector->Map().NumMyElements(), vector->Map().MyGlobalElements(), 0, vector->Comm());
-  Epetra_Map dofmap_red(*(LINALG::AllreduceEMap(bla)));
+  Epetra_Map dofmap_red(*(CORE::LINALG::AllreduceEMap(bla)));
 
   // reduce facetmap to myrank
   facetdofstype facetmap_red = facetmap_;
@@ -951,7 +951,7 @@ INVANA::extract_type INVANA::Triangulation::MyData()
 /*----------------------------------------------------------------------*/
 void INVANA::Triangulation::CommunicateData(extract_type& data)
 {
-  Epetra_Map map_red(*LINALG::AllreduceEMap(*trimap_));
+  Epetra_Map map_red(*CORE::LINALG::AllreduceEMap(*trimap_));
 
   // build the exporter
   DRT::Exporter ex(*trimap_, map_red, trimap_->Comm());

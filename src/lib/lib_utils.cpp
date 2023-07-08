@@ -238,8 +238,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   params.set<INPAR::SCATRA::L2ProjectionSystemType>("l2 proj system", l2_proj_type);
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(noderowmap, 108, false, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(noderowmap, 108, false, true));
   // create empty right hand side
   Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap, numvec));
 
@@ -308,7 +308,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
       // copy results into Serial_DenseVector for assembling
       for (int inode = 0; inode < numnode; ++inode) elevector1(inode) = elematrix2(inode, n);
       // assemble into nth vector of MultiVector
-      LINALG::Assemble(*rhs, n, elevector1, lm, lmowner);
+      CORE::LINALG::Assemble(*rhs, n, elevector1, lm, lmowner);
     }
   }  // end element loop
 
@@ -391,7 +391,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveDiagonalNodalL2Projection(
-    LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
+    CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
     const Epetra_Map& noderowmap, const Epetra_Map* fullnoderowmap,
     const std::map<int, int>* slavetomastercolnodesmap, Epetra_Vector* const sys_mat_diagonal_ptr)
 {
@@ -417,7 +417,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveDiagonalNodalL2Projection(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
-    LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
+    CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
     const int& numvec, const int& solvernumber, const Epetra_Map& noderowmap,
     const Epetra_Map* fullnoderowmap, const std::map<int, int>* slavetomastercolnodesmap)
 {
@@ -426,8 +426,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
   const auto solvertype =
       Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
-      new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+      solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // skip setup of preconditioner in case of a direct solver
   if (solvertype != INPAR::SOLVER::SolverType::umfpack and
@@ -705,10 +705,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()), numvec, true));
-  LINALG::Export(*elevec_toberecovered, *elevec_toberecovered_col);
+  CORE::LINALG::Export(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()), dim, true));
-  LINALG::Export(*centercoords, *centercoords_col);
+  CORE::LINALG::Export(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
@@ -750,11 +750,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static LINALG::Matrix<dimp, 1> p;
+          static CORE::LINALG::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<dimp, dimp> A;
-          static LINALG::Matrix<dimp, 1> x;
-          static LINALG::Matrix<dimp, 1> b;
+          static CORE::LINALG::Matrix<dimp, dimp> A;
+          static CORE::LINALG::Matrix<dimp, 1> x;
+          static CORE::LINALG::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -773,7 +773,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) dserror("system singular, at inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -817,11 +817,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static LINALG::Matrix<dimp, 1> p;
+          static CORE::LINALG::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<dimp, dimp> A;
-          static LINALG::Matrix<dimp, 1> x;
-          static LINALG::Matrix<dimp, 1> b;
+          static CORE::LINALG::Matrix<dimp, dimp> A;
+          static CORE::LINALG::Matrix<dimp, 1> x;
+          static CORE::LINALG::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -844,7 +844,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) dserror("system singular, at pbc inner node");
 
           // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
@@ -881,7 +881,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
             const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
-            static LINALG::Matrix<dim, 1> dist;
+            static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
             if (tmp < distance and tmp > 1.0e-14)
@@ -910,11 +910,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static LINALG::Matrix<dimp, 1> p;
+          static CORE::LINALG::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<dimp, dimp> A;
-          static LINALG::Matrix<dimp, 1> x;
-          static LINALG::Matrix<dimp, 1> b;
+          static CORE::LINALG::Matrix<dimp, dimp> A;
+          static CORE::LINALG::Matrix<dimp, 1> x;
+          static CORE::LINALG::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -933,7 +933,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) dserror("system singular, at boundary node");
 
           // patch-recovery interpolation for boundary point
@@ -975,7 +975,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             if (conds[0]->ContainsNode(adjacentnodes[n]->Id())) continue;
 
             const double* pos = adjacentnodes[n]->X(); /* + ALE DISP */
-            static LINALG::Matrix<dim, 1> dist;
+            static CORE::LINALG::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
             const double tmp = dist.Norm2();
             if (tmp < distance and tmp > 1.0e-14)
@@ -1046,11 +1046,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for (int j = 0; j < numvec; ++j)
         {
-          static LINALG::Matrix<dimp, 1> p;
+          static CORE::LINALG::Matrix<dimp, 1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<dimp, dimp> A;
-          static LINALG::Matrix<dimp, 1> x;
-          static LINALG::Matrix<dimp, 1> b;
+          static CORE::LINALG::Matrix<dimp, dimp> A;
+          static CORE::LINALG::Matrix<dimp, 1> x;
+          static CORE::LINALG::Matrix<dimp, 1> b;
 
           A.Clear();
           b.Clear();
@@ -1074,7 +1074,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElimination<dimp>(A, b, x);
+          const double det = CORE::LINALG::scaledGaussElimination<dimp>(A, b, x);
           if (det < 1.0e-14) dserror("system singular, at pbc boundary node");
 
           // patch-recovery interpolation for boundary point

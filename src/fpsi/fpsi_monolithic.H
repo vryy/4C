@@ -29,7 +29,7 @@
 // ADAPTER includes
 #include "adapter_fld_fluid_fpsi.H"
 
-// LINALG includes
+// CORE::LINALG includes
 #include "linalg_mapextractor.H"
 
 // INPAR includes
@@ -42,11 +42,11 @@
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |
  *----------------------------------------------------------------------*/
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace POROELAST
 {
@@ -213,12 +213,12 @@ namespace FPSI
     virtual void SetupRHS(bool firstcall = false) = 0;
 
     //! build system matrix form sub fields + coupling
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
     //! build system matrix form sub fields + coupling
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
 
     //! access system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// setup solver
     virtual void SetupSolver();
@@ -250,7 +250,7 @@ namespace FPSI
     void LinearSolve();
 
     //! solve using line search method
-    void LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse);
+    void LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& sparse);
 
     //! create linear solver (setup of parameter lists, etc...)
     void CreateLinearSolver();
@@ -277,7 +277,7 @@ namespace FPSI
     virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     //! extractor to communicate between full monolithic map and block maps
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //! set conductivity (for fps3i)
     void SetConductivity(double conduct);
@@ -287,9 +287,9 @@ namespace FPSI
 
    protected:
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
     //! dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_;
     //! increment between Newton steps k and k+1
@@ -298,7 +298,7 @@ namespace FPSI
     //! zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
     //! linear algebraic solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     //! rhs of FPSI system
     Teuchos::RCP<Epetra_Vector> rhs_;
     Teuchos::RCP<Epetra_Vector> rhsold_;

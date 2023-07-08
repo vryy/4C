@@ -29,8 +29,8 @@ void TUTORIAL::StructAleCoupling::PrintTutorialType()
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::StructAleCoupling::PostEvaluate(LINALG::Matrix<numele + 1, 1> rhs,
-    LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs, bool eval_stiff)
+void TUTORIAL::StructAleCoupling::PostEvaluate(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+    CORE::LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs, bool eval_stiff)
 {
   return;
 }

@@ -389,7 +389,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
       mydisp.clear();
       cutterdis->Dof(&node, lm);
 
-      LINALG::Matrix<3, 1> x(node.X());
+      CORE::LINALG::Matrix<3, 1> x(node.X());
 
       if (cutter_disp_col != Teuchos::null)
       {
@@ -412,7 +412,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
 
         if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-        LINALG::Matrix<3, 1> disp(mydisp.data(), true);
+        CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
         x.Update(1, disp, 1);
@@ -481,7 +481,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
   {
     const ::DRT::Element* element = back_mesh_->lColElement(lid);
 
-    LINALG::SerialDenseMatrix xyze;
+    CORE::LINALG::SerialDenseMatrix xyze;
 
     GetPhysicalNodalCoordinates(element, xyze);
 
@@ -503,7 +503,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
             dserror("Please implement here for other element type than hex8!");
           else
           {
-            LINALG::Matrix<3, 8> xyze_mat(xyze, true);
+            CORE::LINALG::Matrix<3, 8> xyze_mat(xyze, true);
             for (int nidx = 0; nidx < 8; ++nidx) xyze_mat(offset_idx, nidx) += offset;
           }
           break;
@@ -528,7 +528,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
-    const ::DRT::Element* element, LINALG::SerialDenseMatrix& xyze) const
+    const ::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const
 {
   std::vector<int> lm;
   std::vector<double> mydisp;
@@ -541,7 +541,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
   {
     const ::DRT::Node& node = *nodes[i];
 
-    LINALG::Matrix<3, 1> x(node.X());
+    CORE::LINALG::Matrix<3, 1> x(node.X());
 
     if (back_mesh_->IsBackDisp())
     {
@@ -573,7 +573,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
 
       if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-      LINALG::Matrix<3, 1> disp(mydisp.data(), true);
+      CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
       // update x-position of cutter node for current time step (update with displacement)
       x.Update(1, disp, 1);
@@ -920,7 +920,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
       lm.clear();
       mydisp.clear();
 
-      LINALG::Matrix<3, 1> x(node.X());
+      CORE::LINALG::Matrix<3, 1> x(node.X());
 
       cutterdis->Dof(&node, lm);
 
@@ -949,7 +949,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
 
         if (mydisp.size() != 3) dserror("we need 3 displacements here");
 
-        LINALG::Matrix<3, 1> disp(mydisp.data(), true);
+        CORE::LINALG::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
         x.Update(1, disp, 1);
@@ -962,7 +962,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
 
     if (xyze.N() == 4 && sh->Shape() == ::DRT::Element::quad4)
     {
-      LINALG::Matrix<3, 4> XYZE(xyze.A(), true);
+      CORE::LINALG::Matrix<3, 4> XYZE(xyze.A(), true);
 
       CORE::GEO::CUT::plain_side_set sides;
       sh->CollectSides(sides);
@@ -982,13 +982,13 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
           for (std::size_t bcpoint = 0; bcpoint < bc->Points().size(); ++bcpoint)
           {
             // get local coord on sidehandle
-            LINALG::Matrix<2, 1> xsi = sh->LocalCoordinates(bc->Points()[bcpoint]);
+            CORE::LINALG::Matrix<2, 1> xsi = sh->LocalCoordinates(bc->Points()[bcpoint]);
 
             // eval shape function
-            LINALG::Matrix<4, 1> funct;
+            CORE::LINALG::Matrix<4, 1> funct;
             CORE::DRT::UTILS::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
 
-            LINALG::Matrix<3, 1> newpos(true);
+            CORE::LINALG::Matrix<3, 1> newpos(true);
             newpos.Multiply(XYZE, funct);
             bc->ResetPos(bcpoint, newpos);
           }

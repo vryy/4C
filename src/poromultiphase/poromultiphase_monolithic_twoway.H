@@ -17,7 +17,7 @@
 #include "inpar_poromultiphase.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
@@ -26,7 +26,7 @@ namespace LINALG
   class Solver;
   class Equilibration;
   enum class EquilibrationMethod;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -64,7 +64,10 @@ namespace POROMULTIPHASE
     virtual void TimeStep();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    {
+      return blockrowdofmap_;
+    }
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     void Evaluate(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx,
@@ -79,7 +82,10 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
 
     // access to monolithic block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
+    {
+      return systemmatrix_;
+    }
 
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
@@ -130,7 +136,7 @@ namespace POROMULTIPHASE
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// setup composed system matrix from field solvers
     virtual void SetupMaps();
@@ -139,26 +145,26 @@ namespace POROMULTIPHASE
     virtual bool SetupSolver();
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver);
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver);
 
     //! Evaluate mechanical-fluid system matrix
     virtual void ApplyStrCouplMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< mechanical-fluid stiffness matrix
     );
 
     //! Evaluate fluid-mechanical system matrix
     virtual void ApplyFluidCouplMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
+        Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< fluid-mechanical tangent matrix
     );
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> StructFluidCouplingMatrix();
 
     //! return fluid structure coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> FluidStructCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> FluidStructCouplingMatrix();
 
     //! Solve the linear system of equations
     void LinearSolve();
@@ -206,9 +212,9 @@ namespace POROMULTIPHASE
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of Poroelasticity system
 
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;           //!< tolerance to which is adpated ?
-    bool solveradapttol_;                  //!< adapt solver tolerance
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
+    bool solveradapttol_;                        //!< adapt solver tolerance
 
 
     //@}
@@ -216,12 +222,12 @@ namespace POROMULTIPHASE
     //! @name Global matrixes
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-fluid coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_sf_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf_;
     //! fluid-structure coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_fs_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs_;
 
     //@}
 
@@ -229,13 +235,13 @@ namespace POROMULTIPHASE
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
-    LINALG::EquilibrationMethod equilibration_method_;
+    CORE::LINALG::EquilibrationMethod equilibration_method_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
@@ -309,7 +315,7 @@ namespace POROMULTIPHASE
     virtual void SetupMaps();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// setup global rhs
     virtual void SetupRHS();
@@ -323,13 +329,13 @@ namespace POROMULTIPHASE
 
     //! build the block null spaces
     virtual void BuildArteryBlockNullSpace(
-        Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum);
+        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum);
 
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
   };
 
 

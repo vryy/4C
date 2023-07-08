@@ -50,7 +50,7 @@ ADAPTER::FBIConstraintenforcer::FBIConstraintenforcer(
       column_structure_displacement_(Teuchos::null),
       column_structure_velocity_(Teuchos::null),
       column_fluid_velocity_(Teuchos::null),
-      velocity_pressure_splitter_(Teuchos::rcp(new LINALG::MapExtractor()))
+      velocity_pressure_splitter_(Teuchos::rcp(new CORE::LINALG::MapExtractor()))
 {
 }
 
@@ -64,13 +64,13 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   discretizations_.push_back(structure_->Discretization());
   discretizations_.push_back(fluid_->Discretization());
 
-  LINALG::CreateMapExtractorFromDiscretization(
+  CORE::LINALG::CreateMapExtractorFromDiscretization(
       *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
 
   bool meshtying =
       (DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("MESHTYING") != "no");
 
-  Teuchos::RCP<LINALG::SparseOperator> fluidmatrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix(Teuchos::null);
 
   if (meshtying)
   {
@@ -86,8 +86,8 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   else
   {
     fluidmatrix = Teuchos::rcp(
-        new LINALG::SparseMatrix(*(fluid_->Discretization()->DofRowMap()), 30, true, true,
-            LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
+        new CORE::LINALG::SparseMatrix(*(fluid_->Discretization()->DofRowMap()), 30, true, true,
+            CORE::LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
   }
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),

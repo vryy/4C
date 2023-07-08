@@ -915,7 +915,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   //------------------------
   // local coordinates of the face nodes w.r.t slave side
-  LINALG::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
+  CORE::LINALG::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
 
   const std::vector<int>& localtrafomap = intface->GetLocalTrafoMap();
 
@@ -962,8 +962,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // of the respective parent element
   for (unsigned int q = 0; q < numgp_; q++)
   {
-    LINALG::Matrix<facensd_, 1> face_xi_points_master_linalg(true);
-    LINALG::Matrix<facensd_, 1> face_xi_points_slave_linalg(true);
+    CORE::LINALG::Matrix<facensd_, 1> face_xi_points_master_linalg(true);
+    CORE::LINALG::Matrix<facensd_, 1> face_xi_points_slave_linalg(true);
 
 
     // Gaussian point in face's element's local coordinates w.r.t master element
@@ -1136,7 +1136,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       pderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac, pderiv_dyad_nderiv_, 0.0);
       nderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac, nderiv_dyad_nderiv_, 0.0);
 
-      LINALG::Matrix<nsd_, nsd_> vderxyaf_diff_scaled(false);
+      CORE::LINALG::Matrix<nsd_, nsd_> vderxyaf_diff_scaled(false);
       vderxyaf_diff_scaled.Update(tau_timefacfac_rhs, vderxyaf_diff_, 0.0);
 
       //-----------------------------------------------------
@@ -1253,13 +1253,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
     const int row_block,                  ///< row block
     const int col_block,                  ///< column block
     Epetra_SerialDenseMatrix& mat_block,  ///< matrix block
-    LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
+    CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
         elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
+    CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
         elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
+    CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
         elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
+    CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
         elematrix_ss,                        ///< element matrix slave-slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
@@ -1325,10 +1325,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Reass
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
     DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleRHSBlock(
-    const int row_block,                                    ///< row block
-    Epetra_SerialDenseVector& rhs_block,                    ///< rhs block
-    LINALG::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
-    LINALG::Matrix<numdofpernode_ * niel, 1>& elevector_s,  ///< element vector slave block
+    const int row_block,                                          ///< row block
+    Epetra_SerialDenseVector& rhs_block,                          ///< rhs block
+    CORE::LINALG::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
+    CORE::LINALG::Matrix<numdofpernode_ * niel, 1>& elevector_s,  ///< element vector slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
 )
@@ -1605,11 +1605,11 @@ template <DRT::Element::DiscretizationType distype, DRT::Element::Discretization
     DRT::Element::DiscretizationType ndistype>
 double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::EvalShapeFuncAndDerivsAtIntPoint(const double wquad,  ///< Gaussian weight
-    const LINALG::Matrix<facensd_, 1>&
+    const CORE::LINALG::Matrix<facensd_, 1>&
         xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
-    const LINALG::Matrix<nsd_, 1>&
+    const CORE::LINALG::Matrix<nsd_, 1>&
         p_xi_gp,  ///< local coordinates of gaussian point w.r.t master element
-    const LINALG::Matrix<nsd_, 1>&
+    const CORE::LINALG::Matrix<nsd_, 1>&
         n_xi_gp,      ///< local coordinates of gaussian point w.r.t slave element
     int master_eid,   ///< master parent element
     int slave_eid,    ///< slave parent element
@@ -2038,12 +2038,12 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     dserror("not implemented for nurbs");
   }
 
-  LINALG::Matrix<nsd_, 1> x_gp(true);
+  CORE::LINALG::Matrix<nsd_, 1> x_gp(true);
   x_gp.Multiply(xyze_, funct_);
 
   //---------------
   // compute local coordinates with respect to slave element
-  LINALG::Matrix<nsd_, 1> nqxg(true);
+  CORE::LINALG::Matrix<nsd_, 1> nqxg(true);
 
   bool inelement_n = CORE::GEO::ComputeLocalCoordinates<ndistype>(nxyze_, x_gp, nqxg);
 
@@ -2053,7 +2053,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   //---------------
   // compute local coordinates with respect to master element
 
-  LINALG::Matrix<nsd_, 1> pqxg(true);
+  CORE::LINALG::Matrix<nsd_, 1> pqxg(true);
   bool inelement_p = CORE::GEO::ComputeLocalCoordinates<pdistype>(pxyze_, x_gp, pqxg);
 
   if (!inelement_p) dserror("point does not lie in element");
@@ -2268,7 +2268,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 
   // vector of shape function (2nd) derivatives in reference coordinate system, parent element,
   // scaled with normals
-  LINALG::Matrix<numderiv2_p, piel> pderxy2_n_scaled(true);
+  CORE::LINALG::Matrix<numderiv2_p, piel> pderxy2_n_scaled(true);
   pderxy2_n_scaled.Update(1.0, pderxy2_, 0.0);
 
   for (int ui = 0; ui < piel; ++ui)
@@ -2288,7 +2288,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
 
   //! vector of shape function (2nd) derivatives in global coordinate system, neighbor element,
   //! scaled with normals
-  LINALG::Matrix<numderiv2_p, niel> nderxy2_n_scaled(true);
+  CORE::LINALG::Matrix<numderiv2_p, niel> nderxy2_n_scaled(true);
   nderxy2_n_scaled.Update(1.0, nderxy2_, 0.0);
 
 
@@ -2307,8 +2307,8 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Ghost
       }
   }
 
-  LINALG::Matrix<piel, 1> pderxy2_n_scaled_sum(true);
-  LINALG::Matrix<niel, 1> nderxy2_n_scaled_sum(true);
+  CORE::LINALG::Matrix<piel, 1> pderxy2_n_scaled_sum(true);
+  CORE::LINALG::Matrix<niel, 1> nderxy2_n_scaled_sum(true);
 
   for (int ui = 0; ui < piel; ++ui)
   {
@@ -2583,7 +2583,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
    */
 
   // grad(p_neighbor) - grad(p_parent)
-  LINALG::Matrix<nsd_, 1> prederxy_jump(false);
+  CORE::LINALG::Matrix<nsd_, 1> prederxy_jump(false);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
   prederxy_jump.Scale(tau_timefacfacrhs);
 
@@ -2619,14 +2619,14 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
   }
 
   // q_master (p_slave-p_master)
-  LINALG::Matrix<piel, 1> pderxy_times_prederxy_jump(false);
+  CORE::LINALG::Matrix<piel, 1> pderxy_times_prederxy_jump(false);
   pderxy_times_prederxy_jump.MultiplyTN(pderxy_, prederxy_jump);
 
   for (int vi = 0; vi < piel; ++vi)
     elevector_m_(vi * numdofpernode_ + nsd_, 0) += pderxy_times_prederxy_jump(vi);
 
   // -q_slave (p_slave-p_master)
-  LINALG::Matrix<niel, 1> nderxy_times_prederxy_jump(false);
+  CORE::LINALG::Matrix<niel, 1> nderxy_times_prederxy_jump(false);
   nderxy_times_prederxy_jump.MultiplyTN(nderxy_, prederxy_jump);
 
   for (int vi = 0; vi < niel; ++vi)
@@ -2639,7 +2639,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::press
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
     DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_EOS(
-    const LINALG::Matrix<nsd_, nsd_>& vderxyaf_diff_scaled)
+    const CORE::LINALG::Matrix<nsd_, nsd_>& vderxyaf_diff_scaled)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_streamline_EOS");
 
@@ -2738,7 +2738,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_s
   }
 
 
-  LINALG::Matrix<nsd_, piel> pderxy_times_vderxyaf_diff(false);
+  CORE::LINALG::Matrix<nsd_, piel> pderxy_times_vderxyaf_diff(false);
   pderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled, pderxy_);
 
   // master row
@@ -2746,7 +2746,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_s
     for (int idim = 0; idim < nsd_; ++idim)  // combined components of u and v
       elevector_m_(vi * numdofpernode_ + idim, 0) += pderxy_times_vderxyaf_diff(idim, vi);
 
-  LINALG::Matrix<nsd_, niel> nderxy_times_vderxyaf_diff(false);
+  CORE::LINALG::Matrix<nsd_, niel> nderxy_times_vderxyaf_diff(false);
   nderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled, nderxy_);
 
   // slave row

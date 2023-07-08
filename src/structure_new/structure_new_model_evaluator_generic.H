@@ -31,11 +31,11 @@ namespace NOX
   }  // namespace NLN
 }  // namespace NOX
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace Teuchos
 {
@@ -229,7 +229,7 @@ namespace STR
        * \return Boolean to indicate sucess (true) or error (false)
        */
       virtual bool AssembleJacobian(
-          LINALG::SparseOperator& jac, const double& timefac_np) const = 0;
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const = 0;
 
       virtual bool AssembleCheapSOCRhs(Epetra_Vector& f, const double& timefac_np) const
       {
@@ -328,7 +328,7 @@ namespace STR
       virtual void EvaluateJacobianContributionsFromElementLevelForPTC() { return; };
       // assemble the element contributions
       virtual void AssembleJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n)
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
       {
         return;
       };

@@ -319,14 +319,14 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   Teuchos::RCP<CORE::GEO::SearchTree> searchTree = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // nodal positions of 2D/3D-discretization
-  std::map<int, LINALG::Matrix<3, 1>> my_positions_cont =
+  std::map<int, CORE::LINALG::Matrix<3, 1>> my_positions_cont =
       GetNodalPositions(contdis, contdis->NodeColMap());
   // axis-aligned bounding boxes of all elements of 2D/3D discretization
-  std::map<int, LINALG::Matrix<3, 2>> aabb_cont =
+  std::map<int, CORE::LINALG::Matrix<3, 2>> aabb_cont =
       CORE::GEO::getCurrentXAABBs(*contdis, my_positions_cont);
 
   // find the bounding box of the 2D/3D discretization
-  const LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofDis(*contdis);
+  const CORE::LINALG::Matrix<3, 2> sourceEleBox = CORE::GEO::getXAABBofDis(*contdis);
   searchTree->initializeTree(sourceEleBox, *contdis, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   // user info and timer
@@ -338,15 +338,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
   // *********** time measurement ***********
 
   // nodal positions of artery-discretization (fully overlapping)
-  std::map<int, LINALG::Matrix<3, 1>> positions_artery;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> positions_artery;
   // nodal positions of artery-discretization (row-map format)
-  std::map<int, LINALG::Matrix<3, 1>> my_positions_artery =
+  std::map<int, CORE::LINALG::Matrix<3, 1>> my_positions_artery =
       GetNodalPositions(artdis, artdis->NodeRowMap());
 
   // gather
   std::vector<int> procs(contdis->Comm().NumProc());
   for (int i = 0; i < contdis->Comm().NumProc(); i++) procs[i] = i;
-  LINALG::Gather<int, LINALG::Matrix<3, 1>>(my_positions_artery, positions_artery,
+  CORE::LINALG::Gather<int, CORE::LINALG::Matrix<3, 1>>(my_positions_artery, positions_artery,
       contdis->Comm().NumProc(), procs.data(), contdis->Comm());
 
   // do the actual search on fully overlapping artery discretization
@@ -356,7 +356,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
     // axis-aligned bounding box of artery
-    const LINALG::Matrix<3, 2> aabb_artery =
+    const CORE::LINALG::Matrix<3, 2> aabb_artery =
         GetAABB(artele, positions_artery, evaluate_on_lateral_surface);
 
     // get elements nearby
@@ -402,14 +402,15 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
-    std::map<int, LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
+CORE::LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
-  const LINALG::SerialDenseMatrix xyze_element(CORE::GEO::getCurrentNodalPositions(ele, positions));
+  const CORE::LINALG::SerialDenseMatrix xyze_element(
+      CORE::GEO::getCurrentNodalPositions(ele, positions));
   CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
   CORE::GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  LINALG::Matrix<3, 2> aabb_artery =
+  CORE::LINALG::Matrix<3, 2> aabb_artery =
       CORE::GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
 
   // add radius to axis aligned bounding box of artery element (in all coordinate directions) in
@@ -432,14 +433,14 @@ LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
 /*----------------------------------------------------------------------*
  | get nodal positions                                 kremheller 10/19 |
  *----------------------------------------------------------------------*/
-std::map<int, LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
+std::map<int, CORE::LINALG::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::GetNodalPositions(
     Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap)
 {
-  std::map<int, LINALG::Matrix<3, 1>> positions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> positions;
   for (int lid = 0; lid < nodemap->NumMyElements(); ++lid)
   {
     const DRT::Node* node = dis->gNode(nodemap->GID(lid));
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -464,7 +465,7 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
     int node0_gid = ele->NodeIds()[inode];
     DRT::Node* node0 = dis->gNode(node0_gid);
 
-    static LINALG::Matrix<3, 1> pos0;
+    static CORE::LINALG::Matrix<3, 1> pos0;
     pos0(0) = node0->X()[0];
     pos0(1) = node0->X()[1];
     pos0(2) = node0->X()[2];
@@ -475,12 +476,12 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
       int node1_gid = ele->NodeIds()[jnode];
       DRT::Node* node1 = dis->gNode(node1_gid);
 
-      static LINALG::Matrix<3, 1> pos1;
+      static CORE::LINALG::Matrix<3, 1> pos1;
       pos1(0) = node1->X()[0];
       pos1(1) = node1->X()[1];
       pos1(2) = node1->X()[2];
 
-      static LINALG::Matrix<3, 1> dist;
+      static CORE::LINALG::Matrix<3, 1> dist;
       dist.Update(1.0, pos0, -1.0, pos1, 0.0);
 
       maxdist = std::max(maxdist, dist.Norm2());

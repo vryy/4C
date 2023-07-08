@@ -16,10 +16,10 @@
 #include "linalg_serialdensevector.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -76,8 +76,8 @@ namespace BEAMINTERACTION
 
     //! Initialization [derived]
     virtual void Init(int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<LINALG::Matrix<3, 3>>& inittriad,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup [derived]
@@ -128,7 +128,8 @@ namespace BEAMINTERACTION
     virtual void ScaleLinkerReferenceLength(double scalefac);
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, LINALG::SerialDenseVector& bspotforce) const;
+    virtual void GetBindingSpotForce(
+        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const;
 
     virtual double GetCurrentLinkerLength() const;
 
@@ -140,28 +141,28 @@ namespace BEAMINTERACTION
     \brief Evaluate forces and stiffness contribution [derived]
     */
     virtual bool EvaluateForce(
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2);
+        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2);
 
     /*!
     \brief Evaluate stiffness contribution [derived]
     */
-    virtual bool EvaluateStiff(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     /*!
     \brief Evaluate forces and stiffness contribution [derived]
     */
-    virtual bool EvaluateForceStiff(LINALG::SerialDenseVector& forcevec1,
-        LINALG::SerialDenseVector& forcevec2, LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(
-        std::vector<LINALG::Matrix<3, 1>>& bspotpos, std::vector<LINALG::Matrix<3, 3>>& bspottriad);
+    void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
+        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad);
 
 
     //@}
@@ -173,7 +174,7 @@ namespace BEAMINTERACTION
     \brief Fill absolute nodal positions and nodal quaternions with current values
     */
     void FillStateVariablesForElementEvaluation(
-        LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
+        CORE::LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
 
     void GetDispForElementEvaluation(std::map<std::string, std::vector<double>>& ele_state) const;
 
@@ -186,7 +187,7 @@ namespace BEAMINTERACTION
     Teuchos::RCP<DRT::ELEMENTS::Truss3> linkele_;
 
     //! the following variables are for output purposes only (no need to pack or unpack)
-    std::vector<LINALG::SerialDenseVector> bspotforces_;
+    std::vector<CORE::LINALG::SerialDenseVector> bspotforces_;
 
     //@}
   };

@@ -72,11 +72,11 @@ void FS3I::FS3I_Base::Init()
   SetIsSetup(false);
 
   scatracoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  scatraglobalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
-  sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform());
-  fbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
+  scatraglobalex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
+  sbbtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform());
+  fbitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform());
 
   SetIsInit(true);
   return;
@@ -105,7 +105,7 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
   Teuchos::RCP<const Epetra_Map> slavemap = scatracoup_->SlaveDofMap();
   Teuchos::RCP<const Epetra_Map> permslavemap = scatracoup_->PermSlaveDofMap();
 
-  const Teuchos::RCP<const LINALG::MapExtractor> masterdirichmapex =
+  const Teuchos::RCP<const CORE::LINALG::MapExtractor> masterdirichmapex =
       scatravec_[0]->ScaTraField()->DirichMaps();
   const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
 
@@ -121,7 +121,7 @@ void FS3I::FS3I_Base::CheckInterfaceDirichletBC()
   }
   Teuchos::RCP<Epetra_Vector> test_slaveifdirich = scatracoup_->MasterToSlave(masterifdirich);
 
-  const Teuchos::RCP<const LINALG::MapExtractor> slavedirichmapex =
+  const Teuchos::RCP<const CORE::LINALG::MapExtractor> slavedirichmapex =
       scatravec_[1]->ScaTraField()->DirichMaps();
   const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
 
@@ -482,7 +482,7 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
     if (!infperm_)
     {
       Teuchos::RCP<Epetra_Vector> coupforce = scatracoupforce_[i];
-      Teuchos::RCP<LINALG::SparseMatrix> coupmat = scatracoupmat_[i];
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> coupmat = scatracoupmat_[i];
 
       coupforce->PutScalar(0.0);
       coupmat->Zero();
@@ -491,10 +491,10 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
       Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
-      const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
+      const Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap, false);
-      LINALG::ApplyDirichlettoSystem(coupforce, zeros, *dbcmap);
+      CORE::LINALG::ApplyDirichlettoSystem(coupforce, zeros, *dbcmap);
     }
   }
 }
@@ -666,8 +666,8 @@ void FS3I::FS3I_Base::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globa
 /*----------------------------------------------------------------------*/
 void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField()->SystemMatrix();
-  Teuchos::RCP<LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField()->SystemMatrix();
 
   if (scatra1 == Teuchos::null) dserror("expect fluid scatra block matrix");
   if (scatra2 == Teuchos::null) dserror("expect structure scatra block matrix");
@@ -680,12 +680,12 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
 
     // structure scatra
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockscatra2 =
-        scatra2->Split<LINALG::DefaultBlockMatrixStrategy>(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockscatra2 =
+        scatra2->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     blockscatra2->Complete();
 
-    scatrasystemmatrix_->Assign(1, 1, LINALG::View, blockscatra2->Matrix(0, 0));
+    scatrasystemmatrix_->Assign(1, 1, CORE::LINALG::View, blockscatra2->Matrix(0, 0));
 
     (*sibtransform_)(blockscatra2->FullRowMap(), blockscatra2->FullColMap(),
         blockscatra2->Matrix(0, 1), 1.0, CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_),
@@ -697,33 +697,33 @@ void FS3I::FS3I_Base::SetupCoupledScatraMatrix()
         CORE::ADAPTER::CouplingSlaveConverter(*scatracoup_), *scatra1, true, true);
 
     // fluid scatra
-    scatrasystemmatrix_->Assign(0, 0, LINALG::View, *scatra1);
+    scatrasystemmatrix_->Assign(0, 0, CORE::LINALG::View, *scatra1);
   }
   else
   {
     // conventional contributions
-    scatrasystemmatrix_->Assign(0, 0, LINALG::View, *scatra1);
-    scatrasystemmatrix_->Assign(1, 1, LINALG::View, *scatra2);
+    scatrasystemmatrix_->Assign(0, 0, CORE::LINALG::View, *scatra1);
+    scatrasystemmatrix_->Assign(1, 1, CORE::LINALG::View, *scatra2);
 
     // additional contributions due to interface permeability (-> coupling terms)
     // contribution of the same field
-    Teuchos::RCP<LINALG::SparseMatrix> coup1 = scatracoupmat_[0];
-    Teuchos::RCP<LINALG::SparseMatrix> coup2 = scatracoupmat_[1];
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> coup1 = scatracoupmat_[0];
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> coup2 = scatracoupmat_[1];
 
     scatrasystemmatrix_->Matrix(0, 0).Add(*coup1, false, 1.0, 1.0);
     scatrasystemmatrix_->Matrix(1, 1).Add(*coup2, false, 1.0, 1.0);
 
     // contribution of the respective other field
     // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock1 =
-        coup1->Split<LINALG::DefaultBlockMatrixStrategy>(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> coupblock1 =
+        coup1->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[0]), *(scatrafieldexvec_[0]));
     coupblock1->Complete();
     (*fbitransform_)(coupblock1->Matrix(1, 1), -1.0,
         CORE::ADAPTER::CouplingMasterConverter(*scatracoup_), scatrasystemmatrix_->Matrix(1, 0));
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> coupblock2 =
-        coup2->Split<LINALG::DefaultBlockMatrixStrategy>(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> coupblock2 =
+        coup2->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *(scatrafieldexvec_[1]), *(scatrafieldexvec_[1]));
     coupblock2->Complete();
     (*sbitransform_)(coupblock2->Matrix(1, 1), -1.0,
@@ -757,7 +757,7 @@ void FS3I::FS3I_Base::LinearSolveScatra()
   scatraincrement_->PutScalar(0.0);
 
 #ifdef SCATRABLOCKMATRIXMERGE
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = scatrasystemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = scatrasystemmatrix_->Merge();
 
   scatrasolver_->Solve(sparse->EpetraMatrix(), scatraincrement_, scatrarhs_, true);
 #else

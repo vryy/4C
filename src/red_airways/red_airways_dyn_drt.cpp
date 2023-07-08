@@ -84,8 +84,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
         "to a valid number!");
   }
   // Create the solver
-  Teuchos::RCP<LINALG::Solver> solver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                        actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()),
           false);
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

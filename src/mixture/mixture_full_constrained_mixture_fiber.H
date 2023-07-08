@@ -177,14 +177,14 @@ namespace MIXTURE
     /*!
      * @brief Returns an evaluator object that is passed to the local newton solver.
      *
-     * The evaluator object returns an object that is callable with a LINALG::Matrix and returns the
-     * residuum and the derivative.
+     * The evaluator object returns an object that is callable with a CORE::LINALG::Matrix and
+     * returns the residuum and the derivative.
      *
-     * @return std::function<std::tuple<LINALG::Matrix<2, 1, Number>,
-     * LINALG::Matrix<2, 2, Number>>(const LINALG::Matrix<2, 1, Number>&)>
+     * @return std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>,
+     * CORE::LINALG::Matrix<2, 2, Number>>(const CORE::LINALG::Matrix<2, 1, Number>&)>
      */
-    [[nodiscard]] std::function<std::tuple<LINALG::Matrix<2, 1, Number>,
-        LINALG::Matrix<2, 2, Number>>(const LINALG::Matrix<2, 1, Number>&)>
+    [[nodiscard]] std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>,
+        CORE::LINALG::Matrix<2, 2, Number>>(const CORE::LINALG::Matrix<2, 1, Number>&)>
     GetLocalNewtonEvaluator() const;
 
     /*!

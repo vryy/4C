@@ -31,11 +31,11 @@ namespace MORTAR
   class MortarNode;
 }  // namespace MORTAR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -86,7 +86,7 @@ namespace NTS
 
      */
     void nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn);
 
    private:
@@ -115,7 +115,7 @@ namespace NTS
 
      */
     void nwDM2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::pairedvector<int, double>& dmxi);
 
     /*!
@@ -123,7 +123,7 @@ namespace NTS
 
      */
     void nwDM3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
     /*!
@@ -131,7 +131,7 @@ namespace NTS
 
      */
     void nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
         CORE::GEN::pairedvector<int, double>& dmxi, double* gpn);
 
     /*!
@@ -139,7 +139,7 @@ namespace NTS
 
      */
     void nwMasterTemp(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
+        const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi);
 
     /*!
@@ -147,10 +147,10 @@ namespace NTS
 
      */
     void nwSlip2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
-        Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-        Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
         CORE::GEN::pairedvector<int, double>& dmxi);
 
     /*!
@@ -158,12 +158,12 @@ namespace NTS
 
      */
     void nwWear2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-        LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
-        Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-        Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
-        Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize, double& jumpval,
-        double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+        CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold,
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize,
+        double& jumpval, double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
         CORE::GEN::pairedvector<int, double>& dslipmatrix,
         CORE::GEN::pairedvector<int, double>& dwear);
 

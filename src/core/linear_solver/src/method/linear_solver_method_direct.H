@@ -38,7 +38,7 @@ namespace CORE::LINEAR_SOLVER
      */
     virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
 
     //! Actual call to the underlying amesos solver
     virtual int Solve();
@@ -73,7 +73,7 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<EpetraExt::LinearProblem_Reindex2> reindexer_;
 
     //! Krylov projector if necessary
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
   };
 }  // namespace CORE::LINEAR_SOLVER
 

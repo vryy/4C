@@ -133,7 +133,7 @@ INPAR::STR::STC_Scale STR::TIMINT::Explicit::GetSTCAlgo()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
 {
   CheckInitSetup();
   dserror("GetSTCMat() has not been tested for explicit time integration.");
@@ -192,7 +192,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
 {
   dserror("SystemMatrix() is not available for explicit time integration");
   return Teuchos::null;
@@ -201,7 +201,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMatrix()
 {
   dserror("BlockSystemMatrix() is not available for explicit time integration");
   return Teuchos::null;
@@ -210,8 +210,9 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+void STR::TIMINT::Explicit::UseBlockMatrix(
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
 {
   dserror("UseBlockMatrix() is not available for explicit time integration");
 }

@@ -279,11 +279,11 @@ void PostVtuWriterNode::WriteDofResultStep(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = LINALG::CreateVector(*rowmap, false);
+    Teuchos::RCP<Epetra_Vector> dofvec = CORE::LINALG::CreateVector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
-    ghostedData = LINALG::CreateVector(*colmap, true);
-    LINALG::Export(*dofvec, *ghostedData);
+    ghostedData = CORE::LINALG::CreateVector(*colmap, true);
+    CORE::LINALG::Export(*dofvec, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -366,7 +366,7 @@ void PostVtuWriterNode::WriteNodalResultStep(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    LINALG::Export(*data, *ghostedData);
+    CORE::LINALG::Export(*data, *ghostedData);
   }
 
   int ncomponents = numdf;

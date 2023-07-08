@@ -270,7 +270,7 @@ void DRT::ELEMENTS::Torsion3::t3_energy(
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)
-  LINALG::Matrix<9, 1> xcurr;
+  CORE::LINALG::Matrix<9, 1> xcurr;
 
   // current nodal position
   for (int j = 0; j < 3; ++j)
@@ -281,11 +281,11 @@ void DRT::ELEMENTS::Torsion3::t3_energy(
   }
 
   // auxiliary vector for both internal force and stiffness matrix
-  LINALG::Matrix<6, 1> aux;
+  CORE::LINALG::Matrix<6, 1> aux;
   for (int j = 0; j < 6; ++j) aux(j) = xcurr(j + 3) - xcurr(j);
 
   // current length of vectors 1-->2  and 2-->3
-  LINALG::Matrix<2, 1> lcurr;
+  CORE::LINALG::Matrix<2, 1> lcurr;
   for (int j = 0; j < 2; ++j)
     lcurr(j) = sqrt(pow(aux(3 * j), 2) + pow(aux(3 * j + 1), 2) + pow(aux(3 * j + 2), 2));
 
@@ -335,7 +335,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)
-  LINALG::Matrix<9, 1> xcurr(true);
+  CORE::LINALG::Matrix<9, 1> xcurr(true);
 
   // current nodal position
   for (int j = 0; j < 3; ++j)
@@ -346,11 +346,11 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
   }
 
   // auxiliary vector for both internal force and stiffness matrix
-  LINALG::Matrix<6, 1> aux(true);
+  CORE::LINALG::Matrix<6, 1> aux(true);
   for (int j = 0; j < 6; ++j) aux(j) = xcurr(j + 3) - xcurr(j);
 
   // current length of vectors 1-->2  and 2-->3
-  LINALG::Matrix<2, 1> lcurr(true);
+  CORE::LINALG::Matrix<2, 1> lcurr(true);
   for (int j = 0; j < 2; ++j)
     lcurr(j) = sqrt(pow(aux(3 * j), 2) + pow(aux(3 * j + 1), 2) + pow(aux(3 * j + 2), 2));
 
@@ -384,7 +384,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
 
 
   // variation of theta (equation 3.4)
-  LINALG::Matrix<9, 1> grtheta;
+  CORE::LINALG::Matrix<9, 1> grtheta;
 
   for (int j = 0; j < 3; ++j)
   {  // virual displacement of node 1 and 3
@@ -397,8 +397,8 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     grtheta(3 + j) = -grtheta(j) - grtheta(j + 6);
 
   // auxiliary matrix for stiffness matrix (equation 3.9 and equation 3.10)
-  LINALG::Matrix<6, 3> A;
-  LINALG::Matrix<6, 3> B;
+  CORE::LINALG::Matrix<6, 3> A;
+  CORE::LINALG::Matrix<6, 3> B;
 
   for (int j = 0; j < 3; ++j)
   {

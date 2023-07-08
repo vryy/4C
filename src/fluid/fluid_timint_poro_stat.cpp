@@ -14,7 +14,8 @@
 
 
 FLD::TimIntPoroStat::TimIntPoroStat(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),

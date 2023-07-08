@@ -126,7 +126,7 @@ namespace BEAMINTERACTION
     };
 
     /// time step for stochastic events concerning crosslinking
-    LINALG::Matrix<3, 2> const& LinkerInitializationBox() const
+    CORE::LINALG::Matrix<3, 2> const& LinkerInitializationBox() const
     {
       CheckInitSetup();
       return init_box_;
@@ -182,7 +182,7 @@ namespace BEAMINTERACTION
     /// time step for stochastic events concerning crosslinking
     double deltatime_;
     /// box corners
-    LINALG::Matrix<3, 2> init_box_;
+    CORE::LINALG::Matrix<3, 2> init_box_;
     /// number of crosslinker that are initially set
     std::map<int, int> maxnum_init_crosslinker_pertype_;
     /// number of crosslinkers in the simulated volume

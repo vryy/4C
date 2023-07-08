@@ -36,14 +36,14 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -190,14 +190,14 @@ namespace ADAPTER
     [[nodiscard]] virtual const Epetra_Map& DomainMap() const = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
-    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
+    virtual void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) = 0;
 
     /// return contact/meshtying bridge
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() = 0;
@@ -234,10 +234,10 @@ namespace ADAPTER
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
     /// Access to scaling matrix for STC
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// expand dirichlet bc map
     virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
@@ -446,7 +446,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     //@}
 
@@ -578,7 +578,7 @@ namespace ADAPTER
      *
      * \sa CreateLinearSolver()
      */
-    Teuchos::RCP<LINALG::Solver> CreateContactMeshtyingSolver(
+    Teuchos::RCP<CORE::LINALG::Solver> CreateContactMeshtyingSolver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
@@ -588,7 +588,7 @@ namespace ADAPTER
      * structural problems, whenever there is no contact.
      *
      * To create the solver, we use the ID of the solver block to access the solver parameter list.
-     * This is then used to create a LINALG::Solver.
+     * This is then used to create a CORE::LINALG::Solver.
      *
      * We also compute the nullspace information if this is required by the chosen solver.
      *
@@ -599,7 +599,7 @@ namespace ADAPTER
      *
      * \sa CreateContactMeshtyingSolver()
      */
-    Teuchos::RCP<LINALG::Solver> CreateLinearSolver(
+    Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(
         Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver

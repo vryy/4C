@@ -130,12 +130,13 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// evaluate chemical potential
-    virtual void ChemPotential(const LINALG::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
-        const double porosity,                                        ///< (i) porosity
-        const double press,  ///< (i) pressure at gauss point
-        const double J,      ///< (i) determinant of jacobian at gauss point
-        int EleID,           ///< (i) element GID
-        double& psi,         ///< (o) chemical potential
+    virtual void ChemPotential(
+        const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< (i) green lagrange strain
+        const double porosity,                       ///< (i) porosity
+        const double press,                          ///< (i) pressure at gauss point
+        const double J,                              ///< (i) determinant of jacobian at gauss point
+        int EleID,                                   ///< (i) element GID
+        double& psi,                                 ///< (o) chemical potential
         const int gp);
 
     /// Update of GP data (e.g., history variables)

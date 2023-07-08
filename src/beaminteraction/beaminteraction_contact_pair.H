@@ -19,12 +19,12 @@
 // forward declaration ...
 class Epetra_Vector;
 class Epetra_FEVector;
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
@@ -85,10 +85,10 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22) = 0;
+    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<BeamContactPair> Create(std::vector<DRT::Element const*> const& ele_ptrs,
@@ -162,10 +162,10 @@ namespace BEAMINTERACTION
     \brief Get coordinates of all active contact points on element1 and element2
     */
     virtual void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     virtual void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
     \brief Get all (scalar) contact forces of this contact pair
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
     */
     virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const = 0;
 
-    //  virtual LINALG::Matrix< 3, 1,TYPE>* GetNormalOld()=0;
+    //  virtual CORE::LINALG::Matrix< 3, 1,TYPE>* GetNormalOld()=0;
     //
     //  /*!
     //    \Check, if there is a difference between the result of the new and old gap definition,
@@ -246,7 +246,7 @@ namespace BEAMINTERACTION
      */
     virtual void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 
     /**
@@ -271,7 +271,7 @@ namespace BEAMINTERACTION
     virtual void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector){};
 
     /**
@@ -282,8 +282,9 @@ namespace BEAMINTERACTION
      * @param local_constraint (out) Local constraint vector.
      * @return True if pair is in contact.
      */
-    virtual bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
+    virtual bool EvaluateDM(CORE::LINALG::SerialDenseMatrix& local_D,
+        CORE::LINALG::SerialDenseMatrix& local_M, CORE::LINALG::SerialDenseVector& local_kappa,
+        CORE::LINALG::SerialDenseVector& local_constraint)
     {
       return false;
     }
@@ -302,9 +303,9 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     virtual void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 

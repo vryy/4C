@@ -20,7 +20,7 @@ namespace ADAPTER
   class Structure;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -133,10 +133,10 @@ namespace ADAPTER
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx) = 0;
 
     //! get the extractor
-    virtual Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const = 0;
 
     //! get the monolithic system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
 
     //! get structure field
     virtual const Teuchos::RCP<ADAPTER::Structure>& StructureField() = 0;
@@ -145,11 +145,11 @@ namespace ADAPTER
     virtual const Teuchos::RCP<ADAPTER::PoroFluidMultiphaseWrapper>& FluidField() = 0;
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces(Teuchos::RCP<LINALG::Solver>& solver) = 0;
+    virtual void BuildBlockNullSpaces(Teuchos::RCP<CORE::LINALG::Solver>& solver) = 0;
 
     //! build the block null spaces
     virtual void BuildArteryBlockNullSpace(
-        Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum) = 0;
+        Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum) = 0;
   };
 }  // namespace ADAPTER
 

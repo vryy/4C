@@ -127,7 +127,7 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
         MORTAR::MortarElement* element =
             dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
-        LINALG::SerialDenseMatrix coord(3, nnodes);
+        CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
         double color = (double)element->Owner();
 
@@ -986,8 +986,8 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
 void CONTACT::CoInterface::FDCheckNormalDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1251,8 +1251,8 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1740,8 +1740,8 @@ void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
 void CONTACT::CoInterface::FDCheckMortarDDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -2010,8 +2010,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
 void CONTACT::CoInterface::FDCheckMortarMDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for M-Matrix entries
@@ -2278,8 +2278,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
 void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -2511,8 +2511,8 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTXI()
 void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -2745,8 +2745,8 @@ void CONTACT::CoInterface::FDCheckSlipIncrDerivTETA()
 void CONTACT::CoInterface::FDCheckAlphaDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -3130,8 +3130,8 @@ void CONTACT::CoInterface::FDCheckAlphaDeriv()
 void CONTACT::CoInterface::FDCheckGapDerivLTL()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -3523,8 +3523,8 @@ void CONTACT::CoInterface::FDCheckGapDerivLTL()
 void CONTACT::CoInterface::FDCheckJumpDerivLTL()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -3916,8 +3916,8 @@ void CONTACT::CoInterface::FDCheckJumpDerivLTL()
 void CONTACT::CoInterface::FDCheckGapDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
@@ -4299,8 +4299,8 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
 void CONTACT::CoInterface::FDCheckTangLMDeriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for tangential LM values
@@ -4863,14 +4863,14 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
  | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckStickDeriv(
-    LINALG::SparseMatrix& linstickLMglobal, LINALG::SparseMatrix& linstickDISglobal)
+    CORE::LINALG::SparseMatrix& linstickLMglobal, CORE::LINALG::SparseMatrix& linstickDISglobal)
 {
   // create stream
   std::ostringstream oss;
 
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for values of complementary function C
@@ -5397,11 +5397,11 @@ void CONTACT::CoInterface::FDCheckStickDeriv(
  | fnc. !!! See flags CONSISTENTSTICK / CONSISTENTSLIP                  |
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckSlipDeriv(
-    LINALG::SparseMatrix& linslipLMglobal, LINALG::SparseMatrix& linslipDISglobal)
+    CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // information from interface contact parameter list
@@ -6237,8 +6237,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(
 void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
@@ -6523,8 +6523,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracNor()
 void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  Teuchos::RCP<Epetra_Map> snodefullmap = CORE::LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = CORE::LINALG::AllreduceEMap(*mnoderowmap_);
   if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // information from interface contact parameter list

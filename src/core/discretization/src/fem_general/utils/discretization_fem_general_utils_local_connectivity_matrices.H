@@ -583,12 +583,12 @@ namespace CORE::DRT::UTILS
   );
 
   /*!
-  \brief Fills a LINALG::SerialDenseMatrix with parameter space coordinates for each node
+  \brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
          for each discretization type
 
   \return map of parameter space coordinates for all nodes
   */
-  LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
+  CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
       const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
@@ -596,8 +596,9 @@ namespace CORE::DRT::UTILS
   \brief Returns a vector with the surface ID s a point in 3d reference coordinates
   \      is lying on for each discretization type
   */
-  std::vector<int> getSurfaces(const LINALG::Matrix<3, 1>& rst,  ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype           ///< discretization type
+  std::vector<int> getSurfaces(
+      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
+      const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
 
@@ -605,15 +606,16 @@ namespace CORE::DRT::UTILS
    \brief Returns a vector with the line ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
    */
-  std::vector<int> getLines(const LINALG::Matrix<3, 1>& rst,  ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype        ///< discretization type
+  std::vector<int> getLines(
+      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
+      const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
   /*!
   \brief Returns the node ID s a point in 3d reference coordinates
   \      is lying on for each discretization type
   */
-  int getNode(const LINALG::Matrix<3, 1>& rst,          ///< point in reference coordinates
+  int getNode(const CORE::LINALG::Matrix<3, 1>& rst,    ///< point in reference coordinates
       const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
@@ -622,17 +624,17 @@ namespace CORE::DRT::UTILS
   \brief Returns a vector with coordinates in reference system of the cutter element
   \      according to the node Id for each discretization type
   */
-  LINALG::Matrix<3, 1> getNodeCoordinates(const int nodeId,  ///< node Id
-      const ::DRT::Element::DiscretizationType distype       ///< discretization type
+  CORE::LINALG::Matrix<3, 1> getNodeCoordinates(const int nodeId,  ///< node Id
+      const ::DRT::Element::DiscretizationType distype             ///< discretization type
   );
 
   /*!
   \brief Returns a with coordinates in reference system of the cutter element
   \      according to the line Id for each discretization type
   */
-  LINALG::Matrix<3, 1> getLineCoordinates(const int lineId,  ///< line ID
-      const double lineCoord,                                ///< line coordinate
-      const ::DRT::Element::DiscretizationType distype       ///< discretization type
+  CORE::LINALG::Matrix<3, 1> getLineCoordinates(const int lineId,  ///< line ID
+      const double lineCoord,                                      ///< line coordinate
+      const ::DRT::Element::DiscretizationType distype             ///< discretization type
   );
 
   /*!
@@ -1546,9 +1548,9 @@ namespace CORE::DRT::UTILS
    * @param[out] pos  local center position
    */
   template <unsigned dim>
-  LINALG::Matrix<dim, 1> getLocalCenterPosition(
+  CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
       const ::DRT::Element::DiscretizationType distype,  ///< shape of the element
-      LINALG::Matrix<dim, 1>& pos                        ///< center position
+      CORE::LINALG::Matrix<dim, 1>& pos                  ///< center position
   )
   {
     switch (distype)
@@ -1623,11 +1625,11 @@ namespace CORE::DRT::UTILS
    * \return local center position.
    */
   template <unsigned dim>
-  inline LINALG::Matrix<dim, 1> getLocalCenterPosition(
+  inline CORE::LINALG::Matrix<dim, 1> getLocalCenterPosition(
       const ::DRT::Element::DiscretizationType distype  ///< shape of the element
   )
   {
-    LINALG::Matrix<dim, 1> pos(false);
+    CORE::LINALG::Matrix<dim, 1> pos(false);
     getLocalCenterPosition(distype, pos);
     return pos;
   }

@@ -79,17 +79,17 @@ namespace DRT
 
      protected:
       //! array for shape functions
-      LINALG::Matrix<iel_, 1> funct_;
+      CORE::LINALG::Matrix<iel_, 1> funct_;
       //! array for shape function derivatives w.r.t s
-      LINALG::Matrix<1, iel_> deriv_;
+      CORE::LINALG::Matrix<1, iel_> deriv_;
       //! transposed array for shape function derivatives w.r.t s
-      LINALG::Matrix<iel_, 1> tderiv_;
+      CORE::LINALG::Matrix<iel_, 1> tderiv_;
       //! transposed jacobian "dx/ds"
-      LINALG::Matrix<1, 1> xjm_;
+      CORE::LINALG::Matrix<1, 1> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<1, 1> xji_;
+      CORE::LINALG::Matrix<1, 1> xji_;
       //! global derivatives of shape functions w.r.t s
-      LINALG::Matrix<2, iel_> derxy_;
+      CORE::LINALG::Matrix<2, iel_> derxy_;
     };
 
   }  // namespace ELEMENTS

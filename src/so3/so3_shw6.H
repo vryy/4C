@@ -225,15 +225,15 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //! Compute stiffness and mass matrix
-      virtual void soshw6_nlnstiffmass(std::vector<int>& lm,      // location matrix
-          std::vector<double>& disp,                              // current displacements
-          std::vector<double>& residual,                          // current residual displ
-          LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
-          LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
-          LINALG::Matrix<NUMDOF_WEG6, 1>* force,                  // element internal force vector
-          LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,              // structure force
-          LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-          LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+      virtual void soshw6_nlnstiffmass(std::vector<int>& lm,            // location matrix
+          std::vector<double>& disp,                                    // current displacements
+          std::vector<double>& residual,                                // current residual displ
+          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   // element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force,      // element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,  // structure force
+          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
           Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,   // stress output option
           const INPAR::STR::StrainType iostrain);  // strain output option
@@ -243,19 +243,19 @@ namespace DRT
 
       //! Setup ANS interpolation (shear and trapezoidal)
       void soshw6_anssetup(
-          const LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  ///< material element coords
-          const LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  ///< current element coords
-          std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
+          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  ///< material element coords
+          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  ///< current element coords
+          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
               deriv_sp,  ///< derivs eval. at all sampling points
-          std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
+          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
               jac_sps,  ///< jac at all sampling points
-          std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
+          std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>>&
               jac_cur_sps,  ///< current jac at all sampling points
-          LINALG::Matrix<num_ans * num_sp, NUMDOF_WEG6>& B_ans_loc);  ///< modified B
+          CORE::LINALG::Matrix<num_ans * num_sp, NUMDOF_WEG6>& B_ans_loc);  ///< modified B
 
       //! Transformation matrix parameter->material space
-      void soshw6_evaluateT(const LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
+      void soshw6_evaluateT(const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
 
       //! EAS technology, init
       void soshw6_easinit();
@@ -264,15 +264,15 @@ namespace DRT
       void soshw6_eassetup(
           std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
           double& detJ0,                                 // det of Jacobian at origin
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
-              T0invT,                                              // maps M(origin) local to global
-          const LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+              T0invT,  // maps M(origin) local to global
+          const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords
 
       //! Evaluate Cauchy stress (mapping with disp_based F per default)
-      void soshw6_Cauchy(LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress, const int gp,
-          const LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
+      void soshw6_Cauchy(CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,
+          const int gp, const CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress);
 
       //! Reorient wedge to optimally align material with parameter space
       int soshw6_findoptparmap();

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of eigenvalue methods for namespace LINALG
+\brief A collection of eigenvalue methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -14,10 +14,10 @@
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenValues(
+void CORE::LINALG::SymmetricEigenValues(
     Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
 {
-  LINALG::SymmetricEigen(A, L, 'N', postproc);
+  CORE::LINALG::SymmetricEigen(A, L, 'N', postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -25,17 +25,17 @@ void LINALG::SymmetricEigenValues(
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenProblem(
+void CORE::LINALG::SymmetricEigenProblem(
     Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
 {
-  LINALG::SymmetricEigen(A, L, 'V', postproc);
+  CORE::LINALG::SymmetricEigen(A, L, 'V', postproc);
 }
 
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigen(
+void CORE::LINALG::SymmetricEigen(
     Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const char jobz, const bool postproc)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
@@ -88,7 +88,7 @@ void LINALG::SymmetricEigen(
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& B)
+double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& B)
 {
   Epetra_SerialDenseMatrix tmpA(A);
   Epetra_SerialDenseMatrix tmpB(B);

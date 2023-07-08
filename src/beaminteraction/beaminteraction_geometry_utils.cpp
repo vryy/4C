@@ -21,22 +21,22 @@
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const& r_slave,
+bool BEAMINTERACTION::GEO::PointToCurveProjection(CORE::LINALG::Matrix<3, 1, T> const& r_slave,
     T& xi_master, double const& xi_master_initial_guess,
-    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& master_centerline_dof_values,
+    const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T>& master_centerline_dof_values,
     const DRT::Element::DiscretizationType& master_distype, double master_ele_ref_length)
 {
   // vectors for shape functions values and their derivatives
-  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i(true);
-  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xi(true);
-  LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xixi(true);
+  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i(true);
+  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xi(true);
+  CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T> N_i_xixi(true);
 
   // coords and derivatives of the two contacting points
-  LINALG::Matrix<3, 1, T> r_master(true);
-  LINALG::Matrix<3, 1, T> r_xi_master(true);
-  LINALG::Matrix<3, 1, T> r_xixi_master(true);
+  CORE::LINALG::Matrix<3, 1, T> r_master(true);
+  CORE::LINALG::Matrix<3, 1, T> r_xi_master(true);
+  CORE::LINALG::Matrix<3, 1, T> r_xixi_master(true);
 
-  LINALG::Matrix<3, 1, T> delta_r(true);  // = r1-r2
+  CORE::LINALG::Matrix<3, 1, T> delta_r(true);  // = r1-r2
 
   // initialize function f and Jacobian df for Newton iteration
   T f = 0.0;
@@ -139,8 +139,8 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const&
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::EvaluatePointToCurveOrthogonalityCondition(T& f,
-    const LINALG::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
-    const LINALG::Matrix<3, 1, T>& r_xi_master)
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xi_master)
 {
   // reset f
   f = 0.0;
@@ -156,8 +156,9 @@ void BEAMINTERACTION::GEO::EvaluatePointToCurveOrthogonalityCondition(T& f,
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 bool BEAMINTERACTION::GEO::EvaluateLinearizationPointToCurveOrthogonalityCondition(T& df,
-    const LINALG::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
-    const LINALG::Matrix<3, 1, T>& r_xi_master, const LINALG::Matrix<3, 1, T>& r_xixi_master)
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r, const double norm_delta_r,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixi_master)
 {
   // reset df
   df = 0.0;
@@ -182,13 +183,13 @@ bool BEAMINTERACTION::GEO::EvaluateLinearizationPointToCurveOrthogonalityConditi
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster(
-    LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_slaveDofs,
-    LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_masterDofs,
-    const LINALG::Matrix<3, 1, T>& delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master,
-    const LINALG::Matrix<3, 1, T>& r_xixi_master,
-    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, double>& N_slave,
-    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_master,
-    const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi_master)
+    CORE::LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_slaveDofs,
+    CORE::LINALG::Matrix<1, 3 * numnodes * numnodalvalues, T>& lin_xi_master_masterDofs,
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r, const CORE::LINALG::Matrix<3, 1, T>& r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixi_master,
+    const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, double>& N_slave,
+    const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_master,
+    const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi_master)
 {
   const unsigned int dim1 = 3 * numnodes * numnodalvalues;
   const unsigned int dim2 = 3 * numnodes * numnodalvalues;
@@ -202,17 +203,17 @@ void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoord
 
   /* partial derivative of the orthogonality condition with respect to primary Dofs defining
    * slave point and master curve */
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
       orthogon_condition_partial_r_slave, r_xi_master);
 
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
       orthogon_condition_partial_r_master, r_xi_master);
 
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
       orthogon_condition_partial_r_xi_master, delta_r);
@@ -245,10 +246,11 @@ void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoord
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs(
-    LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
-    LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
-    LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master, const LINALG::Matrix<3, 1, T>& delta_r,
-    const LINALG::Matrix<3, 1, T>& r_xi_master, const LINALG::Matrix<3, 1, T>& r_xixi_master)
+    CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
+    CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
+    CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r, const CORE::LINALG::Matrix<3, 1, T>& r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixi_master)
 {
   /* partial derivative of the orthogonality condition with respect to parameter coordinate on
    * master xi_master */
@@ -259,17 +261,17 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
 
   /* partial derivative of the orthogonality condition with respect to primary Dofs defining
    * slave point and master curve */
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_slave(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
       orthogon_condition_partial_r_slave, r_xi_master);
 
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_master(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
       orthogon_condition_partial_r_master, r_xi_master);
 
-  LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
+  CORE::LINALG::Matrix<1, 3, T> orthogon_condition_partial_r_xi_master(true);
 
   CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
       orthogon_condition_partial_r_xi_master, delta_r);
@@ -289,29 +291,30 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs(
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_slave,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xixi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_slave,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xixi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_slave,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xixi_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_slave,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_master,
-    LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_xi_master,
-    const LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
-    const LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
-    const LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
-    const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_slave,
-    const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_master,
-    const LINALG::Matrix<3, 3, T>& delta_r_deriv_r_xi_master,
-    const LINALG::Matrix<3, 1, T>& delta_r, const LINALG::Matrix<3, 1, T>& r_xi_master,
-    const LINALG::Matrix<3, 1, T>& r_xixi_master, const LINALG::Matrix<3, 1, T>& r_xixixi_master)
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_slave,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_slave_partial_r_xixi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_slave,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_master_partial_r_xixi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_slave,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xi_master_partial_r_xixi_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_slave,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_master,
+    CORE::LINALG::Matrix<3, 3, T>& xi_master_partial_r_xixi_master_partial_r_xi_master,
+    const CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_slave,
+    const CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_master,
+    const CORE::LINALG::Matrix<1, 3, T>& xi_master_partial_r_xi_master,
+    const CORE::LINALG::Matrix<3, 3, T>& delta_r_deriv_r_slave,
+    const CORE::LINALG::Matrix<3, 3, T>& delta_r_deriv_r_master,
+    const CORE::LINALG::Matrix<3, 3, T>& delta_r_deriv_r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r, const CORE::LINALG::Matrix<3, 1, T>& r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixixi_master)
 {
   //  Fixme: the (out) variables should be called (...)_partial_(...)_deriv_(...) !
 
@@ -333,14 +336,14 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
   //    (variation of r_xi_master) according to the chain rule
 
 
-  LINALG::Matrix<3, 3, T> unit_matrix(true);
+  CORE::LINALG::Matrix<3, 3, T> unit_matrix(true);
   for (unsigned int i = 0; i < 3; ++i) unit_matrix(i, i) = 1.0;
 
-  LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_r_xi_master(true);
-  LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_r_xixi_master(true);
-  LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_delta_r(true);
-  LINALG::Matrix<3, 3, T> delta_r_tensorproduct_r_xixi_master(true);
-  LINALG::Matrix<3, 3, T> delta_r_tensorproduct_delta_r(true);
+  CORE::LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_r_xi_master(true);
+  CORE::LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_r_xixi_master(true);
+  CORE::LINALG::Matrix<3, 3, T> r_xi_master_tensorproduct_delta_r(true);
+  CORE::LINALG::Matrix<3, 3, T> delta_r_tensorproduct_r_xixi_master(true);
+  CORE::LINALG::Matrix<3, 3, T> delta_r_tensorproduct_delta_r(true);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
     for (unsigned int icol = 0; icol < 3; ++icol)
@@ -386,7 +389,7 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
   // 2)
   // add contributions from linearization of master parameter coordinate xi_master
   // to [.]_deriv_r_xi_master expressions (according to chain rule)
-  LINALG::Matrix<3, 1, T> tmp_vec2;
+  CORE::LINALG::Matrix<3, 1, T> tmp_vec2;
   tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xi_master, r_xixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
@@ -588,8 +591,9 @@ void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivParameterCoordMaster(
-    T& orthogon_condition_partial_xi_master, const LINALG::Matrix<3, 1, T>& delta_r,
-    const LINALG::Matrix<3, 1, T>& r_xi_master, const LINALG::Matrix<3, 1, T>& r_xixi_master)
+    T& orthogon_condition_partial_xi_master, const CORE::LINALG::Matrix<3, 1, T>& delta_r,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xixi_master)
 {
   orthogon_condition_partial_xi_master = -r_xi_master.Dot(r_xi_master) + delta_r.Dot(r_xixi_master);
 
@@ -604,8 +608,8 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivPa
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivClPosSlave(
-    LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
-    const LINALG::Matrix<3, 1, T>& r_xi_master)
+    CORE::LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xi_master)
 {
   orthogon_condition_partial_r_slave.UpdateT(r_xi_master);
 }
@@ -614,8 +618,8 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivClPosMaster(
-    LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
-    const LINALG::Matrix<3, 1, T>& r_xi_master)
+    CORE::LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
+    const CORE::LINALG::Matrix<3, 1, T>& r_xi_master)
 {
   orthogon_condition_partial_r_master.UpdateT(-1.0, r_xi_master);
 }
@@ -624,8 +628,8 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivClTangentMaster(
-    LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
-    const LINALG::Matrix<3, 1, T>& delta_r)
+    CORE::LINALG::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
+    const CORE::LINALG::Matrix<3, 1, T>& delta_r)
 {
   orthogon_condition_partial_r_xi_master.UpdateT(delta_r);
 }
@@ -633,8 +637,8 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void BEAMINTERACTION::GEO::CalcEnclosedAngle(
-    T& angle, T& cosine_angle, const LINALG::Matrix<3, 1, T>& a, const LINALG::Matrix<3, 1, T>& b)
+void BEAMINTERACTION::GEO::CalcEnclosedAngle(T& angle, T& cosine_angle,
+    const CORE::LINALG::Matrix<3, 1, T>& a, const CORE::LINALG::Matrix<3, 1, T>& b)
 {
   if (CORE::FADUTILS::VectorNorm(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm(b) < 1.0e-12)
     dserror("Cannot determine angle for zero vector!");
@@ -662,162 +666,170 @@ void BEAMINTERACTION::GEO::CalcEnclosedAngle(
 
 // explicit template instantiations
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 1, double>(
-    LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const LINALG::Matrix<6, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
+    const CORE::LINALG::Matrix<6, 1, double>&, const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<3, 1, double>(
-    LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const LINALG::Matrix<9, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
+    const CORE::LINALG::Matrix<9, 1, double>&, const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<4, 1, double>(
-    LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
+    const CORE::LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<5, 1, double>(
-    LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const LINALG::Matrix<15, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
+    const CORE::LINALG::Matrix<15, 1, double>&, const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 2, double>(
-    LINALG::Matrix<3, 1, double> const&, double&, double const&,
-    const LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
+    CORE::LINALG::Matrix<3, 1, double> const&, double&, double const&,
+    const CORE::LINALG::Matrix<12, 1, double>&, const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 1, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
-    double const&, const LINALG::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
+    double const&, const CORE::LINALG::Matrix<6, 1, Sacado::Fad::DFad<double>>&,
     const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<3, 1, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
-    double const&, const LINALG::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
+    double const&, const CORE::LINALG::Matrix<9, 1, Sacado::Fad::DFad<double>>&,
     const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<4, 1, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
-    double const&, const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
+    double const&, const CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
     const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<5, 1, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
-    double const&, const LINALG::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
+    double const&, const CORE::LINALG::Matrix<15, 1, Sacado::Fad::DFad<double>>&,
     const DRT::Element::DiscretizationType&, double);
 template bool BEAMINTERACTION::GEO::PointToCurveProjection<2, 2, Sacado::Fad::DFad<double>>(
-    LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
-    double const&, const LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>> const&, Sacado::Fad::DFad<double>&,
+    double const&, const CORE::LINALG::Matrix<12, 1, Sacado::Fad::DFad<double>>&,
     const DRT::Element::DiscretizationType&, double);
 
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    1, double>(LINALG::Matrix<1, 6, double>&, LINALG::Matrix<1, 6, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 6, double>&,
-    const LINALG::Matrix<3, 6, double>&, const LINALG::Matrix<3, 6, double>&);
+    1, double>(CORE::LINALG::Matrix<1, 6, double>&, CORE::LINALG::Matrix<1, 6, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 6, double>&,
+    const CORE::LINALG::Matrix<3, 6, double>&, const CORE::LINALG::Matrix<3, 6, double>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<3,
-    1, double>(LINALG::Matrix<1, 9, double>&, LINALG::Matrix<1, 9, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 9, double>&,
-    const LINALG::Matrix<3, 9, double>&, const LINALG::Matrix<3, 9, double>&);
+    1, double>(CORE::LINALG::Matrix<1, 9, double>&, CORE::LINALG::Matrix<1, 9, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 9, double>&,
+    const CORE::LINALG::Matrix<3, 9, double>&, const CORE::LINALG::Matrix<3, 9, double>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<4,
-    1, double>(LINALG::Matrix<1, 12, double>&, LINALG::Matrix<1, 12, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 12, double>&,
-    const LINALG::Matrix<3, 12, double>&, const LINALG::Matrix<3, 12, double>&);
+    1, double>(CORE::LINALG::Matrix<1, 12, double>&, CORE::LINALG::Matrix<1, 12, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 12, double>&,
+    const CORE::LINALG::Matrix<3, 12, double>&, const CORE::LINALG::Matrix<3, 12, double>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<5,
-    1, double>(LINALG::Matrix<1, 15, double>&, LINALG::Matrix<1, 15, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 15, double>&,
-    const LINALG::Matrix<3, 15, double>&, const LINALG::Matrix<3, 15, double>&);
+    1, double>(CORE::LINALG::Matrix<1, 15, double>&, CORE::LINALG::Matrix<1, 15, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 15, double>&,
+    const CORE::LINALG::Matrix<3, 15, double>&, const CORE::LINALG::Matrix<3, 15, double>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    2, double>(LINALG::Matrix<1, 12, double>&, LINALG::Matrix<1, 12, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 12, double>&,
-    const LINALG::Matrix<3, 12, double>&, const LINALG::Matrix<3, 12, double>&);
+    2, double>(CORE::LINALG::Matrix<1, 12, double>&, CORE::LINALG::Matrix<1, 12, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 12, double>&,
+    const CORE::LINALG::Matrix<3, 12, double>&, const CORE::LINALG::Matrix<3, 12, double>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    1, Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, const LINALG::Matrix<3, 6, double>&,
-    const LINALG::Matrix<3, 6, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 6, Sacado::Fad::DFad<double>>&);
+    1, Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 6, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 6, double>&,
+    const CORE::LINALG::Matrix<3, 6, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 6, Sacado::Fad::DFad<double>>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<3,
-    1, Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, const LINALG::Matrix<3, 9, double>&,
-    const LINALG::Matrix<3, 9, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 9, Sacado::Fad::DFad<double>>&);
+    1, Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 9, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 9, double>&,
+    const CORE::LINALG::Matrix<3, 9, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 9, Sacado::Fad::DFad<double>>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<4,
-    1, Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, const LINALG::Matrix<3, 12, double>&,
-    const LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
+    1, Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 12, double>&,
+    const CORE::LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<5,
-    1, Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, const LINALG::Matrix<3, 15, double>&,
-    const LINALG::Matrix<3, 15, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 15, Sacado::Fad::DFad<double>>&);
+    1, Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 15, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 15, double>&,
+    const CORE::LINALG::Matrix<3, 15, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 15, Sacado::Fad::DFad<double>>&);
 template void BEAMINTERACTION::GEO::CalcLinearizationPointToCurveProjectionParameterCoordMaster<2,
-    2, Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&, const LINALG::Matrix<3, 12, double>&,
-    const LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
+    2, Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 12, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 12, double>&,
+    const CORE::LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 12, Sacado::Fad::DFad<double>>&);
 
 template void
 BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<double>(
-    LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&, LINALG::Matrix<1, 3, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&);
+    CORE::LINALG::Matrix<1, 3, double>&, CORE::LINALG::Matrix<1, 3, double>&,
+    CORE::LINALG::Matrix<1, 3, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&);
 template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartialDerivs<
-    Sacado::Fad::DFad<double>>(LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+    Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
 template void
 BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<double>(
-    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-    LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&, LINALG::Matrix<3, 3, double>&,
-    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<1, 3, double>&,
-    const LINALG::Matrix<1, 3, double>&, const LINALG::Matrix<3, 3, double>&,
-    const LINALG::Matrix<3, 3, double>&, const LINALG::Matrix<3, 3, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&,
-    const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&);
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, CORE::LINALG::Matrix<3, 3, double>&,
+    CORE::LINALG::Matrix<3, 3, double>&, const CORE::LINALG::Matrix<1, 3, double>&,
+    const CORE::LINALG::Matrix<1, 3, double>&, const CORE::LINALG::Matrix<1, 3, double>&,
+    const CORE::LINALG::Matrix<3, 3, double>&, const CORE::LINALG::Matrix<3, 3, double>&,
+    const CORE::LINALG::Matrix<3, 3, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&,
+    const CORE::LINALG::Matrix<3, 1, double>&);
 template void BEAMINTERACTION::GEO::CalcPointToCurveProjectionParameterCoordMasterPartial2ndDerivs<
-    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+    Sacado::Fad::DFad<double>>(CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<1, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
 
-template void BEAMINTERACTION::GEO::CalcEnclosedAngle<double>(
-    double&, double&, const LINALG::Matrix<3, 1, double>&, const LINALG::Matrix<3, 1, double>&);
+template void BEAMINTERACTION::GEO::CalcEnclosedAngle<double>(double&, double&,
+    const CORE::LINALG::Matrix<3, 1, double>&, const CORE::LINALG::Matrix<3, 1, double>&);
 template void BEAMINTERACTION::GEO::CalcEnclosedAngle<Sacado::Fad::DFad<double>>(
     Sacado::Fad::DFad<double>&, Sacado::Fad::DFad<double>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
-    const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
+    const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&);

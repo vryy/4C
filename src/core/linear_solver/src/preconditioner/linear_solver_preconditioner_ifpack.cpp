@@ -4,7 +4,7 @@
 \brief Declaration
 \level 0
 
-\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief CORE::LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 

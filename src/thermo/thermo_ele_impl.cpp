@@ -158,8 +158,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
-    etempn_.Update(etempn);                                                  // copy
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
+    etempn_.Update(etempn);                                                        // copy
   }
 
   if (discretization.HasState(0, "last temperature"))
@@ -169,8 +169,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
     DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
     // build the element temperature
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
-    etemp_.Update(etemp);                                                  // copy
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
+    etemp_.Update(etemp);                                                        // copy
   }
 
   double time = 0.0;
@@ -204,9 +204,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   if (action == THR::calc_thermo_fintcond)
   {
     // set views
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
-        elemat1_epetra.A(), true);                                             // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
+        elemat1_epetra.A(), true);                                                   // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // ecapa, efext, efcap not needed for this action
     // econd: conductivity matrix
     // etang: tangent of thermal problem.
@@ -219,7 +219,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_fint)
   {
     // set views
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // etang, ecapa, efext, efcap not needed for this action
 
     EvaluateTangCapaFint(ele, time, discretization, la, nullptr, nullptr, nullptr, &efint, params);
@@ -231,9 +231,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_fintcapa)
   {
     // set views
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
-        elemat2_epetra.A(), true);                                             // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
+        elemat2_epetra.A(), true);                                                   // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // etang, efext, efcap not needed for this action
 
     EvaluateTangCapaFint(ele, time, discretization, la, nullptr, &ecapa, nullptr, &efint, params);
@@ -277,11 +277,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_finttang)
   {
     // set views
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
         elemat1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(true);
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(elevec3_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(true);
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(elevec3_epetra.A(), true);  // view only!
 
     // etang: effective dynamic tangent of thermal problem
     // --> etang == k_{T,effdyn}^{(e)} = timefac_capa ecapa + timefac_cond econd
@@ -290,7 +290,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
     // helper matrix to store partial dC/dT*(T_{n+1} - T_n) linearization of capacity
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapalin(true);
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapalin(true);
 
     EvaluateTangCapaFint(ele, time, discretization, la, &etang, &ecapa, &ecapalin, &efint, params);
 
@@ -307,7 +307,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     // explicitly insert capacity matrix into corresponding Epetra matrix if existing
     if (elemat2_epetra.A() != nullptr)
     {
-      LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_export(
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_export(
           elemat2_epetra.A(), true);  // view only!
       ecapa_export.Update(ecapa);
     }
@@ -375,7 +375,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
           // fill the vector myratem with the global values of ratem
           DRT::UTILS::ExtractMyValues(*ratem, myratem, la[0].lm_);
           // build the element mid-temperature rates
-          LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(myratem.data(), true);  // view only!
+          CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> eratem(
+              myratem.data(), true);  // view only!
           efcap.Multiply(ecapa, eratem);
         }  // ratem != Teuchos::null
         break;
@@ -404,8 +405,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     Teuchos::RCP<std::vector<char>> tempgraddata =
         params.get<Teuchos::RCP<std::vector<char>>>("tempgrad");
     // working arrays
-    LINALG::Matrix<nquad_, nsd_> eheatflux(false);
-    LINALG::Matrix<nquad_, nsd_> etempgrad(false);
+    CORE::LINALG::Matrix<nquad_, nsd_> eheatflux(false);
+    CORE::LINALG::Matrix<nquad_, nsd_> etempgrad(false);
 
     // if ele is a thermo element --> the THR element method KinType() exists
     auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
@@ -444,11 +445,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::postproc_thermo_heatflux)
   {
     // set views
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
         elemat1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
-        elemat2_epetra.A(), true);                                             // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
+        elemat2_epetra.A(), true);                                                   // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // efext, efcap not needed for this action
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpheatfluxmap =
@@ -456,12 +457,13 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
             "gpheatfluxmap");
     std::string heatfluxtype = params.get<std::string>("heatfluxtype", "ndxyz");
     const int gid = ele->Id();
-    LINALG::Matrix<nquad_, nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(), true);  // view only!
+    CORE::LINALG::Matrix<nquad_, nsd_> gpheatflux(
+        ((*gpheatfluxmap)[gid])->A(), true);  // view only!
 
     // set views to components
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efluxx(elevec1_epetra, true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efluxy(elevec2_epetra, true);  // view only!
-    LINALG::Matrix<nen_ * numdofpernode_, 1> efluxz(elevec3_epetra, true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efluxx(elevec1_epetra, true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efluxy(elevec2_epetra, true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efluxz(elevec3_epetra, true);  // view only!
 
     // catch unknown heatflux types
     bool processed = false;
@@ -546,7 +548,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
 
     // get node coordinates
-    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+        ele, xyze_);
 
     // declaration of internal variables
     double intenergy = 0.0;
@@ -566,7 +569,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
       // call material law => sets capacoeff_
       Materialize(ele, iquad);
 
-      LINALG::Matrix<1, 1> temp(false);
+      CORE::LINALG::Matrix<1, 1> temp(false);
       temp.MultiplyTN(funct_, etempn_);
 
       // internal energy
@@ -583,7 +586,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   // calculate thermal mechanical tangent matrix K_Td
   else if (action == THR::calc_thermo_coupltang)
   {
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_> etangcoupl(
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_> etangcoupl(
         elemat1_epetra.A(), true);
 
     // if it's a TSI problem and there are the current displacements/velocities
@@ -593,7 +596,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   //============================================================================
   else if (action == THR::calc_thermo_error)
   {
-    LINALG::Matrix<nen_ * numdofpernode_, 1> evector(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> evector(elevec1_epetra.A(), true);  // view only!
 
     ComputeError(ele, evector, params);
   }
@@ -622,7 +625,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
   // check length
   if (lm.size() != nen_ * numdofpernode_) dserror("Location vector length does not match!");
   // set views
-  LINALG::Matrix<nen_ * numdofpernode_, 1> efext(elevec1_epetra, true);  // view only!
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efext(elevec1_epetra, true);  // view only!
   // disassemble temperature
   if (discretization.HasState(0, "temperature"))
   {
@@ -630,8 +633,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::RCP<const Epetra_Vector> tempnp = discretization.GetState("temperature");
     if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
     DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, lm);
-    LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
-    etempn_.Update(etemp);                                                  // copy
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
+    etempn_.Update(etemp);                                                        // copy
   }
   // check for the action parameter
   const auto action = DRT::INPUT::get<THR::Action>(params, "action");
@@ -659,10 +662,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, const double& time,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* etang,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapalin,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
   const INPAR::STR::KinemType kintype = therm->KinType();
@@ -717,7 +720,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateTangCapaFint(Element* ele, cons
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params)
 {
   auto* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele);
@@ -757,13 +760,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvaluateCoupledTang(DRT::Element* ele,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::EvaluateFext(
-    DRT::Element* ele,                               // the element whose matrix is calculated
-    const double& time,                              // current time
-    LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
+    DRT::Element* ele,                                     // the element whose matrix is calculated
+    const double& time,                                    // current time
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efext  // external force
 )
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -795,15 +798,16 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
     DRT::Element* ele,   // the element whose matrix is calculated
     const double& time,  // current time
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-        ecapalin,                                    // linearization contribution of capacity
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint  // internal force
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        econd,  // conductivity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        ecapalin,                                          // linearization contribution of capacity
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint  // internal force
 )
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // ------------------------------- integration loop for one element
 
@@ -840,13 +844,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
     if (econd != nullptr)
     {
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
-      LINALG::Matrix<nsd_, nen_> aop(false);  // (3x8)
+      CORE::LINALG::Matrix<nsd_, nen_> aop(false);  // (3x8)
       // -q = C * B
       aop.MultiplyNN(cmat_, derxy_);              //(nsd_xnsd_)(nsd_xnen_)
       econd->MultiplyTN(fac_, derxy_, aop, 1.0);  //(nen_xnen_)=(nen_xnsd_)(nsd_xnen_)
 
       // linearization of non-constant conductivity
-      LINALG::Matrix<nen_, 1> dNgradT(false);
+      CORE::LINALG::Matrix<nen_, 1> dNgradT(false);
       dNgradT.MultiplyTN(derxy_, gradtemp_);
       // TODO only valid for isotropic case
       econd->MultiplyNT(dercmat_(0, 0) * fac_, dNgradT, funct_, 1.0);
@@ -869,9 +873,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
       //
       // ecapalin = dC/dT*(T_{n+1} -T_{n})
       //          = fac . dercapa . (T_{n+1} -T_{n}) . (N . N^T . T)^T
-      LINALG::Matrix<1, 1> Netemp(false);
-      LINALG::Matrix<numdofpernode_ * nen_, 1> difftemp(false);
-      LINALG::Matrix<numdofpernode_ * nen_, 1> NNetemp(false);
+      CORE::LINALG::Matrix<1, 1> Netemp(false);
+      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> difftemp(false);
+      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> NNetemp(false);
       // T_{n+1} - T_{n}
       difftemp.Update(1.0, etempn_, -1.0, etemp_);
       Netemp.MultiplyTN(funct_, difftemp);
@@ -899,15 +903,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearThermoContribution(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* ele,
     const double& time, std::vector<double>& disp, std::vector<double>& vel,
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements
-  LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
-  LINALG::Matrix<nen_ * nsd_, 1> evel(false);
+  CORE::LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
+  CORE::LINALG::Matrix<nen_ * nsd_, 1> evel(false);
   for (int i = 0; i < nen_ * nsd_; i++)
   {
     edisp(i, 0) = disp[i + 0];
@@ -922,10 +926,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
   // ------------------------------------------------ initialise material
 
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
-  LINALG::Matrix<1, 1> NT(false);
+  CORE::LINALG::Matrix<1, 1> NT(false);
 
 #ifdef CALCSTABILOFREACTTERM
   // check critical parameter of reactive term
@@ -952,7 +956,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 #endif  // CALCSTABILOFREACTTERM
   }     // m_thermostvenant
 
-  LINALG::Matrix<nen_, 1> Ndctemp_dTBvNT(true);
+  CORE::LINALG::Matrix<nen_, 1> Ndctemp_dTBvNT(true);
 
   // --------------------------------------------------- time integration
   // get the time step size
@@ -972,11 +976,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
     EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad, ele->Id());
 
     // calculate the linear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
     CalculateBoplin(&boplin, &derxy_);
 
     // now build the strain rates / velocities
-    LINALG::Matrix<6, 1> strainvel(false);
+    CORE::LINALG::Matrix<6, 1> strainvel(false);
     // e' = B . d' = B . v = 0.5 * (Grad u' + Grad^T u')
     strainvel.Multiply(boplin, evel);  // (6x24)(24x1)=(6x1)
 
@@ -991,14 +995,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
     if (thermoSolid != Teuchos::null)
     {
-      LINALG::Matrix<6, 1> dctemp_dT(false);
+      CORE::LINALG::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
 
-      LINALG::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
+      CORE::LINALG::Matrix<nen_, 6> Ndctemp_dT(false);  // (8x1)(1x6)
       Ndctemp_dT.MultiplyNT(funct_, dctemp_dT);
 
-      LINALG::Matrix<nen_, 1> Ndctemp_dTBv(false);
+      CORE::LINALG::Matrix<nen_, 1> Ndctemp_dTBv(false);
       Ndctemp_dTBv.Multiply(Ndctemp_dT, strainvel);
 
       Ndctemp_dTBvNT.Multiply(Ndctemp_dTBv, NT);
@@ -1053,9 +1057,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDispContribution(DRT::Element* el
 #endif  // CALCSTABILOFREACTTERM
 
     // N_T^T . (- ctemp) : ( B_L .  (d^e)' )
-    LINALG::Matrix<nen_, 6> Nctemp(false);  // (8x1)(1x6)
+    CORE::LINALG::Matrix<nen_, 6> Nctemp(false);  // (8x1)(1x6)
     Nctemp.MultiplyNT(funct_, ctemp);
-    LINALG::Matrix<nen_, 1> ncBv(false);
+    CORE::LINALG::Matrix<nen_, 1> ncBv(false);
     ncBv.Multiply(Nctemp, strainvel);
 
     // integrate internal force vector (coupling fraction towards displacements)
@@ -1111,15 +1115,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // now get current element displacements and velocities
-  LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
-  LINALG::Matrix<nen_ * nsd_, 1> evel(false);
+  CORE::LINALG::Matrix<nen_ * nsd_, 1> edisp(false);
+  CORE::LINALG::Matrix<nen_ * nsd_, 1> evel(false);
   for (int i = 0; i < nen_ * nsd_; i++)
   {
     edisp(i, 0) = disp[i + 0];
@@ -1129,12 +1133,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
   // ------------------------------------------------ initialise material
 
   // in case of thermo-elasto-plastic material: elasto-plastic tangent modulus
-  LINALG::Matrix<6, 6> cmat(true);
+  CORE::LINALG::Matrix<6, 6> cmat(true);
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
-  LINALG::Matrix<1, 1> NT(false);
+  CORE::LINALG::Matrix<1, 1> NT(false);
   // get constant initial temperature from the material
 
   // ------------------------------------------------ structural material
@@ -1206,7 +1210,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // calculate the linear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
     CalculateBoplin(&boplin, &derxy_);
 
     // non-symmetric stiffness matrix
@@ -1218,7 +1222,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
     if (thermoSolid != Teuchos::null)
     {
-      LINALG::Matrix<6, 1> dctemp_dT(false);
+      CORE::LINALG::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
@@ -1232,12 +1236,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearCoupledTang(
     }  // m_thermopllinelast
 
     // N_temp^T . N_temp . temp
-    LINALG::Matrix<nen_, 1> NNT(false);
+    CORE::LINALG::Matrix<nen_, 1> NNT(false);
     NNT.Multiply(funct_, NT);  // (8x1)(1x1) = (8x1)
 
     // N_T^T . N_T . T . ctemp
-    LINALG::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)
-    NNTC.MultiplyNT(NNT, ctemp);          // (8x6)
+    CORE::LINALG::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)
+    NNTC.MultiplyNT(NNT, ctemp);                // (8x6)
 
 #ifdef TSIMONOLITHASOUTPUT
     if (ele->Id() == 0)
@@ -1272,16 +1276,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     const double& time,         // current time
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        econd,  // conductivity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa,  // capacity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         ecapalin,  //!< partial linearization dC/dT of capacity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
     Teuchos::ParameterList& params)
 {
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
   InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
 #ifdef THRASOUTPUT
@@ -1294,24 +1299,24 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
   // ------------------------------------------------ initialise material
 
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
-  LINALG::Matrix<1, 1> NT(false);
+  CORE::LINALG::Matrix<1, 1> NT(false);
   // extract step size
   const double stepsize = params.get<double>("delta time");
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
-  LINALG::Matrix<nen_, 1> Ndctemp_dTCrateNT(true);
+  CORE::LINALG::Matrix<nen_, 1> Ndctemp_dTCrateNT(true);
 
   // build the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
   // build the rate of the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrdrate(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrdrate(false);
   // inverse of deformation gradient
-  LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ----------------------------------- integration loop for one element
 
@@ -1356,19 +1361,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
     // OR: C' = F^T . F' if applied to symmetric tensor
     // save C' as rate vector Crate
     // C' = { C11', C22', C33', C12', C23', C31' }
-    LINALG::Matrix<6, 1> Cratevct(false);
+    CORE::LINALG::Matrix<6, 1> Cratevct(false);
     // build the inverse C: C^{-1} = F^{-1} . F^{-T}
-    LINALG::Matrix<nsd_, nsd_> Cinv(false);
+    CORE::LINALG::Matrix<nsd_, nsd_> Cinv(false);
     // Cinvvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-    LINALG::Matrix<6, 1> Cinvvct(false);
+    CORE::LINALG::Matrix<6, 1> Cinvvct(false);
     CalculateCauchyGreens(Cratevct, Cinvvct, Cinv, &defgrd, &defgrdrate, &invdefgrd);
 
     // initial heatflux Q = C^{-1} . qintermediate = k_0 . C^{-1} . B_T . T
     // the current heatflux q = detF . F^{-1} . q
     // store heatflux
     // (3x1)  (3x3) . (3x1)
-    LINALG::Matrix<nsd_, 1> initialheatflux(false);
+    CORE::LINALG::Matrix<nsd_, 1> initialheatflux(false);
     initialheatflux.Multiply(Cinv, heatflux_);
     // put the initial, material heatflux onto heatflux_
     heatflux_.Update(initialheatflux);
@@ -1383,7 +1388,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
     if (thermoSolid != Teuchos::null)
     {
-      LINALG::Matrix<6, 1> dctemp_dT(false);
+      CORE::LINALG::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
       // scalar product: dctemp_dTCdot = dC_T/dT : 1/2 C'
@@ -1391,7 +1396,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
       for (int i = 0; i < 6; ++i)
         dctemp_dTCdot += dctemp_dT(i, 0) * (1 / 2.0) * Cratevct(i, 0);  // (6x1)(6x1)
 
-      LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
+      CORE::LINALG::Matrix<nen_, 1> Ndctemp_dTCratevct(false);
       Ndctemp_dTCratevct.Update(dctemp_dTCdot, funct_);
       Ndctemp_dTCrateNT.Multiply(Ndctemp_dTCratevct, NT);  // (8x1)(1x1)
 
@@ -1413,8 +1418,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
-      params.set<LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd);
-      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("Cinv_vct", Cinvvct);
+      params.set<CORE::LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd);
+      params.set<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("Cinv_vct", Cinvvct);
 
       // ------------ (non-dissipative) thermoelastic and -plastic heating term
       // H_ep := H_e + H_p = T . dsigma/dT . E' + T . dkappa/dT . astrain^p'
@@ -1488,19 +1493,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
       // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
       // with C_mat = k_0 . I
       // -q = C_mat . C^{-1} . B
-      LINALG::Matrix<nsd_, nen_> aop(false);   // (3x8)
-      aop.MultiplyNN(Cinv, derxy_);            // (nsd_xnsd_)(nsd_xnen_)
-      LINALG::Matrix<nsd_, nen_> aop1(false);  // (3x8)
-      aop1.MultiplyNN(cmat_, aop);             // (nsd_xnsd_)(nsd_xnen_)
+      CORE::LINALG::Matrix<nsd_, nen_> aop(false);   // (3x8)
+      aop.MultiplyNN(Cinv, derxy_);                  // (nsd_xnsd_)(nsd_xnen_)
+      CORE::LINALG::Matrix<nsd_, nen_> aop1(false);  // (3x8)
+      aop1.MultiplyNN(cmat_, aop);                   // (nsd_xnsd_)(nsd_xnen_)
 
       // k^e_TT += ( B_T^T . C_mat . C^{-1} . B_T ) . detJ . w(gp)
       econd->MultiplyTN(fac_, derxy_, aop1, 1.0);  //(8x8)=(8x3)(3x8)
 
       // linearization of non-constant conductivity
       // k^e_TT += ( B_T^T . dC_mat . C^{-1} . B_T . T . N) . detJ . w(gp)
-      LINALG::Matrix<nsd_, 1> CinvGradT(false);
+      CORE::LINALG::Matrix<nsd_, 1> CinvGradT(false);
       CinvGradT.MultiplyNN(Cinv, gradtemp_);
-      LINALG::Matrix<nen_, 1> dNCinvGradT(false);
+      CORE::LINALG::Matrix<nen_, 1> dNCinvGradT(false);
       dNCinvGradT.MultiplyTN(derxy_, CinvGradT);
       // only valid for isotropic case
       econd->MultiplyNT(dercmat_(0, 0) * fac_, dNCinvGradT, funct_, 1.0);
@@ -1513,7 +1518,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
         double dHeDT = plmat->dHepDT(iquad);
         econd->MultiplyNT((-fac_ * dHeDT), funct_, funct_, 1.0);
         if (plmat->dHepDTeas() != Teuchos::null)
-          LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nen_>(
+          CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nen_>(
               1., econd->A(), -fac_, funct_.A(), plmat->dHepDTeas()->at(iquad).A());
       }
       else
@@ -1540,9 +1545,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
       //
       // ecapalin = dC/dT*(T_{n+1} -T_{n})
       //          = fac . dercapa . (T_{n+1} -T_{n}) . (N . N^T . T)^T
-      LINALG::Matrix<1, 1> Netemp(false);
-      LINALG::Matrix<numdofpernode_ * nen_, 1> difftemp(false);
-      LINALG::Matrix<numdofpernode_ * nen_, 1> NNetemp(false);
+      CORE::LINALG::Matrix<1, 1> Netemp(false);
+      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> difftemp(false);
+      CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> NNetemp(false);
       // T_{n+1} - T_{n}
       difftemp.Update(1.0, etempn_, -1.0, etemp_);
       Netemp.MultiplyTN(funct_, difftemp);
@@ -1578,13 +1583,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,
     Teuchos::ParameterList& params  // parameter list
 )
 {
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xcurr(false);      // current  coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurrrate(false);  // current  velocity of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurr(false);      // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurrrate(false);  // current  velocity of element
   InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
 #ifdef THRASOUTPUT
@@ -1664,21 +1669,21 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
 
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
-  LINALG::Matrix<1, 1> NT(false);
+  CORE::LINALG::Matrix<1, 1> NT(false);
   // N_T^T . N_T . T
-  LINALG::Matrix<nen_, 1> NNT(false);
+  CORE::LINALG::Matrix<nen_, 1> NNT(false);
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
 
   // build the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
   // build the rate of the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrdrate(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrdrate(false);
   // inverse of deformation gradient
-  LINALG::Matrix<nsd_, nsd_> invdefgrd(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> invdefgrd(true);
   // initialise Jacobi-determinant
   double J = 0.0;
 
@@ -1706,15 +1711,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     Materialize(ele, iquad);
 
     // put thermal material tangent in vector notation
-    LINALG::Matrix<6, 1> cmat_vct(true);
+    CORE::LINALG::Matrix<6, 1> cmat_vct(true);
     for (unsigned i = 0; i < nsd_; ++i) cmat_vct(i) = cmat_(i, i);
 
     // B_T^T . B_T . T
-    LINALG::Matrix<nen_, 1> bgradT(false);
+    CORE::LINALG::Matrix<nen_, 1> bgradT(false);
     bgradT.MultiplyTN(derxy_, gradtemp_);  // (8x1)(1x1) = (8x1)
     // B_T^T . B_T . T . Cmat_
-    LINALG::Matrix<nen_, 6> bgradTcmat(false);  // (8x1)(1x6)
-    bgradTcmat.MultiplyNT(bgradT, cmat_vct);    // (8x6)
+    CORE::LINALG::Matrix<nen_, 6> bgradTcmat(false);  // (8x1)(1x6)
+    bgradTcmat.MultiplyNT(bgradT, cmat_vct);          // (8x6)
 
     // current element temperatures
     // N_T . T (funct_ defined as <nen,1>)
@@ -1731,10 +1736,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
     // build the linear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
     CalculateBoplin(&boplin, &derxy_);
     // build the nonlinear B-operator
-    LINALG::Matrix<6, nen_ * nsd_ * numdofpernode_> bop(false);
+    CORE::LINALG::Matrix<6, nen_ * nsd_ * numdofpernode_> bop(false);
     CalculateBop(&bop, &defgrd, &derxy_);
 
     // ------- derivatives of right Cauchy-Green deformation tensor C
@@ -1742,12 +1747,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     // build the rate of C: C'= F^T . F' + (F')^T . F
     // save C' as rate vector Crate
     // C' = { C11', C22', C33', C12', C23', C31 }
-    LINALG::Matrix<6, 1> Cratevct(false);
+    CORE::LINALG::Matrix<6, 1> Cratevct(false);
     // build the inverse C: C^{-1} = F^{-1} . F^{-T}
-    LINALG::Matrix<nsd_, nsd_> Cinv(false);
+    CORE::LINALG::Matrix<nsd_, nsd_> Cinv(false);
     // Cinvvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-    LINALG::Matrix<6, 1> Cinvvct(false);
+    CORE::LINALG::Matrix<6, 1> Cinvvct(false);
     // calculation is done in CalculateCauchyGreens, return C', C^{-1} in vector
     // notation, NO Voigt-notation
     CalculateCauchyGreens(Cratevct, Cinvvct, Cinv, &defgrd, &defgrdrate, &invdefgrd);
@@ -1761,7 +1766,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     // --> use only the symmetric part of dC'/dd
 
     // with B' = (F')^T . B_L: calculate rate of B
-    LINALG::Matrix<6, nen_ * nsd_> boprate(false);  // (6x24)
+    CORE::LINALG::Matrix<6, nen_ * nsd_> boprate(false);  // (6x24)
     CalculateBop(&boprate, &defgrdrate, &derxy_);
 
     // -------------------------------- calculate linearisation of C^{-1}
@@ -1769,7 +1774,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
     // calculate linearisation of C^{-1} according to so3_poro_evaluate: ComputeAuxiliaryValues()
     // dC^{-1}/dd = dCinv_dd = - F^{-1} . ( B_L . F^{-1} + F^{-T} . B_L^T ) . F^{-T}
     //                       = - F^{-1} . ( B_L . F^{-1} + (B_L . F^{-1})^T ) . F^{-T}
-    LINALG::Matrix<6, nen_ * nsd_> dCinv_dd(true);
+    CORE::LINALG::Matrix<6, nen_ * nsd_> dCinv_dd(true);
     for (int n = 0; n < nen_; ++n)
     {
       for (int k = 0; k < nsd_; ++k)
@@ -1795,7 +1800,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
         Teuchos::rcp_dynamic_cast<MAT::TRAIT::ThermoSolid>(structmat, false);
     if (thermoSolid != Teuchos::null)
     {
-      LINALG::Matrix<6, 1> dctemp_dT(false);
+      CORE::LINALG::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->Reinit(nullptr, nullptr, NT(0), iquad);
       thermoSolid->StressTemperatureModulusAndDeriv(ctemp, dctemp_dT);
     }
@@ -1807,8 +1812,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
-      params.set<LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd);
-      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("Cinv_vct", Cinvvct);
+      params.set<CORE::LINALG::Matrix<nsd_, nsd_>>("defgrd", defgrd);
+      params.set<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("Cinv_vct", Cinvvct);
       // calculate Jacobi-determinant
       J = defgrd.Determinant();
 
@@ -1816,8 +1821,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       thermoplhyperelast->SetupCthermo(ctemp, params);
     }
     // N_T^T . N_T . T . ctemp
-    LINALG::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)
-    NNTC.MultiplyNT(NNT, ctemp);          // (8x6)
+    CORE::LINALG::Matrix<nen_, 6> NNTC(false);  // (8x1)(1x6)
+    NNTC.MultiplyNT(NNT, ctemp);                // (8x6)
 
     // ----------------- coupling matrix k_Td only for monolithic TSI
     if (etangcoupl != nullptr)
@@ -1830,7 +1835,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       {
         Teuchos::RCP<MAT::PlasticElastHyper> plmat =
             Teuchos::rcp_dynamic_cast<MAT::PlasticElastHyper>(structmat, true);
-        LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nsd_ * nen_>(
+        CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nsd_ * nen_>(
             1., etangcoupl->A(), -fac_, funct_.A(), plmat->dHepDissDd(iquad).A());
       }
       // other materials do specific computations here
@@ -1862,8 +1867,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       // k^e_Td += timefac . ( B_T^T . B_T . T . C_mat . dC^{-1}/dd . detJ . w(gp) )
       // (8x24)                (8x3)  (3x8)(8x1) (1x6) (6x24)
 
-      LINALG::Matrix<nen_, MAT::NUM_STRESS_3D> bgradTcmat(true);
-      LINALG::Matrix<nsd_, 1> G;
+      CORE::LINALG::Matrix<nen_, MAT::NUM_STRESS_3D> bgradTcmat(true);
+      CORE::LINALG::Matrix<nsd_, 1> G;
       G.Multiply(cmat_, gradtemp_);
       for (int i = 0; i < nen_; i++)
       {
@@ -1901,7 +1906,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
           Teuchos::rcp_dynamic_cast<MAT::ThermoPlasticHyperElast>(structmat, true);
 
       // dJ/dd (1x24)
-      LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dJ_dd(true);
+      CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dJ_dd(true);
       CalculateLinearisationOfJacobian(dJ_dd, J, derxy_, invdefgrd);
 
       // --------------------------------- thermoelastic heating term H_e
@@ -1916,11 +1921,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       double fac_He_dJ = m_0 * (1.0 - 1.0 / (J * J));
       double fac_He_dCinv = m_0 * (J + 1.0 / J);
 
-      LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> dC_T_dd(false);  // (6x24)
+      CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> dC_T_dd(false);  // (6x24)
       dC_T_dd.Multiply(fac_He_dJ, Cinvvct, dJ_dd);
       dC_T_dd.Update(fac_He_dCinv, dCinv_dd, 1.0);
       // dC_T_dd : 1/2 C'
-      LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dC_T_ddCdot(false);  // (1x24)
+      CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dC_T_ddCdot(false);  // (1x24)
       dC_T_ddCdot.MultiplyTN(0.5, Cratevct, dC_T_dd);
 
       // dC_T/dd
@@ -1933,7 +1938,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
       // k_Td += - timefac . N_T^T . N_T . T . 1/Dt . thrplheat_kTd . dE/dd
 
       // dH_p/dE = 1/Dt . [ ddkappa/dTdastrain . 2/3 . Dgamma + dkappa/dT . sqrt(2/3) ] . dDgamma/dE
-      LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dHp_dd(false);
+      CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dHp_dd(false);
       dHp_dd.MultiplyTN(thermoplhyperelast->ThermoPlastHeating_kTd(iquad), bop);
       // k_Td += - timefac . N_T . T . 1/Dt . N_T^T . dH_p/dd . detJ . w(gp)
       etangcoupl->Multiply((-fac_ * NT(0.0) / stepsize), funct_, dHp_dd, 1.0);
@@ -1969,16 +1974,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
-    DRT::Element* ele,                                // the element whose matrix is calculated
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
+    DRT::Element* ele,  // the element whose matrix is calculated
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // --------------------------------------------------------- initialise
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
@@ -2011,7 +2016,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // build the linear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
     CalculateBoplin(&boplin, &derxy_);
 
     // ------------------------------------------------------------ dissipation
@@ -2065,11 +2070,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationFint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     DRT::Element* ele,  // the element whose matrix is calculated
-    LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
 #ifdef THRASOUTPUT
   std::cout << "LinearDissipationCoupledTang evel\n" << evel << std::endl;
@@ -2142,7 +2147,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
     // GEOMETRIC LINEAR problem the deformation gradient is equal to identity
 
     // calculate the linear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> boplin(false);
     CalculateBoplin(&boplin, &derxy_);
 
     // --------------------------- calculate linearisation of dissipation
@@ -2193,9 +2198,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearDissipationCoupledTang(
 
     // ----------------------------------------linearisation of Dmech_iso
     // (dD_mech/dstrain) += N_T^T . Hiso . (d [ strainbar^p . strainbar^p' ]/ dstrain)
-    LINALG::Matrix<6, 1> Dmech_d(false);
+    CORE::LINALG::Matrix<6, 1> Dmech_d(false);
     Dmech_d.Update(thrpllinelast->DissipationLinearisedForCouplCond(iquad));
-    LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> DBop(false);
+    CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> DBop(false);
     DBop.MultiplyTN(Dmech_d, boplin);
 
     // coupling stiffness matrix
@@ -2220,16 +2225,17 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  // current displacements
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* econd,  // conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,                      // internal force
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        econd,                                              // conductivity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  // internal force
     Teuchos::ParameterList& params)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurr;  // current  coord. of element
 
   // now get current element displacements and velocities
   DRT::Node** nodes = ele->Nodes();
@@ -2248,7 +2254,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
 
   // --------------------------------------------------------------- initialise
   // thermal material tangent
-  LINALG::Matrix<6, 1> ctemp(true);
+  CORE::LINALG::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
@@ -2272,7 +2278,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // initialise the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
 
   // --------------------------------------------------- loop over Gauss Points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -2314,7 +2320,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationFintTang(
     }
 
     // output of mechanical dissipation to fint
-    LINALG::Matrix<nen_, 1> fint_Dmech(false);
+    CORE::LINALG::Matrix<nen_, 1> fint_Dmech(false);
     fint_Dmech.Update((-fac_ * Dmech), funct_);
     std::cout << "NonlinearDissipationFintTang: element No. = " << ele->Id() << " f_Td_Dmech "
               << fint_Dmech << std::endl;
@@ -2337,12 +2343,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     DRT::Element* ele,          // the element whose matrix is calculated
     std::vector<double>& disp,  //!< current displacements
     std::vector<double>& vel,   //!< current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nsd_ * nen_ * numdofpernode_>* etangcoupl,  // k_Td
     Teuchos::ParameterList& params)
 {
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  velocity of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  velocity of element
 
   InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
@@ -2354,9 +2360,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
 #endif  // THRASOUTPUT
 
   // build the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
   // inverse of deformation gradient
-  LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ------------------------------------------------ structural material
   Teuchos::RCP<MAT::Material> structmat = GetSTRMaterial(ele);
@@ -2421,14 +2427,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
     defgrd.MultiplyTT(xcurr, derxy_);
 
     // calculate the nonlinear B-operator
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> bop(false);
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_> bop(false);
     CalculateBop(&bop, &defgrd, &derxy_);
 
     // ----------------------------------------------- linearisation of Dmech_d
     // k_Td += - timefac . N_T^T . 1/Dt . mechdiss_kTd . dE/dd
-    LINALG::Matrix<6, 1> dDmech_dE(false);
+    CORE::LINALG::Matrix<6, 1> dDmech_dE(false);
     dDmech_dE.Update(thermoplhyperelast->MechDiss_kTd(iquad));
-    LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dDmech_dd(false);
+    CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_> dDmech_dd(false);
     dDmech_dd.MultiplyTN(dDmech_dE, bop);
 
     // coupling stiffness matrix
@@ -2449,12 +2455,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearDissipationCoupledTang(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
-    DRT::Element* ele, LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad  // temperature gradients at Gauss points
+void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(DRT::Element* ele,
+    CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
+    CORE::LINALG::Matrix<nquad_, nsd_>* etempgrad   // temperature gradients at Gauss points
 )
 {
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -2488,11 +2494,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::LinearHeatfluxTempgrad(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
-    DRT::Element* ele,                        // the element whose matrix is calculated
-    std::vector<double>& disp,                // current displacements
-    std::vector<double>& vel,                 // current velocities
-    LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
-    LINALG::Matrix<nquad_, nsd_>* etempgrad,  // temperature gradients at Gauss points
+    DRT::Element* ele,                              // the element whose matrix is calculated
+    std::vector<double>& disp,                      // current displacements
+    std::vector<double>& vel,                       // current velocities
+    CORE::LINALG::Matrix<nquad_, nsd_>* eheatflux,  // heat fluxes at Gauss points
+    CORE::LINALG::Matrix<nquad_, nsd_>* etempgrad,  // temperature gradients at Gauss points
     Teuchos::ParameterList& params)
 {
   // specific choice of heat flux / temperature gradient
@@ -2502,14 +2508,14 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
       DRT::INPUT::get<INPAR::THR::TempGradType>(params, "iotempgrad", INPAR::THR::tempgrad_none);
 
   // update element geometry
-  LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
-  LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurr;      // current  coord. of element
+  CORE::LINALG::Matrix<nen_, nsd_> xcurrrate;  // current  coord. of element
   InitialAndCurrentNodalPositionVelocity(ele, disp, vel, xcurr, xcurrrate);
 
   // build the deformation gradient w.r.t. material configuration
-  LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
   // inverse of deformation gradient
-  LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ----------------------------------- integration loop for one element
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -2538,7 +2544,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
     // inverse of deformation gradient
     invdefgrd.Invert(defgrd);
 
-    LINALG::Matrix<nsd_, nsd_> Cinv(false);
+    CORE::LINALG::Matrix<nsd_, nsd_> Cinv(false);
     // build the inverse of the right Cauchy-Green deformation gradient C^{-1}
     // C^{-1} = F^{-1} . F^{-T}
     Cinv.MultiplyNT(invdefgrd, invdefgrd);
@@ -2558,7 +2564,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
         // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
         // (8x3)        (3x1)   (3x1)    (3x3)     (3x3)    (3x1)
         // spatial temperature gradient
-        LINALG::Matrix<nsd_, 1> currentgradT(false);
+        CORE::LINALG::Matrix<nsd_, 1> currentgradT(false);
         currentgradT.MultiplyTN(invdefgrd, gradtemp_);
         for (int idim = 0; idim < nsd_; ++idim) (*etempgrad)(iquad, idim) = currentgradT(idim);
         break;
@@ -2578,7 +2584,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
       case INPAR::THR::heatflux_initial:
       {
         if (eheatflux == nullptr) dserror("heat flux data not available");
-        LINALG::Matrix<nsd_, 1> initialheatflux(false);
+        CORE::LINALG::Matrix<nsd_, 1> initialheatflux(false);
         // eheatflux := Q = -k_0 . Cinv . Grad T
         initialheatflux.Multiply(Cinv, heatflux_);
         for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -initialheatflux(idim);
@@ -2590,7 +2596,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearHeatfluxTempgrad(
         // eheatflux := q = - k_0 . 1/(detF) . F^{-T} . Grad T
         // (8x3)     (3x1)            (3x3)  (3x1)
         const double detF = defgrd.Determinant();
-        LINALG::Matrix<nsd_, 1> spatialq;
+        CORE::LINALG::Matrix<nsd_, 1> spatialq;
         spatialq.MultiplyTN((1.0 / detF), invdefgrd, heatflux_);
         for (int idim = 0; idim < nsd_; ++idim) (*eheatflux)(iquad, idim) = -spatialq(idim);
         break;
@@ -2630,7 +2636,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtractDispVel(const DRT::Discretizatio
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLumpMatrix(
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa)
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapa)
 {
   // lump capacity matrix
   if (ecapa != nullptr)
@@ -2676,10 +2682,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
   if (myneumcond.size() == 1)
   {
     // get node coordinates
-    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+        ele, xyze_);
 
     // update element geometry
-    LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
+    CORE::LINALG::Matrix<nen_, nsd_> xrefe;  // material coord. of element
     DRT::Node** nodes = ele->Nodes();
     for (int i = 0; i < nen_; ++i)
     {
@@ -2692,7 +2699,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
 
     // (SPATIAL) FUNCTION BUSINESS
     const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
-    LINALG::Matrix<nsd_, 1> xrefegp(false);
+    CORE::LINALG::Matrix<nsd_, 1> xrefegp(false);
     bool havefunct = false;
     if (funct)
       for (int dim = 0; dim < nsd_; dim++)
@@ -2706,7 +2713,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     radiation_.Clear();
 
     // compute the Jacobian matrix
-    LINALG::Matrix<nsd_, nsd_> jac;
+    CORE::LINALG::Matrix<nsd_, nsd_> jac;
     jac.Multiply(derxy_, xrefe);
 
     // compute determinant of Jacobian
@@ -2758,7 +2765,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Materialize(const DRT::Element* ele, co
   auto material = ele->Material();
 
   // calculate the current temperature at the integration point
-  LINALG::Matrix<1, 1> temp;
+  CORE::LINALG::Matrix<1, 1> temp;
   temp.MultiplyTN(1.0, funct_, etempn_, 0.0);
 
   auto thermoMaterial = Teuchos::rcp_dynamic_cast<MAT::TRAIT::Thermo>(material);
@@ -2834,9 +2841,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::InitialAndCurrentNodalPositionVelocity(
     const DRT::Element* ele, const std::vector<double>& disp, const std::vector<double>& vel,
-    LINALG::Matrix<nen_, nsd_>& xcurr, LINALG::Matrix<nen_, nsd_>& xcurrrate)
+    CORE::LINALG::Matrix<nen_, nsd_>& xcurr, CORE::LINALG::Matrix<nen_, nsd_>& xcurrrate)
 {
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   for (int i = 0; i < nen_; ++i)
   {
     xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
@@ -2880,7 +2887,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
     Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // integrations points and weights
   CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(THR::DisTypeToOptGaussRule<distype>::rule);
@@ -2909,10 +2916,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Elem
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
     DRT::Element* ele,  // the element whose matrix is calculated
-    const LINALG::Matrix<nquad_, nsd_>& gpheatflux,
-    LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxx,
-    LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxy,
-    LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxz)
+    const CORE::LINALG::Matrix<nquad_, nsd_>& gpheatflux,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxx,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxy,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& efluxz)
 {
   // this quick'n'dirty hack functions only for elements which has the same
   // number of gauss points AND same number of nodes
@@ -2930,7 +2937,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   if (intpoints.IP().nquad != nquad_) dserror("Trouble with number of Gauss points");
 
   // build matrix of shape functions at Gauss points
-  LINALG::Matrix<nquad_, nquad_> shpfctatgps;
+  CORE::LINALG::Matrix<nquad_, nquad_> shpfctatgps;
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
     // coordinates of the current integration point
@@ -2944,10 +2951,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   }
 
   // extrapolation
-  LINALG::Matrix<nquad_, nsd_> ndheatflux;               //  objective nodal heatflux
-  LINALG::Matrix<nquad_, nsd_> gpheatflux2(gpheatflux);  // copy the heatflux at the Gauss point
+  CORE::LINALG::Matrix<nquad_, nsd_> ndheatflux;  //  objective nodal heatflux
+  CORE::LINALG::Matrix<nquad_, nsd_> gpheatflux2(
+      gpheatflux);  // copy the heatflux at the Gauss point
   {
-    LINALG::FixedSizeSerialDenseSolver<nquad_, nquad_, nsd_> solver;  // must be quadratic
+    CORE::LINALG::FixedSizeSerialDenseSolver<nquad_, nquad_, nsd_> solver;  // must be quadratic
     solver.SetMatrix(shpfctatgps);
     solver.SetVectors(ndheatflux, gpheatflux2);
     solver.Solve();
@@ -2984,7 +2992,8 @@ double DRT::ELEMENTS::TemperImpl<distype>::CalculateCharEleLength()
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin, LINALG::Matrix<nsd_, nen_>* N_XYZ)
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* boplin,
+    CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // in thermo element derxy_ == N_XYZ in structural element (i.e. So3_Thermo)
   // lump mass matrix
@@ -3026,8 +3035,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBoplin(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
-    LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop, LINALG::Matrix<nsd_, nsd_>* defgrd,
-    LINALG::Matrix<nsd_, nen_>* N_XYZ)
+    CORE::LINALG::Matrix<6, nsd_ * nen_ * numdofpernode_>* bop,
+    CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // lump mass matrix
   if (bop != nullptr)
@@ -3092,8 +3101,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
-    LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd, const double& J,
-    const LINALG::Matrix<nsd_, nen_>& N_XYZ, const LINALG::Matrix<nsd_, nsd_>& defgrd_inv)
+    CORE::LINALG::Matrix<1, nsd_ * nen_ * numdofpernode_>& dJ_dd, const double& J,
+    const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
+    const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv)
 {
   if (nsd_ != 3)
     dserror("TSI only implemented for fully three dimensions!");
@@ -3102,7 +3112,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     // ----------------------------------------- build F^{-1} as vector 9x1
     // F != F^T, i.e. Voigt notation (6x1) NOT admissible
     // F (3x3) --> (9x1)
-    LINALG::Matrix<nsd_ * nsd_, 1> defgrd_inv_vec(false);
+    CORE::LINALG::Matrix<nsd_ * nsd_, 1> defgrd_inv_vec(false);
     defgrd_inv_vec(0) = defgrd_inv(0, 0);
     defgrd_inv_vec(1) = defgrd_inv(0, 1);
     defgrd_inv_vec(2) = defgrd_inv(0, 2);
@@ -3114,7 +3124,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
     defgrd_inv_vec(8) = defgrd_inv(2, 2);
 
     // ------------------------ build N_X operator (w.r.t. material config)
-    LINALG::Matrix<nsd_ * nsd_, nsd_ * nen_ * numdofpernode_> N_X(true);  // set to zero
+    CORE::LINALG::Matrix<nsd_ * nsd_, nsd_ * nen_ * numdofpernode_> N_X(true);  // set to zero
     for (int i = 0; i < nen_; ++i)
     {
       N_X(0, 3 * i + 0) = N_XYZ(0, i);
@@ -3140,18 +3150,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateLinearisationOfJacobian(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
-    LINALG::Matrix<6, 1>& Cratevct,          // (io) C' in vector notation
-    LINALG::Matrix<6, 1>& Cinvvct,           // (io) C^{-1} in vector notation
-    LINALG::Matrix<nsd_, nsd_>& Cinv,        // (io) C^{-1} in tensor notation
-    LINALG::Matrix<nsd_, nsd_>* defgrd,      // (i) deformation gradient
-    LINALG::Matrix<nsd_, nsd_>* defgrdrate,  // (i) rate of deformation gradient
-    LINALG::Matrix<nsd_, nsd_>* invdefgrd    // (i) inverse of deformation gradient
+    CORE::LINALG::Matrix<6, 1>& Cratevct,          // (io) C' in vector notation
+    CORE::LINALG::Matrix<6, 1>& Cinvvct,           // (io) C^{-1} in vector notation
+    CORE::LINALG::Matrix<nsd_, nsd_>& Cinv,        // (io) C^{-1} in tensor notation
+    CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,      // (i) deformation gradient
+    CORE::LINALG::Matrix<nsd_, nsd_>* defgrdrate,  // (i) rate of deformation gradient
+    CORE::LINALG::Matrix<nsd_, nsd_>* invdefgrd    // (i) inverse of deformation gradient
 )
 {
   // calculate the rate of the right Cauchy-Green deformation gradient C'
   // rate of right Cauchy-Green tensor C' = F^T . F' + (F')^T . F
   // C'= F^T . F' + (F')^T . F
-  LINALG::Matrix<nsd_, nsd_> Crate(false);
+  CORE::LINALG::Matrix<nsd_, nsd_> Crate(false);
   Crate.MultiplyTN((*defgrd), (*defgrdrate));
   Crate.MultiplyTN(1.0, (*defgrdrate), (*defgrd), 1.0);
   // Or alternative use: C' = 2 . (F^T . F') when applied to symmetric tensor
@@ -3198,20 +3208,20 @@ Teuchos::RCP<MAT::Material> DRT::ELEMENTS::TemperImpl<distype>::GetSTRMaterial(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
     DRT::Element* ele,  // the element whose matrix is calculated
-    LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,
     Teuchos::ParameterList& params  // parameter list
 )
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // get scalar-valued element temperature
   // build the product of the shapefunctions and element temperatures T = N . T
-  LINALG::Matrix<1, 1> NT(false);
+  CORE::LINALG::Matrix<1, 1> NT(false);
 
   // analytical solution
-  LINALG::Matrix<1, 1> T_analytical(true);
-  LINALG::Matrix<1, 1> deltaT(true);
+  CORE::LINALG::Matrix<1, 1> T_analytical(true);
+  CORE::LINALG::Matrix<1, 1> deltaT(true);
   // ------------------------------- integration loop for one element
 
   // integrations points and weights
@@ -3241,8 +3251,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
     // H1 -error norm
     // compute first derivative of the displacement
-    LINALG::Matrix<nsd_, 1> derT(true);
-    LINALG::Matrix<nsd_, 1> deltaderT(true);
+    CORE::LINALG::Matrix<nsd_, 1> derT(true);
+    CORE::LINALG::Matrix<nsd_, 1> deltaderT(true);
 
     // Compute analytical solution
     switch (calcerr)
@@ -3251,7 +3261,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
       {
         // get coordinates at integration point
         // gp reference coordinates
-        LINALG::Matrix<nsd_, 1> xyzint(true);
+        CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
         xyzint.Multiply(xyze_, funct_);
 
         // function evaluation requires a 3D position vector!!
@@ -3313,7 +3323,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::ComputeError(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CopyMatrixIntoCharVector(
-    std::vector<char>& data, LINALG::Matrix<nquad_, nsd_>& stuff)
+    std::vector<char>& data, CORE::LINALG::Matrix<nquad_, nsd_>& stuff)
 {
   DRT::PackBuffer tempBuffer;
   DRT::ParObject::AddtoPack(tempBuffer, stuff);
@@ -3328,9 +3338,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
     const double& time,         //!< current time
     std::vector<double>& disp,  //!< current displacements
     std::vector<double>& vel,   //!< current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
-        etang,                                        //!< tangent conductivity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        etang,                                              //!< tangent conductivity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>* efint,  //!< internal force);)
     Teuchos::ParameterList& params)
 {
   bool checkPassed = true;
@@ -3338,19 +3348,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCouplNlnFintCondCapa(
   const double tol = 1e-5;
   const double delta = 1e-7;
   // save old variables
-  LINALG::Matrix<nen_ * numdofpernode_, 1> efint_old =
-      LINALG::Matrix<nen_ * numdofpernode_, 1>(*efint);
-  LINALG::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_old =
-      LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>(*etang);
-  LINALG::Matrix<nen_ * numdofpernode_, 1> etemp_old =
-      LINALG::Matrix<nen_ * numdofpernode_, 1>(etempn_);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint_old =
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>(*efint);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_old =
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>(*etang);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp_old =
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>(etempn_);
 
-  LINALG::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_approx =
-      LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>();
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_* numdofpernode_> etang_approx =
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>();
 
   // create a vector for evaluation of disturbed fint
-  LINALG::Matrix<nen_ * numdofpernode_, 1> efint_disturb =
-      LINALG::Matrix<nen_ * numdofpernode_, 1>();
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint_disturb =
+      CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>();
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
@@ -3409,8 +3419,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
     const double& time,         //!< current time
     std::vector<double>& disp,  //!< current displacements
     std::vector<double>& vel,   //!< current velocities
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>* ecapan,  //!< capacity matrix
-    LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
+        ecapan,  //!< capacity matrix
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_>*
         ecapalin,  //!< linearization term from capacity matrix
     Teuchos::ParameterList& params)
 {
@@ -3435,11 +3446,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
   // no scaling with time step size, since it occurrs in all terms
 
   // tangent only of capacity terms!
-  LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapatang(false);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapatang(false);
   ecapatang.Update(1.0, *ecapan, 1.0, *ecapalin);
 
   // part of fcap that only depends on step n+1
-  LINALG::Matrix<nen_ * numdofpernode_, 1> efcapn(false);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efcapn(false);
   efcapn.Multiply(*ecapan, etempn_);
 
 #ifdef TSISLMFDCHECKDEBUG
@@ -3475,17 +3486,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
 
   // f_cap = C(T_{n+1}) * T_n
   // TODO this is not(!) how it's done right now in time integration, should be changed there
-  LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(false);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(false);
   efcap.Multiply(*ecapan, etemp_);  //
 
   // build actual residual at this step
   // res = 1/Dt .(fcap(T_{n+1}) - fcap(T_n))
-  LINALG::Matrix<nen_ * numdofpernode_, 1> res_act(false);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> res_act(false);
   res_act.Update(1, efcapn, -1, efcap);
 
   // create a vector for evaluation of disturbed ecapa and residual
-  LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_disturb(true);
-  LINALG::Matrix<nen_ * numdofpernode_, 1> res_disturb(true);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_disturb(true);
+  CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> res_disturb(true);
   // loop over rows and disturb corresponding temperature
   for (int j = 0; j < nen_ * numdofpernode_; j++)
   {
@@ -3596,8 +3607,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::FDCheckCapalin(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
-    LINALG::Matrix<6, 1>* ctemp,     // temperature-dependent material tangent
-    LINALG::Matrix<6, 1>* strainvel  // strain rate
+    CORE::LINALG::Matrix<6, 1>* ctemp,     // temperature-dependent material tangent
+    CORE::LINALG::Matrix<6, 1>* strainvel  // strain rate
 )
 {
   // scalar product ctemp : (B . (d^e)')

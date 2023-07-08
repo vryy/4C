@@ -185,8 +185,8 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
   const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("DerivNormalAtXi: Null pointer!");
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   double gxi[3];
   double geta[3];
@@ -198,7 +198,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
   Metrics(xi, gxi, geta);
 
   // derivative weighting matrix for current element
-  LINALG::Matrix<3, 3> W;
+  CORE::LINALG::Matrix<3, 3> W;
   const double lcubeinv = 1.0 / (elens(4, i) * elens(4, i) * elens(4, i));
 
   for (int j = 0; j < 3; ++j)
@@ -218,7 +218,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
     int ndof = mycnode->NumDof();
 
     // derivative weighting matrix for current node
-    static LINALG::Matrix<3, 3> F;
+    static CORE::LINALG::Matrix<3, 3> F;
     F(0, 0) = 0.0;
     F(1, 1) = 0.0;
     F(2, 2) = 0.0;
@@ -230,7 +230,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
     F(2, 1) = gxi[0] * deriv(n, 1) - geta[0] * deriv(n, 0);
 
     // total weighting matrix
-    static LINALG::Matrix<3, 3> WF;
+    static CORE::LINALG::Matrix<3, 3> WF;
     WF.MultiplyNN(W, F);
 
     // create directional derivatives
@@ -245,11 +245,11 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
  |  Compute element normal of last time step at xi          seitz 05/17 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::OldUnitNormalAtXi(
-    const double* xi, LINALG::Matrix<3, 1>& n_old, LINALG::Matrix<3, 2>& d_n_old_dxi)
+    const double* xi, CORE::LINALG::Matrix<3, 1>& n_old, CORE::LINALG::Matrix<3, 2>& d_n_old_dxi)
 {
   const int nnodes = NumNode();
-  LINALG::SerialDenseVector val(nnodes);
-  LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+  CORE::LINALG::SerialDenseVector val(nnodes);
+  CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
   // get shape function values and derivatives at xi
   EvaluateShape(xi, val, deriv, nnodes);
@@ -257,8 +257,8 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
   n_old.Clear();
   d_n_old_dxi.Clear();
 
-  LINALG::Matrix<3, 1> tmp_n;
-  LINALG::Matrix<3, 2> tmp_n_deriv;
+  CORE::LINALG::Matrix<3, 1> tmp_n;
+  CORE::LINALG::Matrix<3, 2> tmp_n_deriv;
   for (int i = 0; i < nnodes; ++i)
   {
     CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Nodes()[i]);
@@ -266,7 +266,7 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
 
     for (int d = 0; d < Dim(); ++d)
     {
-      if (LINALG::Matrix<3, 1>(cnode->CoData().Normal_old(), true).Norm2() < 0.9)
+      if (CORE::LINALG::Matrix<3, 1>(cnode->CoData().Normal_old(), true).Norm2() < 0.9)
         dserror("where's my old normal");
       tmp_n(d) += val(i) * cnode->CoData().Normal_old()[d];
       for (int x = 0; x < Dim() - 1; ++x)
@@ -276,7 +276,7 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
   const double l = tmp_n.Norm2();
   n_old.Update(1. / l, tmp_n, 0.);
 
-  LINALG::Matrix<2, 1> dli_dxi;
+  CORE::LINALG::Matrix<2, 1> dli_dxi;
   dli_dxi.MultiplyTN(-1. / (l * l * l), tmp_n_deriv, tmp_n, 0.);
   d_n_old_dxi.Update(1. / l, tmp_n_deriv, 0.);
   d_n_old_dxi.MultiplyNT(1., tmp_n, dli_dxi, 1.);
@@ -286,7 +286,7 @@ void CONTACT::CoElement::OldUnitNormalAtXi(
  |  Evaluate derivative J,xi of Jacobian determinant          popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoElement::DJacDXi(
-    double* djacdxi, double* xi, const LINALG::SerialDenseMatrix& secderiv)
+    double* djacdxi, double* xi, const CORE::LINALG::SerialDenseMatrix& secderiv)
 {
   // the derivative dJacdXi
   djacdxi[0] = 0.0;
@@ -304,7 +304,7 @@ void CONTACT::CoElement::DJacDXi(
   else if (dt == line3 || dt == nurbs2 || dt == nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
-    LINALG::SerialDenseMatrix coord(3, NumNode());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -331,7 +331,7 @@ void CONTACT::CoElement::DJacDXi(
            dt == nurbs8 || dt == nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
-    LINALG::SerialDenseMatrix coord(3, NumNode());
+    CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
     GetNodalCoords(coord);
 
     // metrics routine gives local basis vectors
@@ -350,7 +350,7 @@ void CONTACT::CoElement::DJacDXi(
         1.0 / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // 2nd deriv. evaluation
-    LINALG::Matrix<3, 3> gsec(true);
+    CORE::LINALG::Matrix<3, 3> gsec(true);
     for (int i = 0; i < NumNode(); ++i)
       for (int k = 0; k < 3; ++k)
         for (int d = 0; d < 3; ++d) gsec(k, d) += secderiv(i, d) * coord(k, i);

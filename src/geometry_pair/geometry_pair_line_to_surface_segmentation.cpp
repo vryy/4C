@@ -42,10 +42,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surf
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>::Evaluate(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     std::vector<LineSegment<scalar_type>>& segments,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   // Check if the element is initialized.
   this->CheckInitSetup();

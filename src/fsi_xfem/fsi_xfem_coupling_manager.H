@@ -15,11 +15,11 @@ managers
 #define FSI_XFEM_COUPLING_MANAGER_H
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -52,14 +52,15 @@ namespace XFEM
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
+    virtual void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) = 0;
 
     //! Add the coupling rhs
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling) = 0;
+    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,
+        const CORE::LINALG::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)
     virtual void Update(double scaling) = 0;

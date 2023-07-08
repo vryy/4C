@@ -108,9 +108,9 @@ void INVANA::MatParManagerPerPatch::ApplyParametrization(
   // todo: this is not ok! loop over the single columns of matrix
   // and extract only the diagonal component.
   // matrix * projector_
-  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix, false, projector_, false);
+  Teuchos::RCP<Epetra_CrsMatrix> mr = CORE::LINALG::Multiply(fullmatrix, false, projector_, false);
   // projector'*matrix*projector
-  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(projector_, true, mr, false);
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = CORE::LINALG::Multiply(projector_, true, mr, false);
 
   Epetra_Vector diagonal(pmr->RowMap(), true);
   pmr->ExtractDiagonalCopy(diagonal);
@@ -316,8 +316,8 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
     partials.push_back(Teuchos::rcp(
         new Epetra_Map(-1, levelgids[i].size(), levelgids[i].data(), 0, optparams->Comm())));
   }
-  Teuchos::RCP<LINALG::MultiMapExtractor> levelmap =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(elemap, partials));
+  Teuchos::RCP<CORE::LINALG::MultiMapExtractor> levelmap =
+      Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(elemap, partials));
   // --------
 
   // -------- check connectivity within levels
@@ -333,7 +333,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
 
     // allreduced version to check existence of
     // neighbours across processors in this level
-    Teuchos::RCP<Epetra_Map> levelallred = LINALG::AllreduceEMap(*level);
+    Teuchos::RCP<Epetra_Map> levelallred = CORE::LINALG::AllreduceEMap(*level);
 
     // collect neighbouring information for this level
     PATCHES neighbours;
@@ -359,7 +359,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
     }
 
     // bring neighbour information to proc zero
-    Teuchos::RCP<Epetra_Map> tomap = LINALG::AllreduceEMap(*level, 0);
+    Teuchos::RCP<Epetra_Map> tomap = CORE::LINALG::AllreduceEMap(*level, 0);
     DRT::Exporter expo(*level, *tomap, level->Comm());
     expo.Export(neighbours);
 
@@ -383,7 +383,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
 
   // build paramlayout maps anew
   paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1, patchcount, 0, optparams->Map().Comm()));
-  paramlayoutmap_ = LINALG::AllreduceEMap(*paramlayoutmapunique_);
+  paramlayoutmap_ = CORE::LINALG::AllreduceEMap(*paramlayoutmapunique_);
 
   // export patch information to all procs
   DRT::Exporter expo(*paramlayoutmapunique_, *paramlayoutmap_, optparams->Map().Comm());
@@ -410,7 +410,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
     patchmaps.push_back(
         Teuchos::rcp(new Epetra_Map(-1, mygids.size(), mygids.data(), 0, optparams->Comm())));
   }
-  patchmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor(elemap, patchmaps));
+  patchmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(elemap, patchmaps));
 
   // build restrictor
   int maxbw = 0;
@@ -418,7 +418,7 @@ void INVANA::MatParManagerPerPatch::CreateLevelDictionary(int patchlevel)
   {
     if (maxbw < (int)it->second.size()) maxbw = it->second.size();
   }
-  Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(*patchmap_->FullMap(), 0);
+  Teuchos::RCP<Epetra_Map> colmap = CORE::LINALG::AllreduceEMap(*patchmap_->FullMap(), 0);
   projector_ =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *paramlayoutmapunique_, *colmap, maxbw, false));
 
@@ -525,7 +525,7 @@ void INVANA::MatParManagerPerPatch::FindLevelConnectivity(PATCHES& neighbourhood
 void INVANA::MatParManagerPerPatch::MakeHistogram()
 {
   // communicate solution to all procs
-  Teuchos::RCP<Epetra_Map> alllocal = LINALG::AllreduceEMap(*elewise_map_);
+  Teuchos::RCP<Epetra_Map> alllocal = CORE::LINALG::AllreduceEMap(*elewise_map_);
   Epetra_Vector data(*alllocal, true);
 
   // bring to every proc the same data
@@ -612,6 +612,6 @@ Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerPerPatch::InitialCovariance(
   interm->FillComplete(projector_->ColMap(), projector_->RangeMap());
 
   // interm * projector'
-  Teuchos::RCP<Epetra_CrsMatrix> cov = LINALG::Multiply(*interm, false, *projector_, true);
+  Teuchos::RCP<Epetra_CrsMatrix> cov = CORE::LINALG::Multiply(*interm, false, *projector_, true);
   return cov;
 }

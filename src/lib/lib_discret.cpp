@@ -626,7 +626,7 @@ void DRT::Discretization::SetState(
     }
 #endif
     // make a copy as in parallel such that no additional RCP points to the state vector
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
     tmp->Update(1.0, *state, 0.0);
     state_[nds][name] = tmp;
   }
@@ -639,7 +639,7 @@ void DRT::Discretization::SetState(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap, false);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
 
     // this is necessary to find out the number of nodesets in the beginning
     if (stateimporter_.size() <= nds)
@@ -939,8 +939,8 @@ void DRT::Discretization::RedistributeState(unsigned nds, const std::string& nam
   {
     // get the state and export it to the rowmap to be able to reset the state
     auto statevec = GetState(nds, name);
-    auto statevecrowmap = LINALG::CreateVector(*DofRowMap(nds), true);
-    LINALG::Export(*statevec, *statevecrowmap);
+    auto statevecrowmap = CORE::LINALG::CreateVector(*DofRowMap(nds), true);
+    CORE::LINALG::Export(*statevec, *statevecrowmap);
 
     // now set the state again
     SetState(nds, name, statevecrowmap);

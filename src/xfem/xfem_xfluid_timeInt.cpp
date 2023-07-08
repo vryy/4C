@@ -1707,14 +1707,14 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips(
 
   //------------------------------------
 
-  LINALG::Matrix<3, 1> n_coord_old(true);
+  CORE::LINALG::Matrix<3, 1> n_coord_old(true);
   n_old->Coordinates(&n_coord_old(0, 0));
 
-  LINALG::Matrix<3, 1> n_coord_new(true);
+  CORE::LINALG::Matrix<3, 1> n_coord_new(true);
   n_new->Coordinates(&n_coord_new(0, 0));
 
   // check if moving node (ALE case)
-  LINALG::Matrix<3, 1> n_diff(true);
+  CORE::LINALG::Matrix<3, 1> n_diff(true);
   n_diff.Update(1.0, n_coord_new, -1.0, n_coord_old);
 
   // TODO: for ALE we have to check whether the path of the point crosses at least one space-time
@@ -1807,7 +1807,8 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_Levelset(
 
 bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
     bool& changed_side,  /// did the node change the side ?
-    DRT::Element* side, const int coup_sid, const LINALG::Matrix<3, 1>& n_coord  /// node coodinates
+    DRT::Element* side, const int coup_sid,
+    const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
 )
 {
   bool node_within_Space_Time_Side = false;
@@ -1859,7 +1860,8 @@ template <DRT::Element::DiscretizationType side_distype,
     DRT::Element::DiscretizationType space_time_distype>
 bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     bool& within_space_time_side,  /// within the space time side
-    DRT::Element* side, const int coup_sid, const LINALG::Matrix<3, 1>& n_coord  /// node coodinates
+    DRT::Element* side, const int coup_sid,
+    const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
 )
 {
   // get the right cutter discretization for the given side
@@ -1885,7 +1887,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<space_time_distype>::numNodePerElement / 2;
 
   // space time side coordinates
-  LINALG::Matrix<3, numnode_space_time> xyze_st;
+  CORE::LINALG::Matrix<3, numnode_space_time> xyze_st;
 
   const int numnode = side->NumNode();
   DRT::Node** nodes = side->Nodes();
@@ -1898,8 +1900,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   {
     DRT::Node& node = *nodes[i];
 
-    LINALG::Matrix<3, 1> x_old(node.X());
-    LINALG::Matrix<3, 1> x_new(node.X());
+    CORE::LINALG::Matrix<3, 1> x_old(node.X());
+    CORE::LINALG::Matrix<3, 1> x_new(node.X());
 
     std::vector<int> lm;
     std::vector<double> mydisp_old;
@@ -1950,9 +1952,9 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     //------------------------------------------------------------------
     // get normal vector on side at new interface position at center of side
 
-    LINALG::Matrix<3, 1> normal(true);
+    CORE::LINALG::Matrix<3, 1> normal(true);
 
-    LINALG::Matrix<2, 1> xi_side(true);
+    CORE::LINALG::Matrix<2, 1> xi_side(true);
 
     if (numnode_side == 3)
     {
@@ -1968,16 +1970,16 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
       dserror("unknown side type with %d nodes", numnode_side);
 
     // Initialization
-    LINALG::Matrix<2, numnode_side> deriv(true);  // derivatives dr, ds
+    CORE::LINALG::Matrix<2, numnode_side> deriv(true);  // derivatives dr, ds
 
-    LINALG::Matrix<3, 2> derxy(true);
-    LINALG::Matrix<3, 1> dx_dr(true);
-    LINALG::Matrix<3, 1> dx_ds(true);
+    CORE::LINALG::Matrix<3, 2> derxy(true);
+    CORE::LINALG::Matrix<3, 1> dx_dr(true);
+    CORE::LINALG::Matrix<3, 1> dx_ds(true);
 
     // get current values
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
-    LINALG::Matrix<3, numnode_side> xyz_side_new(xyze_new);
+    CORE::LINALG::Matrix<3, numnode_side> xyz_side_new(xyze_new);
 
     derxy.MultiplyNT(xyz_side_new, deriv);
 
@@ -2024,7 +2026,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   within_space_time_side = pos->Compute();
 
 #ifdef DEBUG_TIMINT
-  LINALG::Matrix<3, 1> rst(true);  // local coordinates w.r.t space time element (r,s,t !!!)
+  CORE::LINALG::Matrix<3, 1> rst(true);  // local coordinates w.r.t space time element (r,s,t !!!)
   pos->LocalCoordinates(rst);
 
   if (within_space_time_side)
@@ -2044,7 +2046,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 // check the volume of the space time side, distorted space-time side ?
 // -------------------------------------------------------------------
 template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
-bool XFEM::XFluidTimeInt::CheckSTSideVolume(const LINALG::Matrix<3, numnode_space_time>& xyze_st)
+bool XFEM::XFluidTimeInt::CheckSTSideVolume(
+    const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st)
 {
   bool successful = true;
 
@@ -2054,7 +2057,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(const LINALG::Matrix<3, numnode_spac
   CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints_stab(
       DRT::ELEMENTS::DisTypeToStabGaussRule<space_time_distype>::rule);
 
-  LINALG::Matrix<nsd, 1> xsi(true);
+  CORE::LINALG::Matrix<nsd, 1> xsi(true);
 
   // coordinates of the current integration point
   const double* gpcoord = (intpoints_stab.IP().qxg)[0];
@@ -2064,8 +2067,8 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume(const LINALG::Matrix<3, numnode_spac
   }
 
 
-  LINALG::Matrix<nsd, numnode_space_time> deriv(true);
-  LINALG::Matrix<nsd, nsd> xjm(true);
+  CORE::LINALG::Matrix<nsd, numnode_space_time> deriv(true);
+  CORE::LINALG::Matrix<nsd, nsd> xjm(true);
 
   CORE::DRT::UTILS::shape_function_deriv1<space_time_distype>(xsi, deriv);
 
@@ -2268,7 +2271,7 @@ void XFEM::XFluidTimeInt::Output()
     for (int i = 0; i < dis_->NumMyRowNodes(); ++i)
     {
       const DRT::Node* actnode = dis_->lRowNode(i);
-      const LINALG::Matrix<3, 1> pos(actnode->X());
+      const CORE::LINALG::Matrix<3, 1> pos(actnode->X());
 
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>::const_iterator it =
           node_to_reconstr_method_.find(actnode->Id());

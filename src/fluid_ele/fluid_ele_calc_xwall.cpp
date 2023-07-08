@@ -414,8 +414,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetEleProperties(DRT::E
   numgpnormow_ = params.get<int>("gpnormow");
   numgpplane_ = params.get<int>("gppar");
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, my::xyze_);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
   PrepareGaussRule();
 
@@ -559,8 +560,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
   derxyenr_.Clear();
   derxyenr2_.Clear();
 
-  LINALG::Matrix<nsd_, 1> derpsigp(true);
-  LINALG::Matrix<numderiv2_, 1> der2psigp(true);
+  CORE::LINALG::Matrix<nsd_, 1> derpsigp(true);
+  CORE::LINALG::Matrix<numderiv2_, 1> der2psigp(true);
 
   double psigp = EnrichmentShapeDer(derpsigp, der2psigp);
 
@@ -597,9 +598,9 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
   // treat blending elements with ramp functions
   if (is_blending_ele_)
   {
-    LINALG::Matrix<nsd_, 1> derramp(true);
+    CORE::LINALG::Matrix<nsd_, 1> derramp(true);
     derramp.Multiply(derxy_, eramp_);
-    LINALG::Matrix<numderiv2_, 1> der2ramp(true);
+    CORE::LINALG::Matrix<numderiv2_, 1> der2ramp(true);
     der2ramp.Multiply(derxy2_, eramp_);
     double ramp = eramp_.Dot(funct_);
 
@@ -658,22 +659,22 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalEnrichment()
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EnrichmentShapeDer(
-    LINALG::Matrix<nsd_, 1>& derpsigp, LINALG::Matrix<numderiv2_, 1>& der2psigp)
+    CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp)
 {
   // calculate transformation ---------------------------------------
   double wdist = ewdist_.Dot(funct_);
   double tauw = etauw_.Dot(funct_);
-  LINALG::Matrix<nsd_, 1> derwdist(true);
+  CORE::LINALG::Matrix<nsd_, 1> derwdist(true);
   derwdist.Multiply(derxy_, ewdist_);
-  LINALG::Matrix<nsd_, 1> dertauw(true);
+  CORE::LINALG::Matrix<nsd_, 1> dertauw(true);
   dertauw.Multiply(derxy_, etauw_);
-  LINALG::Matrix<numderiv2_, 1> der2wdist(true);
+  CORE::LINALG::Matrix<numderiv2_, 1> der2wdist(true);
   if (my::is_higher_order_ele_) der2wdist.Multiply(derxy2_, ewdist_);
-  LINALG::Matrix<numderiv2_, 1> der2tauw(true);
+  CORE::LINALG::Matrix<numderiv2_, 1> der2tauw(true);
   if (my::is_higher_order_ele_) der2tauw.Multiply(derxy2_, etauw_);
-  LINALG::Matrix<nsd_, 1> dertrans(true);
-  LINALG::Matrix<numderiv2_, 1> der2trans_1(true);
-  LINALG::Matrix<numderiv2_, 1> der2trans_2(true);
+  CORE::LINALG::Matrix<nsd_, 1> dertrans(true);
+  CORE::LINALG::Matrix<numderiv2_, 1> der2trans_1(true);
+  CORE::LINALG::Matrix<numderiv2_, 1> der2trans_2(true);
 
   if (tauw < 1.0e-10) dserror("tauw is almost zero");
   if (dens_ < 1.0e-10) dserror("density is almost zero");
@@ -818,19 +819,20 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  LINALG::Matrix<nsd_, nen_> evel(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evel(true);
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evel, nullptr, "vel");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, my::xyze_);
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
-    LINALG::Matrix<nsd_, nen_> egridv(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
     my::GetGridDispVelALE(discretization, lm, edispnp, egridv);
     evel -= egridv;
   }
@@ -847,14 +849,14 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
     // calculate only for the wall nodes
     if (ewdist_(inode) < 1e-4)
     {
-      LINALG::Matrix<3, 1> test = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
+      CORE::LINALG::Matrix<3, 1> test = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point
       EvalShapeFuncAndDerivsAtIntPoint(gpc, 1.0);
 
       // calculate wall-normal vector
-      LINALG::Matrix<nsd_, 1> normwall(true);
+      CORE::LINALG::Matrix<nsd_, 1> normwall(true);
       normwall.Multiply(derxy_, ewdist_);
 
       // at certain corner elements, it can happen, that the normal vector calculated at the
@@ -876,19 +878,19 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
       // unit vector
       normwall.Scale(1.0 / normwall.Norm2());
 
-      LINALG::Matrix<nsd_, nsd_> velderxy(true);
+      CORE::LINALG::Matrix<nsd_, nsd_> velderxy(true);
       velderxy.MultiplyNT(evel, my::derxy_);
 
       // remove normal part
 
       //      normwall.Scale(1.0/normwall.Norm2());
-      LINALG::Matrix<nsd_, nsd_> velderxywoun(true);
+      CORE::LINALG::Matrix<nsd_, nsd_> velderxywoun(true);
       for (int idim = 0; idim < nsd_; idim++)
         for (int jdim = 0; jdim < nsd_; jdim++)
           velderxywoun(idim, jdim) = velderxy(idim, jdim) * (1.0 - abs(normwall(idim)));
 
       // now transform to derivative w.r.t. n
-      LINALG::Matrix<nsd_, 1> veldern(true);
+      CORE::LINALG::Matrix<nsd_, 1> veldern(true);
       for (int idim = 0; idim < nsd_; idim++)
         for (int jdim = 0; jdim < nsd_; jdim++)
           veldern(idim) += velderxywoun(idim, jdim) * normwall(jdim);
@@ -944,8 +946,8 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
   Epetra_SerialDenseMatrix elemat_epetra2;
   elemat_epetra1.Shape(nen_, nen_);
   elemat_epetra2.Shape(nen_, nen_);
-  LINALG::Matrix<nen_, nen_> Amat(elemat_epetra1.A(), true);
-  LINALG::Matrix<nen_, nen_> Bmat(elemat_epetra2.A(), true);
+  CORE::LINALG::Matrix<nen_, nen_> Amat(elemat_epetra1.A(), true);
+  CORE::LINALG::Matrix<nen_, nen_> Bmat(elemat_epetra2.A(), true);
 
   double vol = 0.0;
   //------------------------------------------------------------------
@@ -997,7 +999,7 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
     vol += my::fac_;
   }  // gauss loop
 
-  const double maxeigenvalue = LINALG::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
+  const double maxeigenvalue = CORE::LINALG::GeneralizedEigen(elemat_epetra1, elemat_epetra2);
 
   double h_u = 0.0;
   if (my::fldpara_->WhichTau() == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall ||
@@ -1047,9 +1049,10 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK(DRT::ELEMENTS::Fl
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, my::xyze_);
 
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
   elevec1[0] = CalcMK();
@@ -1071,16 +1074,16 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  LINALG::Matrix<nsd_, nen_> eveln(true);
+  CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &eveln, nullptr, "veln");
 
-  LINALG::Matrix<nsd_, nen_> eaccn(true);
+  CORE::LINALG::Matrix<nsd_, nen_> eaccn(true);
   bool switchonaccn = discretization.HasState("accn");
   if (switchonaccn)
     my::ExtractValuesFromGlobalVector(
         discretization, lm, *my::rotsymmpbc_, &eaccn, nullptr, "accn");
 
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   bool switchonvelnp = discretization.HasState("velnp");
   if (switchonvelnp)
     my::ExtractValuesFromGlobalVector(
@@ -1090,9 +1093,10 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, my::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, my::xyze_);
 
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
   //  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
@@ -1106,14 +1110,14 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
 
-    LINALG::Matrix<nen_, 1> newfunct(my::funct_);
+    CORE::LINALG::Matrix<nen_, 1> newfunct(my::funct_);
 
     XWallTauWIncBack();
 
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
 
-    LINALG::Matrix<nen_, 1> oldfunct(my::funct_);
+    CORE::LINALG::Matrix<nen_, 1> oldfunct(my::funct_);
 
     XWallTauWIncForward();
 
@@ -1121,8 +1125,8 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
     //                         MASS MATRIX
     //----------------------------------------------------------------------------
     std::array<int, nsd_> idim_nsd_p_idim;
-    LINALG::Matrix<nsd_ * nsd_, enren_> lin_resM_Du(true);
-    LINALG::Matrix<enren_ * nsd_, enren_ * nsd_> estif_u(true);
+    CORE::LINALG::Matrix<nsd_ * nsd_, enren_> lin_resM_Du(true);
+    CORE::LINALG::Matrix<enren_ * nsd_, enren_ * nsd_> estif_u(true);
 
     for (int idim = 0; idim < nsd_; ++idim)
     {
@@ -1307,7 +1311,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    LINALG::Matrix<nsd_, nen_>& edispnp)
+    CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp, NULL, "dispnp");
 
@@ -1320,8 +1324,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
 {
   // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);

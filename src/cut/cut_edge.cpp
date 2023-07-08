@@ -686,8 +686,8 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
 {
   bool signeddistance = false;
   double distance = 0;
-  LINALG::Matrix<probDim, 1> xsi;
-  LINALG::Matrix<probDim, numNodesEdge> xyze_edge;
+  CORE::LINALG::Matrix<probDim, 1> xsi;
+  CORE::LINALG::Matrix<probDim, numNodesEdge> xyze_edge;
   Coordinates(xyze_edge.A());
 
   const std::vector<Node*> edge_nodes = Nodes();
@@ -699,7 +699,7 @@ void CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
 
     Node* node = *it;
     Point* p = node->point();
-    LINALG::Matrix<probDim, 1> p_coord;
+    CORE::LINALG::Matrix<probDim, 1> p_coord;
     p->Coordinates(p_coord.A());
 
     bool conv = false;
@@ -769,7 +769,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
 #endif
 
   // nodal edge coordinates
-  LINALG::Matrix<probDim, numNodesEdge> xyze_this;
+  CORE::LINALG::Matrix<probDim, numNodesEdge> xyze_this;
   Coordinates(xyze_this.A());
 
   // nodal pseudo side coordinates
@@ -843,8 +843,8 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
       {
         // happens when one edge lies on another
 
-        std::vector<LINALG::Matrix<probDim, 1>> xyz_cuts;
-        std::vector<LINALG::Matrix<dimEdge, 1>> r_cuts;
+        std::vector<CORE::LINALG::Matrix<probDim, 1>> xyz_cuts;
+        std::vector<CORE::LINALG::Matrix<dimEdge, 1>> r_cuts;
         inter_ptr->FinalPoints(xyz_cuts);
         inter_ptr->LocalSideCoordinates(r_cuts);
 

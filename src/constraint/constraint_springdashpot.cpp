@@ -95,7 +95,7 @@ UTILS::SpringDashpot::SpringDashpot(
 /*----------------------------------------------------------------------*
  * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
  * ---------------------------------------------------------------------*/
-void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stiff,
+void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
     Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
     const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
 {
@@ -175,7 +175,7 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stif
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) dserror("error while evaluating elements");
 
-        if (assvec) LINALG::Assemble(*fint, elevector1, lm, lmowner);
+        if (assvec) CORE::LINALG::Assemble(*fint, elevector1, lm, lmowner);
         if (assmat) stiff->Assemble(curr.second->Id(), lmstride, elematrix1, lm, lmowner);
 
         // save spring stress for postprocessing
@@ -420,9 +420,9 @@ void UTILS::SpringDashpot::EvaluateForce(Epetra_Vector& fint,
 /*----------------------------------------------------------------------*
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
-    Teuchos::ParameterList p)
+void UTILS::SpringDashpot::EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff,
+    Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
+    const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) dserror("Cannot find displacement state in discretization");
 
@@ -756,7 +756,7 @@ void UTILS::SpringDashpot::InitializeCurSurfNormal()
 
   // empty displacement vector
   Teuchos::RCP<Epetra_Vector> disp;
-  disp = LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
+  disp = CORE::LINALG::CreateVector(*(actdisc_->DofRowMap()), true);
 
   // initialize gap in reference configuration
   mortar_->Interface()->EvaluateDistances(disp, tmpnormals_, tmpdnormals_, gap0_, tmpdgap_);

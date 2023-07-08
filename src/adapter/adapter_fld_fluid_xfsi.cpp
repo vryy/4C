@@ -29,7 +29,7 @@
 /* constructor */
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
     const std::string coupling_name,                      // name of the FSI coupling condition
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : FluidWrapper(fluid),  // the XFluid object is set as fluid_ in the FluidWrapper
       fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
@@ -78,7 +78,7 @@ void ADAPTER::XFluidFSI::Init()
   fpsiinterface_->Setup(
       *xfluid_->Discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
-  meshmap_ = Teuchos::rcp(new LINALG::MapExtractor());
+  meshmap_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
 }
 
 
@@ -153,7 +153,7 @@ void ADAPTER::XFluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int
   if (nds_master != 0) dserror("nds_master is supposed to be 0 here");
 
   meshmap_->Setup(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), mm,
-      LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
+      CORE::LINALG::SplitMap(*xfluid_->DiscretisationXFEM()->InitialDofRowMap(), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -203,19 +203,19 @@ void ADAPTER::XFluidFSI::DisplacementToVelocity(
 
 
 /// return xfluid coupling matrix between structure and fluid as sparse matrices
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Fluid_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Fluid_Matrix()
 {
   return xfluid_->C_sx_Matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between fluid and structure as sparse matrices
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Fluid_Struct_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Fluid_Struct_Matrix()
 {
   return xfluid_->C_xs_Matrix(coupling_name_);
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::XFluidFSI::C_Struct_Struct_Matrix()
 {
   return xfluid_->C_ss_Matrix(coupling_name_);
 }

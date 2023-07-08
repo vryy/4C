@@ -49,7 +49,7 @@ namespace DRT
   class DiscretizationXFEM;
   class IndependentDofSet;
 }  // namespace DRT
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -57,7 +57,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace CORE::GEO
 {
   class CutWizard;
@@ -111,7 +111,7 @@ namespace FLD
     XFluid(const Teuchos::RCP<DRT::Discretization>& actdis,  ///< background fluid discretization
         const Teuchos::RCP<DRT::Discretization>& mesh_coupdis,
         const Teuchos::RCP<DRT::Discretization>& levelset_coupdis,
-        const Teuchos::RCP<LINALG::Solver>& solver,          ///< fluid solver
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         const Teuchos::RCP<IO::DiscretizationWriter>&
             output,            ///< discretization writer for paraview output
@@ -166,7 +166,7 @@ namespace FLD
     void CheckMatrixNullspace();
 
     /// return Teuchos::rcp to linear solver
-    Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; };
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; };
 
     /// evaluate errors compared to implemented analytical solutions
     virtual Teuchos::RCP<std::vector<double>> EvaluateErrorComparedToAnalyticalSol();
@@ -260,29 +260,29 @@ namespace FLD
       return state_->xfluiddofrowmap_.create_weak();  // return a weak rcp
     }
 
-    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return state_->velpressplitter_; }
     Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return state_->velpressplitter_->OtherMap(); }
     Teuchos::RCP<const Epetra_Map> PressureRowMap() { return state_->velpressplitter_->CondMap(); }
 
-    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitterStd() { return velpressplitter_std_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitterStd() { return velpressplitter_std_; }
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->sysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(state_->sysmat_);
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(state_->sysmat_, false);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(state_->sysmat_, false);
     }
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_sx_Matrix(const std::string& cond_name);
-    Teuchos::RCP<LINALG::SparseMatrix> C_xs_Matrix(const std::string& cond_name);
-    Teuchos::RCP<LINALG::SparseMatrix> C_ss_Matrix(const std::string& cond_name);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_sx_Matrix(const std::string& cond_name);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_xs_Matrix(const std::string& cond_name);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_ss_Matrix(const std::string& cond_name);
     Teuchos::RCP<Epetra_Vector> RHS_s_Vec(const std::string& cond_name);
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return state_->dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return state_->dbcmaps_; }
 
     /// set the maximal number of nonlinear steps
     void SetItemax(int itemax) { params_->set<int>("max nonlin iter steps", itemax); }
@@ -381,7 +381,8 @@ namespace FLD
     virtual Teuchos::RCP<FLD::XFluidState> GetNewState();
 
     void ExtractNodeVectors(Teuchos::RCP<DRT::DiscretizationXFEM> dis,
-        std::map<int, LINALG::Matrix<3, 1>>& nodevecmap, Teuchos::RCP<Epetra_Vector> dispnp_col);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& nodevecmap,
+        Teuchos::RCP<Epetra_Vector> dispnp_col);
 
     /// call the loop over elements to assemble volume and interface integrals
     virtual void AssembleMatAndRHS(int itnum  ///< iteration number
@@ -391,14 +392,15 @@ namespace FLD
     void AssembleMatAndRHS_VolTerms();
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    void AssembleMatAndRHS_FaceTerms(const Teuchos::RCP<LINALG::SparseMatrix>& sysmat,
+    void AssembleMatAndRHS_FaceTerms(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& sysmat,
         const Teuchos::RCP<Epetra_Vector>& residual_col,
         const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
         bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
-    void AssembleMatAndRHS_GradientPenalty(Teuchos::RCP<LINALG::MapExtractor> ghost_penaly_dbcmaps,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
+    void AssembleMatAndRHS_GradientPenalty(
+        Teuchos::RCP<CORE::LINALG::MapExtractor> ghost_penaly_dbcmaps,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_gp, Teuchos::RCP<Epetra_Vector> residual_gp,
         Teuchos::RCP<Epetra_Vector> vec);
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
@@ -522,7 +524,7 @@ namespace FLD
     );
 
     /// create DBC and free map and return their common extractor
-    Teuchos::RCP<LINALG::MapExtractor> CreateDBCMapExtractor(
+    Teuchos::RCP<CORE::LINALG::MapExtractor> CreateDBCMapExtractor(
         const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global dof ids
         const Epetra_Map* dofrowmap                       ///< dofrowmap
     );
@@ -539,7 +541,7 @@ namespace FLD
     /// reconstruct ghost values using ghost penalty approach
     void XTimint_ReconstructGhostValues(
         Teuchos::RCP<Epetra_Vector> vec,  ///< vector to be reconstructed
-        Teuchos::RCP<LINALG::MapExtractor>
+        Teuchos::RCP<CORE::LINALG::MapExtractor>
             ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty
                                    ///< reconstruction?
         const bool screen_out      ///< screen output?
@@ -736,7 +738,7 @@ namespace FLD
     int itnum_out_;
 
     /// vel-pres splitter for output purpose (and outer iteration convergence)
-    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_std_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_std_;
 
     /// output service class
     Teuchos::RCP<XFluidOutputService> output_service_;

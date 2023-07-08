@@ -164,7 +164,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   const DRT::Node* const* ref_nodes = ref_ele.Nodes();
 
-  const LINALG::Matrix<REF_DIM, 1> rxi(ref_xi, true);
+  const CORE::LINALG::Matrix<REF_DIM, 1> rxi(ref_xi, true);
 
   shape_function<ref_type>(ref_ele, rxi, ref_val_);
 
@@ -193,10 +193,10 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   }
 
   // initial value
-  LINALG::Matrix<TAR_DIM, 1> txi(target_xi, true);
+  CORE::LINALG::Matrix<TAR_DIM, 1> txi(target_xi, true);
   alpha = 0.0;
 
-  LINALG::Matrix<TAR_DIM, 1> txi_center(false);
+  CORE::LINALG::Matrix<TAR_DIM, 1> txi_center(false);
   CORE::DRT::UTILS::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
   std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
 
@@ -213,7 +213,7 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     LMatGP(lmat_, tar_deriv1_, target_ele, tar_coords_, target_xi, n_ref_);
 
     rhs_.Scale(-1.0);
-    const double det = LINALG::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
+    const double det = CORE::LINALG::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
 
     // safety check
     if (std::abs(det) < 1.0e-12)
@@ -276,12 +276,12 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
 bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::RhsGP(
-    LINALG::Matrix<probdim, 1>& rhs, const LINALG::Matrix<probdim, 1>& x_ref,
-    const LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
-    const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+    CORE::LINALG::Matrix<probdim, 1>& rhs, const CORE::LINALG::Matrix<probdim, 1>& x_ref,
+    const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
+    const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
     const double& alpha) const
 {
-  LINALG::Matrix<probdim, 1> x_tar(false);
+  CORE::LINALG::Matrix<probdim, 1> x_tar(false);
   const bool status = GetGlobalPosition<tar_type>(target_ele, tar_coords, tar_xi, x_tar);
 
   // evaluate right hand side
@@ -297,13 +297,13 @@ template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType 
     DRT::Element::DiscretizationType tar_type>
 template <DRT::Element::DiscretizationType type, unsigned numnodes>
 bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGlobalPosition(
-    MORTAR::MortarElement& ele, const LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
-    LINALG::Matrix<probdim, 1>& pos) const
+    MORTAR::MortarElement& ele, const CORE::LINALG::Matrix<probdim, numnodes>& coords,
+    const double* xi, CORE::LINALG::Matrix<probdim, 1>& pos) const
 {
   const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
-  const LINALG::Matrix<dim, 1> mat_xi(xi, true);
+  const CORE::LINALG::Matrix<dim, 1> mat_xi(xi, true);
 
-  LINALG::Matrix<numnodes, 1> val(true);
+  CORE::LINALG::Matrix<numnodes, 1> val(true);
   const bool status = shape_function<type>(ele, mat_xi, val);
 
   pos.Multiply(coords, val);
@@ -315,11 +315,12 @@ bool CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::GetGloba
 template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType ref_type,
     DRT::Element::DiscretizationType tar_type>
 void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::LMatGP(
-    LINALG::Matrix<probdim, probdim>& lmat, LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1,
-    MORTAR::MortarElement& tar_ele, const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords,
-    const double* tar_xi, const LINALG::Matrix<probdim, 1>& n_ref) const
+    CORE::LINALG::Matrix<probdim, probdim>& lmat,
+    CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::MortarElement& tar_ele,
+    const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+    const CORE::LINALG::Matrix<probdim, 1>& n_ref) const
 {
-  const LINALG::Matrix<TAR_DIM, 1> txi(tar_xi, true);
+  const CORE::LINALG::Matrix<TAR_DIM, 1> txi(tar_xi, true);
   std::fill(lmat.A(), lmat.A() + 2 * probdim, 0.0);
 
   shape_function_deriv1<tar_type>(tar_ele, txi, tar_deriv1);

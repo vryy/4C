@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of eigenvalue methods for namespace LINALG
+\brief A collection of eigenvalue methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -17,7 +17,7 @@
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Compute all eigenvalues of a real symmetric matrix A
@@ -79,7 +79,8 @@ namespace LINALG
    eigenvalues \param V (out):       M-by-M orthonormal matrix of eigenvectors
    */
   template <unsigned int dim>
-  void SYEV(LINALG::Matrix<dim, dim>& A, LINALG::Matrix<dim, dim>& S, LINALG::Matrix<dim, dim>& V)
+  void SYEV(CORE::LINALG::Matrix<dim, dim>& A, CORE::LINALG::Matrix<dim, dim>& S,
+      CORE::LINALG::Matrix<dim, dim>& V)
   {
     const char jobz = 'V';               // Compute eigenvalues and eigenvectors.
     const char uplo = 'U';               // Upper triangle of A is stored;
@@ -106,6 +107,6 @@ namespace LINALG
     return;
   }
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_DENSEMATRIX_EIGEN_H

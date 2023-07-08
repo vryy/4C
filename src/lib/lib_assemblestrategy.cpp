@@ -20,9 +20,10 @@
 #include "linalg_utils_sparse_algebra_assemble.H"
 
 DRT::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
     : firstdofset_(firstdofset),
       seconddofset_(seconddofset),
       systemmatrix1_(systemmatrix1),
@@ -183,7 +184,7 @@ void DRT::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
+void DRT::AssembleStrategy::Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
     const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
@@ -193,7 +194,7 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
+void DRT::AssembleStrategy::Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
     const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
@@ -204,7 +205,8 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, int eid,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, double val, int rgid, int cgid)
+void DRT::AssembleStrategy::Assemble(
+    CORE::LINALG::SparseOperator& sysmat, double val, int rgid, int cgid)
 {
   sysmat.Assemble(val, rgid, cgid);
 }
@@ -214,7 +216,7 @@ void DRT::AssembleStrategy::Assemble(LINALG::SparseOperator& sysmat, double val,
 void DRT::AssembleStrategy::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  LINALG::Assemble(V, Vele, lm, lmowner);
+  CORE::LINALG::Assemble(V, Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*
@@ -223,5 +225,5 @@ void DRT::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
     const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  LINALG::Assemble(V, n, Vele, lm, lmowner);
+  CORE::LINALG::Assemble(V, n, Vele, lm, lmowner);
 }

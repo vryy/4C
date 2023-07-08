@@ -65,9 +65,9 @@ namespace MIXTURE
      * @param S_stress 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
      * @param cmat Constitutive tensor in Voigt notation
      */
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * @brief Evaluates the stress and material linearization of the constituents with an inelastic
@@ -88,9 +88,10 @@ namespace MIXTURE
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
-    void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iF_in,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) override;
 
    private:
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params_;

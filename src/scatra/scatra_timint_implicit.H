@@ -72,7 +72,7 @@ namespace IO
   class RuntimeCsvWriter;
 }  // namespace IO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -83,7 +83,7 @@ namespace LINALG
   class KrylovProjector;
   enum class EquilibrationMethod;
   enum class MatrixType;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FLD
 {
@@ -120,7 +120,7 @@ namespace SCATRA
 
     //! Standard Constructor
     ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<LINALG::Solver> solver,                    //!< linear solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,              //!< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,            //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,       //!< supplementary parameter list
         Teuchos::RCP<IO::DiscretizationWriter> output,          //!< output writer
@@ -186,7 +186,7 @@ namespace SCATRA
     void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const;
 
     //! prepare time loop
     virtual void PrepareTimeLoop();
@@ -365,7 +365,7 @@ namespace SCATRA
     void ApplyBCToSystem();
 
     void EvaluateInitialTimeDerivative(
-        Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
     virtual void PreCalcInitialTimeDerivative(){};
@@ -386,10 +386,10 @@ namespace SCATRA
     bool MacroScale() const { return macro_scale_; };
 
     //! return type of equilibration of global system of scalar transport equations
-    LINALG::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
+    CORE::LINALG::EquilibrationMethod EquilibrationMethod() const { return equilibrationmethod_; }
 
     //! return type of global system matrix in global system of equations
-    LINALG::MatrixType MatrixType() const { return matrixtype_; }
+    CORE::LINALG::MatrixType MatrixType() const { return matrixtype_; }
 
     //! Provide enum of time integration scheme
     INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
@@ -407,16 +407,16 @@ namespace SCATRA
     virtual void PrintTimeStepInfo();
 
     //! return system matrix as sparse operator
-    Teuchos::RCP<LINALG::SparseOperator> SystemMatrixOperator() { return sysmat_; };
+    Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrixOperator() { return sysmat_; };
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     //! return system matrix downcasted as block sparse matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMaps() const { return blockmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMaps() const { return blockmaps_; }
 
     //! return residual vector
     Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
@@ -431,7 +431,7 @@ namespace SCATRA
     bool IsIncremental() { return incremental_; }
 
     //! return Krylov projector
-    Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> Projector() { return projector_; }
 
     //! return number of dofset associated with displacement dofs
     int NdsDisp() const override { return nds_disp_; }
@@ -458,7 +458,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_MultiVector> FluxBoundary() const { return flux_boundary_; };
 
     //! return Dirichlet map
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
     void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -484,7 +484,7 @@ namespace SCATRA
     const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() const { return output_; }
 
     //! returns map extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<LINALG::MapExtractor> Splitter() const { return splitter_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> Splitter() const { return splitter_; }
 
     //! output solution and restart data to file
     virtual void Output(const int num = 0);
@@ -493,7 +493,7 @@ namespace SCATRA
     bool ConvergenceCheck(int itnum, int itmax, const double ittol);
 
     //! return solver
-    const Teuchos::RCP<LINALG::Solver>& Solver() const { return solver_; }
+    const Teuchos::RCP<CORE::LINALG::Solver>& Solver() const { return solver_; }
 
     //! return parameters for finite difference check
     INPAR::SCATRA::FDCheck FDCheckType() const { return fdcheck_; };
@@ -516,7 +516,7 @@ namespace SCATRA
     const Teuchos::RCP<std::vector<double>>& RelErrors() const { return relerrors_; };
 
     //! output performance statistics associated with linear solver into *.csv file
-    static void OutputLinSolverStats(const LINALG::Solver& solver,  //!< linear solver
+    static void OutputLinSolverStats(const CORE::LINALG::Solver& solver,  //!< linear solver
         const double& time,    //!< solver time maximized over all processors
         const int& step,       //!< time step
         const int& iteration,  //!< Newton-Raphson iteration number
@@ -603,7 +603,7 @@ namespace SCATRA
     //! build null spaces associated with blocks of global system matrix. Hand in solver to access
     //! parameter list and initial number of block (e.g. for coupled problems)
     virtual void BuildBlockNullSpaces(
-        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const;
+        Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -764,13 +764,13 @@ namespace SCATRA
     /*========================================================================*/
 
     //! compute contribution of permeable surface/interface
-    void SurfacePermeability(Teuchos::RCP<LINALG::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                                    //!< rhs vector
+    void SurfacePermeability(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                                          //!< rhs vector
     );
 
     //! interface for fps3i problem
-    void KedemKatchalsky(Teuchos::RCP<LINALG::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                                //!< rhs vector
+    void KedemKatchalsky(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                                      //!< rhs vector
     );
 
     /*========================================================================*/
@@ -866,13 +866,13 @@ namespace SCATRA
     );
 
     //! evaluate Neumann inflow boundary condition
-    void ComputeNeumannInflow(Teuchos::RCP<LINALG::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                                     //!< ?
+    void ComputeNeumannInflow(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+        Teuchos::RCP<Epetra_Vector> rhs                                           //!< ?
     );
 
     //! evaluate boundary condition due to convective heat transfer
-    void EvaluateConvectiveHeatTransfer(Teuchos::RCP<LINALG::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                                               //!< ?
+    void EvaluateConvectiveHeatTransfer(Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< ?
+        Teuchos::RCP<Epetra_Vector> rhs                                                     //!< ?
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -918,20 +918,20 @@ namespace SCATRA
     //! compute contributions of solution-depending boundary and interface conditions to global
     //! system of equations
     virtual void EvaluateSolutionDependingConditions(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
     //! compute contribution of Robin boundary condition to eq. system
     void EvaluateRobinBoundaryConditions(
-        Teuchos::RCP<LINALG::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs               //!< rhs vector
+        Teuchos::RCP<CORE::LINALG::SparseOperator> matrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
     );
 
     //! compute contributions of additional solution-depending models to global system of equations
     virtual void EvaluateAdditionalSolutionDependingModels(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix
+        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
     );
 
     //! perform Aitken relaxation
@@ -1081,7 +1081,7 @@ namespace SCATRA
     const int probnum_;
 
     //! solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -1093,7 +1093,7 @@ namespace SCATRA
     int myrank_;
 
     //! Extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<LINALG::MapExtractor> splitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> splitter_;
 
     //! error file handle
     FILE* errfile_;
@@ -1119,10 +1119,10 @@ namespace SCATRA
     INPAR::SCATRA::SolverType solvtype_;
 
     //! type of equilibration of global system of scalar transport equations
-    const LINALG::EquilibrationMethod equilibrationmethod_;
+    const CORE::LINALG::EquilibrationMethod equilibrationmethod_;
 
     //! type of global system matrix in global system of equations
-    const LINALG::MatrixType matrixtype_;
+    const CORE::LINALG::MatrixType matrixtype_;
 
     //! incremental or linear full solving? rename -> is_incremental_
     bool incremental_;
@@ -1181,7 +1181,7 @@ namespace SCATRA
     Teuchos::RCP<Epetra_MultiVector> flux_boundary_;
 
     //! map extractor associated with boundary segments for flux calculation
-    Teuchos::RCP<LINALG::MultiMapExtractor> flux_boundary_maps_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> flux_boundary_maps_;
 
     //! vector for statistical evaluation of normal fluxes
     Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
@@ -1359,16 +1359,16 @@ namespace SCATRA
     INPAR::SCATRA::ConvForm convform_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;
@@ -1393,13 +1393,13 @@ namespace SCATRA
     /*========================================================================*/
 
     //! only necessary for AVM3: fine-scale subgrid-diffusivity matrix
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_sd_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_sd_;
 
     //! only necessary for AVM3: scale-separation matrix ? rename small caps
-    Teuchos::RCP<LINALG::SparseMatrix> Sep_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Sep_;
 
     //! only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix ? rename small caps
-    Teuchos::RCP<LINALG::SparseMatrix> Mnsv_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Mnsv_;
 
     /*========================================================================*/
     //! @name turbulent flow variables
@@ -1435,7 +1435,7 @@ namespace SCATRA
     /*========================================================================*/
 
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
 
     /*========================================================================*/
     //! @name not classified variables - to be kept clean!!!

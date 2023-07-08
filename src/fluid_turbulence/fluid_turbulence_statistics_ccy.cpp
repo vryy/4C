@@ -46,11 +46,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   // allocate some vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  meanvelnp_ = LINALG::CreateVector(*dofrowmap, true);
+  meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   if (withscatra_)
   {
-    meanscanp_ = LINALG::CreateVector(*dofrowmap, true);
+    meanscanp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
     // meanfullphinp_ is initalized in ApplyScatraResults()
   }
 
@@ -671,8 +671,8 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("velnp")), myvelnp, lm);
 
     // create Matrix objects
-    LINALG::Matrix<3, 27> evelnp;
-    LINALG::Matrix<27, 1> eprenp;
+    CORE::LINALG::Matrix<3, 27> evelnp;
+    CORE::LINALG::Matrix<27, 1> eprenp;
 
     // insert velocity  into element array
     for (int i = 0; i < 27; ++i)
@@ -686,11 +686,11 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       eprenp(i) = myvelnp[3 + fi];
     }
 
-    LINALG::Matrix<1, 27> escanp(true);
+    CORE::LINALG::Matrix<1, 27> escanp(true);
 
     //! scalar at t_(n+1) or t_(n+alpha_F)
     const int nen = 27;  // only quadratic nurbs elements are supported!!
-    std::vector<LINALG::Matrix<nen, 1>> ephinp_(numscatradofpernode_);
+    std::vector<CORE::LINALG::Matrix<nen, 1>> ephinp_(numscatradofpernode_);
 
     if (withscatra_)
     {
@@ -736,7 +736,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     {
       case DRT::Element::nurbs27:
       {
-        LINALG::Matrix<3, 1> vel;
+        CORE::LINALG::Matrix<3, 1> vel;
 
         // element local point position
         Epetra_SerialDenseVector uv(3);
@@ -1503,7 +1503,7 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
       scatradis_ = scatradis;  // now we have access
 
     // we do not have to cast to a NURBSDiscretization here!
-    meanfullphinp_ = LINALG::CreateVector(*(scatradis_->DofRowMap()), true);
+    meanfullphinp_ = CORE::LINALG::CreateVector(*(scatradis_->DofRowMap()), true);
     numscatradofpernode_ = scatradis_->NumDof(scatradis_->lRowNode(0));
 
     // now we know about the number of scatra dofs and can allocate:

@@ -54,10 +54,10 @@ namespace WEAR
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-      LINALG::Matrix<numnod, 1> funct;
-      LINALG::Matrix<ndim, numnod> xcure;
-      LINALG::Matrix<ndim, ndim> xjm;
-      LINALG::Matrix<ndim, numnod> deriv;
+      CORE::LINALG::Matrix<numnod, 1> funct;
+      CORE::LINALG::Matrix<ndim, numnod> xcure;
+      CORE::LINALG::Matrix<ndim, ndim> xjm;
+      CORE::LINALG::Matrix<ndim, numnod> deriv;
 
       // spatial displacements
       std::vector<double> mydisp_source(lm.size());

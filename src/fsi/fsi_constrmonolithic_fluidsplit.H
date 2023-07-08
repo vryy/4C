@@ -15,12 +15,12 @@
 #include "fsi_constrmonolithic.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FSI
 {
@@ -40,7 +40,7 @@ namespace FSI
     virtual void SetupSystem();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
@@ -94,21 +94,21 @@ namespace FSI
     /// setup RHS contributions based on terms for first nonlinear iteration
     void SetupRHSFirstiter(Epetra_Vector& f);
 
-    Teuchos::RCP<LINALG::SparseMatrix> sconT_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sconT_;
 
     /// transformation of fluid matrix
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
 
     /// transformation of shape derivative matrix
-    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fmigtransform_;
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmggtransform_;
 
     /// transformation of ale matrix
-    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
   };
 }  // namespace FSI
 

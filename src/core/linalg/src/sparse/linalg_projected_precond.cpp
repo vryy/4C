@@ -15,28 +15,28 @@
 /* --------------------------------------------------------------------
                           Constructor
    -------------------------------------------------------------------- */
-LINALG::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond,
-    bool project, Teuchos::RCP<LINALG::KrylovProjector> projector)
+CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond,
+    bool project, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
     : project_(project), precond_(precond), projector_(projector)
 {
   if (project_ && (projector == Teuchos::null))
     dserror("Kernel projection enabled but got no projector object");
 
   return;
-}  // LINALG::LinalgPrecondOperator::LinalgPrecondOperator
+}  // CORE::LINALG::LinalgPrecondOperator::LinalgPrecondOperator
 
 /* --------------------------------------------------------------------
                           Destructor
    -------------------------------------------------------------------- */
-LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
+CORE::LINALG::LinalgPrecondOperator::~LinalgPrecondOperator()
 {
   return;
-}  // LINALG::LinalgPrecondOperator::~KrylovProjector
+}  // CORE::LINALG::LinalgPrecondOperator::~KrylovProjector
 
 /* --------------------------------------------------------------------
                     (Modified) ApplyInverse call
    -------------------------------------------------------------------- */
-int LINALG::LinalgPrecondOperator::ApplyInverse(
+int CORE::LINALG::LinalgPrecondOperator::ApplyInverse(
     const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
   int ierr = 0;
@@ -52,4 +52,4 @@ int LINALG::LinalgPrecondOperator::ApplyInverse(
   }
 
   return (ierr);
-}  // LINALG::LinalgPrecondOperator::ApplyInverse
+}  // CORE::LINALG::LinalgPrecondOperator::ApplyInverse

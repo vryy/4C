@@ -36,13 +36,13 @@ ADAPTER::FSIStructureWrapperImmersed::FSIStructureWrapperImmersed(Teuchos::RCP<S
   vecSpaces.push_back(interface_->FSICondMap());       // fsi
   vecSpaces.push_back(interface_->IMMERSEDCondMap());  // immersed
 
-  combinedmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  combinedmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full blockmap
-  LINALG::MultiMapExtractor blockrowdofmap;
+  CORE::LINALG::MultiMapExtractor blockrowdofmap;
   blockrowdofmap.Setup(*combinedmap_, vecSpaces);
 
-  combinedinterface_ = Teuchos::rcp(new LINALG::MapExtractor(
+  combinedinterface_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
       *combinedmap_, interface_->FSICondMap(), interface_->IMMERSEDCondMap()));
 }
 

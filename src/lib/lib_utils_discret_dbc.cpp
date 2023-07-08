@@ -21,7 +21,7 @@ void DRT::UTILS::EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
-    const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor)
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor)
 {
   // create const version
   const Teuchos::RCP<const Dbc> dbc = BuildDbc(&discret);
@@ -51,7 +51,7 @@ void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
-    const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {
   if (!discret.Filled()) dserror("FillComplete() was not called");
   if (!discret.HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -550,7 +550,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
  *----------------------------------------------------------------------*/
 void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::DiscretizationInterface& discret,
     const Teuchos::RCP<const std::set<int>>& dbcrowgids,
-    const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {
   if (dbcmapextractor.is_null()) return;
 

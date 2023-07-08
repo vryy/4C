@@ -30,11 +30,11 @@ namespace FBI
   class FBIGeometryCoupler;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -85,14 +85,14 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    Teuchos::RCP<const LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    Teuchos::RCP<const LINALG::SparseOperator> AssembleFluidCouplingMatrix() const override;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> AssembleFluidCouplingMatrix() const override;
 
     /**
      * \brief Computes the contributions to the rhs of the structure field.

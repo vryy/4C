@@ -35,7 +35,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
@@ -53,7 +53,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
@@ -71,7 +71,7 @@ SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupl
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureblock)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
@@ -100,7 +100,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
 {
   dserror("not implemented");
 }
@@ -108,7 +108,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStru
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifoldstructureblock)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
@@ -137,27 +137,29 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatrastructureinterface)
 {
   // slave and master matrix for evaluation of conditions
-  Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
-  Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix(Teuchos::null);
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
-      slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
-      mastermatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, meshtying_strategy_s2i_->BlockMapsMaster(), 81, false, true));
+      slavematrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
+      mastermatrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *block_map_structure_, meshtying_strategy_s2i_->BlockMapsMaster(), 81, false, true));
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      slavematrix = Teuchos::rcp(new LINALG::SparseMatrix(
+      slavematrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
-      mastermatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+      mastermatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(), 27, false, true));
       break;
     }
@@ -185,7 +187,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const
 {
   // create parameter list for element evaluation and fill it
   Teuchos::ParameterList eleparams;
@@ -230,24 +232,26 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(
-        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       const int numberscatrablocks = ScaTraField()->BlockMaps()->NumMaps();
 
       // cast master and slave matrix
-      auto blockslavematrix = LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
-      auto blockmastermatrix = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
+      auto blockslavematrix =
+          CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+      auto blockmastermatrix =
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::rcp(new LINALG::SparseMatrix(
+      auto mastermatrixsparse = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(), 27, false, true));
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
@@ -262,7 +266,7 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_side_converter_scatra =
               CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
-          LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
               *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
               &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
               true, true);
@@ -273,7 +277,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->DofRowMap());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
-      auto mastermatrix_split = mastermatrixsparse->Split<LINALG::DefaultBlockMatrixStrategy>(
+      auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *block_map_structure_, *ScaTraField()->BlockMaps());
       mastermatrix_split->Complete();
       blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
@@ -283,11 +287,11 @@ void SSI::ScatraStructureOffDiagCoupling::
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       // cast master and slave matrix
-      auto sparseslavematrix = LINALG::CastToConstSparseMatrixAndCheckSuccess(slavematrix);
-      auto sparsemastermatrix = LINALG::CastToSparseMatrixAndCheckSuccess(mastermatrix);
+      auto sparseslavematrix = CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(slavematrix);
+      auto sparsemastermatrix = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(mastermatrix);
 
       // copy slave side values to master side and scale with minus 1. Insert into
       // scatrastructureinterface_sparse
@@ -298,7 +302,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_side_converter_scatra =
             CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
-        LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
             &slave_side_converter_scatra, &(*slave_side_converter_struct), *sparsemastermatrix,
             true, true);
@@ -321,8 +325,8 @@ void SSI::ScatraStructureOffDiagCoupling::
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(
-        Teuchos::RCP<LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator> mastermatrix)
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList condparams;
@@ -339,35 +343,35 @@ void SSI::ScatraStructureOffDiagCoupling::
   ScaTraField()->AddTimeIntegrationSpecificVectors();
 
   // set up necessary matrices
-  Teuchos::RCP<LINALG::SparseOperator>
+  Teuchos::RCP<CORE::LINALG::SparseOperator>
       scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix;
-  Teuchos::RCP<LINALG::SparseOperator>
+  Teuchos::RCP<CORE::LINALG::SparseOperator>
       scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix;
-  Teuchos::RCP<LINALG::SparseOperator>
+  Teuchos::RCP<CORE::LINALG::SparseOperator>
       scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix;
 
-  if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+  if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
   {
     scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::rcp(new LINALG::SparseMatrix(
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
     scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::rcp(new LINALG::SparseMatrix(
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
     scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
-        Teuchos::rcp(new LINALG::SparseMatrix(
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
   }
   else
   {
     scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
     scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
     scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
   }
 
@@ -399,7 +403,7 @@ void SSI::ScatraStructureOffDiagCoupling::
   // finalize scatra-structure matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix->Complete(
           *full_map_structure_, *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
@@ -407,17 +411,17 @@ void SSI::ScatraStructureOffDiagCoupling::
           *full_map_structure_, *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
       auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_sparse =
-          LINALG::CastToConstSparseMatrixAndCheckSuccess(
+          CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix);
-      auto slavematrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
+      auto slavematrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
 
       auto scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_sparse =
-          LINALG::CastToConstSparseMatrixAndCheckSuccess(
+          CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix);
       auto scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_sparse =
-          LINALG::CastToSparseMatrixAndCheckSuccess(
+          CORE::LINALG::CastToSparseMatrixAndCheckSuccess(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix);
-      auto mastermatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(mastermatrix);
+      auto mastermatrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(mastermatrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -434,13 +438,13 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
         // add slave contributions to slave matrix
-        LINALG::MatrixLogicalSplitAndTransform()(
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(
             *scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_sparse,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_map, 1.0, nullptr,
             &slave_slave_converter, *slavematrix_sparse, true, true);
         // convert structure slave dofs on scatra discretization to slave dofs on structure
         // discretization
-        LINALG::MatrixLogicalSplitAndTransform()(
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(
             *scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_sparse,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_map, 1.0, nullptr,
             &slave_slave_converter,
@@ -455,7 +459,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         auto slave_side_converter_scatra =
             CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
-        LINALG::MatrixLogicalSplitAndTransform()(
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(
             *scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_sparse,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, 1.0,
             &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrix_sparse,
@@ -465,8 +469,8 @@ void SSI::ScatraStructureOffDiagCoupling::
       break;
     }
 
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix->Complete();
       scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix->Complete();
@@ -475,21 +479,23 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrix->UnComplete();
 
       auto scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix_block =
-          LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+          CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix);
-      auto slavematrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+      auto slavematrix_block =
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
 
       auto scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix_block =
-          LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+          CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix);
-      auto mastermatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
+      auto mastermatrix_block =
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(mastermatrix);
       auto scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_block =
-          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::rcp(new LINALG::SparseMatrix(
+      auto mastermatrixsparse = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(), 27, false, true));
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
@@ -519,13 +525,14 @@ void SSI::ScatraStructureOffDiagCoupling::
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix_block->Matrix(
                   iblock, 0);
 
-          auto scatra_block_mapi = LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
-              *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
+          auto scatra_block_mapi =
+              CORE::LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
+                  *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
-          LINALG::MatrixLogicalSplitAndTransform()(
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(
               scatra_slave_flux_structure_slave_dofs_on_scatra_slave_iblock, *scatra_block_mapi,
               *slave_map, 1.0, nullptr, &slave_slave_converter, slave_iblock, true, true);
-          LINALG::MatrixLogicalSplitAndTransform()(
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_iblock,
               *scatra_block_mapi, *slave_map, 1.0, nullptr, &slave_slave_converter,
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock, true, true);
@@ -537,7 +544,7 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_side_converter_scatra =
               CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter());
 
-          LINALG::MatrixLogicalSplitAndTransform()(
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock,
               *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, 1.0,
               &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
@@ -549,7 +556,7 @@ void SSI::ScatraStructureOffDiagCoupling::
       mastermatrixsparse->Complete(*FullMapStructure(), *ScaTraField()->DofRowMap());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
-      auto mastermatrix_split = mastermatrixsparse->Split<LINALG::DefaultBlockMatrixStrategy>(
+      auto mastermatrix_split = mastermatrixsparse->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *block_map_structure_, *ScaTraField()->BlockMaps());
       mastermatrix_split->Complete();
       mastermatrix_block->Add(*mastermatrix_split, false, 1.0, 1.0);
@@ -571,7 +578,7 @@ void SSI::ScatraStructureOffDiagCoupling::
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::
     EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(
-        Teuchos::RCP<LINALG::SparseOperator> slavematrix)
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix)
 {
   // create parameter list for element evaluation
   Teuchos::ParameterList condparams;
@@ -587,16 +594,16 @@ void SSI::ScatraStructureOffDiagCoupling::
   // add state vectors to scalar transport discretization
   ScaTraField()->AddTimeIntegrationSpecificVectors();
 
-  Teuchos::RCP<LINALG::SparseOperator> evaluate_matrix;
-  if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+  Teuchos::RCP<CORE::LINALG::SparseOperator> evaluate_matrix;
+  if (ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::rcp(new LINALG::SparseMatrix(
+    evaluate_matrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
         *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
   }
   else
   {
     evaluate_matrix =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *block_map_structure_, meshtying_strategy_s2i_->BlockMapsSlave(), 81, false, true));
   }
 
@@ -627,14 +634,15 @@ void SSI::ScatraStructureOffDiagCoupling::
   // finalize scatra-structure matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       evaluate_matrix->Complete();
 
       auto evaluate_matrix_block =
-          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
+      auto slavematrix_block =
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -655,10 +663,10 @@ void SSI::ScatraStructureOffDiagCoupling::
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
+              CORE::LINALG::IntersectMap(*ScaTraField()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
-          LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
               *slave_map, 1.0, nullptr, &slave_slave_converter, slave_iblock, true, true);
         }
       }
@@ -666,13 +674,14 @@ void SSI::ScatraStructureOffDiagCoupling::
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       evaluate_matrix->Complete(
           *full_map_structure_, *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap());
 
-      auto evaluate_matrix_sparse = LINALG::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
+      auto evaluate_matrix_sparse =
+          CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
+      auto slavematrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -687,7 +696,7 @@ void SSI::ScatraStructureOffDiagCoupling::
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
             *meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap(), *slave_map, 1.0, nullptr,
             &slave_slave_converter, *slavematrix_sparse, true, true);
       }
@@ -708,7 +717,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_scatra,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
@@ -725,21 +734,21 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structurescatradomain) const
 {
   ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(structurescatradomain);
 
   // finalize structure-scatra matrix block
   switch (ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       structurescatradomain->Complete();
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       structurescatradomain->Complete(*full_map_scatra_, *FullMapStructure());
       break;

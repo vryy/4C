@@ -39,11 +39,11 @@ namespace DRT
   class RedAirwayResultTest;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace AIRWAY
 {
@@ -58,7 +58,7 @@ namespace AIRWAY
     \brief Standard Constructor
 
     */
-    RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver& solver,
+    RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
         Teuchos::ParameterList& params, IO::DiscretizationWriter& output);
 
 
@@ -221,7 +221,7 @@ namespace AIRWAY
     Teuchos::RCP<Epetra_Vector> Qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -237,9 +237,9 @@ namespace AIRWAY
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(massmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(massmat_);
     }
     Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
@@ -288,7 +288,7 @@ namespace AIRWAY
     //! @name general algorithm parameters
     //! reduced dimensional airway network discretization
     Teuchos::RCP<DRT::Discretization> discret_;
-    LINALG::Solver& solver_;
+    CORE::LINALG::Solver& solver_;
     Teuchos::ParameterList params_;
     IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
@@ -324,13 +324,13 @@ namespace AIRWAY
     double dtsolve_;
 
     /// (standard) mass matrix
-    Teuchos::RCP<LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
 
     /// (standard) system matrix
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
     Teuchos::RCP<Epetra_Vector> rhs_;

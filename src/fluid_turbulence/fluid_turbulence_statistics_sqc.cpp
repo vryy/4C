@@ -63,12 +63,12 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  squaredvelnp_ = LINALG::CreateVector(*dofrowmap, true);
+  squaredvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  toggleu_ = LINALG::CreateVector(*dofrowmap, true);
-  togglev_ = LINALG::CreateVector(*dofrowmap, true);
-  togglew_ = LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = LINALG::CreateVector(*dofrowmap, true);
+  toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // bounds for extension of flow domain in x3-direction
   x3min_ = +10e+19;

@@ -101,7 +101,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
   Teuchos::RCP<NOX::Epetra::Vector> soln = DataGlobalState().CreateGlobalVector();
-  Teuchos::RCP<LINALG::SparseOperator>& jac = DataGlobalState().CreateJacobian();
+  Teuchos::RCP<CORE::LINALG::SparseOperator>& jac = DataGlobalState().CreateJacobian();
   problem_ = Teuchos::rcp(new NOX::NLN::Problem(nlnglobaldata_, soln, jac));
 
   // -------------------------------------------------------------------------

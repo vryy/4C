@@ -209,19 +209,19 @@ namespace CORE::DRT::UTILS
       {
         case 1:
         {
-          LINALG::Matrix<2, 1> derivatives(false);
+          CORE::LINALG::Matrix<2, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(1, 0);
         }
         case 2:
         {
-          LINALG::Matrix<3, 1> derivatives(false);
+          CORE::LINALG::Matrix<3, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(2, 0);
         }
         case 3:
         {
-          LINALG::Matrix<4, 1> derivatives(false);
+          CORE::LINALG::Matrix<4, 1> derivatives(false);
           Evaluate(point, derivatives);
           return derivatives(3, 0);
         }
@@ -279,24 +279,24 @@ namespace CORE::DRT::UTILS
      \brief Evaluates the values of all polynomials on the given point
      */
     virtual void Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const = 0;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const = 0;
 
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const = 0;
+    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        Epetra_SerialDenseMatrix &derivatives) const = 0;
 
     /*
      \brief Evaluates the first derivative of all polynomials on the given point
      */
-    virtual void Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const = 0;
+    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        Epetra_SerialDenseMatrix &derivatives) const = 0;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const = 0;
+    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const = 0;
   };
 
 
@@ -347,25 +347,25 @@ namespace CORE::DRT::UTILS
      \brief Evaluates the values of the whole polynomial space in the given point
      */
     virtual void Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     template <typename M>
-    void Evaluate_deriv2(const LINALG::Matrix<nsd_, 1> &point, M &derivatives) const
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point, M &derivatives) const
     {
     }
 
@@ -373,10 +373,10 @@ namespace CORE::DRT::UTILS
      \brief Convert from a index within the polynomial space to the tensor indices in the
      individual dimensions
      */
-    LINALG::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
+    CORE::LINALG::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
     {
       dsassert(index < Size(), "Access out of range");
-      LINALG::Matrix<nsd_, 1, unsigned int> indices;
+      CORE::LINALG::Matrix<nsd_, 1, unsigned int> indices;
       const unsigned int npoly = polySpace1d_.size();
       switch (nsd_)
       {
@@ -402,7 +402,7 @@ namespace CORE::DRT::UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
+    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -459,24 +459,24 @@ namespace CORE::DRT::UTILS
      \brief Evaluates the values of the whole polynomial space in the given point
      */
     virtual void Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -578,24 +578,24 @@ namespace CORE::DRT::UTILS
      \brief Evaluates the values of the whole polynomial space in the given point
      */
     virtual void Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     virtual void Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const;
+    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
 
    private:
     void FillFeketePoints(const unsigned int degree);
@@ -658,7 +658,8 @@ namespace CORE::DRT::UTILS
     /*
    \brief Evaluates the values of all polynomials on the given point
      */
-    void Evaluate(const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+    void Evaluate(
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
     {
       polyspace_->Evaluate(point, values);
     }
@@ -667,7 +668,7 @@ namespace CORE::DRT::UTILS
    \brief Evaluates the values of all polynomials on the given point
      */
     void Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv1(point, derivatives);
     }
@@ -676,7 +677,7 @@ namespace CORE::DRT::UTILS
    \brief Evaluates the first derivative of all polynomials on the given point
      */
     void Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv2(point, derivatives);
     }
@@ -690,7 +691,7 @@ namespace CORE::DRT::UTILS
 
    The output matrix is resized to the correct dimension.
      */
-    void FillUnitNodePoints(LINALG::SerialDenseMatrix &matrix) const
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const
     {
       polyspace_->FillUnitNodePoints(matrix);
     }

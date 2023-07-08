@@ -21,8 +21,8 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(
-    Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps)
+CORE::LINALG::SparseMatrix::SparseMatrix(
+    Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dbcmaps)
     : explicitdirichlet_(true), savegraph_(true), matrixtype_(CRS_MATRIX)
 {
   sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *crsgraph));
@@ -33,8 +33,8 @@ LINALG::SparseMatrix::SparseMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet,
-    bool savegraph, MatrixType matrixtype)
+CORE::LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr,
+    bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
     : graph_(Teuchos::null),
       dbcmaps_(Teuchos::null),
       explicitdirichlet_(explicitdirichlet),
@@ -53,7 +53,7 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr, bool
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
+CORE::LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
     bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
     : graph_(Teuchos::null),
       dbcmaps_(Teuchos::null),
@@ -78,7 +78,7 @@ LINALG::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& n
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
+CORE::LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
     bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
     : graph_(Teuchos::null),
       dbcmaps_(Teuchos::null),
@@ -117,8 +117,8 @@ LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess access)
-    : LINALG::SparseMatrixBase(mat),
+CORE::LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess access)
+    : CORE::LINALG::SparseMatrixBase(mat),
       explicitdirichlet_(mat.explicitdirichlet_),
       savegraph_(mat.savegraph_),
       matrixtype_(mat.matrixtype_)
@@ -141,7 +141,7 @@ LINALG::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess access)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::SparseMatrix(
+CORE::LINALG::SparseMatrix::SparseMatrix(
     const Epetra_Vector& diag, bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
     : graph_(Teuchos::null),
       dbcmaps_(Teuchos::null),
@@ -172,7 +172,7 @@ LINALG::SparseMatrix::SparseMatrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrix::Destroy(bool throw_exception)
+bool CORE::LINALG::SparseMatrix::Destroy(bool throw_exception)
 {
   // delete first the epetra matrix object
   if (throw_exception and sysmat_.strong_count() > 1)
@@ -213,7 +213,7 @@ bool LINALG::SparseMatrix::Destroy(bool throw_exception)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
+CORE::LINALG::SparseMatrix& CORE::LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
 {
   explicitdirichlet_ = mat.explicitdirichlet_;
   savegraph_ = mat.savegraph_;
@@ -261,7 +261,7 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assign(DataAccess access, const SparseMatrix& mat)
+void CORE::LINALG::SparseMatrix::Assign(DataAccess access, const SparseMatrix& mat)
 {
   if (access == Copy)
   {
@@ -282,7 +282,7 @@ void LINALG::SparseMatrix::Assign(DataAccess access, const SparseMatrix& mat)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Zero()
+void CORE::LINALG::SparseMatrix::Zero()
 {
   if (graph_ == Teuchos::null)
   {
@@ -312,7 +312,7 @@ void LINALG::SparseMatrix::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Reset()
+void CORE::LINALG::SparseMatrix::Reset()
 {
   const Epetra_Map rowmap = sysmat_->RowMap();
   std::vector<int> numentries(rowmap.NumMyElements());
@@ -353,7 +353,7 @@ void LINALG::SparseMatrix::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
+void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
     const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
@@ -542,7 +542,7 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -649,7 +649,7 @@ void LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatrix& Ael
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -684,7 +684,7 @@ void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmcol)
 {
   const int lrowdim = static_cast<int>(lmrow.size());
@@ -711,7 +711,7 @@ void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
+void CORE::LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
 {
   if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
     dserror("no assembling to Dirichlet row");
@@ -729,7 +729,7 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::SetValue(double val, int rgid, int cgid)
+void CORE::LINALG::SparseMatrix::SetValue(double val, int rgid, int cgid)
 {
   if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
     dserror("no assembling to Dirichlet row");
@@ -744,7 +744,7 @@ void LINALG::SparseMatrix::SetValue(double val, int rgid, int cgid)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
+void CORE::LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 {
   // SumIntoGlobalValues works for filled matrices as well!
   int errone = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true))
@@ -765,9 +765,9 @@ void LINALG::SparseMatrix::FEAssemble(double val, int rgid, int cgid)
 /*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Complete(bool enforce_complete)
+void CORE::LINALG::SparseMatrix::Complete(bool enforce_complete)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::Complete");
 
   // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if (matrixtype_ == FE_MATRIX)
@@ -793,10 +793,10 @@ void LINALG::SparseMatrix::Complete(bool enforce_complete)
 /*----------------------------------------------------------------------*
  |  FillComplete a matrix  (public)                          mwgee 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Complete(
+void CORE::LINALG::SparseMatrix::Complete(
     const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete(domain,range)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::Complete(domain,range)");
 
   // for FE_Matrix we need to gather non-local entries, independent whether matrix is filled or not
   if (matrixtype_ == FE_MATRIX)
@@ -823,9 +823,9 @@ void LINALG::SparseMatrix::Complete(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::UnComplete()
+void CORE::LINALG::SparseMatrix::UnComplete()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::UnComplete");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::UnComplete");
 
   if (not Filled()) return;
 
@@ -865,7 +865,7 @@ void LINALG::SparseMatrix::UnComplete()
       dsassert(idx[c] != -1, "illegal gid");
     }
     int rowgid = rowmap.GID(i);
-    LINALG::InsertGlobalValues(mat, rowgid, NumEntries, Values, idx.data());
+    CORE::LINALG::InsertGlobalValues(mat, rowgid, NumEntries, Values, idx.data());
   }
   sysmat_ = mat;
   graph_ = Teuchos::null;
@@ -875,7 +875,7 @@ void LINALG::SparseMatrix::UnComplete()
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichlet(
+void CORE::LINALG::SparseMatrix::ApplyDirichlet(
     const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock)
 {
   // if matrix is filled, global assembly was called already and all nonlocal values are
@@ -994,7 +994,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock)
+void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock)
 {
   if (not Filled()) dserror("expect filled matrix to apply dirichlet conditions");
 
@@ -1131,8 +1131,9 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, bool diag
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
-    const Epetra_Map& dbctoggle, bool diagonalblock, bool complete)
+void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo, const Epetra_Map& dbctoggle,
+    bool diagonalblock, bool complete)
 {
   if (not Filled()) dserror("expect filled matrix to apply dirichlet conditions");
 
@@ -1291,7 +1292,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::ExtractDirichletRows(
     const Teuchos::RCP<Epetra_Vector> dbctoggle)
 {
   if (not Filled()) dserror("expect filled matrix to extract dirichlet lines");
@@ -1331,7 +1332,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::ExtractDirichletRows(
     const Epetra_Map& dbctoggle)
 {
   if (not Filled()) dserror("expect filled matrix to extract dirichlet lines");
@@ -1374,29 +1375,29 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::ExtractDirichletRows(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const char* LINALG::SparseMatrix::Label() const { return "LINALG::SparseMatrix"; }
+const char* CORE::LINALG::SparseMatrix::Label() const { return "CORE::LINALG::SparseMatrix"; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::SparseMatrix::Transpose()
 {
   if (not Filled()) dserror("FillComplete was not called on matrix");
 
   EpetraExt::RowMatrix_Transpose trans;
-  Teuchos::RCP<LINALG::SparseMatrix> matrix = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix = Teuchos::null;
 
   if (matrixtype_ == CRS_MATRIX)
   {
     Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
     matrix = Teuchos::rcp(new SparseMatrix(
-        Teuchos::rcp(Aprime, false), LINALG::Copy, explicitdirichlet_, savegraph_));
+        Teuchos::rcp(Aprime, false), CORE::LINALG::Copy, explicitdirichlet_, savegraph_));
   }
   else if (matrixtype_ == FE_MATRIX)
   {
     Epetra_CrsMatrix* Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(trans(*sysmat_)));
-    matrix = Teuchos::rcp(new SparseMatrix(
-        Teuchos::rcp(Aprime, false), LINALG::Copy, explicitdirichlet_, savegraph_, FE_MATRIX));
+    matrix = Teuchos::rcp(new SparseMatrix(Teuchos::rcp(Aprime, false), CORE::LINALG::Copy,
+        explicitdirichlet_, savegraph_, FE_MATRIX));
   }
   else
     dserror("matrix type is not correct");
@@ -1406,9 +1407,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::SparseMatrix::Transpose()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrix::ReplaceRowMap(const Epetra_BlockMap& newmap)
+int CORE::LINALG::SparseMatrix::ReplaceRowMap(const Epetra_BlockMap& newmap)
 {
-  const int err = LINALG::SparseMatrixBase::ReplaceRowMap(newmap);
+  const int err = CORE::LINALG::SparseMatrixBase::ReplaceRowMap(newmap);
 
   // change mask as well
   if ((not err) and savegraph_ and graph_ != Teuchos::null)
@@ -1424,29 +1425,29 @@ int LINALG::SparseMatrix::ReplaceRowMap(const Epetra_BlockMap& newmap)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Add(const LINALG::SparseMatrixBase& A, const bool transposeA,
+void CORE::LINALG::SparseMatrix::Add(const CORE::LINALG::SparseMatrixBase& A, const bool transposeA,
     const double scalarA, const double scalarB)
 {
-  LINALG::Add(*A.EpetraMatrix(), transposeA, scalarA, *this, scalarB);
+  CORE::LINALG::Add(*A.EpetraMatrix(), transposeA, scalarA, *this, scalarB);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Add(
+void CORE::LINALG::SparseMatrix::Add(
     const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA, const double scalarB)
 {
-  LINALG::Add(A, transposeA, scalarA, *this, scalarB);
+  CORE::LINALG::Add(A, transposeA, scalarA, *this, scalarB);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Put(
-    const LINALG::SparseMatrix& A, const double scalarA, Teuchos::RCP<const Epetra_Map> rowmap)
+void CORE::LINALG::SparseMatrix::Put(const CORE::LINALG::SparseMatrix& A, const double scalarA,
+    Teuchos::RCP<const Epetra_Map> rowmap)
 {
   // put values onto sysmat
-  if (A.GetMatrixtype() != LINALG::SparseMatrix::CRS_MATRIX)
+  if (A.GetMatrixtype() != CORE::LINALG::SparseMatrix::CRS_MATRIX)
     dserror("Please check code and see wether it is save to apply it to matrix type %d",
         A.GetMatrixtype());
   Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.EpetraMatrix())));
@@ -1486,7 +1487,7 @@ void LINALG::SparseMatrix::Put(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Dump(const std::string& filename)
+void CORE::LINALG::SparseMatrix::Dump(const std::string& filename)
 {
   int MyRow;
   int NumEntries;
@@ -1550,7 +1551,7 @@ void LINALG::SparseMatrix::Dump(const std::string& filename)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
+void CORE::LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
 {
   std::stringstream rowsetname;
   rowsetname << filename << "." << comm.MyPID() << ".row";
@@ -1619,10 +1620,10 @@ void LINALG::SparseMatrix::Load(const Epetra_Comm& comm, std::string& filename)
 /*----------------------------------------------------------------------*
   (private)
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
+void CORE::LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 {
   // for timing of this method
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Split2x2");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::Split2x2");
 
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
   if (!Filled()) dserror("SparseMatrix must be filled");
@@ -1653,7 +1654,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
       dselector[i] = -1.;
   }
   Epetra_Vector selector(A->ColMap());
-  LINALG::Export(dselector, selector);
+  CORE::LINALG::Export(dselector, selector);
 
   std::vector<int> gcindices1(A->MaxNumEntries());
   std::vector<double> gvalues1(A->MaxNumEntries());
@@ -1721,10 +1722,10 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
 /*--------------------------------------------------------------------------*
  | split SparseMatrix into an MxN BlockSparseMatrixBase          fang 02/17 |
  *--------------------------------------------------------------------------*/
-void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
+void CORE::LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
 {
   // timing
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::SplitMxN");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SparseMatrix::SplitMxN");
 
   // extract number of row/column blocks
   const int M = ABlock.Rows();
@@ -1767,7 +1768,7 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
     if (n == N) dserror("Matrix column was not found in BlockSparseMatrixBase!");
   }
   Epetra_Vector selector(A.ColMap());
-  LINALG::Export(dselector, selector);
+  CORE::LINALG::Export(dselector, selector);
 
   // allocate vectors storing global column indexes and values of matrix entries in a given row,
   // separated by blocks allocation is done outside loop over all rows for efficiency to be on the
@@ -1831,14 +1832,14 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::SparseMatrix& mat)
+std::ostream& CORE::LINALG::operator<<(std::ostream& os, const CORE::LINALG::SparseMatrix& mat)
 {
   if (mat.GetMatrixtype() == SparseMatrix::CRS_MATRIX)
-    os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
+    os << *(const_cast<CORE::LINALG::SparseMatrix&>(mat).EpetraMatrix());
   else if (mat.GetMatrixtype() == SparseMatrix::FE_MATRIX)
   {
     os << *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(
-        const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix()));
+        const_cast<CORE::LINALG::SparseMatrix&>(mat).EpetraMatrix()));
   }
   else
     dserror("matrixtype does not exist");
@@ -1848,8 +1849,8 @@ std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::SparseMatrix& m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& A, bool transA,
-    const LINALG::SparseMatrix& B, bool transB, bool completeoutput)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Multiply(const CORE::LINALG::SparseMatrix& A,
+    bool transA, const CORE::LINALG::SparseMatrix& B, bool transB, bool completeoutput)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -1860,7 +1861,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   const int npr = std::max(A.MaxNumEntries(), B.MaxNumEntries());
 
   // now create resultmatrix with correct rowmap
-  Teuchos::RCP<LINALG::SparseMatrix> C;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> C;
   if (!transA)
     C = Teuchos::rcp(new SparseMatrix(A.RangeMap(), npr, A.explicitdirichlet_, A.savegraph_));
   else
@@ -1876,9 +1877,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& A, bool transA,
-    const LINALG::SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
-    bool completeoutput)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Multiply(const CORE::LINALG::SparseMatrix& A,
+    bool transA, const CORE::LINALG::SparseMatrix& B, bool transB, bool explicitdirichlet,
+    bool savegraph, bool completeoutput)
 {
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
@@ -1889,7 +1890,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
   const int npr = std::max(A.MaxNumEntries(), B.MaxNumEntries());
 
   // now create resultmatrix C with correct rowmap
-  Teuchos::RCP<LINALG::SparseMatrix> C;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> C;
   if (!transA)
     C = Teuchos::rcp(new SparseMatrix(A.RangeMap(), npr, explicitdirichlet, savegraph));
   else
@@ -1904,15 +1905,15 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::Merge(const LINALG::SparseMatrix& Aii,
-    const LINALG::SparseMatrix& Aig, const LINALG::SparseMatrix& Agi,
-    const LINALG::SparseMatrix& Agg)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Merge(const CORE::LINALG::SparseMatrix& Aii,
+    const CORE::LINALG::SparseMatrix& Aig, const CORE::LINALG::SparseMatrix& Agi,
+    const CORE::LINALG::SparseMatrix& Agg)
 {
   if (not Aii.RowMap().SameAs(Aig.RowMap()) or not Agi.RowMap().SameAs(Agg.RowMap()))
     dserror("row maps mismatch");
 
   Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.RowMap(), Agi.RowMap(), false);
-  Teuchos::RCP<LINALG::SparseMatrix> mat =
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat =
       Teuchos::rcp(new SparseMatrix(*rowmap, std::max(Aii.MaxNumEntries() + Aig.MaxNumEntries(),
                                                  Agi.MaxNumEntries() + Agg.MaxNumEntries())));
 
@@ -1928,9 +1929,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Merge(const LINALG::SparseMatrix& Aii
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::Eye(const Epetra_Map& map)
 {
-  Teuchos::RCP<LINALG::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map, 1));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> eye = Teuchos::rcp(new SparseMatrix(map, 1));
   int numelements = map.NumMyElements();
   int* gids = map.MyGlobalElements();
   for (int i = 0; i < numelements; ++i)
@@ -1944,10 +1945,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
-    Teuchos::RCP<LINALG::SparseOperator> input_matrix)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::CastToSparseMatrixAndCheckSuccess(
+    Teuchos::RCP<CORE::LINALG::SparseOperator> input_matrix)
 {
-  auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);
+  auto sparse_matrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(input_matrix);
   dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
@@ -1955,10 +1956,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> LINALG::CastToConstSparseMatrixAndCheckSuccess(
-    Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> input_matrix)
 {
-  auto sparse_matrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(input_matrix);
+  auto sparse_matrix = Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseMatrix>(input_matrix);
   dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;

@@ -29,7 +29,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(
+CORE::LINALG::Solver::Solver(
     Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile)
     : comm_(comm), params_(params), outfile_(outfile)
 {
@@ -38,7 +38,7 @@ LINALG::Solver::Solver(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
+CORE::LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
 {
   // set the default solver to umfpack
@@ -48,7 +48,7 @@ LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Solver::Solver(
+CORE::LINALG::Solver::Solver(
     const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile)
     : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList())), outfile_(outfile)
 {
@@ -58,23 +58,23 @@ LINALG::Solver::Solver(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Setup() { solver_ = Teuchos::null; }
+void CORE::LINALG::Solver::Setup() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Solver::~Solver() { Reset(); }
+CORE::LINALG::Solver::~Solver() { Reset(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Reset() { solver_ = Teuchos::null; }
+void CORE::LINALG::Solver::Reset() { solver_ = Teuchos::null; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
+int CORE::LINALG::Solver::getNumIters() const { return solver_->getNumIters(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::AdaptTolerance(
+void CORE::LINALG::Solver::AdaptTolerance(
     const double desirednlnres, const double currentnlnres, const double better)
 {
   if (!Params().isSublist("Belos Parameters")) return;
@@ -129,7 +129,7 @@ void LINALG::Solver::AdaptTolerance(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::ResetTolerance()
+void CORE::LINALG::Solver::ResetTolerance()
 {
   if (!Params().isSublist("Belos Parameters")) return;
 
@@ -144,11 +144,11 @@ void LINALG::Solver::ResetTolerance()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-    Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
-    Teuchos::RCP<LINALG::KrylovProjector> projector)
+void CORE::LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix,
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
+    bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1)   Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1)   Setup");
 
   // reset data flags on demand
   if (reset)
@@ -182,17 +182,17 @@ void LINALG::Solver::Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::Solver::Solve()
+int CORE::LINALG::Solver::Solve()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  2)   Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  2)   Solve");
   return solver_->Solve();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-    Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset,
-    Teuchos::RCP<LINALG::KrylovProjector> projector)
+int CORE::LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix,
+    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b, bool refactor,
+    bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   Setup(matrix, x, b, refactor, reset, projector);
   return Solve();
@@ -200,8 +200,8 @@ int LINALG::Solver::Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bool reset,
-    Teuchos::RCP<LINALG::KrylovProjector> projector)
+int CORE::LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bool reset,
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcp(linProblem.GetOperator(), false);
   Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcp(linProblem.GetLHS(), false);
@@ -213,7 +213,7 @@ int LINALG::Solver::NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bo
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(
+const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToIfpack(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList ifpacklist;
@@ -229,7 +229,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
+const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList mllist;
@@ -257,7 +257,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
 
   // set repartitioning parameters
   // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
-  bool doRepart = DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
+  bool doRepart = ::DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
   if (doRepart)
   {
     mllist.set("repartition: enable", 1);
@@ -290,7 +290,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   mllist.set("smoother: sweeps", 1);
   // save memory if this is an issue, make ML use single precision
   // mllist.set("low memory usage",true);
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "ML_COARSEN"))
+  switch (::DRT::INPUT::IntegralValue<int>(inparams, "ML_COARSEN"))
   {
     case 0:
       mllist.set("aggregation: type", "Uncoupled");
@@ -334,12 +334,12 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     double damp = 0.0;
     if (i == 0)
     {
-      type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERFINE");
+      type = ::DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERFINE");
       damp = inparams.get<double>("ML_DAMPFINE");
     }
     else if (i < mlmaxlevel - 1)
     {
-      type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERMED");
+      type = ::DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERMED");
       damp = inparams.get<double>("ML_DAMPMED");
     }
 
@@ -393,7 +393,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       }
       break;
       case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
@@ -408,10 +408,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       case 13:  // IBD: indefinite block diagonal preconditioner
@@ -421,10 +421,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       case 14:  // Uzawa: inexact Uzawa smoother
@@ -434,10 +434,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         smolevelsublist.set("smoother: damping factor", damp);
         Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
         predictList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
         Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
         SchurCompList = TranslateSolverParameters(
-            DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+            ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
       }
       break;
       default:
@@ -448,7 +448,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
 
   // set coarse grid solver
   const int coarse = mlmaxlevel - 1;
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE"))
+  switch (::DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE"))
   {
     case 0:
       mllist.set("coarse: type", "symmetric Gauss-Seidel");
@@ -499,13 +499,13 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 11:  // SIMPLE smoother  (only for MueLu with BlockedOperators)
     case 12:  // SIMPLEC smoother (only for MueLu with BlockedOperators)
     {
-      int type = DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE");
+      int type = ::DRT::INPUT::IntegralValue<int>(inparams, "ML_SMOOTHERCOARSE");
       if (type == 11)
         mllist.set("coarse: type", "SIMPLE");
       else if (type == 12)
@@ -514,10 +514,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 13:  // IBD: indefinite block diagonal preconditioner
@@ -527,10 +527,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     case 14:  // Uzawa: inexact Uzawa smoother
@@ -540,10 +540,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("coarse: damping factor", inparams.get<double>("ML_DAMPCOARSE"));
       Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
       predictList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
       SchurCompList = TranslateSolverParameters(
-          DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+          ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     }
     break;
     default:
@@ -562,7 +562,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
+const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToMuelu(
     const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist)
 {
   Teuchos::ParameterList muelulist;
@@ -571,15 +571,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToMuelu(
   if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
 
   muelulist.set<bool>(
-      "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-  muelulist.set<bool>("LINALG::MueLu_Preconditioner", true);
+      "MUELU_XML_ENFORCE", ::DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
+  muelulist.set<bool>("CORE::LINALG::MueLu_Preconditioner", true);
 
   return muelulist;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
+const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     const Teuchos::ParameterList& inparams)
 {
   Teuchos::ParameterList outparams;
@@ -587,8 +587,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   Teuchos::ParameterList& beloslist = outparams.sublist("Belos Parameters");
 
   // set verbosity
-  auto verbosityLevel = DRT::INPUT::IntegralValue<IO::verbositylevel>(
-      DRT::Problem::Instance()->IOParams(), "VERBOSITY");
+  auto verbosityLevel = ::DRT::INPUT::IntegralValue<IO::verbositylevel>(
+      ::DRT::Problem::Instance()->IOParams(), "VERBOSITY");
 
   switch (verbosityLevel)
   {
@@ -728,7 +728,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       azprectyp == INPAR::SOLVER::PreconditionerType::icc)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-    ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
+    ifpacklist = CORE::LINALG::Solver::TranslateBACIToIfpack(inparams);
   }
 
   // set parameters for CheapSIMPLE if used
@@ -738,11 +738,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     simplelist.set("Prec Type", "CheapSIMPLE");  // not used
     Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
     predictList = TranslateSolverParameters(
-        DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+        ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
     std::cout << predictList << std::endl;
     Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
     schurList = TranslateSolverParameters(
-        DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+        ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
 
   // set parameters for ML if used
@@ -751,37 +751,37 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
-    mllist = LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
+    mllist = CORE::LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_fluid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_tsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_contactsp)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_beamsolid)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (BeamSolid) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (FSI) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
+    muelulist = CORE::LINALG::Solver::TranslateBACIToMuelu(inparams, &beloslist);
   }
   if (azprectyp == INPAR::SOLVER::PreconditionerType::block_gauss_seidel_2x2)
   {
@@ -820,10 +820,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
+const Teuchos::ParameterList CORE::LINALG::Solver::TranslateSolverParameters(
     const Teuchos::ParameterList& inparams)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  0)   TranslateSolverParameters");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  0)   TranslateSolverParameters");
 
   Teuchos::ParameterList outparams;
   outparams.set<std::string>("name", inparams.get<std::string>("NAME"));
@@ -842,7 +842,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       outparams.set("solver", "superlu");
       break;
     case INPAR::SOLVER::SolverType::belos:
-      outparams = LINALG::Solver::TranslateBACIToBelos(inparams);
+      outparams = CORE::LINALG::Solver::TranslateBACIToBelos(inparams);
       break;
     default:
       dserror("Unsupported type of solver");

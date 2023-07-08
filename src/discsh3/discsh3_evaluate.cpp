@@ -185,13 +185,13 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_refvol:
     {
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
       x = MaterialConfiguration();
 
       // vectors for vertices of pyramid
-      LINALG::Matrix<1, 3> v1(true);
-      LINALG::Matrix<1, 3> v2(true);
-      LINALG::Matrix<1, 3> v3(true);
+      CORE::LINALG::Matrix<1, 3> v1(true);
+      CORE::LINALG::Matrix<1, 3> v2(true);
+      CORE::LINALG::Matrix<1, 3> v3(true);
 
       for (int j = 0; j < 3; j++)
       {
@@ -220,13 +220,13 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
       x = SpatialConfiguration(mydisp);
 
       // vectors for vertices of pyramid
-      LINALG::Matrix<1, 3> v1(true);
-      LINALG::Matrix<1, 3> v2(true);
-      LINALG::Matrix<1, 3> v3(true);
+      CORE::LINALG::Matrix<1, 3> v1(true);
+      CORE::LINALG::Matrix<1, 3> v2(true);
+      CORE::LINALG::Matrix<1, 3> v3(true);
 
 
       for (int j = 0; j < 3; j++)
@@ -247,10 +247,10 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_refCG:
     {
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
       x_ref = MaterialConfiguration();
 
-      LINALG::Matrix<1, 3> bary_ref(true);
+      CORE::LINALG::Matrix<1, 3> bary_ref(true);
 
       for (int i = 0; i < 3; i++) bary_ref(i) = (x_ref(i) + x_ref(i + 3) + x_ref(i + 6)) / 3;
 
@@ -273,10 +273,10 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // Get Spatial positions
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
       x_curr = SpatialConfiguration(mydisp);
 
-      LINALG::Matrix<1, 3> bary_curr(true);
+      CORE::LINALG::Matrix<1, 3> bary_curr(true);
 
       for (int i = 0; i < 3; i++) bary_curr(i) = (x_curr(i) + x_curr(i + 3) + x_curr(i + 6)) / 3;
 
@@ -290,13 +290,13 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
     //==================================================================================
     case calc_struct_refarea:
     {
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
       x = MaterialConfiguration();
 
       // vectors for vertices of pyramid
-      LINALG::Matrix<1, 3> v1(true);
-      LINALG::Matrix<1, 3> v2(true);
-      LINALG::Matrix<1, 3> v3(true);
+      CORE::LINALG::Matrix<1, 3> v1(true);
+      CORE::LINALG::Matrix<1, 3> v2(true);
+      CORE::LINALG::Matrix<1, 3> v3(true);
 
       for (int j = 0; j < 3; j++)
       {
@@ -322,13 +322,13 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
       x = SpatialConfiguration(mydisp);
 
       // vectors for vertices of pyramid
-      LINALG::Matrix<1, 3> v1(true);
-      LINALG::Matrix<1, 3> v2(true);
-      LINALG::Matrix<1, 3> v3(true);
+      CORE::LINALG::Matrix<1, 3> v1(true);
+      CORE::LINALG::Matrix<1, 3> v2(true);
+      CORE::LINALG::Matrix<1, 3> v3(true);
 
       for (int j = 0; j < 3; j++)
       {
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
-  LINALG::Matrix<NUMDIM_DISCSH3, 1> xrefegp(false);
+  CORE::LINALG::Matrix<NUMDIM_DISCSH3, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_DISCSH3; dim++)
@@ -548,24 +548,24 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
   double dt = params.get<double>("delta time", 0.0);
 
   // damping coefficients for translational and rotational degrees of freedom
-  LINALG::Matrix<NUMDIM_DISCSH3, 1> gamma(true);
+  CORE::LINALG::Matrix<NUMDIM_DISCSH3, 1> gamma(true);
   MyDampingConstants(params, gamma);
 
   // compute normal vector t_{\par} at current Gauss point
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x = SpatialConfiguration(disp);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x = SpatialConfiguration(disp);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
     x_FAD[i].diff(i, NUMDOF_DISCSH3);
   }
 
-  LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
+  CORE::LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
 
   /** Calc damping matrix **/
-  LINALG::Matrix<3, 3, FAD> Damping_mat_small(true);
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> Damping_mat(true);
+  CORE::LINALG::Matrix<3, 3, FAD> Damping_mat_small(true);
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> Damping_mat(true);
   // Compute outer product of normals
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -576,12 +576,12 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
       Damping_mat(i + 6, j + 6) = Damping_mat_small(i, j);
     }
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force(true);
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> FAD_StiffMat(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> FAD_StiffMat(true);
 
   // loop over columns of matrix t_{\par} \otimes t_{\par}
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3, LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD>>
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD>>
       Grad_DampingMat(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
@@ -624,7 +624,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
     Epetra_SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
-  LINALG::Matrix<3, 1> gamma(true);
+  CORE::LINALG::Matrix<3, 1> gamma(true);
 
   MyDampingConstants(params, gamma);
 
@@ -639,8 +639,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
   // compute normal vector t_{\par} at current Gauss point
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x_mat(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_mat(true);
   x = SpatialConfiguration(disp);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -648,11 +648,11 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
     x_FAD[i].diff(i, NUMDOF_DISCSH3);
   }
 
-  LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
+  CORE::LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
 
   /** Calc damping matrix **/
-  LINALG::Matrix<3, 3, FAD> Stoch_mat_small(true);
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> Stoch_mat(true);
+  CORE::LINALG::Matrix<3, 3, FAD> Stoch_mat_small(true);
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> Stoch_mat(true);
   // Compute outer product of normals
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -664,17 +664,17 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
       Stoch_mat(i + 6, j + 6) = Stoch_mat_small(i, j);
     }
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force(true);
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> FAD_StiffMat(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD> FAD_StiffMat(true);
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3, LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD>>
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3, FAD>>
       Grad_StochMat(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
       for (int k = 0; k < NUMDOF_DISCSH3; k++) Grad_StochMat(k)(i, j) = Stoch_mat(i, j).dx(k);
 
   // Sort Random numbers
-  LINALG::Matrix<1, NUMDOF_DISCSH3> RandomNumber(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> RandomNumber(true);
   for (int i = 0; i < NUMNOD_DISCSH3; i++)
     for (int j = 0; j < NUMDIM_DISCSH3; j++)
     {
@@ -744,7 +744,7 @@ int DRT::ELEMENTS::DiscSh3::HowManyRandomNumbersPerNode()
  filament axis, damping of     | | rotation around filament axis (private)       Mukherjee  10/15|
  *----------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::DiscSh3::MyDampingConstants(
-    Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma)
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<3, 1>& gamma)
 {
   // translational damping coefficients according to Ahmadi
   gamma(0) = 16 * params.get<double>("ETA", 0.0);      // Parallel to normal direction
@@ -805,7 +805,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
 
   CalcBehaviorFunctArea(params, disp, BehaviorFunctArea);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force_viscous(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force_viscous(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
@@ -820,9 +820,9 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod2(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod2(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -830,15 +830,15 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
   }
 
   // Calculate analytical expressions for derivative of behavior function
-  LINALG::Matrix<1, 9, FAD> BehaviorFunctArea_dx(true);
+  CORE::LINALG::Matrix<1, 9, FAD> BehaviorFunctArea_dx(true);
 
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // For calculation of cross-product
-    LINALG::Matrix<1, 3, FAD> side1(true);
-    LINALG::Matrix<1, 3, FAD> side2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side2(true);
     // Auxilary vector
-    LINALG::Matrix<1, 3, FAD> side3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side3(true);
 
     if (j == 0)  // 1st node
     {
@@ -868,7 +868,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
       }
     }
 
-    LINALG::Matrix<1, 3, FAD> crossprod1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod1(true);
 
     // Cross Product side1xside2
     crossprod1 = CalcCrossProduct(side1, side2);
@@ -880,7 +880,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
     }
     norm_crossprod = pow(norm_crossprod, 0.5);
 
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
     // Cross Product side3xcrossprod1
     crossprod_aux = CalcCrossProduct(side3, crossprod1);
@@ -899,7 +899,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
     BehaviorFunctArea_dx(i) = 0.25 * crossprod2(i) / (area_curr);
 
 
-  LINALG::Matrix<9, 9, FAD> stiffmat_viscous(true);
+  CORE::LINALG::Matrix<9, 9, FAD> stiffmat_viscous(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
@@ -936,8 +936,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
   // damping coefficients for translational and rotational degrees of freedom
   FAD gamma = params.get<double>("ETA", 0.0);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force_viscous(true);
-  LINALG::Matrix<9, 9, FAD> stiffmat_viscous(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force_viscous(true);
+  CORE::LINALG::Matrix<9, 9, FAD> stiffmat_viscous(true);
 
 
   /****** Calculate damping force contribution from volume constraint ******/
@@ -957,10 +957,10 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod(true);
-  LINALG::Matrix<1, 9, FAD> sign(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 9, FAD> sign(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -968,15 +968,15 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
   }
 
   // Calculate analytical expressions for derivative of behavior function
-  LINALG::Matrix<1, 9, FAD> BehaviorFunctVol_dx(true);
-  LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> BehaviorFunctVol_dx(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
 
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // vectors for vertices of pyramid
-    LINALG::Matrix<1, 3, FAD> vertex1(true);
-    LINALG::Matrix<1, 3, FAD> vertex2(true);
-    LINALG::Matrix<1, 3, FAD> vertex3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex3(true);
 
     if (j == 0)  // 1st node
     {
@@ -1005,7 +1005,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
         vertex3(i) = x_FAD[6 + i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
     // Cross Product side3xcrossprod1
     crossprod_aux = CalcCrossProduct(vertex1, vertex2);
@@ -1079,16 +1079,16 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
 
-  LINALG::Matrix<1, 3, FAD> bary_curr(true);
-  LINALG::Matrix<1, 3, FAD> bary_ref(true);
+  CORE::LINALG::Matrix<1, 3, FAD> bary_curr(true);
+  CORE::LINALG::Matrix<1, 3, FAD> bary_ref(true);
 
   x_ref = MaterialConfiguration();
   x_curr = SpatialConfiguration(disp);
 
-  LINALG::Matrix<1, 9, FAD> crossprod2(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod2(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x_curr(i);
@@ -1104,7 +1104,7 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
   FAD EnergyFuctional = 0;
 
 
-  LINALG::Matrix<1, 9, FAD> aux_vect(true);
+  CORE::LINALG::Matrix<1, 9, FAD> aux_vect(true);
   for (int i = 0; i < 3; i++)
   {
     EnergyFuctional += cg_penalty * (bary_curr(i) - bary_ref(i)) * (bary_curr(i) - bary_ref(i)) /
@@ -1116,9 +1116,9 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
 
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9> tol(true);
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
-  LINALG::Matrix<1, 9, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> ana_force(true);
 
   // Calculate the FAD expression of force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
@@ -1129,7 +1129,7 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
   }
 
 
-  LINALG::Matrix<9, 9> FAD_stiff_val(true);
+  CORE::LINALG::Matrix<9, 9> FAD_stiff_val(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
@@ -1162,8 +1162,8 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
 
   FAD EnergyFuctional = 0;
 
-  LINALG::Matrix<1, 3> CG_curr(true);
-  LINALG::Matrix<1, 3> CG_ref(true);
+  CORE::LINALG::Matrix<1, 3> CG_curr(true);
+  CORE::LINALG::Matrix<1, 3> CG_ref(true);
   for (int i = 0; i < 3; i++)
   {
     CG_ref(i) = (*CG_ref_rcp)(i) / NumGlobalEles;
@@ -1171,7 +1171,7 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
   }
 
 
-  LINALG::Matrix<1, 9> aux_vect(true);
+  CORE::LINALG::Matrix<1, 9> aux_vect(true);
   for (int i = 0; i < 3; i++)
   {
     EnergyFuctional += 0.5 * cg_penalty * (CG_curr(i) - CG_ref(i)) * (CG_curr(i) - CG_ref(i));
@@ -1181,10 +1181,10 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
   }
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9> tol(true);
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
-  LINALG::Matrix<1, 9> ana_force(true);
-  LINALG::Matrix<9, 9> stiff_aux(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9> ana_force(true);
+  CORE::LINALG::Matrix<9, 9> stiff_aux(true);
 
   // Calculate the FAD expression of force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
@@ -1200,7 +1200,7 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
       stiff_aux(i + 6, j + 6) = cg_penalty / 9;
     }
 
-  LINALG::Matrix<9, 9> FAD_stiff_val(true);
+  CORE::LINALG::Matrix<9, 9> FAD_stiff_val(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     (*force)(i) += ana_force(i);
@@ -1229,18 +1229,18 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_curr(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_ref(true);
 
-  LINALG::Matrix<1, 3, FAD> bary_curr(true);
-  LINALG::Matrix<1, 3, FAD> bary_ref(true);
+  CORE::LINALG::Matrix<1, 3, FAD> bary_curr(true);
+  CORE::LINALG::Matrix<1, 3, FAD> bary_ref(true);
 
 
   // Get coordinates at previous time-step
   x_ref = this->x_n_1_;
   x_curr = SpatialConfiguration(disp);
 
-  LINALG::Matrix<1, 9, FAD> crossprod2(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod2(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x_curr(i);
@@ -1254,7 +1254,7 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params
   }
 
   FAD EnergyFuctional = 0;
-  LINALG::Matrix<1, 9, FAD> aux_vect(true);
+  CORE::LINALG::Matrix<1, 9, FAD> aux_vect(true);
   for (int i = 0; i < 3; i++)
   {
     EnergyFuctional +=
@@ -1265,10 +1265,10 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params
   }
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
-  LINALG::Matrix<1, 9, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> ana_force(true);
   // Calculate the FAD expression of force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -1277,7 +1277,7 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params
     tol(i) = ana_force(i).val() - FAD_force(i).val();
   }
 
-  LINALG::Matrix<9, 9> FAD_stiff_val(true);
+  CORE::LINALG::Matrix<9, 9> FAD_stiff_val(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     (*force)(i) += ana_force(i).val();
@@ -1308,8 +1308,8 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
 
   CalcBehaviorFunctArea(params, disp, BehaviorFunctArea);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
-  //  LINALG::Matrix<1,9,FAD> FAD_force_viscous(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  //  CORE::LINALG::Matrix<1,9,FAD> FAD_force_viscous(true);
   // Calculate FAD force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -1325,9 +1325,9 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod2(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod2(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -1335,16 +1335,16 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
   }
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9, FAD> ana_force(true);
-  LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
 
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // For calculation of cross-product
-    LINALG::Matrix<1, 3, FAD> side1(true);
-    LINALG::Matrix<1, 3, FAD> side2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side2(true);
     // Auxilary vector
-    LINALG::Matrix<1, 3, FAD> side3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side3(true);
 
     if (j == 0)  // 1st node
     {
@@ -1373,12 +1373,12 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
         side3(i) = -x_FAD[3 + i] + x_FAD[i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod1(true);
 
     // Cross Product side1xside2
     crossprod1 = CalcCrossProduct(side1, side2);
 
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
     // Cross Product side3xcrossprod1
     crossprod_aux = CalcCrossProduct(side3, crossprod1);
@@ -1409,7 +1409,7 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
     //        (*force)(i)+=FAD_force_viscous(i).val();
     //      }
   }
-  LINALG::Matrix<9, 9> stiff_aux(true);
+  CORE::LINALG::Matrix<9, 9> stiff_aux(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
@@ -1437,8 +1437,8 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList& pa
   double area_penalty = 0.0;
 
   const int numnode = NumNode();
-  LINALG::SerialDenseMatrix x(numnode, 3);
-  LINALG::SerialDenseMatrix x0(numnode, 3);
+  CORE::LINALG::SerialDenseMatrix x(numnode, 3);
+  CORE::LINALG::SerialDenseMatrix x0(numnode, 3);
 
   SpatialConfiguration(x, disp);
   MaterialConfiguration(x0);
@@ -1458,8 +1458,8 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList& pa
   ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
 
-  LINALG::Matrix<1, 9> dummy_force(true);
-  LINALG::Matrix<9, 9> dummy_stiff(true);
+  CORE::LINALG::Matrix<1, 9> dummy_force(true);
+  CORE::LINALG::Matrix<9, 9> dummy_stiff(true);
   for (int i = 0; i < ndof; ++i)
   {
     (*force)(i) += -area_penalty * (1 - A / A0) * (*Adiff)[i];
@@ -1494,8 +1494,8 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
 
   CalcBehaviorFunctVol(params, disp, BehaviorFunctVol);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
-  LINALG::Matrix<1, 9, FAD> FAD_force_new(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force_new(true);
 
   // Calculate FAD force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
@@ -1505,10 +1505,10 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod(true);
-  LINALG::Matrix<1, 9, FAD> sign(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 9, FAD> sign(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -1517,15 +1517,15 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
 
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9, FAD> ana_force(true);
-  LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
 
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // vectors for vertices of pyramid
-    LINALG::Matrix<1, 3, FAD> vertex1(true);
-    LINALG::Matrix<1, 3, FAD> vertex2(true);
-    LINALG::Matrix<1, 3, FAD> vertex3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex3(true);
 
     if (j == 0)  // 1st node
     {
@@ -1554,7 +1554,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
         vertex3(i) = x_FAD[6 + i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
     // Cross Product side3xcrossprod1
     crossprod_aux = CalcCrossProduct(vertex1, vertex2);
@@ -1598,9 +1598,9 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
   CalcVolume(vol_curr, disp, false);
 
   // vectors for vertices of pyramid
-  LINALG::Matrix<1, 3, FAD> v1(true);
-  LINALG::Matrix<1, 3, FAD> v2(true);
-  LINALG::Matrix<1, 3, FAD> v3(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v3(true);
   for (int i = 0; i < NODDOF_DISCSH3; i++)
   {
     v1(i) = x_FAD[i];
@@ -1660,7 +1660,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
   // Calculate behavior function
   FAD BehaviorFunctVol = std::pow(vol_ref, 0.5) * (1 - vol_curr / vol_ref);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
 
   // Calculate FAD force
   /* Important:  Use only for single processor
@@ -1676,9 +1676,9 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -1687,14 +1687,14 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
 
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> ana_force(true);
-  LINALG::Matrix<1, NUMDOF_DISCSH3> tol(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> tol(true);
 
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // vectors for vertices of pyramid
-    LINALG::Matrix<1, 3, FAD> vertex1(true);
-    LINALG::Matrix<1, 3, FAD> vertex2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> vertex2(true);
 
     if (j == 0)  // 1st node
     {
@@ -1720,7 +1720,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
         vertex2(i) = x_FAD[3 + i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
 
     // Cross Product side3xcrossprod1
@@ -1730,7 +1730,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
   }
 
 
-  LINALG::Matrix<1, 9, FAD> grad_vol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> grad_vol(true);
   // Calculate the analytical expression of force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -1745,9 +1745,9 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
     (*force)(i) += ana_force(i).val();
   }
 
-  LINALG::Matrix<9, 9, FAD> grad2_vol(true);
-  LINALG::Matrix<9, 9, FAD> stiff_vol(true);
-  LINALG::Matrix<9, 9> stiff_aux(true);
+  CORE::LINALG::Matrix<9, 9, FAD> grad2_vol(true);
+  CORE::LINALG::Matrix<9, 9, FAD> stiff_vol(true);
+  CORE::LINALG::Matrix<9, 9> stiff_aux(true);
   // Corrected linearization
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
@@ -1784,7 +1784,7 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
   // Calculate behavior function
   FAD BehaviorFunctArea = std::pow(area_ref, 0.5) * (1 - area_curr / area_ref);
 
-  LINALG::Matrix<1, 9, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 9, FAD> FAD_force(true);
 
   // Calculate FAD force
   /* Important:  Use only for single processor
@@ -1799,9 +1799,9 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
 
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
   // Get Spatial positions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   x = SpatialConfiguration(disp);
-  LINALG::Matrix<1, 9, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod(true);
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
     x_FAD[i] = x(i);
@@ -1810,18 +1810,18 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
 
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9, FAD> ana_force(true);
-  LINALG::Matrix<1, 9> tol(true);
+  CORE::LINALG::Matrix<1, 9, FAD> ana_force(true);
+  CORE::LINALG::Matrix<1, 9> tol(true);
 
   // Calculate analytical expressions for FAD force
-  LINALG::Matrix<1, 9, FAD> crossprod2(true);
+  CORE::LINALG::Matrix<1, 9, FAD> crossprod2(true);
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // For calculation of cross-product
-    LINALG::Matrix<1, 3, FAD> side1(true);
-    LINALG::Matrix<1, 3, FAD> side2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side2(true);
     // Auxilary vector
-    LINALG::Matrix<1, 3, FAD> side3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side3(true);
 
     if (j == 0)  // 1st node
     {
@@ -1850,12 +1850,12 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
         side3(i) = -x_FAD[3 + i] + x_FAD[i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod1(true);
 
     // Cross Product side1xside2
     crossprod1 = CalcCrossProduct(side1, side2);
 
-    LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod_aux(true);
 
     // Cross Product side3xcrossprod1
     crossprod_aux = CalcCrossProduct(side3, crossprod1);
@@ -1864,7 +1864,7 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
   }
 
 
-  LINALG::Matrix<1, 9, FAD> grad_area(true);
+  CORE::LINALG::Matrix<1, 9, FAD> grad_area(true);
   // Calculate the analytical expression of force
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -1880,8 +1880,8 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& para
     (*force)(i) += ana_force(i).val();
   }
 
-  LINALG::Matrix<9, 9, FAD> grad2_area(true);
-  LINALG::Matrix<9, 9, FAD> stiff_area(true);
+  CORE::LINALG::Matrix<9, 9, FAD> grad2_area(true);
+  CORE::LINALG::Matrix<9, 9, FAD> stiff_area(true);
 
   // Corrected linearization
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
@@ -1971,7 +1971,7 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(const std::vector<double>& disp, boo
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -1990,15 +1990,15 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(const std::vector<double>& disp, boo
     }
   }
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j + 3];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2021,12 +2021,12 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(const std::vector<double>& disp, boo
 FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceAreaFAD(const std::vector<double>& disp, bool refconfig)
 {
   FAD area;
-  LINALG::Matrix<1, 3, FAD> area_vector(true);
-  LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force_vector(true);
+  CORE::LINALG::Matrix<1, 3, FAD> area_vector(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3, FAD> FAD_force_vector(true);
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -2045,15 +2045,15 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceAreaFAD(const std::vector<double>& disp, 
     }
   }
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < NUMNOD_DISCSH3; j++)
   {
     // For calculation of cross-product
-    LINALG::Matrix<1, 3, FAD> side1(true);
-    LINALG::Matrix<1, 3, FAD> side2(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side2(true);
     // Auxilary vector
-    LINALG::Matrix<1, 3, FAD> side3(true);
+    CORE::LINALG::Matrix<1, 3, FAD> side3(true);
 
     if (j == 0)  // 1st node
     {
@@ -2082,7 +2082,7 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceAreaFAD(const std::vector<double>& disp, 
         side3(i) = -x_FAD[3 + i] + x_FAD[i];
       }
     }
-    LINALG::Matrix<1, 3, FAD> crossprod(true);
+    CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
     // Cross Product side1xside2
     crossprod = CalcCrossProduct(side1, side2);
@@ -2113,7 +2113,7 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(DRT::Discretization& discretization,
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -2132,15 +2132,15 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(DRT::Discretization& discretization,
     }
   }
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j + 3];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2167,7 +2167,7 @@ double DRT::ELEMENTS::DiscSh3::CalcSurfArea(
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = MaterialConfiguration();
@@ -2183,15 +2183,15 @@ double DRT::ELEMENTS::DiscSh3::CalcSurfArea(
     }
   }
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j + 3];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2212,20 +2212,20 @@ double DRT::ELEMENTS::DiscSh3::CalcSurfArea(
 /*------------------------------------------------------------------------*
  |  Calculate surface area of a triangle (private)        mukherjee 04/15|
  *------------------------------------------------------------------------*/
-FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(LINALG::Matrix<1, 3, FAD>& vertex1,
-    LINALG::Matrix<1, 3, FAD>& vertex2, LINALG::Matrix<1, 3, FAD>& vertex3)
+FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(CORE::LINALG::Matrix<1, 3, FAD>& vertex1,
+    CORE::LINALG::Matrix<1, 3, FAD>& vertex2, CORE::LINALG::Matrix<1, 3, FAD>& vertex3)
 {
   FAD area;
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = vertex1(j) - vertex2(j);
     side2(j) = vertex3(j) - vertex2(j);
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2244,20 +2244,20 @@ FAD DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(LINALG::Matrix<1, 3, FAD>& vertex1,
 /*------------------------------------------------------------------------*
  |  Calculate surface area of a triangle (private)        mukherjee 04/15|
  *------------------------------------------------------------------------*/
-double DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(
-    LINALG::Matrix<1, 3>& vertex1, LINALG::Matrix<1, 3>& vertex2, LINALG::Matrix<1, 3>& vertex3)
+double DRT::ELEMENTS::DiscSh3::CalcSurfaceArea(CORE::LINALG::Matrix<1, 3>& vertex1,
+    CORE::LINALG::Matrix<1, 3>& vertex2, CORE::LINALG::Matrix<1, 3>& vertex3)
 {
   FAD area;
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = vertex1(j) - vertex2(j);
     side2(j) = vertex3(j) - vertex2(j);
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2283,7 +2283,7 @@ void DRT::ELEMENTS::DiscSh3::CalcVolume(
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)
   {
     x = MaterialConfiguration();
@@ -2303,12 +2303,12 @@ void DRT::ELEMENTS::DiscSh3::CalcVolume(
   }
   /* calculations according to Nystroem2002 */
   // Calculate unit normal
-  LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
+  CORE::LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
 
   // vectors for vertices of pyramid
-  LINALG::Matrix<1, 3, FAD> v1(true);
-  LINALG::Matrix<1, 3, FAD> v2(true);
-  LINALG::Matrix<1, 3, FAD> v3(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v3(true);
 
   for (int j = 0; j < 3; j++)
   {
@@ -2325,7 +2325,7 @@ void DRT::ELEMENTS::DiscSh3::CalcVolume(
 
 //  FAD area_projected= 0.5* normal(0);
 //
-  LINALG::Matrix  <FAD,1,3> crossprod(true);
+  CORE::LINALG::Matrix  <FAD,1,3> crossprod(true);
 //
 //
 //  //Cross Product
@@ -2367,7 +2367,7 @@ double DRT::ELEMENTS::DiscSh3::CalcVolume(
   std::vector<FAD> x_FAD(NUMDOF_DISCSH3, 0.0);
 
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)
   {
     x = MaterialConfiguration();
@@ -2389,12 +2389,12 @@ double DRT::ELEMENTS::DiscSh3::CalcVolume(
 
   /* calculations according to Nystroem2002 */
   // Calculate unit normal
-  LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
+  CORE::LINALG::Matrix<1, 3, FAD> normal = CalcSurfaceNormal(x_FAD);
 
   // vectors for vertices of pyramid
-  LINALG::Matrix<1, 3, FAD> v1(true);
-  LINALG::Matrix<1, 3, FAD> v2(true);
-  LINALG::Matrix<1, 3, FAD> v3(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> v3(true);
 
   for (int j = 0; j < 3; j++)
   {
@@ -2411,7 +2411,7 @@ double DRT::ELEMENTS::DiscSh3::CalcVolume(
 
 //  FAD area_projected= 0.5* normal(0);
 //
-  LINALG::Matrix  <FAD,1,3> crossprod(true);
+  CORE::LINALG::Matrix  <FAD,1,3> crossprod(true);
 //
 //
 //  //Cross Product
@@ -2438,20 +2438,20 @@ double DRT::ELEMENTS::DiscSh3::CalcVolume(
 /*----------------------------------------------------------------------*
  |  Calculate surface normal of the element (private)    mukherjee 04/07|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3::CalcSurfaceNormal(std::vector<FAD>& x_FAD)
+CORE::LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3::CalcSurfaceNormal(std::vector<FAD>& x_FAD)
 {
-  LINALG::Matrix<1, 3, FAD> normal(true);
-  LINALG::Matrix<1, 3> normal_val(true);
+  CORE::LINALG::Matrix<1, 3, FAD> normal(true);
+  CORE::LINALG::Matrix<1, 3> normal_val(true);
 
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -2505,7 +2505,7 @@ int DRT::ELEMENTS::DiscSh3Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::DiscSh3* actele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(dis.lColElement(i));
     if (!actele) dserror("cast to DiscSh3* failed");
-    LINALG::Matrix<1, 9> X = actele->MaterialConfiguration();
+    CORE::LINALG::Matrix<1, 9> X = actele->MaterialConfiguration();
     for (int i = 0; i < 9; i++)
     {
       actele->x_n_1_(i) = X(i);

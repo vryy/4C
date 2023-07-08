@@ -309,8 +309,8 @@ namespace DRT
     void Add(const std::string& name, Epetra_Vector& data);
 
     /*!
-    \brief Add a LINALG::Matrix to the container, templated on the dimension
-           of the LINALG::Matrix
+    \brief Add a CORE::LINALG::Matrix to the container, templated on the dimension
+           of the CORE::LINALG::Matrix
 
     \param name : Name of data to store data with
     \param data : matrix to store
@@ -319,7 +319,7 @@ namespace DRT
 
     Usage is<br>
     \code
-      DRT::Container->Add<6,6>("mfool_name", LINALG::Matrix<6,6>);
+      DRT::Container->Add<6,6>("mfool_name", CORE::LINALG::Matrix<6,6>);
     \endcode
 
     \note Extracting only possible via Epetra_SerialDenseMatrix, which then
@@ -327,12 +327,12 @@ namespace DRT
 
     Usage is<br>
     \code
-          LINALG::Matrix<6,6> xyz(*(const_cast<Epetra_SerialDenseMatrix*>(Container::
+          CORE::LINALG::Matrix<6,6> xyz(*(const_cast<Epetra_SerialDenseMatrix*>(Container::
           Get<Epetra_SerialDenseMatrix>("mfool_name"))), true);
     \endcode
     */
     template <int row, int col>
-    void Add(const std::string& name, const LINALG::Matrix<row, col>& matrix)
+    void Add(const std::string& name, const CORE::LINALG::Matrix<row, col>& matrix)
     {
       Epetra_SerialDenseMatrix data(row, col);
       for (int i = 0; i < row; i++)

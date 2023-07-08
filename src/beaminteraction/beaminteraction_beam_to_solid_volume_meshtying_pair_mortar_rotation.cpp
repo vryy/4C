@@ -41,9 +41,9 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+    CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+    CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -63,18 +63,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> q_solid(true);
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> q_solid(true);
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_1st>::apply(
         3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
 
   // Initialize local matrices.
-  LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
-  LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> local_G_B(true);
-  LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> local_G_S(true);
-  LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> local_FB_L(true);
-  LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> local_FS_L(true);
-  LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_kappa(true);
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> local_G_B(true);
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> local_G_S(true);
+  CORE::LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> local_FB_L(true);
+  CORE::LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> local_FS_L(true);
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_kappa(true);
 
   const auto rot_coupling_type =
       this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingType();
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   this->Element2()->LocationVector(discret, gid_solid, lmowner, lmstride);
   // Local indices of rotational DOFs for the Simo--Reissner beam element.
   const int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-  LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
+  CORE::LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
   // Get the Lagrange multiplier GIDs.
@@ -143,51 +143,51 @@ template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::EvaluateRotationalCouplingTerms(  //
     const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-    const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
+    const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme,
-    LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
-    LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
-    LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
-    LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
-    LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
-    LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const
+    CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
+    CORE::LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
+    CORE::LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
+    CORE::LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
+    CORE::LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
+    CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const
 {
   // Initialize variables.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<4, 1, double> quaternion_beam_double;
-  LINALG::Matrix<3, 1, double> psi_beam_double;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_solid;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
-  LINALG::Matrix<4, 1, double> quaternion_beam_ref;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
-  LINALG::Matrix<3, 3, double> T_beam;
-  LINALG::Matrix<3, 3, double> T_solid;
-  LINALG::Matrix<3, 3, double> T_solid_inv;
-  LINALG::Matrix<3, 3, double> T_rel;
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_double;
+  CORE::LINALG::Matrix<3, 1, double> psi_beam_double;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_solid;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
+  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_ref;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
+  CORE::LINALG::Matrix<3, 3, double> T_beam;
+  CORE::LINALG::Matrix<3, 3, double> T_solid;
+  CORE::LINALG::Matrix<3, 3, double> T_solid_inv;
+  CORE::LINALG::Matrix<3, 3, double> T_rel;
 
-  LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
-  LINALG::Matrix<3, mortar_rot::n_dof_, double> lambda_shape_functions_full(true);
+  CORE::LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, double> lambda_shape_functions_full(true);
   Epetra_SerialDenseVector L_i(3);
-  LINALG::Matrix<3, n_dof_rot_, double> L_full(true);
-  std::vector<LINALG::Matrix<3, 3, double>> I_beam_tilde;
-  LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
-  LINALG::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-  LINALG::Matrix<3, mortar_rot::n_dof_, double> T_rel_tr_times_lambda_shape;
-  LINALG::Matrix<3, mortar_rot::n_dof_, double> T_solid_mtr_times_T_rel_tr_times_lambda_shape;
-  LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> d_fb_d_lambda_gp;
-  LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> d_fs_d_lambda_gp;
-  LINALG::Matrix<mortar_rot::n_dof_, 1, scalar_type_rot_1st> g_gp;
-  LINALG::Matrix<3, solid::n_dof_, double> d_psi_solid_d_q_solid;
-  LINALG::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
-  LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
-  LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> L_full(true);
+  std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, double> T_rel_tr_times_lambda_shape;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, double> T_solid_mtr_times_T_rel_tr_times_lambda_shape;
+  CORE::LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> d_fb_d_lambda_gp;
+  CORE::LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> d_fs_d_lambda_gp;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, scalar_type_rot_1st> g_gp;
+  CORE::LINALG::Matrix<3, solid::n_dof_, double> d_psi_solid_d_q_solid;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -243,7 +243,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
       T_solid = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_solid));
       T_solid_inv = T_solid;
-      LINALG::Inverse(T_solid_inv);
+      CORE::LINALG::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
       mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
@@ -325,8 +325,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     mortar_rot>::EvaluateAndAssemble(const ::DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda,
-    const Epetra_Vector& displacement_vector)
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
+    const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector)
 {
   // Call the base method.
   base_class::EvaluateAndAssemble(
@@ -346,7 +346,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid(i_solid) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
         3 + solid::n_dof_, 3 + i_solid, CORE::FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
@@ -356,15 +356,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   GetMortarGID(mortar_manager, this, mortar::n_dof_, mortar_rot::n_dof_, nullptr, &lambda_gid_rot);
   std::vector<double> lambda_rot_double;
   DRT::UTILS::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
-  LINALG::Matrix<mortar_rot::n_dof_, 1, double> lambda_rot;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double> lambda_rot;
   for (unsigned int i_dof = 0; i_dof < mortar_rot::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];
 
   // Initialize local matrices.
-  LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
-  LINALG::Matrix<n_dof_rot_, solid::n_dof_, double> local_stiff_BS(true);
-  LINALG::Matrix<solid::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
-  LINALG::Matrix<solid::n_dof_, solid::n_dof_, double> local_stiff_SS(true);
+  CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
+  CORE::LINALG::Matrix<n_dof_rot_, solid::n_dof_, double> local_stiff_BS(true);
+  CORE::LINALG::Matrix<solid::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
+  CORE::LINALG::Matrix<solid::n_dof_, solid::n_dof_, double> local_stiff_SS(true);
 
   const auto rot_coupling_type =
       this->Params()->BeamToSolidVolumeMeshtyingParams()->GetRotationalCouplingType();
@@ -391,7 +391,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   this->Element1()->LocationVector(discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(discret, gid_solid, lmowner, lmstride);
   int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
-  LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
+  CORE::LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
   // Assemble into global matrix.
@@ -423,57 +423,58 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     mortar_rot>::
     EvaluateRotationalCouplingStiffTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
-        LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
+        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
-        LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
-        LINALG::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
-        LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
-        LINALG::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const
+        CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
+        CORE::LINALG::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
+        CORE::LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
+        CORE::LINALG::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const
 {
   // Initialize variables.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<4, 1, double> quaternion_beam_double;
-  LINALG::Matrix<3, 1, double> psi_beam_double;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
-  LINALG::Matrix<3, 1, scalar_type_rot_2nd> psi_solid;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_solid_val;
-  LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
-  LINALG::Matrix<4, 1, double> quaternion_beam_ref;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
-  LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
-  LINALG::Matrix<3, 3, double> T_beam;
-  LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid;
-  LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
-  LINALG::Matrix<3, 3, scalar_type_rot_1st> T_rel;
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_double;
+  CORE::LINALG::Matrix<3, 1, double> psi_beam_double;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_2nd> psi_solid;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_solid_val;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> psi_rel;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_beam_inv;
+  CORE::LINALG::Matrix<4, 1, double> quaternion_beam_ref;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
+  CORE::LINALG::Matrix<3, 3, double> T_beam;
+  CORE::LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid;
+  CORE::LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
+  CORE::LINALG::Matrix<3, 3, scalar_type_rot_1st> T_rel;
 
-  LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
-  LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(true);
+  CORE::LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(
+      true);
   Epetra_SerialDenseVector L_i(3);
-  LINALG::Matrix<3, n_dof_rot_, scalar_type_rot_1st> L_full(true);
-  std::vector<LINALG::Matrix<3, 3, double>> I_beam_tilde;
-  LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
-  LINALG::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-  LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
-  LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st>
+  CORE::LINALG::Matrix<3, n_dof_rot_, scalar_type_rot_1st> L_full(true);
+  std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
+  CORE::LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st>
       T_solid_mtr_times_T_rel_tr_times_lambda_shape;
-  LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
-  LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
-  LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
-  LINALG::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
-  LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
-  LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> f_beam;
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> f_solid;
-  LINALG::Matrix<n_dof_rot_, 3, double> d_f_beam_d_phi;
-  LINALG::Matrix<solid::n_dof_, 3, double> d_f_solid_d_phi;
-  LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>
+  CORE::LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
+  CORE::LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
+  CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
+  CORE::LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
+  CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> f_beam;
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> f_solid;
+  CORE::LINALG::Matrix<n_dof_rot_, 3, double> d_f_beam_d_phi;
+  CORE::LINALG::Matrix<solid::n_dof_, 3, double> d_f_solid_d_phi;
+  CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>
       d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full;
-  LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>
+  CORE::LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>
       d_f_solid_d_phi_times_T_beam_times_I_beam_tilde_full;
 
   // Initialize scalar variables.
@@ -531,7 +532,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       T_beam = CORE::LARGEROTATIONS::Tmatrix(CORE::FADUTILS::CastToDouble(psi_beam));
       T_solid = CORE::LARGEROTATIONS::Tmatrix(psi_solid_val);
       T_solid_inv = T_solid;
-      LINALG::Inverse(T_solid_inv);
+      CORE::LINALG::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
       mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),

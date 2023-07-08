@@ -22,11 +22,11 @@ namespace ADAPTER
   class Coupling;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -42,8 +42,8 @@ namespace STI
    public:
     //! constructor
     explicit ScatraThermoOffDiagCoupling(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -58,29 +58,29 @@ namespace STI
 
     //! evaluation of domain contributions to scatra-thermo OD block
     void EvaluateOffDiagBlockScatraThermoDomain(
-        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblock);
 
     //! evaluation of interface contributions to scatra-thermo OD block
     virtual void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface) = 0;
 
     //! evaluation of domain contributions to thermo-scatra OD block
     void EvaluateOffDiagBlockThermoScatraDomain(
-        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablock);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablock);
 
     //! evaluation of interface contributions to thermo-scatra OD block
     virtual void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface) = 0;
 
    protected:
     //! map extractor associated with all degrees of freedom inside temperature field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermo() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapThermo() const
     {
       return block_map_thermo_;
     }
 
     //! map extractor associated with degrees of freedom on interface of temperature field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermoInterface() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapThermoInterface() const
     {
       return block_map_thermo_interface_;
     }
@@ -120,10 +120,10 @@ namespace STI
 
    private:
     //! map extractor associated with all degrees of freedom inside temperature field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_;
 
     //! map extractor associated with degrees of freedom on interface of temperature field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_;
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const Epetra_Map> full_map_scatra_;
@@ -159,9 +159,9 @@ namespace STI
    public:
     //! constructor
     explicit ScatraThermoOffDiagCouplingMatchingNodes(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -176,31 +176,32 @@ namespace STI
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface) override;
 
     //! evaluation of interface contributions to thermo-scatra off-diagonal block
     void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface) override;
 
    private:
     //! map extractor associated with degrees of freedom on interface (slave side) of temperature
     //! field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermoInterfaceSlave() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapThermoInterfaceSlave() const
     {
       return block_map_thermo_interface_slave_;
     }
 
     //! copy slave entries to master side scaled by -1.0
     void CopySlaveToMasterScatraThermoInterface(
-        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
 
     //! evaluate condition on slave side
-    void EvaluateScatraThermoInterfaceSlaveSide(Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+    void EvaluateScatraThermoInterfaceSlaveSide(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
 
     //! map extractor associated with degrees of freedom on interface (slave side) of temperature
     //! field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
   };
 
   //! evaluation of scatra-thermo off-diagonal blocks for standard Mortar on scatra discretization
@@ -210,8 +211,8 @@ namespace STI
    public:
     //! constructor
     explicit ScatraThermoOffDiagCouplingMortarStandard(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -223,19 +224,19 @@ namespace STI
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(
-        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblockinterface) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatrathermoblockinterface) override;
 
     //! evaluation of interface contributions to thermo-scatra off-diagonal block
     void EvaluateOffDiagBlockThermoScatraInterface(
-        Teuchos::RCP<LINALG::SparseOperator> thermoscatrablockinterface) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermoscatrablockinterface) override;
   };
 
   //! build specific off diagonal coupling object
   Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> BuildScatraThermoOffDiagCoupling(
       const INPAR::S2I::CouplingType& couplingtype,
-      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo,
-      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface,
-      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo,
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface,
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_thermo_interface_slave,
       Teuchos::RCP<const Epetra_Map> full_map_scatra,
       Teuchos::RCP<const Epetra_Map> full_map_thermo,
       Teuchos::RCP<const Epetra_Map> interface_map_scatra,

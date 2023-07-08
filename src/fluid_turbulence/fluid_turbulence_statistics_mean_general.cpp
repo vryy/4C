@@ -25,7 +25,7 @@ means are computed as time averages
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
     Teuchos::RCP<DRT::Discretization> discret, std::string homdir,
-    LINALG::MapExtractor& velpressplitter, const bool withscatra)
+    CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(Teuchos::null),
       velpressplitter_(velpressplitter),
@@ -77,7 +77,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
     Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<const DRT::DofSet> standarddofset,
-    std::string homdir, LINALG::MapExtractor& velpressplitter, const bool withscatra)
+    std::string homdir, CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra)
     : discret_(discret),
       standarddofset_(standarddofset),
       velpressplitter_(velpressplitter),
@@ -1161,7 +1161,7 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = LINALG::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
     }
   }
 
@@ -1179,11 +1179,11 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = LINALG::CreateVector(dofrowmap, true);
+  curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = LINALG::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
 
   return;
@@ -1213,9 +1213,9 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
     {
       const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
       curr_avg_scatra_ = Teuchos::null;
-      curr_avg_scatra_ = LINALG::CreateVector(*scatradofrowmap, true);
+      curr_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
       prev_avg_scatra_ = Teuchos::null;
-      prev_avg_scatra_ = LINALG::CreateVector(*scatradofrowmap, true);
+      prev_avg_scatra_ = CORE::LINALG::CreateVector(*scatradofrowmap, true);
     }
   }
 
@@ -1231,13 +1231,13 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map& dofrowmap)
 {
   curr_avg_ = Teuchos::null;
-  curr_avg_ = LINALG::CreateVector(dofrowmap, true);
+  curr_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
 
   curr_n_ = 0;
   curr_avg_time_ = 0.0;
 
   prev_avg_ = Teuchos::null;
-  prev_avg_ = LINALG::CreateVector(dofrowmap, true);
+  prev_avg_ = CORE::LINALG::CreateVector(dofrowmap, true);
 
   prev_n_ = 0;
   prev_avg_time_ = 0.0;
@@ -1245,9 +1245,9 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map
   if (withscatra_)
   {
     curr_avg_sca_ = Teuchos::null;
-    curr_avg_sca_ = LINALG::CreateVector(dofrowmap, true);
+    curr_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
     prev_avg_sca_ = Teuchos::null;
-    prev_avg_sca_ = LINALG::CreateVector(dofrowmap, true);
+    prev_avg_sca_ = CORE::LINALG::CreateVector(dofrowmap, true);
   }
 
   return;
@@ -1266,7 +1266,8 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
   const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
 
   // split based on complete fluid field
-  LINALG::CreateMapExtractorFromDiscretization(*discret, *standarddofset_, 3, velpressplitter_);
+  CORE::LINALG::CreateMapExtractorFromDiscretization(
+      *discret, *standarddofset_, 3, velpressplitter_);
 
   Teuchos::RCP<Epetra_Vector> old;
 
@@ -1274,14 +1275,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
   {
     old = curr_avg_;
     curr_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    LINALG::Export(*old, *curr_avg_);
+    CORE::LINALG::Export(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
     prev_avg_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-    LINALG::Export(*old, *prev_avg_);
+    CORE::LINALG::Export(*old, *prev_avg_);
   }
 
   if (withscatra_)
@@ -1290,14 +1291,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
     {
       old = curr_avg_sca_;
       curr_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      LINALG::Export(*old, *curr_avg_sca_);
+      CORE::LINALG::Export(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
       prev_avg_sca_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap), true);
-      LINALG::Export(*old, *prev_avg_sca_);
+      CORE::LINALG::Export(*old, *prev_avg_sca_);
     }
 
     if (scatradis_ != Teuchos::null)
@@ -1308,14 +1309,14 @@ void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
       {
         old = curr_avg_scatra_;
         curr_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        LINALG::Export(*old, *curr_avg_scatra_);
+        CORE::LINALG::Export(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
         prev_avg_scatra_ = Teuchos::rcp(new Epetra_Vector(*scatradofrowmap), true);
-        LINALG::Export(*old, *prev_avg_scatra_);
+        CORE::LINALG::Export(*old, *prev_avg_scatra_);
       }
     }
   }

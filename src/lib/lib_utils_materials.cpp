@@ -35,7 +35,7 @@ void DRT::UTILS::UpdateMaterialConfigWithDispVector(
   Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
 
   // Export row-displacments to col-displacements
-  LINALG::Export(*disp, *coldisp);
+  CORE::LINALG::Export(*disp, *coldisp);
 
   // determine number of space dimensions
   const int numdim = DRT::Problem::Instance()->NDim();

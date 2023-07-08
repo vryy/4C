@@ -248,8 +248,8 @@ void SSI::SSICouplingNonMatchingBoundary::Setup()
       structdis_->Comm(), false, false, 0, 1);
 
   // extractor for coupled surface of structure discretization with surface scatra
-  extractor_ = Teuchos::rcp(
-      new LINALG::MapExtractor(*structdis_->DofRowMap(0), adaptermeshtying_->MasterDofMap(), true));
+  extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
+      *structdis_->DofRowMap(0), adaptermeshtying_->MasterDofMap(), true));
 
   SetIsSetup(true);
 }

@@ -182,8 +182,8 @@ namespace DRT
         //! evaluate matrixes (stiffness)
         virtual void EvaluateMatrix(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -196,11 +196,11 @@ namespace DRT
         //! evaluate vectors (RHS vector)
         virtual void EvaluateVector(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -211,12 +211,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         virtual void EvaluateMatrixODStruct(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
@@ -228,8 +228,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with scatra
         virtual void EvaluateMatrixODScatra(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -264,8 +264,8 @@ namespace DRT
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -285,11 +285,11 @@ namespace DRT
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -307,12 +307,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStruct(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
@@ -333,8 +333,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatra(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -392,8 +392,8 @@ namespace DRT
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -417,11 +417,11 @@ namespace DRT
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -443,12 +443,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStruct(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
@@ -471,8 +471,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatra(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
@@ -498,8 +498,8 @@ namespace DRT
         // derived class)
         virtual void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
@@ -516,13 +516,13 @@ namespace DRT
         // derived class)
         virtual void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of phase to add into
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of phase to add into
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -535,12 +535,12 @@ namespace DRT
         // by derived class)
         virtual void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
             int numdofpernode,  //!< total number of DOFs/phases
@@ -555,8 +555,8 @@ namespace DRT
         // by derived class)
         virtual void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of phase to add into
@@ -570,35 +570,36 @@ namespace DRT
 
         // OD-mesh linearization of diffusive term
         void CalcDiffODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const LINALG::Matrix<nsd, nen>& deriv, const LINALG::Matrix<nsd, nen>& derxy,
-            const LINALG::Matrix<nsd, nsd>& xjm, const LINALG::Matrix<nsd, 1>& diffflux,
-            const LINALG::Matrix<nsd, 1>& refgrad, const LINALG::Matrix<nsd, 1>& grad,
+            const CORE::LINALG::Matrix<nsd, nen>& deriv,
+            const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, 1>& diffflux,
+            const CORE::LINALG::Matrix<nsd, 1>& refgrad, const CORE::LINALG::Matrix<nsd, 1>& grad,
             const double timefacfac, const double difffac, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of fac (Jacobian)
         void CalcLinFacODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,                //! array for shape functions
-            const LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
+            const CORE::LINALG::Matrix<nen, 1>& funct,          //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of divergence term
         void CalcDivVelODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,                //! array for shape functions
-            const LINALG::Matrix<nsd, nen>& deriv, const LINALG::Matrix<nsd, nen>& derxy,
-            const LINALG::Matrix<nsd, nsd>& xjm, const LINALG::Matrix<nsd, nsd>& gridvelderiv,
-            const double timefacfac, const double fac, const double det, const int numdofpernode,
-            const int phasetoadd);
+            const CORE::LINALG::Matrix<nen, 1>& funct,          //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>& deriv,
+            const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& gridvelderiv, const double timefacfac,
+            const double fac, const double det, const int numdofpernode, const int phasetoadd);
 
         // linearization of a term scaled with saturation after fluid dofs
         void SaturationLinearizationFluid(Epetra_SerialDenseMatrix& mymat,
-            const LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
+            const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int numfluidphases, const int curphase, const int phasetoadd,
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
         // linearization of a term scaled with porosity after fluid dofs
         void PorosityLinearizationFluid(Epetra_SerialDenseMatrix& mymat,
-            const LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
+            const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int phasetoadd, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
        private:
@@ -636,8 +637,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -653,13 +654,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -671,12 +672,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -690,8 +691,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -729,8 +730,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -746,13 +747,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -764,12 +765,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -783,8 +784,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -822,8 +823,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -839,13 +840,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -857,12 +858,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -876,8 +877,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -915,8 +916,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -932,13 +933,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -950,12 +951,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -969,8 +970,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1009,8 +1010,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1026,13 +1027,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1044,12 +1045,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1063,8 +1064,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1102,8 +1103,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1119,13 +1120,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1137,12 +1138,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1156,8 +1157,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1195,8 +1196,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1212,13 +1213,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1230,12 +1231,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1249,8 +1250,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1300,8 +1301,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1317,13 +1318,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1335,12 +1336,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1354,8 +1355,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1407,8 +1408,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1424,13 +1425,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1442,12 +1443,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1461,8 +1462,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1500,8 +1501,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1517,13 +1518,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1535,12 +1536,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1554,8 +1555,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1605,8 +1606,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1622,13 +1623,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1640,12 +1641,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1659,8 +1660,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1698,8 +1699,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1715,13 +1716,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1733,12 +1734,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1752,8 +1753,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1794,8 +1795,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1811,13 +1812,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1829,12 +1830,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1848,8 +1849,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1887,8 +1888,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1904,13 +1905,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -1922,12 +1923,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -1941,8 +1942,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -1983,8 +1984,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2000,13 +2001,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2018,12 +2019,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2037,8 +2038,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2086,8 +2087,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2103,13 +2104,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2121,12 +2122,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2140,8 +2141,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2180,8 +2181,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2197,13 +2198,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2215,12 +2216,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2234,8 +2235,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2276,8 +2277,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2293,13 +2294,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2311,12 +2312,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2330,8 +2331,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2382,8 +2383,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2399,13 +2400,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2417,12 +2418,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2436,8 +2437,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2478,8 +2479,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2495,13 +2496,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2513,12 +2514,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2532,8 +2533,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2574,8 +2575,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2591,13 +2592,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2609,12 +2610,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2628,8 +2629,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2668,8 +2669,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2685,13 +2686,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2703,12 +2704,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2722,8 +2723,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2762,8 +2763,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2779,13 +2780,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2797,12 +2798,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2816,8 +2817,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2855,8 +2856,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2872,13 +2873,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2890,12 +2891,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -2909,8 +2910,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2948,8 +2949,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -2965,13 +2966,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -2983,12 +2984,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -3002,8 +3003,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3041,8 +3042,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3058,13 +3059,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -3076,12 +3077,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -3095,8 +3096,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3134,8 +3135,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3151,13 +3152,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -3169,12 +3170,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -3188,8 +3189,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3228,8 +3229,8 @@ namespace DRT
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
@@ -3245,13 +3246,13 @@ namespace DRT
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
             std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
-            int curphase,                          //!< index of current phase
-            int phasetoadd,                        //!< index of current phase
-            int numdofpernode,                     //!< total number of DOFs/phases
+            const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
+            int curphase,                                //!< index of current phase
+            int phasetoadd,                              //!< index of current phase
+            int numdofpernode,                           //!< total number of DOFs/phases
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager,  //!< phase manager
             const POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>&
                 variablemanager,  //!< variable manager
@@ -3263,12 +3264,12 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
-            const LINALG::Matrix<nsd, nsd>& xjm,
+            const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase
             int numdofpernode,  //!< total number of DOFs/phases
@@ -3282,8 +3283,8 @@ namespace DRT
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
             std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const LINALG::Matrix<nen, 1>& funct,             //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
             int phasetoadd,     //!< index of current phase

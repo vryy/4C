@@ -27,11 +27,11 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace IO
 {
   class DiscretizationWriter;
@@ -424,7 +424,7 @@ namespace DRT
      *  \param systemvector (out): Optional matrix to assemble linearization
      *                             of Neumann BCs to. */
     void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null)
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null)
     {
       if (systemmatrix.is_null())
         EvaluateNeumann(params, *systemvector);
@@ -433,7 +433,7 @@ namespace DRT
       return;
     }
     virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        LINALG::SparseOperator* systemmatrix = NULL) = 0;
+        CORE::LINALG::SparseOperator* systemmatrix = NULL) = 0;
 
     /** \brief Call elements to evaluate
      *
@@ -479,8 +479,8 @@ namespace DRT
      *                              the underlying assembly methods that add element
      *                              contributions. */
     virtual void Evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3) = 0;
 
@@ -532,7 +532,7 @@ namespace DRT
     virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
         Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null) = 0;
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) = 0;
 
     /** \brief Evaluate a specified condition
      *
@@ -598,8 +598,8 @@ namespace DRT
      *  \param condstring     (in): Name of condition to be evaluated
      *  \param condid         (in): Condition ID */
     virtual void EvaluateCondition(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid = -1) = 0;

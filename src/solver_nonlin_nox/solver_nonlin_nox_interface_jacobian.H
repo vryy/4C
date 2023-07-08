@@ -21,7 +21,7 @@
 #include "solver_nonlin_nox_enum_lists.H"
 
 // forward declaration
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -61,7 +61,7 @@ namespace NOX
           return false;
         };
 
-        virtual Teuchos::RCP<LINALG::SparseMatrix>
+        virtual Teuchos::RCP<CORE::LINALG::SparseMatrix>
         CalcJacobianContributionsFromElementLevelForPTC() = 0;
       };
     }  // end namespace Interface

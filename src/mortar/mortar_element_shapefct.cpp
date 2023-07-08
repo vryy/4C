@@ -22,7 +22,7 @@
  |  1D/2D shape function repository                           popp 04/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const double* xi,
-    LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv)
+    CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv)
 {
   switch (shape)
   {
@@ -237,8 +237,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       const double t2 = r;
       const double t3 = s;
 
-      LINALG::SerialDenseVector valtmp(NumNode(), 1);
-      LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
+      CORE::LINALG::SerialDenseVector valtmp(NumNode(), 1);
+      CORE::LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
 
       valtmp[0] = t1 * (2.0 * t1 - 1.0);
       valtmp[1] = t2 * (2.0 * t2 - 1.0);
@@ -429,8 +429,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       //
       //  0.25*(1-xi)*(1-eta)-0.5*funct[neighbor1]-0.5*funct[neighbor2]
 
-      LINALG::SerialDenseVector valtmp(NumNode(), 1);
-      LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
+      CORE::LINALG::SerialDenseVector valtmp(NumNode(), 1);
+      CORE::LINALG::SerialDenseMatrix derivtmp(NumNode(), 2);
 
       valtmp[0] = 0.25 * (rm * sm - (r2 * sm + s2 * rm));
       valtmp[1] = 0.25 * (rp * sm - (r2 * sm + s2 * rp));
@@ -642,8 +642,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       const double shp = s + 0.5;
       const double shm = s - 0.5;
 
-      LINALG::Matrix<9, 1> valtmp;
-      LINALG::Matrix<9, 2> derivtmp;
+      CORE::LINALG::Matrix<9, 1> valtmp;
+      CORE::LINALG::Matrix<9, 2> derivtmp;
 
       valtmp(0) = rs * rm * sm;
       valtmp(1) = -rs * rp * sm;
@@ -832,11 +832,11 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           dserror("Dual shape functions coefficient matrix calculated in the wrong size");
 #endif
         const int nnodes = NumNode();
-        LINALG::SerialDenseVector stdval(nnodes, true);
-        LINALG::SerialDenseMatrix stdderiv(nnodes, dim, true);
-        LINALG::SerialDenseVector checkval(nnodes, true);
+        CORE::LINALG::SerialDenseVector stdval(nnodes, true);
+        CORE::LINALG::SerialDenseMatrix stdderiv(nnodes, dim, true);
+        CORE::LINALG::SerialDenseVector checkval(nnodes, true);
         EvaluateShape(xi, stdval, stdderiv, nnodes);
-        LINALG::SerialDenseMatrix& ae = *(MoData().DualShape());
+        CORE::LINALG::SerialDenseMatrix& ae = *(MoData().DualShape());
 
         for (int i = 0; i < NumNode(); ++i)
         {
@@ -903,7 +903,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       {
         const int nnodes = NumNode();
         // get solution matrix with dual parameters
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
         // get dual shape functions coefficient matrix from data container
         ae = *(MoData().DualShape());
 
@@ -915,8 +915,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         int dim = 2;
 
         // evaluate dual shape functions
-        LINALG::SerialDenseVector valtemp(nnodes, true);
-        LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+        CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+        CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
         for (int i = 0; i < nnodes; ++i)
           for (int j = 0; j < nnodes; ++j)
           {
@@ -944,7 +944,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
       // get solution matrix with dual parameters
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // no pre-computed dual shape functions
       if (MoData().DualShape() == Teuchos::null)
@@ -955,8 +955,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
 
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -975,10 +975,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         }
 
         // calcute coefficient matrix
-        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
 
       // pre-computed dual shape functions
@@ -996,8 +996,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       const int dim = 2;
 
       // evaluate dual shape functions
-      LINALG::SerialDenseVector valtemp(nnodes, true);
-      LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+      CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+      CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
       for (int i = 0; i < nnodes; ++i)
       {
         for (int j = 0; j < nnodes; ++j)
@@ -1028,15 +1028,15 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
 
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1053,10 +1053,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         }
 
         // calcute coefficient matrix
-        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1071,8 +1071,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       int dim = 1;
 
       // evaluate dual shape functions
-      LINALG::SerialDenseVector valtemp(nnodes, true);
-      LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+      CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+      CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
       for (int i = 0; i < nnodes; ++i)
       {
         for (int j = 0; j < nnodes; ++j)
@@ -1104,18 +1104,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1137,15 +1137,15 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         const int nnodeslin = 2;
 
         // reduce me to non-zero nodes before inverting
-        LINALG::Matrix<nnodeslin, nnodeslin> melin;
+        CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse(melin);
+        CORE::LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
-        LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
@@ -1153,7 +1153,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1198,18 +1198,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1228,10 +1228,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         }
 
         // calcute coefficient matrix
-        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1273,18 +1273,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1303,10 +1303,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         }
 
         // calcute coefficient matrix
-        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1347,18 +1347,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1377,10 +1377,10 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         }
 
         // calcute coefficient matrix
-        LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+        CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1421,18 +1421,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1454,15 +1454,15 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         const int nnodeslin = 3;
 
         // reduce me to non-zero nodes before inverting
-        LINALG::Matrix<nnodeslin, nnodeslin> melin;
+        CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse(melin);
+        CORE::LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
-        LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
@@ -1470,7 +1470,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1511,18 +1511,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1545,15 +1545,15 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         const int nnodeslin = 4;
 
         // reduce me to non-zero nodes before inverting
-        LINALG::Matrix<nnodeslin, nnodeslin> melin(true);
+        CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin(true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse(melin);
+        CORE::LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
-        LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
@@ -1561,7 +1561,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1602,18 +1602,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
 
-      LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 2);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 2);
 
       if (MoData().DualShape() == Teuchos::null)
       {
         // compute entries to bi-ortho matrices me/de with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
         for (int i = 0; i < integrator.nGP(); ++i)
         {
@@ -1635,15 +1635,15 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         const int nnodeslin = 4;
 
         // reduce me to non-zero nodes before inverting
-        LINALG::Matrix<nnodeslin, nnodeslin> melin(true);
+        CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin(true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
         // invert bi-ortho matrix melin
-        LINALG::Inverse(melin);
+        CORE::LINALG::Inverse(melin);
 
         // re-inflate inverse of melin to full size
-        LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
         for (int j = 0; j < nnodeslin; ++j)
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
@@ -1651,7 +1651,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
         ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
 
         // store coefficient matrix
-        MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+        MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1713,18 +1713,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       const int nnodes = NumNode();
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-      LINALG::SerialDenseVector vallin(nnodes - 1);
-      LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
-      LINALG::SerialDenseVector valtemp(nnodes, true);
-      LINALG::SerialDenseMatrix derivtemp(nnodes, 1, true);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 1);
+      CORE::LINALG::SerialDenseVector vallin(nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
+      CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+      CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, 1, true);
 
       // compute entries to bi-ortho matrices me/de with Gauss quadrature
       MORTAR::ElementIntegrator integrator(Shape());
 
-      LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
-      LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
       for (int i = 0; i < integrator.nGP(); ++i)
       {
@@ -1744,7 +1744,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // invert bi-ortho matrix me
       // CAUTION: This is a non-symmetric inverse operation!
       const double detmeinv = 1.0 / (me(0, 0) * me(1, 1) - me(0, 1) * me(1, 0));
-      LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
       meold = me;
       me(0, 0) = detmeinv * meold(1, 1);
       me(0, 1) = -detmeinv * meold(0, 1);
@@ -1752,7 +1752,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       me(1, 1) = detmeinv * meold(0, 0);
 
       // get solution matrix with dual parameters
-      LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
       ae.Multiply('N', 'N', 1.0, de, me, 0.0);
 
       // evaluate dual shape functions at loc. coord. xi
@@ -1785,18 +1785,18 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       const int nnodes = NumNode();
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-      LINALG::SerialDenseVector vallin(nnodes - 1);
-      LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
-      LINALG::SerialDenseVector valtemp(nnodes, true);
-      LINALG::SerialDenseMatrix derivtemp(nnodes, 1, true);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 1);
+      CORE::LINALG::SerialDenseVector vallin(nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
+      CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+      CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, 1, true);
 
       // compute entries to bi-ortho matrices me/de with Gauss quadrature
       MORTAR::ElementIntegrator integrator(Shape());
 
-      LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
-      LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
       for (int i = 0; i < integrator.nGP(); ++i)
       {
@@ -1816,7 +1816,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       // invert bi-ortho matrix me
       // CAUTION: This is a non-symmetric inverse operation!
       double detmeinv = 1.0 / (me(0, 0) * me(1, 1) - me(0, 1) * me(1, 0));
-      LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
       meold = me;
       me(0, 0) = detmeinv * meold(1, 1);
       me(0, 1) = -detmeinv * meold(0, 1);
@@ -1824,7 +1824,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       me(1, 1) = detmeinv * meold(0, 0);
 
       // get solution matrix with dual parameters
-      LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
       ae.Multiply('N', 'N', 1.0, de, me, 0.0);
 
       // evaluate dual shape functions at loc. coord. xi
@@ -1861,8 +1861,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 /*----------------------------------------------------------------------*
  |  Evaluate displacement shape functions                     popp 01/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseVector& val,
-    LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
+bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
+    CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
 {
   if (!xi) dserror("EvaluateShape called with xi=NULL");
 
@@ -1967,7 +1967,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseMatrix auxderiv(1, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, nurbs2);
 
@@ -1986,7 +1986,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseMatrix auxderiv(1, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
           val, auxderiv, xi[0], Knots()[0], weights, nurbs3);
 
@@ -2006,11 +2006,11 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector uv(2);
+      CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, nurbs4);
 
@@ -2030,12 +2030,12 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector uv(2);
+      CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
 
-      LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
           val, auxderiv, uv, Knots(), weights, nurbs9);
 
@@ -2065,7 +2065,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
  |  Evaluate Lagrange multiplier shape functions              popp 12/07|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& lmtype,
-    const double* xi, LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
+    const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim, bool boundtrafo)
 {
   // some methods don't need a Lagrange multiplier interpolation
@@ -2171,14 +2171,14 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 3;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
         if (MoData().DualShape() == Teuchos::null)
         {
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
           MORTAR::ElementIntegrator integrator(Shape());
 
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
           for (int i = 0; i < integrator.nGP(); ++i)
           {
@@ -2197,10 +2197,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
           }
 
           // get solution matrix with dual parameters
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -2212,8 +2212,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         // check whether this is a 1D or 2D mortar element
         const int dim = 1;
         // evaluate dual shape functions
-        LINALG::SerialDenseVector valtemp(nnodes, true);
-        LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+        CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+        CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
         for (int i = 0; i < nnodes; ++i)
         {
           for (int j = 0; j < nnodes; ++j)
@@ -2263,15 +2263,15 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         // establish fundamental data
         double detg = 0.0;
         const int nnodes = 9;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
 
         if (MoData().DualShape() == Teuchos::null)
         {
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
           MORTAR::ElementIntegrator integrator(Shape());
 
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
           for (int i = 0; i < integrator.nGP(); ++i)
           {
@@ -2290,10 +2290,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
           }
 
           // get solution matrix with dual parameters
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -2305,8 +2305,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
         // check whether this is a 1D or 2D mortar element
         const int dim = 2;
         // evaluate dual shape functions
-        LINALG::SerialDenseVector valtemp(nnodes, true);
-        LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
+        CORE::LINALG::SerialDenseVector valtemp(nnodes, true);
+        CORE::LINALG::SerialDenseMatrix derivtemp(nnodes, dim, true);
         for (int i = 0; i < nnodes; ++i)
         {
           for (int j = 0; j < nnodes; ++j)
@@ -2368,7 +2368,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
 
   //---------------------------------
   // do trafo for bound elements
-  LINALG::SerialDenseMatrix trafo(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix trafo(nnodes, nnodes, true);
 
   if (MoData().Trafo() == Teuchos::null)
   {
@@ -2448,7 +2448,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     else
       dserror("unknown element type!");
 
-    MoData().Trafo() = Teuchos::rcp(new LINALG::SerialDenseMatrix(trafo));
+    MoData().Trafo() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(trafo));
   }
   else
   {
@@ -2473,8 +2473,8 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
     dserror("unknown shape");
   }
 
-  LINALG::SerialDenseVector tempval(nnodes, true);
-  LINALG::SerialDenseMatrix tempderiv(nnodes, eledim, true);
+  CORE::LINALG::SerialDenseVector tempval(nnodes, true);
+  CORE::LINALG::SerialDenseMatrix tempderiv(nnodes, eledim, true);
 
   for (int i = 0; i < nnodes; ++i)
     for (int j = 0; j < nnodes; ++j) tempval(i) += trafo(i, j) * val(j);
@@ -2496,7 +2496,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH CONST LM!    |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShapeLagMultConst(const INPAR::MORTAR::ShapeFcn& lmtype,
-    const double* xi, LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
+    const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
   MORTAR::UTILS::EvaluateShape_LM_Const(lmtype, xi, val, *this, valdim);
@@ -2510,7 +2510,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultConst(const INPAR::MORTAR::Shape
  |  THIS IS A SPECIAL VERSION FOR 3D QUADRATIC MORTAR WITH LIN LM!      |
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFcn& lmtype,
-    const double* xi, LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
+    const double* xi, CORE::LINALG::SerialDenseVector& val, CORE::LINALG::SerialDenseMatrix& deriv,
     const int valdim)
 {
   // some methods don't need a Lagrange multiplier interpolation
@@ -2641,7 +2641,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
             Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
@@ -2651,9 +2651,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
-        LINALG::Matrix<nnodes, 1> val;
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::Matrix<nnodes, 1> val;
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -2698,7 +2698,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         }
 
         // invert me
-        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (MoData().DualShape() == Teuchos::null)
@@ -2708,7 +2708,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -2755,7 +2755,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           dserror("MortarElement shape function for LM incompatible with number of element nodes!");
 #endif
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
             Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
@@ -2765,10 +2765,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -2814,7 +2814,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         }
 
         // invert me
-        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (MoData().DualShape() == Teuchos::null)
@@ -2824,7 +2824,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -2878,10 +2878,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
-       LINALG::SerialDenseVector val1(nnodes);
-       LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
-       LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
-       LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseVector val1(nnodes);
+       CORE::LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+       CORE::LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
 
        // build me, de
        for (int i=0;i<integrator.nGP();++i)
@@ -2902,10 +2902,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
 
        // invert bi-ortho matrix me
-       LINALG::SymmetricInverse(me1,nnodes);
+       CORE::LINALG::SymmetricInverse(me1,nnodes);
 
        // get solution matrix ae with dual parameters
-       LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+       CORE::LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
        int col= mycnode->Dofs()[dim];
 
@@ -2950,7 +2950,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
             Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
@@ -2960,10 +2960,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -3014,12 +3014,12 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           const int nnodeslin = 2;
 
           // reduce me to non-zero nodes before inverting
-          LINALG::Matrix<nnodeslin, nnodeslin> melin;
+          CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
           for (int j = 0; j < nnodeslin; ++j)
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse(melin);
+          CORE::LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -3035,13 +3035,13 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else
         {
           // invert matrix M_e
-          LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(MoData().DualShape());
@@ -3096,14 +3096,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -3148,7 +3148,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         }
 
         // invert me
-        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (MoData().DualShape() == Teuchos::null)
@@ -3158,7 +3158,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -3216,10 +3216,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        CoNode* mycnode = dynamic_cast<CoNode*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
-       LINALG::SerialDenseVector val1(nnodes);
-       LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
-       LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
-       LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseVector val1(nnodes);
+       CORE::LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+       CORE::LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
 
        // build me, de
        for (int i=0;i<integrator.nGP();++i)
@@ -3240,10 +3240,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
 
        // invert bi-ortho matrix me
-       LINALG::SymmetricInverse(me1,nnodes);
+       CORE::LINALG::SymmetricInverse(me1,nnodes);
 
        // get solution matrix ae with dual parameters
-       LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+       CORE::LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
        int col= mycnode->Dofs()[dim];
 
@@ -3295,14 +3295,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -3347,7 +3347,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         }
 
         // invert me
-        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (MoData().DualShape() == Teuchos::null)
@@ -3357,7 +3357,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -3413,10 +3413,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        MortarNode* mycnode = dynamic_cast<MortarNode*> (mynodes[node]);
        mycnode->xspatial()[dim] += delta;
 
-       LINALG::SerialDenseVector val1(nnodes);
-       LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
-       LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
-       LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseVector val1(nnodes);
+       CORE::LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+       CORE::LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+       CORE::LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
 
        // build me, de
        for (int i=0;i<integrator.nGP();++i)
@@ -3437,10 +3437,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        }
 
        // invert bi-ortho matrix me
-       LINALG::SymmetricInverse(me1,nnodes);
+       CORE::LINALG::SymmetricInverse(me1,nnodes);
 
        // get solution matrix ae with dual parameters
-       LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+       CORE::LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
        int col= mycnode->Dofs()[dim];
 
@@ -3491,14 +3491,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -3543,7 +3543,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         }
 
         // invert me
-        LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+        CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
         // get solution matrix ae with dual parameters
         if (MoData().DualShape() == Teuchos::null)
@@ -3553,7 +3553,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         else
           ae = *(MoData().DualShape());
@@ -3603,10 +3603,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         //          MortarNode* mycnode = dynamic_cast<MortarNode*> (mynodes[node]);
         //          mycnode->xspatial()[dim] += delta;
         //
-        //          LINALG::SerialDenseVector val1(nnodes);
-        //          LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
-        //          LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
-        //          LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
+        //          CORE::LINALG::SerialDenseVector val1(nnodes);
+        //          CORE::LINALG::SerialDenseMatrix deriv1(nnodes,2,true);
+        //          CORE::LINALG::SerialDenseMatrix me1(nnodes,nnodes,true);
+        //          CORE::LINALG::SerialDenseMatrix de1(nnodes,nnodes,true);
         //
         //          // build me, de
         //          for (int i=0;i<integrator.nGP();++i)
@@ -3627,10 +3627,10 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         //          }
         //
         //          // invert bi-ortho matrix me
-        //          LINALG::SymmetricInverse(me1,nnodes);
+        //          CORE::LINALG::SymmetricInverse(me1,nnodes);
         //
         //          // get solution matrix ae with dual parameters
-        //          LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
+        //          CORE::LINALG::SerialDenseMatrix ae1(nnodes,nnodes);
         //          ae1.Multiply('N','N',1.0,de1,me1,0.0);
         //          int col= mycnode->Dofs()[dim];
         //
@@ -3666,16 +3666,16 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-      LINALG::SerialDenseVector vallin(nnodes - 1);
-      LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 1);
+      CORE::LINALG::SerialDenseVector vallin(nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
 
       // compute entries to bi-ortho matrices me/de with Gauss quadrature
       MORTAR::ElementIntegrator integrator(Shape());
 
-      LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
-      LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
       // two-dim arrays of maps for linearization of me/de
       std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(
@@ -3716,7 +3716,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // invert bi-ortho matrix me
       // CAUTION: This is a non-symmetric inverse operation!
       const double detmeinv = 1.0 / (me(0, 0) * me(1, 1) - me(0, 1) * me(1, 0));
-      LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
       meold = me;
       me(0, 0) = detmeinv * meold(1, 1);
       me(0, 1) = -detmeinv * meold(0, 1);
@@ -3724,7 +3724,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       me(1, 1) = detmeinv * meold(0, 0);
 
       // get solution matrix with dual parameters
-      LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
       ae.Multiply('N', 'N', 1.0, de, me, 0.0);
 
       // build linearization of ae and store in derivdual
@@ -3767,7 +3767,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        // *******************************************************************
 
        std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-       LINALG::SerialDenseMatrix aeref(ae);
+       CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
 
        for (int dim=0;dim<2;++dim)
@@ -3778,14 +3778,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        coord(dim,node)+=delta;
 
        // empty shape function vals + derivs
-       LINALG::SerialDenseVector valquad1(nnodes);
-       LINALG::SerialDenseMatrix derivquad1(nnodes,1);
-       LINALG::SerialDenseVector vallin1(nnodes-1);
-       LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
-       //LINALG::SerialDenseVector valtemp1(nnodes);
-       //LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
-       LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
-       LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
+       CORE::LINALG::SerialDenseVector valquad1(nnodes);
+       CORE::LINALG::SerialDenseMatrix derivquad1(nnodes,1);
+       CORE::LINALG::SerialDenseVector vallin1(nnodes-1);
+       CORE::LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
+       //CORE::LINALG::SerialDenseVector valtemp1(nnodes);
+       //CORE::LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
+       CORE::LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
+       CORE::LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
 
        // build me, de
        for (int i=0;i<integrator.nGP();++i)
@@ -3808,7 +3808,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
        // invert bi-ortho matrix me1
        double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
-       LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
+       CORE::LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
        meold=me1;
        me1(0,0) =  1/detme1*meold(1,1);
        me1(0,1) = -1/detme1*meold(0,1);
@@ -3816,7 +3816,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        me1(1,1) =  1/detme1*meold(0,0);
 
        // get solution matrix ae with dual parameters
-       LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+       CORE::LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
        DRT::Node** mynodes = Nodes();
@@ -3855,16 +3855,16 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
 
       // empty shape function vals + derivs
-      LINALG::SerialDenseVector valquad(nnodes);
-      LINALG::SerialDenseMatrix derivquad(nnodes, 1);
-      LINALG::SerialDenseVector vallin(nnodes - 1);
-      LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
+      CORE::LINALG::SerialDenseVector valquad(nnodes);
+      CORE::LINALG::SerialDenseMatrix derivquad(nnodes, 1);
+      CORE::LINALG::SerialDenseVector vallin(nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix derivlin(nnodes - 1, 1);
 
       // compute entries to bi-ortho matrices me/de with Gauss quadrature
       MORTAR::ElementIntegrator integrator(Shape());
 
-      LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
-      LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix me(nnodes - 1, nnodes - 1, true);
+      CORE::LINALG::SerialDenseMatrix de(nnodes - 1, nnodes - 1, true);
 
       // two-dim arrays of maps for linearization of me/de
       std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(
@@ -3905,7 +3905,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       // invert bi-ortho matrix me
       // CAUTION: This is a non-symmetric inverse operation!
       const double detmeinv = 1.0 / (me(0, 0) * me(1, 1) - me(0, 1) * me(1, 0));
-      LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix meold(nnodes - 1, nnodes - 1);
       meold = me;
       me(0, 0) = detmeinv * meold(1, 1);
       me(0, 1) = -detmeinv * meold(0, 1);
@@ -3913,7 +3913,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
       me(1, 1) = detmeinv * meold(0, 0);
 
       // get solution matrix with dual parameters
-      LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
+      CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
       ae.Multiply('N', 'N', 1.0, de, me, 0.0);
 
       // build linearization of ae and store in derivdual
@@ -3956,7 +3956,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        // *******************************************************************
 
        std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-       LINALG::SerialDenseMatrix aeref(ae);
+       CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
 
        for (int dim=0;dim<2;++dim)
@@ -3967,14 +3967,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        coord(dim,node)+=delta;
 
        // empty shape function vals + derivs
-       LINALG::SerialDenseVector valquad1(nnodes);
-       LINALG::SerialDenseMatrix derivquad1(nnodes,1);
-       LINALG::SerialDenseVector vallin1(nnodes-1);
-       LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
-       //LINALG::SerialDenseVector valtemp1(nnodes);
-       //LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
-       LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
-       LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
+       CORE::LINALG::SerialDenseVector valquad1(nnodes);
+       CORE::LINALG::SerialDenseMatrix derivquad1(nnodes,1);
+       CORE::LINALG::SerialDenseVector vallin1(nnodes-1);
+       CORE::LINALG::SerialDenseMatrix derivlin1(nnodes-1,1);
+       //CORE::LINALG::SerialDenseVector valtemp1(nnodes);
+       //CORE::LINALG::SerialDenseMatrix derivtemp1(nnodes,1);
+       CORE::LINALG::SerialDenseMatrix me1(nnodes-1,nnodes-1,true);
+       CORE::LINALG::SerialDenseMatrix de1(nnodes-1,nnodes-1,true);
 
        // build me, de
        for (int i=0;i<integrator.nGP();++i)
@@ -3997,7 +3997,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
        // invert bi-ortho matrix me1
        double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
-       LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
+       CORE::LINALG::SerialDenseMatrix meold(nnodes-1,nnodes-1);
        meold=me1;
        me1(0,0) =  1/detme1*meold(1,1);
        me1(0,1) = -1/detme1*meold(0,1);
@@ -4005,7 +4005,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        me1(1,1) =  1/detme1*meold(0,0);
 
        // get solution matrix ae with dual parameters
-       LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+       CORE::LINALG::SerialDenseMatrix ae1(nnodes-1,nnodes-1);
        ae1.Multiply('N','N',1.0,de1,me1,0.0);
 
        DRT::Node** mynodes = Nodes();
@@ -4059,14 +4059,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -4117,12 +4117,12 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           const int nnodeslin = 3;
 
           // reduce me to non-zero nodes before inverting
-          LINALG::Matrix<nnodeslin, nnodeslin> melin;
+          CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
           for (int j = 0; j < nnodeslin; ++j)
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse(melin);
+          CORE::LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4138,13 +4138,13 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else
         {
           // invert matrix M_e
-          LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(MoData().DualShape());
@@ -4200,14 +4200,14 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
-        LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+        CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         // prepare computation with Gauss quadrature
         MORTAR::ElementIntegrator integrator(Shape());
-        LINALG::SerialDenseVector val(nnodes);
-        LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
-        LINALG::Matrix<nnodes, nnodes> me(true);
-        LINALG::Matrix<nnodes, nnodes> de(true);
+        CORE::LINALG::SerialDenseVector val(nnodes);
+        CORE::LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
+        CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+        CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
@@ -4258,12 +4258,12 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           const int nnodeslin = 4;
 
           // reduce me to non-zero nodes before inverting
-          LINALG::Matrix<nnodeslin, nnodeslin> melin;
+          CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
           for (int j = 0; j < nnodeslin; ++j)
             for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
           // invert bi-ortho matrix melin
-          LINALG::Inverse(melin);
+          CORE::LINALG::Inverse(melin);
 
           // ensure zero coefficients for nodes without Lagrange multiplier
           for (int j = 0; j < nnodes; ++j)
@@ -4279,13 +4279,13 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+          MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else
         {
           // invert matrix M_e
-          LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
+          CORE::LINALG::SymmetricPositiveDefiniteInverse<nnodes>(me);
 
           // get coefficient matrix A_e
           ae = *(MoData().DualShape());
@@ -4341,7 +4341,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
  |  Evaluate 2nd derivative of shape functions                popp 05/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::Evaluate2ndDerivShape(
-    const double* xi, LINALG::SerialDenseMatrix& secderiv, const int& valdim)
+    const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim)
 {
   if (!xi) dserror("Evaluate2ndDerivShape called with xi=NULL");
 
@@ -4517,9 +4517,9 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector auxval(NumNode());
-      LINALG::SerialDenseMatrix auxderiv(1, NumNode());
-      LINALG::SerialDenseMatrix auxderiv2(1, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(1, NumNode());
 
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, nurbs2);
@@ -4539,9 +4539,9 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       for (int inode = 0; inode < 3; ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector auxval(3);
-      LINALG::SerialDenseMatrix auxderiv(1, 3);
-      LINALG::SerialDenseMatrix auxderiv2(1, 3);
+      CORE::LINALG::SerialDenseVector auxval(3);
+      CORE::LINALG::SerialDenseMatrix auxderiv(1, 3);
+      CORE::LINALG::SerialDenseMatrix auxderiv2(1, 3);
 
       CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, xi[0], Knots()[0], weights, nurbs3);
@@ -4562,13 +4562,13 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector uv(2);
+      CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      LINALG::SerialDenseVector auxval(NumNode());
-      LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs4);
@@ -4589,13 +4589,13 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector uv(2);
+      CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      LINALG::SerialDenseVector auxval(NumNode());
-      LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs8);
@@ -4616,13 +4616,13 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
-      LINALG::SerialDenseVector uv(2);
+      CORE::LINALG::SerialDenseVector uv(2);
       uv(0) = xi[0];
       uv(1) = xi[1];
 
-      LINALG::SerialDenseVector auxval(NumNode());
-      LINALG::SerialDenseMatrix auxderiv(2, NumNode());
-      LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
+      CORE::LINALG::SerialDenseVector auxval(NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv(2, NumNode());
+      CORE::LINALG::SerialDenseMatrix auxderiv2(3, NumNode());
 
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
           auxval, auxderiv, auxderiv2, uv, Knots(), weights, nurbs9);
@@ -4749,7 +4749,7 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
   //---------------------------------
   // do trafo for bound elements
-  LINALG::SerialDenseMatrix trafo(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix trafo(nnodes, nnodes, true);
 
   // 2D case!
   if (Shape() == DRT::Element::line2 or Shape() == DRT::Element::line3 or

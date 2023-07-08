@@ -171,26 +171,26 @@ namespace MAT
     virtual void Update();
 
     void StressTensTransfSPKtoCauchy(
-        LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
-        const double detf,                         ///< determinant of deformation gradient tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& f,  ///< deformation gradient tensor
+        const double detf,                          ///< determinant of deformation gradient tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
     );
 
     void StressTensTransfCauchytoSPK(
-        LINALG::Matrix<NUM_STRESS_3D, 1>& invf,     ///< deformation gradient tensor
-        const double detf,                          ///< determinant of deformation gradient tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
-        LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo     ///< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& invf,  ///< deformation gradient tensor
+        const double detf,  ///< determinant of deformation gradient tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo     ///< 2nd PK-stress
     );
 
     // THE material routine
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,    ///< green lagrange strain
-        Teuchos::ParameterList& params,                      ///< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            ///< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-        int gp,                                              ///< Gauss point
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  ///< green lagrange strain
+        Teuchos::ParameterList& params,                  ///< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        int gp,                                                    ///< Gauss point
         int eleGID);
 
     /// Return quick accessible material parameter data
@@ -200,12 +200,13 @@ namespace MAT
     /// my material parameters
     MAT::PAR::AAAraghavanvorp_damage* params_;
     // damage history parameter g
-    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>> histgcurr_;  ///< current damage parameter
-    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>> histglast_;  ///< damage of last converged state
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>> histgcurr_;  ///< current damage parameter
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>>
+        histglast_;  ///< damage of last converged state
 
-    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>>
         histeqstrmaxcurr_;  ///< current damage parameter
-    Teuchos::RCP<std::vector<LINALG::Matrix<1, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<1, 1>>>
         histeqstrmaxlast_;             ///< damage of last converged state
     Teuchos::RCP<double> elstrength_;  ///< strength of the element
 

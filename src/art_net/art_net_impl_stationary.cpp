@@ -79,19 +79,19 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   // -------------------------------------------------------------------
   // create empty system matrix (6 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 3, false, true));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 3, false, true));
 
   // right hand side vector
-  rhs_ = LINALG::CreateVector(*dofrowmap, true);
+  rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -102,20 +102,20 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   }
 
   // the vector containing body and surface forces
-  neumann_loads_ = LINALG::CreateVector(*dofrowmap, true);
+  neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1
-  pressurenp_ = LINALG::CreateVector(*dofrowmap, true);
-  pressureincnp_ = LINALG::CreateVector(*dofrowmap, true);
+  pressurenp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  pressureincnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // for output of volumetric flow
-  ele_volflow_ = LINALG::CreateVector(*discret_->ElementRowMap());
+  ele_volflow_ = CORE::LINALG::CreateVector(*discret_->ElementRowMap());
 
   // for output of element radius
-  ele_radius_ = LINALG::CreateVector(*discret_->ElementRowMap());
+  ele_radius_ = CORE::LINALG::CreateVector(*discret_->ElementRowMap());
 
   // -------------------------------------------------------------------
   // set initial field
@@ -224,7 +224,8 @@ void ART::ArtNetImplStationary::SolveScatra()
 void ART::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
-  LINALG::ApplyDirichlettoSystem(sysmat_, pressureincnp_, rhs_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(
+      sysmat_, pressureincnp_, rhs_, zeros_, *(dbcmaps_->CondMap()));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -616,8 +617,8 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
   // read restart for diameter of previous time step
   reader.ReadVector(ele_radius_, "ele_radius");
   Teuchos::RCP<Epetra_Vector> ele_radius_col =
-      LINALG::CreateVector(*discret_->ElementColMap(), true);
-  LINALG::Export(*ele_radius_, *ele_radius_col);
+      CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
+  CORE::LINALG::Export(*ele_radius_, *ele_radius_col);
 
   // set the diameter in material
   for (int i = 0; i < discret_->NumMyColElements(); ++i)

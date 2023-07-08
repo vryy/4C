@@ -114,7 +114,7 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
 
   // gather all master row node gids redundantly in rdata
   std::vector<int> rdata;
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new node column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -133,7 +133,7 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
 
   // gather all gids of elements redundantly
   rdata.resize(0);
-  LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
+  CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), *com);
 
   // build new element column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -614,8 +614,8 @@ Teuchos::RCP<const Epetra_Vector> DRT::UTILS::GetColVersionOfRowVector(
   // if it's not in column map export and allocate
   else
   {
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap, false);
-    LINALG::Export(*state, *tmp);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
+    CORE::LINALG::Export(*state, *tmp);
     return tmp;
   }
 }  // GetColVersionOfRowVector

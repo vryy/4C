@@ -175,23 +175,23 @@ namespace DRT
       void CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                         //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at Gauss point
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const double vdiv,                         //!< velocity divergence
-          const double densnp,                       //!< density at time_(n+1)
-          const double visc                          //!< viscosity
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const double vdiv,                               //!< velocity divergence
+          const double densnp,                             //!< density at time_(n+1)
+          const double visc                                //!< viscosity
       );
 
       //! adaption of convective term for rhs
-      void RecomputeConvPhiForRhs(double& conv_phi,  //!< convective contribution
-          const int k,                               //!< index of current scalar
-          const LINALG::Matrix<nsd_, 1>& sgvelint,   //!< subgrid-scale velocity at Gauss point
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const double densnp,                       //!< density at time_(n+1)
-          const double densn,                        //!< density at time_(n)
-          const double phinp,                        //!< scalar at time_(n+1)
-          const double phin,                         //!< scalar at time_(n)
-          const double vdiv                          //!< velocity divergence
+      void RecomputeConvPhiForRhs(double& conv_phi,       //!< convective contribution
+          const int k,                                    //!< index of current scalar
+          const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
+          const double densnp,                            //!< density at time_(n+1)
+          const double densn,                             //!< density at time_(n)
+          const double phinp,                             //!< scalar at time_(n+1)
+          const double phin,                              //!< scalar at time_(n)
+          const double vdiv                               //!< velocity divergence
       );
 
       /*========================================================================*/
@@ -210,14 +210,14 @@ namespace DRT
           Teuchos::ParameterList& params, const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
-      void CalcSubgrVelocityVisc(LINALG::Matrix<nsd_, 1>& epsilonvel) override;
+      void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related
       /*========================================================================*/
 
       //! scalar at t_(n+alpha_M)
-      std::vector<LINALG::Matrix<nen_, 1>> ephiam_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephiam_;
       //!
       std::vector<double> densgradfac_;
 

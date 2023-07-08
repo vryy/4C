@@ -524,7 +524,7 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(VolumeCell* volume,
     Facet* facet, const std::vector<Point*>& points,
-    const CORE::DRT::UTILS::GaussIntegration& gaussRule, const LINALG::Matrix<3, 1>& normal)
+    const CORE::DRT::UTILS::GaussIntegration& gaussRule, const CORE::LINALG::Matrix<3, 1>& normal)
 {
 #ifdef DEBUGCUTLIBRARY
   plain_point_set pointtest;
@@ -705,7 +705,7 @@ void CORE::GEO::CUT::Mesh::BuildSelfCutTree()
       Teuchos::rcp(new CORE::GEO::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
-  LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
+  CORE::LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
   //  boundingvolume(0,1) += 1e-4;
   //  boundingvolume(1,1) += 1e-4;
   //  boundingvolume(2,1) += 1e-4;
@@ -741,7 +741,7 @@ void CORE::GEO::CUT::Mesh::BuildStaticSearchTree()
       Teuchos::rcp(new CORE::GEO::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
-  LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
+  CORE::LINALG::Matrix<3, 2> boundingvolume = bb_->GetBoundingVolume();
   boundingvolume(0, 1) += 1e-4;
   boundingvolume(1, 1) += 1e-4;
   boundingvolume(2, 1) += 1e-4;
@@ -942,7 +942,7 @@ void CORE::GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
-    LINALG::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
+    CORE::LINALG::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
     if (boundingvolumes_.size() !=
         0)  // ******************************************************* possible in case of parallel
             // computing and using only relevant elements
@@ -1677,7 +1677,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(::DRT::Element::DiscretizationType 
     for (unsigned i = 0; i < nodes.size(); ++i)
     {
       nodes[i]->Coordinates(&xyze(0, i));
-      LINALG::Matrix<3, 1> vec;
+      CORE::LINALG::Matrix<3, 1> vec;
       nodes[i]->Coordinates(&vec(0, 0));
       if (vec.Norm2() > max_norm) max_norm = vec.Norm2();
     }
@@ -2487,7 +2487,7 @@ void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name)
 
         if (facet->OnCutSide())
         {
-          LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
+          CORE::LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
           if (facet->IsTriangulated())
           {
@@ -2499,7 +2499,7 @@ void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name)
           }
           else
           {
-            LINALG::Matrix<3, 1> cur;
+            CORE::LINALG::Matrix<3, 1> cur;
             std::vector<Point*> pts = facet->Points();
             for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
             {

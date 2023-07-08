@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }

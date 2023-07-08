@@ -27,7 +27,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }
@@ -266,7 +266,7 @@ namespace CORE::GEO
     Teuchos::RCP<const BackMesh> BackMeshPtr() const { return back_mesh_.getConst(); }
 
     virtual void GetPhysicalNodalCoordinates(
-        const ::DRT::Element* element, LINALG::SerialDenseMatrix& xyze) const;
+        const ::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
     /// run after the Run_Cut routine has been called
     virtual void Post_Run_Cut(bool include_inner);

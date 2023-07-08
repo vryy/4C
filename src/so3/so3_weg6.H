@@ -361,7 +361,7 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
 
@@ -394,13 +394,14 @@ namespace DRT
           std::vector<double>* acc,                         ///< current accelerations
           std::vector<double>& residual,                    ///< current residual displ
           std::vector<double>& dispmat,                     ///< current material displacements
-          LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_WEG6, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMDOF_WEG6, 1>* forceinert,             ///< element inertial force vector
-          LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,  ///< element structural force vector
-          LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* forceinert,  ///< element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_WEG6, 1>* force_str,   ///< element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,   ///< stress output option
           const INPAR::STR::StrainType iostrain);  ///< strain output option
@@ -412,20 +413,20 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Wedge6 Shapefcts to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> sow6_shapefcts();
       //! Evaluate Wedge6 Derivs to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> sow6_derivs();
       //! Evaluate Wedge6 Weights to keep them static
       const std::vector<double> sow6_weights();
 
 
       //! calculate static shape functions and derivatives for sow6
-      void sow6_shapederiv(LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,
-          LINALG::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,
-          LINALG::Matrix<NUMGPT_WEG6, 1>** weights);
+      void sow6_shapederiv(CORE::LINALG::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,
+          CORE::LINALG::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,
+          CORE::LINALG::Matrix<NUMGPT_WEG6, 1>** weights);
 
       //! lump mass matrix (bborn 07/08)
-      void sow6_lumpmass(LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass);
+      void sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass);
 
      private:
       std::string GetElementTypeString() const { return "SOLIDW6"; }

@@ -114,7 +114,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
         const Teuchos::ParameterList& visualization_params) const
 {
   // Setup variables.
-  LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
+  CORE::LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
 
   // Get the visualization vectors.
   std::vector<double>& point_coordinates = visualization_writer->GetMutablePointCoordinateVector();
@@ -210,14 +210,14 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
  *
  */
 template <typename scalar_type, typename beam, typename surface>
-LINALG::Matrix<3, 1, scalar_type>
+CORE::LINALG::Matrix<3, 1, scalar_type>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::EvaluateCoupling(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const
 {
   using namespace INPAR::BEAMTOSOLID;
 
-  LINALG::Matrix<3, 1, scalar_type> r_beam(true);
-  LINALG::Matrix<3, 1, scalar_type> r_surface(true);
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam(true);
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface(true);
 
   const BeamToSolidSurfaceCoupling coupling_type =
       this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetCouplingType();
@@ -227,8 +227,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     case BeamToSolidSurfaceCoupling::displacement_fad:
     {
       // In this case we have to substract the reference position from the DOF vectors.
-      LINALG::Matrix<beam::n_dof_, 1, scalar_type> beam_dof = this->ele1pos_;
-      LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof =
+      CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> beam_dof = this->ele1pos_;
+      CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> surface_dof =
           this->face_element_->GetFacePosition();
 
       for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
@@ -285,7 +285,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     const ::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
-  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(discret, this->Element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.

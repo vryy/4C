@@ -294,7 +294,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(Teuchos::RCP<DRT::Discretization> discre
     ele[ElemNum][0].LocationVector(*discret, lm, *lmowner, lmstride);
 
     // get node coordinates and number of elements per node
-    LINALG::Matrix<3, 2> xyze;
+    CORE::LINALG::Matrix<3, 2> xyze;
     for (int inode = 0; inode < 2; inode++)
     {
       //      const double* x = discret->lColNode((*nodes)[i+inode])->X();

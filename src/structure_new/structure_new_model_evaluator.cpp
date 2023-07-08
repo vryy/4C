@@ -117,7 +117,7 @@ void STR::ModelEvaluator::SetupMultiMapExtractor()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::InitializeInertiaAndDamping(
-    const Epetra_Vector& x, LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
 
@@ -160,7 +160,8 @@ void STR::ModelEvaluator::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::ModelEvaluator::AssembleJacobian(const double timefac_np, LINALG::SparseOperator& jac,
+bool STR::ModelEvaluator::AssembleJacobian(const double timefac_np,
+    CORE::LINALG::SparseOperator& jac,
     const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
   if (not without_these_models) return AssembleJacobian(timefac_np, jac);
@@ -173,8 +174,8 @@ bool STR::ModelEvaluator::AssembleJacobian(const double timefac_np, LINALG::Spar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::AssembleJacobian(
-    bool& ok, const Vector& me_vec, const double timefac_np, LINALG::SparseOperator& jac) const
+void STR::ModelEvaluator::AssembleJacobian(bool& ok, const Vector& me_vec, const double timefac_np,
+    CORE::LINALG::SparseOperator& jac) const
 {
   if (not ok) return;
 
@@ -186,7 +187,7 @@ void STR::ModelEvaluator::AssembleJacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::AssembleJacobianContributionsFromElementLevelForPTC(
-    const Vector& me_vec, const double timefac_np, Teuchos::RCP<LINALG::SparseMatrix>& modjac)
+    const Vector& me_vec, const double timefac_np, Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac)
 {
   for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
     (*cit)->AssembleJacobianContributionsFromElementLevelForPTC(modjac, timefac_np);
@@ -355,7 +356,7 @@ bool STR::ModelEvaluator::ApplyForce(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyStiff(
-    const Epetra_Vector& x, LINALG::SparseOperator& jac, const double& timefac_np) const
+    const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
   Vector::iterator me_iter;
@@ -385,7 +386,7 @@ bool STR::ModelEvaluator::ApplyStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyStiff(const INPAR::STR::ModelType& mt, const Epetra_Vector& x,
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
   bool ok = true;
@@ -416,7 +417,7 @@ bool STR::ModelEvaluator::ApplyStiff(const INPAR::STR::ModelType& mt, const Epet
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f,
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
   Vector::iterator me_iter;
@@ -698,7 +699,7 @@ void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::ComputeJacobianContributionsFromElementLevelForPTC(
-    Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr)
 {
   // evaluate ptc contributions at t^n+1
   double timefac_np = 1.0;

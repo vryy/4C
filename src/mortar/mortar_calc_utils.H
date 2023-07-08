@@ -55,7 +55,7 @@ namespace MORTAR
       {
         case 0:
         {
-          LINALG::Matrix<n, 1> val;
+          CORE::LINALG::Matrix<n, 1> val;
           switch (ndim)
           {
             case 2:
@@ -65,8 +65,8 @@ namespace MORTAR
                 case DRT::Element::nurbs2:
                 case DRT::Element::nurbs3:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
@@ -89,8 +89,8 @@ namespace MORTAR
                 case DRT::Element::nurbs8:
                 case DRT::Element::nurbs9:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) val(i) = auxval(i);
@@ -130,7 +130,7 @@ namespace MORTAR
         // First Derivation (xi)
         case 1:
         {
-          LINALG::Matrix<ndim - 1, n> deriv1;
+          CORE::LINALG::Matrix<ndim - 1, n> deriv1;
 
           switch (ndim)
           {
@@ -141,8 +141,8 @@ namespace MORTAR
                 case DRT::Element::nurbs2:
                 case DRT::Element::nurbs3:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
@@ -166,8 +166,8 @@ namespace MORTAR
                 case DRT::Element::nurbs8:
                 case DRT::Element::nurbs9:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) deriv1(0, i) = auxderiv(i, 0);
@@ -206,7 +206,7 @@ namespace MORTAR
         // Second Derivation (eta)
         case 2:
         {
-          LINALG::Matrix<ndim - 1, n> deriv2;
+          CORE::LINALG::Matrix<ndim - 1, n> deriv2;
           switch (ndim)
           {
             case 2:
@@ -216,8 +216,8 @@ namespace MORTAR
                 case DRT::Element::nurbs2:
                 case DRT::Element::nurbs3:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 1);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) deriv2(0, i) = auxderiv(i, 0);
@@ -241,8 +241,8 @@ namespace MORTAR
                 case DRT::Element::nurbs8:
                 case DRT::Element::nurbs9:
                 {
-                  LINALG::SerialDenseVector auxval(n);
-                  LINALG::SerialDenseMatrix auxderiv(n, 2);
+                  CORE::LINALG::SerialDenseVector auxval(n);
+                  CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
                   ele.EvaluateShape(xi, auxval, auxderiv, ele.NumNode());
 
                   for (int i = 0; i < n; ++i) deriv2(1, i) = auxderiv(i, 1);
@@ -306,9 +306,9 @@ namespace MORTAR
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
-      LINALG::Matrix<ndim, n> coord;
+      CORE::LINALG::Matrix<ndim, n> coord;
 
-      LINALG::Matrix<n, 1> val;
+      CORE::LINALG::Matrix<n, 1> val;
       if (ndim == 2)
         CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
       else if (ndim == 3)
@@ -363,9 +363,9 @@ namespace MORTAR
 
       for (int i = 0; i < globdim; ++i) globcoord[i] = 0.0;
 
-      LINALG::Matrix<ndim + 1, n> coord;
+      CORE::LINALG::Matrix<ndim + 1, n> coord;
 
-      LINALG::Matrix<n, 1> val;
+      CORE::LINALG::Matrix<n, 1> val;
       if (ndim == 1)
         CORE::DRT::UTILS::shape_function_1D(val, xi[0], distype);
       else if (ndim == 2)
@@ -401,10 +401,10 @@ namespace MORTAR
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
-      LINALG::Matrix<numnod, 1> funct(true);
-      LINALG::Matrix<ndim, numnod> xref(true);
-      LINALG::Matrix<ndim, ndim> xjm(true);
-      LINALG::Matrix<ndim, numnod> deriv(true);
+      CORE::LINALG::Matrix<numnod, 1> funct(true);
+      CORE::LINALG::Matrix<ndim, numnod> xref(true);
+      CORE::LINALG::Matrix<ndim, ndim> xjm(true);
+      CORE::LINALG::Matrix<ndim, numnod> deriv(true);
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -533,10 +533,10 @@ namespace MORTAR
       // converged
       converged = false;
 
-      LINALG::Matrix<numnod, 1> funct;
-      LINALG::Matrix<ndim, numnod> xref;
-      LINALG::Matrix<ndim, ndim> xjm;
-      LINALG::Matrix<ndim, numnod> deriv;
+      CORE::LINALG::Matrix<numnod, 1> funct;
+      CORE::LINALG::Matrix<ndim, numnod> xref;
+      CORE::LINALG::Matrix<ndim, ndim> xjm;
+      CORE::LINALG::Matrix<ndim, numnod> deriv;
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)
@@ -660,10 +660,10 @@ namespace MORTAR
       // converged
       converged = false;
 
-      LINALG::Matrix<numnod, 1> funct;
-      LINALG::Matrix<ndim, numnod> xref;
-      LINALG::Matrix<ndim, ndim> xjm;
-      LINALG::Matrix<ndim, numnod> deriv;
+      CORE::LINALG::Matrix<numnod, 1> funct;
+      CORE::LINALG::Matrix<ndim, numnod> xref;
+      CORE::LINALG::Matrix<ndim, ndim> xjm;
+      CORE::LINALG::Matrix<ndim, numnod> deriv;
 
       // spatial configuration of this element!
       for (int k = 0; k < numnod; ++k)

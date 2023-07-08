@@ -22,7 +22,7 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa, Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap, Epetra_SerialDenseMatrix*& alpha,
     Teuchos::RCP<Epetra_SerialDenseMatrix>& M, DRT::Container& data,
-    const LINALG::Matrix<NUMDISP_, 1>& dispi, const LINALG::Matrix<NUMPRES_, 1>& presi)
+    const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi, const CORE::LINALG::Matrix<NUMPRES_, 1>& presi)
 {
   // retrieve history
   alpha = data.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
@@ -35,14 +35,14 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
   if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas) dserror("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
-  LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMEAS_T, NUMDISP_, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMEAS_T, NUMDISP_, 1>(
       1.0, oldfeas->A(), 1.0, oldKad->A(), dispi.A());
-  LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMEAS_T, NUMPRES_, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMEAS_T, NUMPRES_, 1>(
       1.0, oldfeas->A(), 1.0, oldKap->A(), presi.A());
 
   // alpha^{k+1} := alpha^k + Dalpha^k
   //                alpha^k - k_aa^{k;-1} . feas^{k+1}
-  LINALG::DENSEFUNCTIONS::multiply<double, NUMEAS_T, NUMEAS_T, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMEAS_T, NUMEAS_T, 1>(
       1.0, *alpha, -1.0, *oldKaainv, *oldfeas);
 
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -66,12 +66,12 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
 template <int NUMEAS_T>
 void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
     const Epetra_SerialDenseMatrix& Mloc)
 {
   // map local M to global, also enhancement is refered to element origin
   // M = detJ0/detJ T0^{-T} . M
-  LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, NUMEAS_T>(
+  CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, NUMEAS_T>(
       M->A(), detJ0 / detJ, T0invT.A(), Mloc.A());
 
   // watch out
@@ -81,11 +81,11 @@ void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasAddStrain(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
+void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& M, const Epetra_SerialDenseMatrix* alpha)
 {
   // add enhanced strains = M . alpha to GL strains to "unlock" element
-  LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, NUMEAS_T, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, NUMEAS_T, 1>(
       1.0, glstrain.A(), 1.0, M->A(), alpha->A());
   // ready
   return;
@@ -96,26 +96,28 @@ void DRT::ELEMENTS::So_sh8p8::EasAddStrain(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>
 template <int NUMEAS_T>
 void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_SerialDenseVector>& feas,
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa, Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap, const LINALG::Matrix<NUMDIM_, NUMDIM_>& defgradD,
-    const LINALG::Matrix<NUMDIM_, NUMDIM_>& invrgtstrD,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& rcgbyrgtstr,
-    const double& detdefgrad, const LINALG::Matrix<NUMDFGR_, 1>& tinvdefgrad,
-    const LINALG::Matrix<NUMDFGR_, NUMDFGR_>& WmT,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress, const double& effpressure,
-    const double& detJ_w, const LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_>& cb,
-    const LINALG::Matrix<NUMDFGR_, NUMDISP_>& defgradbydisp,
-    const LINALG::Matrix<NUMPRES_, 1>& prshfct, const Teuchos::RCP<Epetra_SerialDenseMatrix>& M)
+    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,
+    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& defgradD,
+    const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invrgtstrD,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& rcgbyrgtstr,
+    const double& detdefgrad, const CORE::LINALG::Matrix<NUMDFGR_, 1>& tinvdefgrad,
+    const CORE::LINALG::Matrix<NUMDFGR_, NUMDFGR_>& WmT,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress, const double& effpressure,
+    const double& detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_>& cb,
+    const CORE::LINALG::Matrix<NUMDFGR_, NUMDISP_>& defgradbydisp,
+    const CORE::LINALG::Matrix<NUMPRES_, 1>& prshfct,
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M)
 {
   // derivative of assumed right stretch tensor w.r.t. EAS parameters
-  LINALG::Matrix<MAT::NUM_STRESS_3D, NUMEAS_T> rgtstrbyalpha;
-  LINALG::DENSEFUNCTIONS::multiplyNN<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, NUMEAS_T>(
-      rgtstrbyalpha.A(), 2.0, rcgbyrgtstr.A(), M->A());
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMEAS_T> rgtstrbyalpha;
+  CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
+      NUMEAS_T>(rgtstrbyalpha.A(), 2.0, rcgbyrgtstr.A(), M->A());
 
   // derivative of pseudo identity with respect to EAS parameters
   // I^{assd}_{CB,e} = U^{d;-1}_{CD} . U^{ass}_{DB,e}
   // WARNING: I^{assd}_{CB} and I^{assd}_{CB,e} might be non-symmetric in CB
-  LINALG::Matrix<NUMDFGR_, NUMEAS_T> pseudoidentity;
+  CORE::LINALG::Matrix<NUMDFGR_, NUMEAS_T> pseudoidentity;
   for (int e = 0; e < NUMEAS_T; ++e)
   {
     for (int CB = 0; CB < NUMDFGR_; ++CB)
@@ -136,7 +138,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
   // derivative of def.grad. with respect to e EAS parameters alpha^e
   // F_{aB,e} = F^d_{aC} . U^{d;-1}_{CD} . U^{ass}_{DB,e}
   //            = F^d_{aC} . I^{assd}_{CB,e}
-  LINALG::Matrix<NUMDFGR_, NUMEAS_T> defgradbyalpha;
+  CORE::LINALG::Matrix<NUMDFGR_, NUMEAS_T> defgradbyalpha;
   for (int e = 0; e < NUMEAS_T; ++e)
   {
     for (int aB = 0; aB < NUMDFGR_; ++aB)
@@ -167,38 +169,38 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
   // sigma = stress
 
   // temporary c . M
-  LINALG::Matrix<MAT::NUM_STRESS_3D, NUMEAS_T> cM;
-  LINALG::DENSEFUNCTIONS::multiplyNN<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, NUMEAS_T>(
-      cM.A(), cmat.A(), M->A());
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMEAS_T> cM;
+  CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
+      NUMEAS_T>(cM.A(), cmat.A(), M->A());
   // temporary ( fv . fv^T + Wm ) . M_F
-  LINALG::Matrix<NUMDFGR_, NUMEAS_T> ffwmf;
+  CORE::LINALG::Matrix<NUMDFGR_, NUMEAS_T> ffwmf;
   ffwmf.MultiplyNN(WmT, defgradbyalpha);
   // temporary M_F^T . fv
-  LINALG::Matrix<NUMEAS_T, 1> mff;
+  CORE::LINALG::Matrix<NUMEAS_T, 1> mff;
   mff.MultiplyTN(defgradbyalpha, tinvdefgrad);
   // temporary integration factor
   const double fac = effpressure * detdefgrad * detJ_w;
 
   // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, NUMEAS_T>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, NUMEAS_T>(
       1.0, Kaa->A(), detJ_w, M->A(), cM.A());
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMEAS_T>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMEAS_T>(
       1.0, Kaa->A(), -fac, defgradbyalpha.A(), ffwmf.A());
   // integrate Kad: Kad += (M^T . cmat . B) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . B_F) * (H . p) * detF * detJ * w
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, NUMDISP_>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, NUMDISP_>(
       1.0, Kad->A(), detJ_w, M->A(), cb.A());
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMDISP_>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMDISP_>(
       1.0, Kad->A(), -fac, ffwmf.A(), defgradbydisp.A());
   // integrate Kap: Kap += - (M_F^T . fv . H)  * detF * detJ * w
-  LINALG::DENSEFUNCTIONS::multiplyNT<double, NUMEAS_T, 1, NUMPRES_>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, NUMEAS_T, 1, NUMPRES_>(
       1.0, Kap->A(), -detdefgrad * detJ_w, mff.A(), prshfct.A());
   // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
   //                       - (M_F^T . fv) * (H . p)  * detF * detJ * w
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMEAS_T, MAT::NUM_STRESS_3D, 1>(
       1.0, feas->A(), detJ_w, M->A(), stress.A());
-  LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, 1>(1.0, feas->A(), -fac, mff.A());
+  CORE::LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, 1>(1.0, feas->A(), -fac, mff.A());
 
   // bye
   return;
@@ -208,12 +210,12 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
 void DRT::ELEMENTS::So_sh8p8::EasCondensation(
-    LINALG::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
-    LINALG::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  // element stiffness matrix
-    LINALG::Matrix<NUMDISP_, NUMPRES_>* gradmatrix,   // element gradient matrix
-    LINALG::Matrix<NUMPRES_, 1>* incomp,              ///< incompressibility residual
-    LINALG::Matrix<NUMPRES_, NUMDISP_>* dargmatrix,   // 'transposed' element gradient matrix
-    LINALG::Matrix<NUMPRES_, NUMPRES_>* stabmatrix,   // element stabilisation matrix
+    CORE::LINALG::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
+    CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>* gradmatrix,   // element gradient matrix
+    CORE::LINALG::Matrix<NUMPRES_, 1>* incomp,              ///< incompressibility residual
+    CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>* dargmatrix,   // 'transposed' element gradient matrix
+    CORE::LINALG::Matrix<NUMPRES_, NUMPRES_>* stabmatrix,   // element stabilisation matrix
     Epetra_SerialDenseMatrix*& oldfeas, Epetra_SerialDenseMatrix*& oldKaainv,
     Epetra_SerialDenseMatrix*& oldKad, Epetra_SerialDenseMatrix*& oldKap,
     const Teuchos::RCP<Epetra_SerialDenseVector>& feas,
@@ -227,45 +229,45 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
   solve_for_inverseKaa.Invert();
 
   // temporary Kda.Kaa^{-1}
-  LINALG::Matrix<NUMDISP_, NUMEAS_T> KdaKaa(false);
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDISP_, NUMEAS_T, NUMEAS_T>(
+  CORE::LINALG::Matrix<NUMDISP_, NUMEAS_T> KdaKaa(false);
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDISP_, NUMEAS_T, NUMEAS_T>(
       KdaKaa.A(), Kad->A(), Kaa->A());
   // temporary Kpa.Kaa^{-1}
-  LINALG::Matrix<NUMPRES_, NUMEAS_T> KpaKaa(false);
-  LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMPRES_, NUMEAS_T, NUMEAS_T>(
+  CORE::LINALG::Matrix<NUMPRES_, NUMEAS_T> KpaKaa(false);
+  CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMPRES_, NUMEAS_T, NUMEAS_T>(
       KpaKaa.A(), Kap->A(), Kaa->A());
 
   // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
   if (stiffmatrix != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMDISP_>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMDISP_>(
         1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kad->A());
   // EAS stiffness matrix is: Kdp - Kda . Kaa^-1 . Kap
   if (gradmatrix != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMPRES_>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMPRES_>(
         1.0, gradmatrix->A(), -1.0, KdaKaa.A(), Kap->A());
   // EAS stiffness matrix is: Kpd - Kpa . Kaa^-1 . Kad
   if (dargmatrix != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMDISP_>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMDISP_>(
         1.0, dargmatrix->A(), -1.0, KpaKaa.A(), Kad->A());
   // EAS stiffness matrix is: Kpp - Kpa . Kaa^-1 . Kap
   if (stabmatrix != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMPRES_>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMPRES_>(
         1.0, stabmatrix->A(), -1.0, KpaKaa.A(), Kap->A());
 
   // EAS internal force is: fint - Kda^T . Kaa^-1 . feas
   if (force != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, 1>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, 1>(
         1.0, force->A(), -1.0, KdaKaa.A(), feas->A());
   // EAS incompressibility is: fint - Kpa^T . Kaa^-1 . feas
   if (incomp != nullptr)
-    LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, 1>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, 1>(
         1.0, incomp->A(), -1.0, KpaKaa.A(), feas->A());
 
   // store current EAS data in history
-  LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMEAS_T>(*oldKaainv, *Kaa);
-  LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMDISP_>(*oldKad, *Kad);
-  LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMPRES_>(*oldKap, *Kap);
-  LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, 1>(*oldfeas, *feas);
+  CORE::LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMEAS_T>(*oldKaainv, *Kaa);
+  CORE::LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMDISP_>(*oldKad, *Kad);
+  CORE::LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, NUMPRES_>(*oldKap, *Kap);
+  CORE::LINALG::DENSEFUNCTIONS::update<double, NUMEAS_T, 1>(*oldfeas, *feas);
 
   // done
   return;

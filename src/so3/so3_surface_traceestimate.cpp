@@ -69,8 +69,10 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
                         CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim *
                             (CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim + 1) / 2;
 
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3> xrefe;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3> xcurr;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>
+      xrefe;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>
+      xcurr;
 
   for (int i = 0; i < ParentElement()->NumNode(); ++i)
     for (int d = 0; d < dim; ++d)
@@ -79,15 +81,15 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
-  LINALG::Matrix<num_dof, num_dof> vol, surf;
+  CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
 
   TraceEstimateVolMatrix<dt_vol>(xrefe, xcurr, vol);
   TraceEstimateSurfMatrix<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
-  LINALG::Matrix<num_dof, dim_image> proj, tmp;
+  CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
   SubspaceProjector<dt_vol>(xcurr, proj);
 
-  LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
+  CORE::LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
 
   tmp.Multiply(vol, proj);
   vol_red.MultiplyTN(proj, tmp);
@@ -97,37 +99,40 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
   Epetra_SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
   Epetra_SerialDenseMatrix surf_red_sd(::View, surf_red.A(), dim_image, dim_image, dim_image);
 
-  return LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
 template <DRT::Element::DiscretizationType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xrefe,
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xrefe,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& vol)
 {
   const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
 
   double jac;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<3, 3> rcg;
-  LINALG::Matrix<6, 1> glstrain;
-  LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3> bop;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6> bc;
-  LINALG::Matrix<dim, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement> N_XYZ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<3, 3> rcg;
+  CORE::LINALG::Matrix<6, 1> glstrain;
+  CORE::LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>
+      bop;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6>
+      bc;
+  CORE::LINALG::Matrix<dim, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>
+      N_XYZ;
 
   CORE::DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    const LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
     Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    LINALG::Matrix<6, 6> cmat(true);
-    LINALG::Matrix<6, 1> stress(true);
+    CORE::LINALG::Matrix<6, 6> cmat(true);
+    CORE::LINALG::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
     Teuchos::rcp_dynamic_cast<MAT::So3Material>(ParentElement()->Material())
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
@@ -141,38 +146,41 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrix(
 
 template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xrefe,
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xrefe,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& surf)
 {
   const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
 
-  LINALG::Matrix<6, 6> id4;
+  CORE::LINALG::Matrix<6, 6> id4;
   for (int i = 0; i < 3; ++i) id4(i, i) = 1.;
   for (int i = 3; i < 6; ++i) id4(i, i) = 2.;
 
-  LINALG::SerialDenseMatrix xrefe_surf(
+  CORE::LINALG::SerialDenseMatrix xrefe_surf(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement, dim);
   MaterialConfiguration(xrefe_surf);
 
   std::vector<double> n(3);
-  LINALG::Matrix<3, 1> n_v(n.data(), true);
-  LINALG::Matrix<3, 3> nn;
+  CORE::LINALG::Matrix<3, 1> n_v(n.data(), true);
+  CORE::LINALG::Matrix<3, 3> nn;
   double detA;
   double jac;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<3, 3> rcg;
-  LINALG::Matrix<6, 1> glstrain;
-  LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3> bop;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6> bc;
-  LINALG::Matrix<dim, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement> N_XYZ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<3, 3> rcg;
+  CORE::LINALG::Matrix<6, 1> glstrain;
+  CORE::LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>
+      bop;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6>
+      bc;
+  CORE::LINALG::Matrix<dim, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>
+      N_XYZ;
 
   CORE::DRT::UTILS::IntPointsAndWeights<dim - 1> ip(
       DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
-  LINALG::SerialDenseMatrix deriv_surf(
+  CORE::LINALG::SerialDenseMatrix deriv_surf(
       2, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement);
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
@@ -182,18 +190,18 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    LINALG::SerialDenseMatrix pqxg(1, 3);
-    LINALG::Matrix<3, 3> derivtrafo;
+    CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
+    CORE::LINALG::Matrix<3, 3> derivtrafo;
 
     CORE::DRT::UTILS::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, ParentElement()->Shape(), Shape(), FaceParentNumber());
 
-    LINALG::Matrix<3, 1> xi;
+    CORE::LINALG::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
     Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    LINALG::Matrix<6, 6> cmat(true);
-    LINALG::Matrix<6, 1> stress(true);
+    CORE::LINALG::Matrix<6, 6> cmat(true);
+    CORE::LINALG::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
     Teuchos::rcp_dynamic_cast<MAT::So3Material>(ParentElement()->Material())
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
@@ -209,12 +217,12 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
           ->GetBoundaryEleAndParentKnots(
               parentknots, boundaryknots, normalfac, ParentElement()->Id(), FaceParentNumber());
 
-      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement, 1>
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement, 1>
           weights, shapefcn;
       for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement; ++i)
         weights(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[i])->W();
 
-      LINALG::Matrix<2, 1> xi_surf;
+      CORE::LINALG::Matrix<2, 1> xi_surf;
       xi_surf(0) = ip.IP().qxg[gp][0];
       xi_surf(1) = ip.IP().qxg[gp][1];
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
@@ -229,16 +237,17 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     n_v.Scale(1. / n_v.Norm2());
     nn.MultiplyNT(n_v, n_v);
 
-    LINALG::Matrix<6, 6> cn;
+    CORE::LINALG::Matrix<6, 6> cn;
     MAT::AddSymmetricHolzapfelProduct(cn, rcg, nn, .25);
 
-    LINALG::Matrix<6, 6> tmp1, tmp2;
+    CORE::LINALG::Matrix<6, 6> tmp1, tmp2;
     tmp1.Multiply(cmat, id4);
     tmp2.Multiply(tmp1, cn);
     tmp1.Multiply(tmp2, id4);
     tmp2.Multiply(tmp1, cmat);
 
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6> tmp3;
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6>
+        tmp3;
     tmp3.MultiplyTN(bop, tmp2);
 
     surf.Multiply(detA * ip.IP().qwgt[gp], tmp3, bop, 1.);
@@ -249,18 +258,20 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
 
 template <DRT::Element::DiscretizationType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::Strains(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xrefe,
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    const LINALG::Matrix<3, 1>& xi, double& jac, LINALG::Matrix<3, 3>& defgrd,
-    LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<3, 3>& rcg,
-    LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& bop,
-    LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& N_XYZ)
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xrefe,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    const CORE::LINALG::Matrix<3, 1>& xi, double& jac, CORE::LINALG::Matrix<3, 3>& defgrd,
+    CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& rcg,
+    CORE::LINALG::Matrix<6,
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>& bop,
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>&
+        N_XYZ)
 {
   const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
-  LINALG::Matrix<dim, num_node> deriv;
+  CORE::LINALG::Matrix<dim, num_node> deriv;
 
   if (dt_vol == DRT::Element::nurbs27)
   {
@@ -270,8 +281,8 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
         ->GetKnotVector()
         ->GetEleKnots(knots, ParentElementId());
 
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 1> weights,
-        shapefcn;
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 1>
+        weights, shapefcn;
 
     for (int i = 0; i < CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement; ++i)
       weights(i) = dynamic_cast<DRT::NURBS::ControlPoint*>(ParentElement()->Nodes()[i])->W();
@@ -281,7 +292,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
   else
     CORE::DRT::UTILS::shape_function_deriv1<dt_vol>(xi, deriv);
 
-  LINALG::Matrix<dim, dim> invJ;
+  CORE::LINALG::Matrix<dim, dim> invJ;
   invJ.Multiply(deriv, xrefe);
   jac = invJ.Invert();
   N_XYZ.Multiply(invJ, deriv);
@@ -324,10 +335,10 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
 
 template <DRT::Element::DiscretizationType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
-                       CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
+                             CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement *
                 CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim -
             CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim*(
@@ -338,17 +349,17 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   if (dim != 3) dserror("this should be 3D");
 
-  LINALG::Matrix<3, 1> c;
+  CORE::LINALG::Matrix<3, 1> c;
   for (int r = 0; r < (int)xcurr.M(); ++r)
     for (int d = 0; d < (int)xcurr.N(); ++d) c(d) += xcurr(r, d);
   c.Scale(1. / xcurr.M());
 
-  LINALG::Matrix<dim, 1> r[3];
+  CORE::LINALG::Matrix<dim, 1> r[3];
   for (int i = 0; i < 3; ++i) r[i](i) = 1.;
 
   // basis, where the first six entries are the rigid body modes and the
   // remaining are constructed to be orthogonal to the rigid body modes
-  LINALG::Matrix<dim * num_node, 1> basis[dim * num_node];
+  CORE::LINALG::Matrix<dim * num_node, 1> basis[dim * num_node];
 
   // rigid body translations
   for (int i = 0; i < dim; ++i)
@@ -358,10 +369,10 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   for (int i = 0; i < dim; ++i)
     for (int j = 0; j < num_node; ++j)
     {
-      LINALG::Matrix<3, 1> x;
+      CORE::LINALG::Matrix<3, 1> x;
       for (int d = 0; d < 3; ++d) x(d) = xcurr(j, d);
       x.Update(-1., c, 1.);
-      LINALG::Matrix<3, 1> cross;
+      CORE::LINALG::Matrix<3, 1> cross;
       cross.CrossProduct(r[i], x);
       for (int k = 0; k < 3; ++k) basis[i + 3](j * 3 + k) = cross(k);
     }
@@ -377,13 +388,13 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
     {
       for (int j = 0; j < i + 1; ++j)
       {
-        LINALG::SerialDenseMatrix det(i, i, true);
+        CORE::LINALG::SerialDenseMatrix det(i, i, true);
         for (int c = 0; c < i; ++c)
         {
           for (int k = 0; k < j; ++k) det(k, c) = basis[c](k + off);
           for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1 + off);
         }
-        basis[i](j + off) = LINALG::DeterminantLU(det) * sign;
+        basis[i](j + off) = CORE::LINALG::DeterminantLU(det) * sign;
         sign *= -1.;
       }
       if (basis[i].Norm2() > 1.e-6)
@@ -399,7 +410,7 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   // due to cut-off errors we do another sweep of Gram-Schmidt
   for (int i = 0; i < dim * num_node; ++i)
   {
-    const LINALG::Matrix<dim * num_node, 1> tmp(basis[i]);
+    const CORE::LINALG::Matrix<dim * num_node, 1> tmp(basis[i]);
     for (int j = 0; j < i; ++j) basis[i].Update(-tmp.Dot(basis[j]), basis[j], 1.);
 
     basis[i].Scale(1. / basis[i].Norm2());
@@ -451,8 +462,10 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   const int num_dof = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   const int dim_image = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement - 1;
 
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3> xrefe;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3> xcurr;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>
+      xrefe;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>
+      xcurr;
 
   for (int i = 0; i < ParentElement()->NumNode(); ++i)
     for (int d = 0; d < dim; ++d)
@@ -461,16 +474,16 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
 
-  LINALG::Matrix<num_dof, num_dof> vol, surf;
+  CORE::LINALG::Matrix<num_dof, num_dof> vol, surf;
 
   TraceEstimateVolMatrixTSI<dt_vol>(xrefe, xcurr, vol);
   TraceEstimateSurfMatrixTSI<dt_vol, dt_surf>(xrefe, xcurr, surf);
 
 
-  LINALG::Matrix<num_dof, dim_image> proj, tmp;
+  CORE::LINALG::Matrix<num_dof, dim_image> proj, tmp;
   SubspaceProjectorScalar<dt_vol>(proj);
 
-  LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
+  CORE::LINALG::Matrix<dim_image, dim_image> vol_red, surf_red;
 
   tmp.Multiply(vol, proj);
   vol_red.MultiplyTN(proj, tmp);
@@ -480,28 +493,30 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   Epetra_SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
   Epetra_SerialDenseMatrix surf_red_sd(::View, surf_red.A(), dim_image, dim_image, dim_image);
 
-  return LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
+  return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
 
 template <DRT::Element::DiscretizationType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xrefe,
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xrefe,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& vol)
 {
   const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
 
   double jac;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<3, 3> rcg;
-  LINALG::Matrix<6, 1> glstrain;
-  LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3> bop;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6> bc;
-  LINALG::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<3, 3> rcg;
+  CORE::LINALG::Matrix<6, 1> glstrain;
+  CORE::LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>
+      bop;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6>
+      bc;
+  CORE::LINALG::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
 
   CORE::DRT::UTILS::IntPointsAndWeights<dim> ip(DRT::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
 
@@ -512,10 +527,10 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
 
   for (int gp = 0; gp < ip.IP().nquad; ++gp)
   {
-    const LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
+    const CORE::LINALG::Matrix<3, 1> xi(ip.IP().qxg[gp], false);
     Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    LINALG::Matrix<3, 3> iC;
+    CORE::LINALG::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);
     iC.Invert();
 
@@ -529,36 +544,38 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateVolMatrixTSI(
 
 template <DRT::Element::DiscretizationType dt_vol, DRT::Element::DiscretizationType dt_surf>
 void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xrefe,
-    const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement, 3>&
-        xcurr,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xrefe,
+    const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+        3>& xcurr,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement>& surf)
 {
   const int dim = CORE::DRT::UTILS::DisTypeToDim<dt_vol>::dim;
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
 
   double jac;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<3, 3> rcg;
-  LINALG::Matrix<6, 1> glstrain;
-  LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3> bop;
-  LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6> bc;
-  LINALG::Matrix<dim, num_node> N_XYZ;
-  LINALG::Matrix<1, num_node> iCn_N_XYZ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<3, 3> rcg;
+  CORE::LINALG::Matrix<6, 1> glstrain;
+  CORE::LINALG::Matrix<6, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3>
+      bop;
+  CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement * 3, 6>
+      bc;
+  CORE::LINALG::Matrix<dim, num_node> N_XYZ;
+  CORE::LINALG::Matrix<1, num_node> iCn_N_XYZ;
 
-  LINALG::SerialDenseMatrix xrefe_surf(
+  CORE::LINALG::SerialDenseMatrix xrefe_surf(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement, dim);
   MaterialConfiguration(xrefe_surf);
 
   std::vector<double> n(3);
-  LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
+  CORE::LINALG::Matrix<3, 1> n_v(n.data(), true), iCn;
   double detA;
 
   CORE::DRT::UTILS::IntPointsAndWeights<dim - 1> ip(
       DRT::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
-  LINALG::SerialDenseMatrix deriv_surf(
+  CORE::LINALG::SerialDenseMatrix deriv_surf(
       2, CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_surf>::numNodePerElement);
 
   if (ParentElement()->NumMaterial() < 2) dserror("where's my second material");
@@ -578,18 +595,18 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
     intpoints.Append(ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], 0.0, ip.IP().qwgt[gp]);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    LINALG::SerialDenseMatrix pqxg(1, 3);
-    LINALG::Matrix<3, 3> derivtrafo;
+    CORE::LINALG::SerialDenseMatrix pqxg(1, 3);
+    CORE::LINALG::Matrix<3, 3> derivtrafo;
 
     CORE::DRT::UTILS::BoundaryGPToParentGP<3>(
         pqxg, derivtrafo, intpoints, ParentElement()->Shape(), Shape(), FaceParentNumber());
 
-    LINALG::Matrix<3, 1> xi;
+    CORE::LINALG::Matrix<3, 1> xi;
     for (int i = 0; i < 3; ++i) xi(i) = pqxg(0, i);
 
     Strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
-    LINALG::Matrix<3, 3> iC;
+    CORE::LINALG::Matrix<3, 3> iC;
     iC.MultiplyTN(defgrd, defgrd);
     iC.Invert();
     iCn.Multiply(iC, n_v);
@@ -605,11 +622,11 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrixTSI(
 
 template <DRT::Element::DiscretizationType dt_vol>
 void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement - 1>& proj)
 {
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
-  LINALG::Matrix<num_node, 1> basis[num_node];
+  CORE::LINALG::Matrix<num_node, 1> basis[num_node];
 
   for (int i = 0; i < num_node; ++i) basis[0](i) = 1.;
 
@@ -618,13 +635,13 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjectorScalar(
     double sign = +1.;
     for (int j = 0; j < i + 1; ++j)
     {
-      LINALG::SerialDenseMatrix det(i, i, true);
+      CORE::LINALG::SerialDenseMatrix det(i, i, true);
       for (int c = 0; c < i; ++c)
       {
         for (int k = 0; k < j; ++k) det(k, c) = basis[c](k);
         for (int k = j; k < i; ++k) det(k, c) = basis[c](k + 1);
       }
-      basis[i](j) = LINALG::DeterminantLU(det) * sign;
+      basis[i](j) = CORE::LINALG::DeterminantLU(det) * sign;
       sign *= -1.;
     }
     basis[i].Scale(1. / basis[i].Norm2());

@@ -64,7 +64,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   stiff_spring_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
   // set flag
   issetup_ = true;
@@ -205,16 +205,16 @@ bool STR::MODELEVALUATOR::SpringDashpot::EvaluateForceStiff()
 bool STR::MODELEVALUATOR::SpringDashpot::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  LINALG::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::SpringDashpot::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_spring_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_spring_ptr_->Zero();

@@ -25,16 +25,16 @@ equations
 // anonymous namespace for helper classes and functions
 namespace
 {
-  [[nodiscard]] LINALG::Matrix<3, 3> EvaluateC(const LINALG::Matrix<3, 3>& F)
+  [[nodiscard]] CORE::LINALG::Matrix<3, 3> EvaluateC(const CORE::LINALG::Matrix<3, 3>& F)
   {
-    LINALG::Matrix<3, 3> C(false);
+    CORE::LINALG::Matrix<3, 3> C(false);
     C.MultiplyTN(F, F);
     return C;
   }
 
-  [[nodiscard]] LINALG::Matrix<3, 3> EvaluateiCext(const LINALG::Matrix<3, 3>& iFext)
+  [[nodiscard]] CORE::LINALG::Matrix<3, 3> EvaluateiCext(const CORE::LINALG::Matrix<3, 3>& iFext)
   {
-    LINALG::Matrix<3, 3> iCext(false);
+    CORE::LINALG::Matrix<3, 3> iCext(false);
     iCext.MultiplyNT(iFext, iFext);
     return iCext;
   }
@@ -134,13 +134,14 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::Setup(Teuchos::ParameterList&
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdatePrestress(
-    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   Update(F, params, gp, eleGID);
 }
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateElasticPart(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, const double dt,
-    const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateElasticPart(
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFext,
+    Teuchos::ParameterList& params, const double dt, const int gp, const int eleGID)
 {
   MixtureConstituent::UpdateElasticPart(F, iFext, params, dt, gp, eleGID);
 
@@ -165,8 +166,8 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateElasticPart(const LINAL
   }
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::Update(
-    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::Update(const CORE::LINALG::Matrix<3, 3>& F,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::Update(F, params, gp, eleGID);
 
@@ -237,10 +238,10 @@ bool MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateVtkOutputData(
   return MixtureConstituent::EvaluateVtkOutputData(name, data);
 }
 
-LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurrentPK2(
+CORE::LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurrentPK2(
     int gp, int eleGID) const
 {
-  LINALG::Matrix<6, 1> S_stress(false);
+  CORE::LINALG::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = remodel_fiber_[gp].EvaluateCurrentFiberPK2Stress();
 
   S_stress.Update(fiber_pk2, anisotropy_extension_.GetStructuralTensor_stress(gp, 0));
@@ -248,20 +249,20 @@ LINALG::Matrix<6, 1> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurre
   return S_stress;
 }
 
-LINALG::Matrix<6, 6> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurrentCmat(
+CORE::LINALG::Matrix<6, 6> MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateCurrentCmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq = remodel_fiber_[gp].EvaluateDCurrentFiberPK2StressDLambdafsq();
 
-  LINALG::Matrix<6, 6> cmat(false);
+  CORE::LINALG::Matrix<6, 6> cmat(false);
   cmat.MultiplyNT(2.0 * dPK2dlambdafsq, anisotropy_extension_.GetStructuralTensor_stress(gp, 0),
       anisotropy_extension_.GetStructuralTensor_stress(gp, 0));
   return cmat;
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberExpl::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent_RemodelFiberExpl::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   if (params_->inelastic_external_deformation_)
   {
@@ -272,7 +273,7 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::Evaluate(const LINALG::Matrix
         "rule.");
   }
 
-  LINALG::Matrix<3, 3> C = EvaluateC(F);
+  CORE::LINALG::Matrix<3, 3> C = EvaluateC(F);
 
   const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
   remodel_fiber_[gp].SetState(lambda_f, 1.0);
@@ -282,9 +283,9 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::Evaluate(const LINALG::Matrix
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateElasticPart(
-    const LINALG::Matrix<3, 3>& FM, const LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    int gp, int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& FM, const CORE::LINALG::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   if (!params_->inelastic_external_deformation_)
   {
@@ -295,7 +296,7 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateElasticPart(
         "rule.");
   }
 
-  LINALG::Matrix<3, 3> C = EvaluateC(FM);
+  CORE::LINALG::Matrix<3, 3> C = EvaluateC(FM);
 
   const double lambda_f = EvaluateLambdaf(C, gp, eleGID);
   const double lambda_ext = EvaluateLambdaExt(iFextin, gp, eleGID);
@@ -347,13 +348,13 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::UpdateHomeostaticValues(
 }
 
 double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateLambdaf(
-    const LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
+    const CORE::LINALG::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
   return std::sqrt(C.Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));
 }
 
 double MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateLambdaExt(
-    const LINALG::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
+    const CORE::LINALG::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
 {
   return 1.0 /
          std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.GetStructuralTensor(gp, 0)));

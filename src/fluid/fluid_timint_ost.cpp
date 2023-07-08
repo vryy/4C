@@ -21,7 +21,8 @@
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
 FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       startalgo_(false),
@@ -245,8 +246,8 @@ void FLD::TimIntOneStepTheta::ApplyExternalForces(Teuchos::RCP<Epetra_MultiVecto
   if (step_ <= numstasteps_)
   {
     external_loadsn_ = Teuchos::rcp(new Epetra_Vector(*(*fext)(0)));
-    external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loads_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   }
 
   if (external_loadsn_ == Teuchos::null)
@@ -294,8 +295,8 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
   const int have_fexternal = reader.ReadInt("have_fexternal");
   if (have_fexternal != -1)
   {
-    external_loadsn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
-    external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loadsn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+    external_loadsnp_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     if (step_ > numstasteps_ && params_->get<double>("theta") != 1.0)
     {
       reader.ReadVector(external_loadsn_, "fexternal_n");

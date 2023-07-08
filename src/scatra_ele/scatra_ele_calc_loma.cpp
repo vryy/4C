@@ -735,8 +735,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const LINALG::Matrix<nsd_, 1>& convelint,
-    const LINALG::Matrix<nsd_, 1>& gradphi, const double vdiv, const double densnp,
+    const int k, const double timefacfac, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double vdiv, const double densnp,
     const double visc)
 {
   // convective term using current scalar value
@@ -764,9 +764,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_Serial
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::RecomputeConvPhiForRhs(double& conv_phi,
-    const int k, const LINALG::Matrix<nsd_, 1>& sgvelint, const LINALG::Matrix<nsd_, 1>& gradphi,
-    const double densnp, const double densn, const double phinp, const double phin,
-    const double vdiv)
+    const int k, const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double densnp, const double densn,
+    const double phinp, const double phin, const double vdiv)
 {
   if (my::scatraparatimint_->IsIncremental())
   {

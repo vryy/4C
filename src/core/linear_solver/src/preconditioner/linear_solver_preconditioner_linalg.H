@@ -23,7 +23,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 
@@ -42,7 +42,7 @@ namespace LINALG
     direct solver or the like) to our block matrix. This is what this class
     provides.
 
-    \note This class is not used by LINALG::Solver. We use the same input
+    \note This class is not used by CORE::LINALG::Solver. We use the same input
     parameters here, but that is all. No connection.
 
     \author u.kue
@@ -67,8 +67,8 @@ namespace LINALG
       Destroy any existing one.
      */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix,
-        Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null,
-        Teuchos::RCP<DRT::Discretization> fdis = Teuchos::null,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null,
+        Teuchos::RCP<::DRT::Discretization> fdis = Teuchos::null,
         Teuchos::RCP<Epetra_Map> inodes = Teuchos::null, bool structuresplit = false);
 
     /// Solve system of equations
@@ -149,6 +149,6 @@ namespace LINALG
     //! counting how many times matrix was solved between resets
     int ncall_;
   };
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

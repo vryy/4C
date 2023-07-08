@@ -29,14 +29,14 @@ namespace DRT
   }
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
   class SparseMatrix;
   class SparseOperator;
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -113,7 +113,7 @@ namespace STR
     void GetDBCMap();
 
     //! return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! find step in the rhs vector according to this time
     int FindStep(double time);
@@ -132,13 +132,13 @@ namespace STR
     const Epetra_Map* dofrowmap_;
 
     //! a solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! to apply Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
     //! map to the dirichlet boundary
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! DBC toggle
     Teuchos::RCP<Epetra_IntVector> dbctoggle_;
@@ -162,10 +162,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> rhsn_;
 
     //! stiffness matrix
-    Teuchos::RCP<LINALG::SparseOperator> stiff_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_;
 
     //! stiffness matrix with neumann terms
-    Teuchos::RCP<LINALG::SparseOperator> stiffn_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiffn_;
 
     //! a vector with zeros
     Teuchos::RCP<Epetra_Vector> zeros_;

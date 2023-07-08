@@ -43,7 +43,7 @@ namespace
   */
   Teuchos::SerialDenseMatrix<int, double> ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
   {
-    LINALG::Matrix<1, 3> dir;
+    CORE::LINALG::Matrix<1, 3> dir;
 
     DRT::ELEMENTS::Shell8* s8 = dynamic_cast<DRT::ELEMENTS::Shell8*>(node.Elements()[0]);
     if (!s8) dserror("Cannot cast to Shell8");

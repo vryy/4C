@@ -52,7 +52,7 @@ void STR::IMPLICIT::Gemm::AddViscoMassContributions(Epetra_Vector& f) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Gemm::AddViscoMassContributions(LINALG::SparseOperator& jac) const
+void STR::IMPLICIT::Gemm::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
 {
   dserror("Not implemented!");
   return;
@@ -77,7 +77,7 @@ bool STR::IMPLICIT::Gemm::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Gemm::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::Gemm::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   return false;
@@ -86,7 +86,7 @@ bool STR::IMPLICIT::Gemm::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOpera
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   return false;

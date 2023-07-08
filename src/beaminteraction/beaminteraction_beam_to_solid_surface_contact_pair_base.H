@@ -21,11 +21,11 @@
 
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename surface>

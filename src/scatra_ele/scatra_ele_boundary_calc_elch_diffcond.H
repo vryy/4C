@@ -58,8 +58,8 @@ namespace DRT
           const double scalar) override;
 
       void EvaluateElchBoundaryKinetics(const DRT::Element* ele, Epetra_SerialDenseMatrix& emat,
-          Epetra_SerialDenseVector& erhs, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ehist, double timefac,
+          Epetra_SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
           Teuchos::RCP<const MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
           const int nume, const std::vector<int> stoich, const int kinetics, const double pot0,
           const double frt, const double scalar) override;

@@ -17,7 +17,7 @@
 
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
@@ -81,9 +81,9 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void ProjectPointOnLineToOther(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other, const scalar_type& eta,
-        LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other, const scalar_type& eta,
+        CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
         optional_type... optional_args);
 
     /**
@@ -101,8 +101,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
         unsigned int& n_projections_valid, unsigned int& n_projections,
         optional_type... optional_args);
@@ -122,8 +122,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void ProjectPointsOnLineToOther(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
         unsigned int& n_projections_valid, optional_type... optional_args);
 
@@ -142,8 +142,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void ProjectGaussPointsOnSegmentToOther(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         const CORE::DRT::UTILS::IntegrationPoints1D& gauss_points,
         LineSegment<scalar_type>& segment, optional_type... optional_args);
 
@@ -160,8 +160,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void IntersectLineWithOther(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
         optional_type... optional_args);
   };
@@ -203,8 +203,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void PreEvaluate(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
 
     /**
@@ -223,8 +223,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void Evaluate(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
 
    private:
@@ -292,8 +292,8 @@ namespace GEOMETRYPAIR
      */
     template <typename... optional_type>
     static void Evaluate(const pair_type* pair,
-        const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
+        const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
         std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args);
 
    private:

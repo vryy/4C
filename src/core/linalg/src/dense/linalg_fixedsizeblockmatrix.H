@@ -10,7 +10,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   template <class value_type, unsigned int brows, unsigned int bcols>
   class BlockMatrix
@@ -126,7 +126,7 @@ namespace LINALG
     }
 
     template <int rows, int cols>
-    void AssembleTo(LINALG::Matrix<rows, cols, scalar_type>& dest, double f)
+    void AssembleTo(CORE::LINALG::Matrix<rows, cols, scalar_type>& dest, double f)
     {
       const int local_rows = rows / brows;
       const int local_cols = cols / bcols;
@@ -138,7 +138,7 @@ namespace LINALG
         {
           if (IsUsed(irb, icb))
           {
-            LINALG::Matrix<local_rows, local_cols>& local = *(*this)(irb, icb);
+            CORE::LINALG::Matrix<local_rows, local_cols>& local = *(*this)(irb, icb);
             for (int ic = 0; ic < local_cols; ++ic)
             {
               unsigned c = col_blocks * ic + icb;
@@ -189,6 +189,6 @@ namespace LINALG
     value_type* blocks_[brows * bcols];
   };
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif

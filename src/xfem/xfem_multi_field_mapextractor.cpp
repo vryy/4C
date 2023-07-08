@@ -53,22 +53,22 @@ void XFEM::MultiFieldMapExtractor::Reset(unsigned num_dis, bool full)
   // --------------------------------------------------------------------------
   // reset the slave sided map extractors
   slave_map_extractors_.clear();
-  slave_map_extractors_.resize(
-      num_dis, std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>>(NUM_MAP_TYPES, Teuchos::null));
+  slave_map_extractors_.resize(num_dis,
+      std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>(NUM_MAP_TYPES, Teuchos::null));
   // loop over the number of discretizations
   for (unsigned i = 0; i < slave_map_extractors_.size(); ++i)
     // loop over the map types (0: DoF's, 1: Nodes)
     for (unsigned j = 0; j < NUM_MAP_TYPES; ++j)
-      slave_map_extractors_[i][j] = Teuchos::rcp(new LINALG::MultiMapExtractor());
+      slave_map_extractors_[i][j] = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
 
   // --------------------------------------------------------------------------
   // reset the master sided map extractor
   master_map_extractor_.clear();
   master_map_extractor_.resize(NUM_MAP_TYPES, Teuchos::null);
   // loop over the two map extractor types (0: DoF's, 1: Nodes)
-  std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>>::iterator it;
+  std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>::iterator it;
   for (it = master_map_extractor_.begin(); it != master_map_extractor_.end(); ++it)
-    (*it) = Teuchos::RCP<LINALG::MultiMapExtractor>(new LINALG::MultiMapExtractor());
+    (*it) = Teuchos::RCP<CORE::LINALG::MultiMapExtractor>(new CORE::LINALG::MultiMapExtractor());
 
   // --------------------------------------------------------------------------
   // reset the interface coupling objects
@@ -81,7 +81,8 @@ void XFEM::MultiFieldMapExtractor::Reset(unsigned num_dis, bool full)
   // --------------------------------------------------------------------------
   // reset the element map extractor
   element_map_extractor_ = Teuchos::null;
-  element_map_extractor_ = Teuchos::rcp<LINALG::MultiMapExtractor>(new LINALG::MultiMapExtractor());
+  element_map_extractor_ =
+      Teuchos::rcp<CORE::LINALG::MultiMapExtractor>(new CORE::LINALG::MultiMapExtractor());
 
   // clear these variables only if a full reset is desired!
   if (full)
@@ -369,9 +370,10 @@ void XFEM::MultiFieldMapExtractor::Init(const XDisVec& dis_vec, int max_num_rese
   interface_matrix_row_col_transformers_.resize(NumSlDis(), Teuchos::null);
   for (unsigned i = 0; i < NumSlDis(); ++i)
   {
-    interface_matrix_row_transformers_[i] = Teuchos::rcp(new LINALG::MatrixRowTransform());
-    interface_matrix_col_transformers_[i] = Teuchos::rcp(new LINALG::MatrixColTransform());
-    interface_matrix_row_col_transformers_[i] = Teuchos::rcp(new LINALG::MatrixRowColTransform());
+    interface_matrix_row_transformers_[i] = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform());
+    interface_matrix_col_transformers_[i] = Teuchos::rcp(new CORE::LINALG::MatrixColTransform());
+    interface_matrix_row_col_transformers_[i] =
+        Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform());
   }
   isinit_ = true;
 }
@@ -628,7 +630,7 @@ void XFEM::MultiFieldMapExtractor::BuildMasterNodeMapExtractor()
 
   // merge non-interface nodes into the full map
   for (unsigned i = NumSlDis(); i < partial_maps.size(); ++i)
-    fullmap = LINALG::MergeMap(*fullmap, *partial_maps[i], false);
+    fullmap = CORE::LINALG::MergeMap(*fullmap, *partial_maps[i], false);
 
   // setup map extractor
   master_map_extractor_[map_nodes]->Setup(*fullmap, partial_maps);
@@ -687,7 +689,7 @@ void XFEM::MultiFieldMapExtractor::BuildMasterDofMapExtractor()
   // merge non-interface DoF's into the full map
   for (unsigned i = NumSlDis(); i < partial_maps.size(); ++i)
   {
-    fullmap = LINALG::MergeMap(*fullmap, *partial_maps[i], false);
+    fullmap = CORE::LINALG::MergeMap(*fullmap, *partial_maps[i], false);
   }
 
   // setup map extractor
@@ -735,7 +737,7 @@ void XFEM::MultiFieldMapExtractor::BuildElementMapExtractor()
     partial_maps[d] = Teuchos::rcp((*cit)->ElementRowMap(), false);
 
     // merge the partial maps to the full map
-    fullmap = LINALG::MergeMap(fullmap, partial_maps[d], false);
+    fullmap = CORE::LINALG::MergeMap(fullmap, partial_maps[d], false);
 
     // increase discretization counter
     ++d;
@@ -1080,25 +1082,25 @@ Teuchos::RCP<const Epetra_Map> XFEM::MultiFieldMapExtractor::NodeRowMap(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddMatrix(const LINALG::SparseOperator& partial_mat, int block,
-    LINALG::SparseOperator& full_mat, double scale)
+void XFEM::MultiFieldMapExtractor::AddMatrix(const CORE::LINALG::SparseOperator& partial_mat,
+    int block, CORE::LINALG::SparseOperator& full_mat, double scale)
 {
-  const LINALG::BlockSparseMatrixBase* block_mat =
-      dynamic_cast<const LINALG::BlockSparseMatrixBase*>(&partial_mat);
-  if (not block_mat) dserror("The partial matrix must be a  LINALG::BlockSparseMatrix!");
+  const CORE::LINALG::BlockSparseMatrixBase* block_mat =
+      dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase*>(&partial_mat);
+  if (not block_mat) dserror("The partial matrix must be a  CORE::LINALG::BlockSparseMatrix!");
   if (block_mat->Rows() != 2 or block_mat->Cols() != 2)
     dserror("We support only 2x2 block matrices!");
 
-  LINALG::SparseMatrix* sp_mat = dynamic_cast<LINALG::SparseMatrix*>(&full_mat);
-  if (not sp_mat) dserror("The full matrix must be a LINALG::SparseMatrix!");
+  CORE::LINALG::SparseMatrix* sp_mat = dynamic_cast<CORE::LINALG::SparseMatrix*>(&full_mat);
+  if (not sp_mat) dserror("The full matrix must be a CORE::LINALG::SparseMatrix!");
 
   AddMatrix(*block_mat, block, *sp_mat, scale);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::MultiFieldMapExtractor::AddMatrix(const LINALG::BlockSparseMatrixBase& partial_mat,
-    int block, LINALG::SparseMatrix& full_mat, double scale)
+void XFEM::MultiFieldMapExtractor::AddMatrix(const CORE::LINALG::BlockSparseMatrixBase& partial_mat,
+    int block, CORE::LINALG::SparseMatrix& full_mat, double scale)
 {
   CheckInitSetup();
   // --------------------------------------------------------------------------
@@ -1116,19 +1118,19 @@ void XFEM::MultiFieldMapExtractor::AddMatrix(const LINALG::BlockSparseMatrixBase
   // interface DoF's
   // --------------------------------------------------------------------------
   // (0) Add block non_interface/interface
-  const LINALG::SparseMatrix& src_ni =
+  const CORE::LINALG::SparseMatrix& src_ni =
       partial_mat.Matrix(MULTIFIELD::block_non_interface, MULTIFIELD::block_interface);
   IMatColTransform(block)(partial_mat.FullRowMap(), partial_mat.FullColMap(), src_ni, scale,
       CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);
 
   // (1) Add block interface/non_interface
-  const LINALG::SparseMatrix& src_in =
+  const CORE::LINALG::SparseMatrix& src_in =
       partial_mat.Matrix(MULTIFIELD::block_interface, MULTIFIELD::block_non_interface);
   IMatRowTransform(block)(
       src_in, scale, CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, true);
 
   // (2) Add block interface/interface
-  const LINALG::SparseMatrix& src_ii =
+  const CORE::LINALG::SparseMatrix& src_ii =
       partial_mat.Matrix(MULTIFIELD::block_interface, MULTIFIELD::block_interface);
   IMatRowColTransform(block)(src_ii, scale, CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)),
       CORE::ADAPTER::CouplingSlaveConverter(ICoupling(block)), full_mat, false, true);

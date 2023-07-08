@@ -185,51 +185,52 @@ namespace MAT
     void Reset();
 
     //! evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,
-        Teuchos::ParameterList& params,                      //!< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        int gp,                                              ///< Gauss point
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,
+        Teuchos::ParameterList& params,                  //!< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        int gp,                                                    ///< Gauss point
         int eleGID);
 
     // computes stress
-    void Stress(const double p,                             //!< volumetric stress tensor
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
+    void Stress(const double p,                                   //!< volumetric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
     );
 
     //! calculate relative/over strees
     void RelDevStress(
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
+    void SetupCmat(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
-        double Dgamma,                                       //!< plastic multiplier
-        double G,                                            //!< shear modulus
-        double q,                                            //!< relative effective stress
-        const LINALG::Matrix<NUM_STRESS_3D, 1> flowvector,   //!< flow vector
-        const LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,         //!< unit vector
-        double heaviside,                                    //!< Heaviside function
-        double Hiso,                                         //!< isotropic hardening modulus
-        double Hkin                                          //!< kinematic hardening modulus
+    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                    cmat,  //!< elasto-plastic material tangent
+        double Dgamma,                     //!< plastic multiplier
+        double G,                          //!< shear modulus
+        double q,                          //!< relative effective stress
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> flowvector,  //!< flow vector
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,        //!< unit vector
+        double heaviside,                                         //!< Heaviside function
+        double Hiso,                                              //!< isotropic hardening modulus
+        double Hkin                                               //!< kinematic hardening modulus
     );
 
     //! computes isotropic elastoplastic tensor in matrix notation for 3d
-    void SetupCmatElastoPlastic2(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat, double Dgamma,
-        double q, LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
+    void SetupCmatElastoPlastic2(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        double Dgamma, double q, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
 
     //! computes continuum elastoplastic tensor in matrix notation for 3d
-    void SetupContinuumCmatElastoPlastic(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        double Dgamma, double q, LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
+    void SetupContinuumCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        double Dgamma, double q, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> unitflow);
 
     //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
     //! and returns the isotropic hardening modulus
@@ -278,15 +279,15 @@ namespace MAT
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
-    void Evaluate(const LINALG::Matrix<1, 1>& Ntemp,  //!< temperature of element
-        LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp,      //!< temperature dependent material tangent
-        LINALG::Matrix<NUM_STRESS_3D, 1>& stresstemp  //!< temperature dependent stress term
+    void Evaluate(const CORE::LINALG::Matrix<1, 1>& Ntemp,  //!< temperature of element
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp,  //!< temperature dependent material tangent
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stresstemp  //!< temperature dependent stress term
     );
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
     void SetupCthermo(
-        LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp  //!< temperature dependent material tangent
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& ctemp  //!< temperature dependent material tangent
     );
 
     //! calculates stress-temperature modulus
@@ -302,42 +303,45 @@ namespace MAT
 
     //! calculate elastic strain rate, using additive split of strains
     //! (o) save strain^e' in strainelrate_
-    void StrainRateSplit(int gp,                      //!< (i): current Gauss point
-        const double stepsize,                        //!< (i): stepsize
-        LINALG::Matrix<NUM_STRESS_3D, 1>& strainrate  //!< (i): total strain rate ( B d')
+    void StrainRateSplit(int gp,                            //!< (i): current Gauss point
+        const double stepsize,                              //!< (i): stepsize
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& strainrate  //!< (i): total strain rate ( B d')
     );
 
     //! return current plastic strain vector
     //! \f${\boldsymbol \varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D, 1> PlasticStrain(int gp) const { return strainplcurr_->at(gp); }
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> PlasticStrain(int gp) const
+    {
+      return strainplcurr_->at(gp);
+    }
 
     //! return current elastic strain rate vector
     //! \f$\dot{\boldsymbol \varepsilon}^e_{n+1}\f$
-    LINALG::Matrix<NUM_STRESS_3D, 1> ElasticStrainRate(int gp) const
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> ElasticStrainRate(int gp) const
     {
       return strainelrate_->at(gp);
     }
 
     //! compute internal dissipation terms
-    void Dissipation(int gp,                     // current Gauss point
-        double sigma_yiso,                       // isotropic work hardening von Mises stress
-        double Dgamma,                           // plastic multiplier/increment
-        LINALG::Matrix<NUM_STRESS_3D, 1> N,      // flow vector
-        LINALG::Matrix<NUM_STRESS_3D, 1> stress  // total mechanical stress
+    void Dissipation(int gp,                           // current Gauss point
+        double sigma_yiso,                             // isotropic work hardening von Mises stress
+        double Dgamma,                                 // plastic multiplier/increment
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> N,      // flow vector
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> stress  // total mechanical stress
     );
 
     //! compute linearisation of internal dissipation for k_Td
-    void DissipationCouplCond(
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,  // elasto-plastic tangent modulus (out)
-        int gp,                                              // current Gauss point
-        double G,                                            // shear modulus
-        double Hiso,                                         // isotropic hardening modulus
-        double Hkin,                                         // kinematic hardening modulus
-        double heaviside,                                    // Heaviside function
-        double etanorm,                                      // norm of eta^{trial}_{n+1}
-        double Dgamma,                                       // plastic multiplier
-        LINALG::Matrix<NUM_STRESS_3D, 1>& N,                 // flow vector
-        LINALG::Matrix<NUM_STRESS_3D, 1>& stress             // flow vector
+    void DissipationCouplCond(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                  cmat,                 // elasto-plastic tangent modulus (out)
+        int gp,                                         // current Gauss point
+        double G,                                       // shear modulus
+        double Hiso,                                    // isotropic hardening modulus
+        double Hkin,                                    // kinematic hardening modulus
+        double heaviside,                               // Heaviside function
+        double etanorm,                                 // norm of eta^{trial}_{n+1}
+        double Dgamma,                                  // plastic multiplier
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& N,      // flow vector
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress  // flow vector
     );
 
     //! return mechanical dissipation term due to kinematic hardening
@@ -346,7 +350,7 @@ namespace MAT
 
     //! return linearisation of mechanical dissipation w.r.t. displacements
     //! \f$ k_Td += \dfrac{\partial D_{\rm mech}}{\partial d_{n+1}}\f$
-    LINALG::Matrix<NUM_STRESS_3D, 1> DissipationLinearisedForCouplCond(int gp) const
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> DissipationLinearisedForCouplCond(int gp) const
     {
       return Dmech_d_->at(gp);
     }
@@ -366,16 +370,16 @@ namespace MAT
 
     //! plastic history vector
     //! old plastic strain at t_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current plastic strain at t_n+1
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress at t_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     //! old accumulated plastic strain at t_n
     Teuchos::RCP<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
@@ -388,12 +392,12 @@ namespace MAT
     //! mechanical dissipation term due to kinematic and isotropic hardening at t_n+1
     Teuchos::RCP<std::vector<double>> Dmech_;
     //! linearisation of mechanical dissipation term w.r.t. to d_{n+1}
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>> Dmech_d_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> Dmech_d_;
     //! save plastic strain increment: Incstrainpl = strain^p_{n+1} - strain^p_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>> Incstrainpl_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> Incstrainpl_;
     //! elastic strain rate required for thermoelastic heating term
     //! use additive split: strain^e' = strain' - strain^p'
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>> strainelrate_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>> strainelrate_;
 
     //@}
 

@@ -94,7 +94,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const Element& element,
-          const LINALG::Matrix<rdim, 1>& xyz,
+          const CORE::LINALG::Matrix<rdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
       /** \brief build variant #3
        *
@@ -105,14 +105,16 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim, unsigned cdim, unsigned rdim_2>
-      static Teuchos::RCP<Position> Create(const LINALG::Matrix<rdim, cdim>& xyze,
-          const LINALG::Matrix<rdim_2, 1>& xyz, const ::DRT::Element::DiscretizationType& distype,
+      static Teuchos::RCP<Position> Create(const CORE::LINALG::Matrix<rdim, cdim>& xyze,
+          const CORE::LINALG::Matrix<rdim_2, 1>& xyz,
+          const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// \brief build variant #3-1 (Epetra_SerialDenseMatrix)
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const Epetra_SerialDenseMatrix& xyze,
-          const LINALG::Matrix<rdim, 1>& xyz, const ::DRT::Element::DiscretizationType& distype,
+          const CORE::LINALG::Matrix<rdim, 1>& xyz,
+          const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /** \brief build variant #4
@@ -125,7 +127,7 @@ namespace CORE::GEO
        *  \author hiermeier \date 08/16 */
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
-          const LINALG::Matrix<rdim, 1>& xyz,
+          const CORE::LINALG::Matrix<rdim, 1>& xyz,
           ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
@@ -260,8 +262,8 @@ namespace CORE::GEO
        *
        *  \param xyze (in) : Global nodal positions of the element.
        *  \param xyz  (in) : Global coordinates of the given point. */
-      PositionGeneric(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz)
+      PositionGeneric(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz)
           : px_(xyz),
             xyze_(xyze),
             scale_(1.0),
@@ -348,7 +350,7 @@ namespace CORE::GEO
 
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
-          LINALG::Matrix<probdim, 1> x1(&xyze_(0, i), true);
+          CORE::LINALG::Matrix<probdim, 1> x1(&xyze_(0, i), true);
           x1.Update(-1, shift_, 1);
         }
         px_.Update(-1, shift_, 1);
@@ -363,10 +365,10 @@ namespace CORE::GEO
       /// @{
 
       /// given point location vector (scaled and shifted after constructor call)
-      LINALG::Matrix<probdim, 1> px_;
+      CORE::LINALG::Matrix<probdim, 1> px_;
 
       /// spatial nodal positions (scaled and shifted after constructor call)
-      LINALG::Matrix<probdim, numNodesElement> xyze_;
+      CORE::LINALG::Matrix<probdim, numNodesElement> xyze_;
 
       /** initial scaling of the spatial nodal coordinates \c xyze_
        *  and the location vector \c px_ */
@@ -374,10 +376,10 @@ namespace CORE::GEO
 
       /** initial shifting of the spatial nodal coordinates \c xyze_
        *  and the location vector \c px_ */
-      LINALG::Matrix<probdim, 1> shift_;
+      CORE::LINALG::Matrix<probdim, 1> shift_;
 
       /// local coordinates corresponding to \c px_
-      LINALG::Matrix<dim, 1> xsi_;
+      CORE::LINALG::Matrix<dim, 1> xsi_;
 
       /// computation status of the position calculation
       enum Status pos_status_;
@@ -407,8 +409,8 @@ namespace CORE::GEO
     {
      public:
       /// constructor
-      ComputePosition(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz)
+      ComputePosition(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz)
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
 
       /// destructor
@@ -457,8 +459,8 @@ namespace CORE::GEO
     {
      public:
       /// constructor
-      ComputeEmbeddedPosition(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz)
+      ComputeEmbeddedPosition(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz)
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz)
       {
         this->xsi_.SetView(xsi_aug_.A());
@@ -535,7 +537,7 @@ namespace CORE::GEO
      private:
       /** local coordinates corresponding to \c px_, the last n = ( probdim - dim )
        *  coordinates are the distance values (embedded case only) */
-      LINALG::Matrix<probdim, 1> xsi_aug_;
+      CORE::LINALG::Matrix<probdim, 1> xsi_aug_;
 
     };  // class ComputeEmbeddedPosition
 
@@ -609,8 +611,8 @@ namespace CORE::GEO
       class PositionCreator
       {
        public:
-        static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           return NULL;
@@ -625,8 +627,8 @@ namespace CORE::GEO
       class PositionCreator<true, dim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<dim, numNodesElement>& xyze,
-            const LINALG::Matrix<dim, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<dim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<dim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
@@ -640,8 +642,8 @@ namespace CORE::GEO
       class PositionCreator<true, 1, 2, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<1, numNodesElement>& xyze,
-            const LINALG::Matrix<1, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<1, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<1, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
@@ -655,8 +657,8 @@ namespace CORE::GEO
       class PositionCreator<true, 1, 3, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<1, numNodesElement>& xyze,
-            const LINALG::Matrix<1, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<1, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<1, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
@@ -670,8 +672,8 @@ namespace CORE::GEO
       class PositionCreator<true, 2, 3, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<2, numNodesElement>& xyze,
-            const LINALG::Matrix<2, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<2, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<2, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
@@ -686,8 +688,8 @@ namespace CORE::GEO
       class PositionCreator<false, probdim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           dserror(
@@ -705,8 +707,8 @@ namespace CORE::GEO
       class PositionCreator<true, probdim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<probdim, numNodesElement>& xyze,
-            const LINALG::Matrix<probdim, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           switch (UseDistFloattype(floattype))
@@ -737,8 +739,8 @@ namespace CORE::GEO
       class PositionCreator<false, dim, dim, eletype, numNodesElement>
       {
        public:
-        static Position* Create(const LINALG::Matrix<dim, numNodesElement>& xyze,
-            const LINALG::Matrix<dim, 1>& xyz,
+        static Position* Create(const CORE::LINALG::Matrix<dim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<dim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
           switch (UsePosFloattype(floattype))
@@ -784,9 +786,9 @@ namespace CORE::GEO
       Teuchos::RCP<Position> BuildPosition(const Element& element, const Point& point,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const
       {
-        LINALG::Matrix<probdim, numNodesElement> xyze;
+        CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
-        LINALG::Matrix<probdim, 1> px;
+        CORE::LINALG::Matrix<probdim, 1> px;
         point.Coordinates(px.A());
 
         if (probdim > dim)
@@ -852,10 +854,10 @@ namespace CORE::GEO
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(const Element& element,
-          const LINALG::Matrix<probdim, 1>& xyz,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
-        LINALG::Matrix<probdim, numNodesElement> xyze;
+        CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
 
         if (probdim > dim)
@@ -894,12 +896,12 @@ namespace CORE::GEO
         {
           case 2:
           {
-            LINALG::Matrix<2, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
             return BuildPosition<2, eletype>(element, xyz_mat, floattype);
           }
           case 3:
           {
-            LINALG::Matrix<3, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
             return BuildPosition<3, eletype>(element, xyz_mat, floattype);
           }
           default:
@@ -927,8 +929,8 @@ namespace CORE::GEO
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(
-          const LINALG::Matrix<probdim, numNodesElement>& xyze,
-          const LINALG::Matrix<probdim, 1>& xyz,
+          const CORE::LINALG::Matrix<probdim, numNodesElement>& xyze,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
         if (probdim > dim)
@@ -962,14 +964,14 @@ namespace CORE::GEO
         {
           case 2:
           {
-            LINALG::Matrix<2, num_nodes_ele> xyze_mat(xyze, true);
-            LINALG::Matrix<2, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<2, num_nodes_ele> xyze_mat(xyze, true);
+            CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
             return BuildPosition<2, eletype>(xyze_mat, xyz_mat, floattype);
           }
           case 3:
           {
-            LINALG::Matrix<3, num_nodes_ele> xyze_mat(xyze, true);
-            LINALG::Matrix<3, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<3, num_nodes_ele> xyze_mat(xyze, true);
+            CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
             return BuildPosition<3, eletype>(xyze_mat, xyz_mat, floattype);
           }
           default:
@@ -997,7 +999,7 @@ namespace CORE::GEO
           unsigned numNodesElement =
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<eletype>::numNodePerElement>
       static Teuchos::RCP<Position> BuildPosition(const std::vector<Node*> nodes,
-          const LINALG::Matrix<probdim, 1>& xyz,
+          const CORE::LINALG::Matrix<probdim, 1>& xyz,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
       {
         if (not(nodes.size() == numNodesElement))
@@ -1006,7 +1008,7 @@ namespace CORE::GEO
               "numNodesElement = %d, nodes.size() = %d",
               numNodesElement, nodes.size());
 
-        LINALG::Matrix<probdim, numNodesElement> xyze;
+        CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
           Node* n = nodes[i];
@@ -1043,12 +1045,12 @@ namespace CORE::GEO
         {
           case 2:
           {
-            LINALG::Matrix<2, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<2, 1> xyz_mat(xyz, true);
             return BuildPosition<2, eletype>(nodes, xyz_mat, floattype);
           }
           case 3:
           {
-            LINALG::Matrix<3, 1> xyz_mat(xyz, true);
+            CORE::LINALG::Matrix<3, 1> xyz_mat(xyz, true);
             return BuildPosition<3, eletype>(nodes, xyz_mat, floattype);
           }
           default:

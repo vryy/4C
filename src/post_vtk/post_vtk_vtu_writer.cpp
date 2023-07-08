@@ -265,11 +265,11 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
-    Teuchos::RCP<Epetra_Vector> dofvec = LINALG::CreateVector(*rowmap, false);
+    Teuchos::RCP<Epetra_Vector> dofvec = CORE::LINALG::CreateVector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
-    ghostedData = LINALG::CreateVector(*colmap, true);
-    LINALG::Export(*dofvec, *ghostedData);
+    ghostedData = CORE::LINALG::CreateVector(*colmap, true);
+    CORE::LINALG::Export(*dofvec, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -373,7 +373,7 @@ void PostVtuWriter::WriteNodalResultStep(std::ofstream& file,
   else
   {
     ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
-    LINALG::Export(*data, *ghostedData);
+    CORE::LINALG::Export(*data, *ghostedData);
   }
 
   int ncomponents = numdf;
@@ -468,7 +468,7 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
   {
     importedData =
         Teuchos::rcp(new Epetra_MultiVector(*dis->ElementRowMap(), data->NumVectors(), false));
-    LINALG::Export(*data, *importedData);
+    CORE::LINALG::Export(*data, *importedData);
   }
 
   for (int e = 0; e < dis->NumMyRowElements(); ++e)
@@ -574,7 +574,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
   celltypes.push_back(DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).first);
 
-  LINALG::Matrix<NUMNODES, 1> weights;
+  CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
@@ -596,9 +596,9 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
   for (int n = 0; n < ele->NumNode(); ++n)
   {
-    LINALG::Matrix<NUMNODES, 1> funct;
-    LINALG::Matrix<DIM, NUMNODES> deriv;  // dummy
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<NUMNODES, 1> funct;
+    CORE::LINALG::Matrix<DIM, NUMNODES> deriv;  // dummy
+    CORE::LINALG::Matrix<3, 1> gpa;
 
     gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
 
@@ -649,7 +649,7 @@ void PostVtuWriter::WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
 
   /* loop over the chosen visualization points (equidistant distribution in the element
    * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
-  LINALG::Matrix<3, 1> r;
+  CORE::LINALG::Matrix<3, 1> r;
   double xi = 0.0;
 
   for (unsigned int i = 0; i < BEAMSVTUVISUALSUBSEGMENTS + 1; ++i)
@@ -735,7 +735,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
 
-  LINALG::Matrix<NUMNODES, 1> weights;
+  CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
@@ -756,9 +756,9 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
   for (unsigned n = 0; n < NUMNODES; ++n)
   {
-    LINALG::Matrix<NUMNODES, 1> funct;
-    LINALG::Matrix<DIM, NUMNODES> deriv;
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<NUMNODES, 1> funct;
+    CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
+    CORE::LINALG::Matrix<3, 1> gpa;
 
     gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
 
@@ -833,7 +833,7 @@ void PostVtuWriter::WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* be
    * which is supported as vtkCellType number 4 (see also list in GetVtkElementType)
    * loop over the chosen visualization points (equidistant distribution in the element
    * parameter space xi \in [-1,1] ) and determine their interpolated initial positions r */
-  LINALG::Matrix<3, 1> pos, refpos;
+  CORE::LINALG::Matrix<3, 1> pos, refpos;
   double xi = 0.0;
 
   for (unsigned int i = 0; i < BEAMSVTUVISUALSUBSEGMENTS + 1; ++i)
@@ -918,7 +918,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   const std::vector<int>& numbering =
       DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(mapped_dis_type).second;
 
-  LINALG::Matrix<NUMNODES, 1> weights;
+  CORE::LINALG::Matrix<NUMNODES, 1> weights;
   const DRT::Node* const* nodes = ele->Nodes();
   for (unsigned inode = 0; inode < NUMNODES; inode++)
   {
@@ -939,9 +939,9 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
   std::vector<double> val(numdf);
   for (unsigned n = 0; n < NUMNODES; ++n)
   {
-    LINALG::Matrix<NUMNODES, 1> funct;
-    LINALG::Matrix<DIM, NUMNODES> deriv;
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<NUMNODES, 1> funct;
+    CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
+    CORE::LINALG::Matrix<3, 1> gpa;
 
     gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
 

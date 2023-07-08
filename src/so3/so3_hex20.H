@@ -353,7 +353,7 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
 
@@ -382,14 +382,15 @@ namespace DRT
       virtual void InitJacobianMapping();
 
       //! Calculate linear stiffness and mass matrix
-      virtual void soh20_linstiffmass(std::vector<int>& lm,         ///< location matrix
-          std::vector<double>& disp,                                ///< current displacements
-          std::vector<double>& residual,                            ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH20, 1>* force,  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      virtual void soh20_linstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,                         ///< current displacements
+          std::vector<double>& residual,                     ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH20, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,   ///< stress output option
           const INPAR::STR::StrainType iostrain);  ///< strain output option
@@ -401,32 +402,33 @@ namespace DRT
           std::vector<double>* acc,                          ///< current accelerations
           std::vector<double>& residual,                     ///< current residual displ
           std::vector<double>& dispmat,                      ///< current material displacements
-          LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH20, 1>* force,       ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOH20, 1>* forceinert,  ///< element inertial force vector
-          LINALG::Matrix<NUMDOF_SOH20, 1>* force_str,   ///< element structural force vector
-          LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH20, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH20, 1>* forceinert,  ///< element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH20, 1>* force_str,   ///< element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH20, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,   ///< stress output option
           const INPAR::STR::StrainType iostrain);  ///< strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void soh20_lumpmass(LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass);
+      void soh20_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass);
 
       //! Evaluate Hex20 Shapefcts to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOH20, 1>> soh20_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH20, 1>> soh20_shapefcts();
       //! Evaluate Hex20 Derivs to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> soh20_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH20, NUMNOD_SOH20>> soh20_derivs();
       //! Evaluate Hex20 Weights to keep them static
       const std::vector<double> soh20_weights();
 
       //! Evaluate shapefunction, derivative and gaussweights
-      void soh20_shapederiv(
-          LINALG::Matrix<NUMNOD_SOH20, NUMGPT_SOH20>** shapefct,  // pointer to pointer of shapefct
-          LINALG::Matrix<NUMDOF_SOH20, NUMNOD_SOH20>** deriv,     // pointer to pointer of derivs
-          LINALG::Matrix<NUMGPT_SOH20, 1>** weights);             // pointer to pointer of weights
+      void soh20_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOH20, NUMGPT_SOH20>**
+                                shapefct,  // pointer to pointer of shapefct
+          CORE::LINALG::Matrix<NUMDOF_SOH20, NUMNOD_SOH20>** deriv,  // pointer to pointer of derivs
+          CORE::LINALG::Matrix<NUMGPT_SOH20, 1>** weights);  // pointer to pointer of weights
 
       //   /*!
       //    * \brief Interface to material laws working with soh8.
@@ -447,11 +449,11 @@ namespace DRT
       //    * \param params (in): parameterlist to access time, etc. in materials
       //    * */
 
-      //   void soh20_mat_sel(LINALG::Matrix<6,1>* stress,
-      //                     LINALG::Matrix<6,6>* cmat,
+      //   void soh20_mat_sel(CORE::LINALG::Matrix<6,1>* stress,
+      //                     CORE::LINALG::Matrix<6,6>* cmat,
       //                     double* density,
-      //                     LINALG::Matrix<6,1>* glstrain,
-      //                     LINALG::Matrix<3,3>* defgrd,
+      //                     CORE::LINALG::Matrix<6,1>* glstrain,
+      //                     CORE::LINALG::Matrix<3,3>* defgrd,
       //                     const int gp,
       //                     Teuchos::ParameterList&  params);
 

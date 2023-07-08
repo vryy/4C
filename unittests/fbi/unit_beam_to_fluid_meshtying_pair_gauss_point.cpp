@@ -47,14 +47,14 @@ namespace
      * \brief Set up the pair so it can be evaluated and compare the results.
      */
     template <typename beam_type, typename fluid_type>
-    void PerformGPTSPairUnitTest(const LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+    void PerformGPTSPairUnitTest(const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
         const std::vector<double>& beam_dofvec,
-        const LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
-        const std::vector<double>& fluid_dofvec, LINALG::SerialDenseVector results_fs,
-        LINALG::SerialDenseVector results_ff,
-        const LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
-        const LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
-        const LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
+        const std::vector<double>& fluid_dofvec, CORE::LINALG::SerialDenseVector results_fs,
+        CORE::LINALG::SerialDenseVector results_ff,
+        const CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
     {
       // Create the mesh tying mortar pair.
       BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type> pair =
@@ -101,12 +101,12 @@ namespace
       const int beam_dofs = beam_type::n_dof_;
 
       // Evaluate the local matrices.
-      LINALG::SerialDenseMatrix local_kff;
-      LINALG::SerialDenseMatrix local_kfs;
-      LINALG::SerialDenseMatrix local_ksf;
-      LINALG::SerialDenseMatrix local_kss;
-      LINALG::SerialDenseVector local_fs;
-      LINALG::SerialDenseVector local_ff;
+      CORE::LINALG::SerialDenseMatrix local_kff;
+      CORE::LINALG::SerialDenseMatrix local_kfs;
+      CORE::LINALG::SerialDenseMatrix local_ksf;
+      CORE::LINALG::SerialDenseMatrix local_kss;
+      CORE::LINALG::SerialDenseVector local_fs;
+      CORE::LINALG::SerialDenseVector local_ff;
       pair.PreEvaluate();
       bool projects =
           pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
@@ -148,20 +148,20 @@ namespace
     typedef GEOMETRYPAIR::t_hex8 fluid_type;
 
     // Definition of variables for this test case.
-    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
-    LINALG::Matrix<beam_type::n_dof_, 1, double> v_beam;
-    LINALG::Matrix<9, 1, double> q_beam_rot;
-    LINALG::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
-    LINALG::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
+    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> v_beam;
+    CORE::LINALG::Matrix<9, 1, double> q_beam_rot;
+    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
+    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
     std::vector<double> beam_centerline_dofvec;
     std::vector<double> fluid_dofvec;
 
     // Matrices for the results.
-    LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
-    LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
-    LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
-    LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
-    LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
+    CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
+    CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
+    CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
+    CORE::LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
+    CORE::LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
     results_fs.Zero();
     results_ff.Zero();
 

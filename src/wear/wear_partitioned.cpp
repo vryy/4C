@@ -516,7 +516,7 @@ void WEAR::Partitioned::DispCoupling(Teuchos::RCP<Epetra_Vector>& disinterface)
       Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->AleWearCondMap()), true);
 
   // change the parallel distribution from mortar interface to structure
-  LINALG::Export(*disinterface, *strudofs);
+  CORE::LINALG::Export(*disinterface, *strudofs);
 
   // perform coupling to ale dofs
   disinterface.reset();
@@ -544,8 +544,8 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
   Teuchos::RCP<Epetra_Vector> auxvector =
       Teuchos::rcp(new Epetra_Vector(*winterface->Discret().DofRowMap()), true);
 
-  LINALG::Export(*disinterface_s, *disinterface_g);
-  LINALG::Export(*disinterface_m, *auxvector);
+  CORE::LINALG::Export(*disinterface_s, *disinterface_g);
+  CORE::LINALG::Export(*disinterface_m, *auxvector);
 
   int err = 0;
   err = disinterface_g->Update(1.0, *auxvector, true);
@@ -684,7 +684,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
 
     // 6. init data container for d2 mat
     const Teuchos::RCP<Epetra_Map> masternodesmat =
-        LINALG::AllreduceEMap(*(winterface->MasterRowNodes()));
+        CORE::LINALG::AllreduceEMap(*(winterface->MasterRowNodes()));
 
     for (int i = 0; i < masternodesmat->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
@@ -705,8 +705,8 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     }
 
     // 8. evaluate dmat
-    Teuchos::RCP<LINALG::SparseMatrix> dmat = Teuchos::rcp(
-        new LINALG::SparseMatrix(*masterdofs, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *masterdofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
     for (int j = 0; j < winterface->MasterColElements()->NumMyElements(); ++j)
     {
@@ -727,7 +727,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     // 12. complete dmat
     dmat->Complete();
 
-    LINALG::Solver solver(Comm());
+    CORE::LINALG::Solver solver(Comm());
     solver.Solve(dmat->EpetraMatrix(), disinterface_m, wear_master, true);
     disinterface_m->Scale(-fac);
   }
@@ -887,20 +887,20 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
     // un-weight for internal state approach
     if (wtype == INPAR::WEAR::wear_intstate)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> daa, dai, dia, dii;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> daa, dai, dia, dii;
       Teuchos::RCP<Epetra_Map> gidofs;
-      LINALG::SplitMatrix2x2(
+      CORE::LINALG::SplitMatrix2x2(
           cstrategy.DMatrix(), activedofs, gidofs, activedofs, gidofs, daa, dai, dia, dii);
 
       Teuchos::RCP<Epetra_Vector> wear_vectora = Teuchos::rcp(new Epetra_Vector(*activedofs, true));
       Teuchos::RCP<Epetra_Vector> wear_vectori = Teuchos::rcp(new Epetra_Vector(*gidofs));
-      LINALG::SplitVector(
+      CORE::LINALG::SplitVector(
           *slavedofs, *disinterface_s, activedofs, wear_vectora, gidofs, wear_vectori);
 
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*activedofs));
 
       // solve with default solver
-      LINALG::Solver solver(Comm());
+      CORE::LINALG::Solver solver(Comm());
       if (activedofs->NumMyElements()) solver.Solve(daa->EpetraMatrix(), zref, wear_vectora, true);
 
       // different wear coefficients on both sides...
@@ -911,7 +911,7 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       zref->Scale(fac);
 
       disinterface_s = Teuchos::rcp(new Epetra_Vector(*slavedofs));
-      LINALG::Export(*zref, *disinterface_s);
+      CORE::LINALG::Export(*zref, *disinterface_s);
     }
   }
 
@@ -1079,8 +1079,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
     }
 
     // 5. evaluate dmat
-    Teuchos::RCP<LINALG::SparseMatrix> dmat =
-        Teuchos::rcp(new LINALG::SparseMatrix(*slavedofs, 10));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmat =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofs, 10));
 
     for (int j = 0; j < interfacesMat_[m]->SlaveColElements()->NumMyElements(); ++j)
     {
@@ -1112,7 +1112,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
       // solve with default solver
-      LINALG::Solver solver(Comm());
+      CORE::LINALG::Solver solver(Comm());
       solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
 
       // store reference LM into global vector and nodes
@@ -1123,7 +1123,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*slavedofs));
 
       // solve with default solver
-      LINALG::Solver solver(Comm());
+      CORE::LINALG::Solver solver(Comm());
       solver.Solve(dmat->EpetraOperator(), zref, disinterface_s, true);
 
       // store reference LM into global vector and nodes
@@ -1245,7 +1245,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
     // 5. init data container for d2 curr
     const Teuchos::RCP<Epetra_Map> masternodes =
-        LINALG::AllreduceEMap(*(winterface->MasterRowNodes()));
+        CORE::LINALG::AllreduceEMap(*(winterface->MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
@@ -1267,7 +1267,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
     // 6. init data container for d2 mat
     const Teuchos::RCP<Epetra_Map> masternodesmat =
-        LINALG::AllreduceEMap(*(winterfaceMat->MasterRowNodes()));
+        CORE::LINALG::AllreduceEMap(*(winterfaceMat->MasterRowNodes()));
 
     for (int i = 0; i < masternodesmat->NumMyElements();
          ++i)  // for (int i=0;i<MasterRowNodes()->NumMyElements();++i)
@@ -1288,8 +1288,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     }
 
     // 7. evaluate dcur
-    Teuchos::RCP<LINALG::SparseMatrix> dcur = Teuchos::rcp(
-        new LINALG::SparseMatrix(*masterdofs, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dcur = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *masterdofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     for (int j = 0; j < winterface->MasterColElements()->NumMyElements(); ++j)
     {
       int gid = winterface->MasterColElements()->GID(j);
@@ -1304,8 +1304,8 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     }
 
     // 8. evaluate dmat
-    Teuchos::RCP<LINALG::SparseMatrix> dmat = Teuchos::rcp(
-        new LINALG::SparseMatrix(*masterdofs, 100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *masterdofs, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
     for (int j = 0; j < winterfaceMat->MasterColElements()->NumMyElements(); ++j)
     {
@@ -1343,7 +1343,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       // solve with default solver
-      LINALG::Solver solver(Comm());
+      CORE::LINALG::Solver solver(Comm());
       solver.Solve(dmat->EpetraOperator(), zref, forcecurr, true);
 
       // store reference LM into global vector and nodes
@@ -1355,7 +1355,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       // solve with default solver
-      LINALG::Solver solver(Comm());
+      CORE::LINALG::Solver solver(Comm());
       solver.Solve(dmat->EpetraOperator(), zref, disinterface_m, true);
 
       // store reference LM into global vector and nodes
@@ -1415,7 +1415,7 @@ void WEAR::Partitioned::UpdateMatConf()
     Teuchos::RCP<Epetra_Vector> dismat_struct =
         Teuchos::rcp(new Epetra_Vector(dispnp->Map()), true);
 
-    LINALG::Export(*disalenp, *dismat_struct);
+    CORE::LINALG::Export(*disalenp, *dismat_struct);
 
     err = dismat->Update(1.0, *dismat_struct, 0.0);
     if (err != 0) dserror("update wrong!");

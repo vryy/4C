@@ -76,16 +76,16 @@ namespace BEAMINTERACTION
     void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
   };
@@ -137,16 +137,16 @@ namespace BEAMINTERACTION
     void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
-        LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
-        LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_GB,
+        CORE::LINALG::SparseMatrix& global_GS, CORE::LINALG::SparseMatrix& global_FB,
+        CORE::LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -162,12 +162,12 @@ namespace BEAMINTERACTION
      * @param element (in) Pointer to the face element.
      */
     template <typename scalar_type_rot>
-    void GetSurfaceRotationVector(const LINALG::Matrix<3, 1, double>& xi,
-        const LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
-        const LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot>& q_solid,
-        const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    void GetSurfaceRotationVector(const CORE::LINALG::Matrix<3, 1, double>& xi,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
+        const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot>& q_solid,
+        const CORE::LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
         const INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling surface_triad_type,
-        LINALG::Matrix<3, 1, scalar_type_rot>& psi_solid,
+        CORE::LINALG::Matrix<3, 1, scalar_type_rot>& psi_solid,
         const DRT::Element* element = nullptr) const;
 
     /**
@@ -177,7 +177,7 @@ namespace BEAMINTERACTION
      * @param gid_rot (out) Rotational GIDs for the beam
      */
     void GetPairRotationalGIDs(const ::DRT::Discretization& discret, std::vector<int>& gid_surface,
-        LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
+        CORE::LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 
   /**

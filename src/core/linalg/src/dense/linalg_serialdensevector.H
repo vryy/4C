@@ -13,7 +13,7 @@
 #include <Epetra_SerialDenseVector.h>
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
   \brief A class that wraps Epetra_SerialDenseVector with minor modifications
@@ -154,11 +154,11 @@ namespace LINALG
     int allocatedSize_;  /// Remembers the amount of bytes allocated when changing vector length
 
   };  // class SerialDenseVector
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 // << operator
-// ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector);
+// ostream& operator << (ostream& os, const CORE::LINALG::SerialDenseVector& vector);
 
 
 

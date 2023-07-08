@@ -1083,7 +1083,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
   double vel1 = q_in / area;
   double vel2 = q_out / area;
 
-  LINALG::Matrix<2, 1> velv;
+  CORE::LINALG::Matrix<2, 1> velv;
   velv(0, 0) = vel1;
   velv(1, 0) = vel2;
   // get average velocity
@@ -1254,7 +1254,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
   double vel1 = q_in / area;
   double vel2 = q_out / area;
 
-  LINALG::Matrix<2, 1> velv;
+  CORE::LINALG::Matrix<2, 1> velv;
   velv(0, 0) = vel1;
   velv(1, 0) = vel2;
   // get average velocity

@@ -201,7 +201,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = fluiddis_->lColNode(lid);
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -211,7 +211,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::Setup()
   }
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofPositions(currpositions_fluid_);
+  const CORE::LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofPositions(currpositions_fluid_);
   fluid_SearchTree_->initializeTree(rootBox, *fluiddis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   if (myrank_ == 0) std::cout << "\n Build Fluid SearchTree ... " << std::endl;
@@ -535,11 +535,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::DoImmersedDirichletCond(
 void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretization()
 {
   // find positions of the immersed structural discretization
-  std::map<int, LINALG::Matrix<3, 1>> my_currpositions_struct;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
   {
     const DRT::Node* node = structdis_->lRowNode(lid);
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
 
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
@@ -553,11 +553,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::SetupStructuralDiscretiza
   // on all procs.
   std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
-  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
+  CORE::LINALG::Gather<int, CORE::LINALG::Matrix<3, 1>>(
       my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), Comm());
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox2 =
+  const CORE::LINALG::Matrix<3, 2> rootBox2 =
       CORE::GEO::getXAABBofDis(*structdis_, currpositions_struct_);
   structure_SearchTree_->initializeTree(
       rootBox2, *structdis_, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
@@ -634,11 +634,11 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   Teuchos::RCP<const Epetra_Vector> displacements = immersedstructure_->Dispnp();
 
   // find current positions for immersed structural discretization
-  std::map<int, LINALG::Matrix<3, 1>> my_currpositions_struct;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> my_currpositions_struct;
   for (int lid = 0; lid < structdis_->NumMyRowNodes(); ++lid)
   {
     const DRT::Node* node = structdis_->lRowNode(lid);
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
     std::vector<int> dofstoextract(3);
     std::vector<double> mydisp(3);
 
@@ -659,21 +659,21 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
   // on all procs.
   std::vector<int> procs(numproc_);
   for (int i = 0; i < numproc_; i++) procs[i] = i;
-  LINALG::Gather<int, LINALG::Matrix<3, 1>>(
+  CORE::LINALG::Gather<int, CORE::LINALG::Matrix<3, 1>>(
       my_currpositions_struct, currpositions_struct_, numproc_, procs.data(), Comm());
 
   // take special care in case of multibody simulations
   if (multibodysimulation_ == false)
   {
     // get bounding box of current configuration of structural dis
-    const LINALG::Matrix<3, 2> structBox =
+    const CORE::LINALG::Matrix<3, 2> structBox =
         CORE::GEO::getXAABBofDis(*structdis_, currpositions_struct_);
     double max_radius =
         sqrt(pow(structBox(0, 0) - structBox(0, 1), 2) + pow(structBox(1, 0) - structBox(1, 1), 2) +
              pow(structBox(2, 0) - structBox(2, 1), 2));
     // search for background elements within a certain radius around the center of the immersed
     // bounding box
-    LINALG::Matrix<3, 1> boundingboxcenter;
+    CORE::LINALG::Matrix<3, 1> boundingboxcenter;
     boundingboxcenter(0) = structBox(0, 0) + (structBox(0, 1) - structBox(0, 0)) * 0.5;
     boundingboxcenter(1) = structBox(1, 0) + (structBox(1, 1) - structBox(1, 0)) * 0.5;
     boundingboxcenter(2) = structBox(2, 0) + (structBox(2, 1) - structBox(2, 0)) * 0.5;
@@ -724,8 +724,9 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
     }
 
     // get bounding boxes of the bodies
-    std::vector<LINALG::Matrix<3, 2>> structboxes = CORE::GEO::computeXAABBForLabeledStructures(
-        *structdis_, currpositions_struct_, elementList);
+    std::vector<CORE::LINALG::Matrix<3, 2>> structboxes =
+        CORE::GEO::computeXAABBForLabeledStructures(
+            *structdis_, currpositions_struct_, elementList);
 
     double max_radius;
 
@@ -737,7 +738,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::PrepareFluidOp()
                         pow(structboxes[i](1, 0) - structboxes[i](1, 1), 2) +
                         pow(structboxes[i](2, 0) - structboxes[i](2, 1), 2));
 
-      LINALG::Matrix<3, 1> boundingboxcenter;
+      CORE::LINALG::Matrix<3, 1> boundingboxcenter;
       boundingboxcenter(0) =
           structboxes[i](0, 0) + (structboxes[i](0, 1) - structboxes[i](0, 0)) * 0.5;
       boundingboxcenter(1) =

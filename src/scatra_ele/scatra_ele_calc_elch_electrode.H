@@ -72,7 +72,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -120,9 +120,9 @@ namespace DRT
           const double fac,           //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< Jacobian determinant det(dx/ds)
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< gradient of current scalar
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< gradient of current scalar
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivatives of Jacobian determinant det(dx/ds) w.r.t. structural
                         //!< displacements
       );
@@ -131,7 +131,7 @@ namespace DRT
       void CalcMatDiffCoeffLin(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
-          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
@@ -139,7 +139,7 @@ namespace DRT
       void CalcMatPotEquDiviOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
-          const LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
@@ -160,14 +160,14 @@ namespace DRT
           Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1./F
-          const LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
           const double scalar  //!< scaling factor for element residual contributions
       );
 
       //! calculate weighted current density
-      void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,        //!< type fo flux
-          const double fac                               //!< integration factor
+      void CalculateCurrent(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,              //!< type fo flux
+          const double fac                                     //!< integration factor
           ) override;
 
       //! get utility class supporting element evaluation for electrodes
@@ -212,9 +212,9 @@ namespace DRT
           Epetra_SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
-      void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,     //!< type fo flux
-          const int k                                 //!< index of current scalar
+      void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,           //!< type fo flux
+          const int k                                       //!< index of current scalar
           ) override;
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -395,15 +395,16 @@ namespace DRT
 
       //! compute and set internal electrode-specific variables
       void SetInternalVariablesElchElectrode(
-          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
-          const LINALG::Matrix<NSD, NEN>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephin,  //!< nodal state variables at t_(n)
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {
@@ -413,15 +414,16 @@ namespace DRT
 
       //! compute and set internal electrode-specific variables for evaluation of SOC and Crate
       void SetInternalVariablesElchElectrodeSOCAndCRate(
-          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
-          const LINALG::Matrix<NSD, NEN>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephin,  //!< nodal state variables at t_(n)
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {

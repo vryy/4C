@@ -33,7 +33,7 @@ void INVANA::MVNorm(
 
   Teuchos::RCP<Epetra_MultiVector> unique =
       Teuchos::rcp(new Epetra_MultiVector(uniquemap, avector.NumVectors(), true));
-  LINALG::Export(avector, *unique);
+  CORE::LINALG::Export(avector, *unique);
 
   if (anorm == 2)
     unique->Norm2(vnorm.Values());
@@ -61,10 +61,10 @@ void INVANA::MVDotProduct(const Epetra_MultiVector& avector, const Epetra_MultiV
 
   Teuchos::RCP<Epetra_MultiVector> uniquea =
       Teuchos::rcp(new Epetra_MultiVector(uniquemap, avector.NumVectors(), true));
-  LINALG::Export(avector, *uniquea);
+  CORE::LINALG::Export(avector, *uniquea);
   Teuchos::RCP<Epetra_MultiVector> uniqueb =
       Teuchos::rcp(new Epetra_MultiVector(uniquemap, bvector.NumVectors(), true));
-  LINALG::Export(bvector, *uniqueb);
+  CORE::LINALG::Export(bvector, *uniqueb);
 
   // do dot product with unique vectors now
   uniquea->Dot(*uniqueb, anorm.Values());

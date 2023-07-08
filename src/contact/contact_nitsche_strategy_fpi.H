@@ -70,9 +70,9 @@ namespace CONTACT
     //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool CheckNitscheContactState(CONTACT::CoElement* cele,
-        const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-        const double& full_fsi_traction,  // stressfluid + penalty
-        double& gap                       // gap
+        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const double& full_fsi_traction,        // stressfluid + penalty
+        double& gap                             // gap
     );
 
    protected:

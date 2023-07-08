@@ -18,12 +18,12 @@
 #include "lib_discret_interface.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -179,7 +179,7 @@ namespace DRT
        * \brief Retrieve the global transformation matrix
        *
        */
-      Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> Trafo() const { return trafo_; }
 
       //@}
 
@@ -197,7 +197,7 @@ namespace DRT
        *   \f[ \tilde{R} = Q \cdot R \f]
        */
       void RotateGlobalToLocal(
-          Teuchos::RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
           Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
       ) const;
 
@@ -205,7 +205,7 @@ namespace DRT
        * \brief Apply forward transformation of a single matrix
        *
        */
-      void RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
+      void RotateGlobalToLocal(Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const;
 
       /*!
        * \brief Apply forward transformation of a single vector
@@ -218,7 +218,7 @@ namespace DRT
        *
        */
       void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
-          Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
 
       /*!
        * \brief Apply backward transformation of a single vector
@@ -230,7 +230,7 @@ namespace DRT
        * \brief Apply backward transformation of a matrix
        *
        */
-      void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
+      void RotateLocalToGlobal(Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const;
 
       /*!
        * \brief Add displacement offset value in order to apply Dirichlet conditions on local
@@ -279,7 +279,7 @@ namespace DRT
 
       /// maps the GID of a node onto the pseudo-rotation vector which rotates the global xyz system
       /// onto local system of the node
-      std::map<int, LINALG::Matrix<3, 1>> nodalrotvectors_;
+      std::map<int, CORE::LINALG::Matrix<3, 1>> nodalrotvectors_;
 
       /// assignment of local systems to nodes
       Teuchos::RCP<Epetra_Vector> locsystoggle_;
@@ -294,13 +294,13 @@ namespace DRT
       /// one should be aware of that it is treated like a rotational
       /// transformation matrix. This means: The inverse (or 'backward') mapping
       /// is simply implemented as its transpose rather than a general inverse.
-      Teuchos::RCP<LINALG::SparseMatrix> trafo_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> trafo_;
 
       /// Transformation 'sub'-matrix with non-identity entries
       ///
       /// This is actually not a sub-matrix, but a global matrix
       /// with nil entries at (a lot) places
-      Teuchos::RCP<LINALG::SparseMatrix> subtrafo_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> subtrafo_;
 
       // Boolean, which is yes if a locsys warning has already been thrown
       bool warningThrown_;

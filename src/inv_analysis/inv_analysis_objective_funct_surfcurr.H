@@ -29,7 +29,7 @@ namespace DRT
   }
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }

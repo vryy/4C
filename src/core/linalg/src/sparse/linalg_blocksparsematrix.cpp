@@ -19,7 +19,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
+CORE::LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& domainmaps,
     const MultiMapExtractor& rangemaps, int npr, bool explicitdirichlet, bool savegraph)
     : domainmaps_(domainmaps), rangemaps_(rangemaps), usetranspose_(false)
 {
@@ -38,7 +38,7 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
+bool CORE::LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
 {
   /// destroy matrix blocks
   unsigned cblock = 0;
@@ -78,10 +78,10 @@ bool LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::BlockSparseMatrixBase::Merge(
     bool explicitdirichlet) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::BlockSparseMatrixBase::Merge");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::BlockSparseMatrixBase::Merge");
 
   const SparseMatrix& m00 = Matrix(0, 0);
 
@@ -101,7 +101,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, const SparseMatrix& mat)
+void CORE::LINALG::BlockSparseMatrixBase::Assign(
+    int r, int c, DataAccess access, const SparseMatrix& mat)
 {
 #ifdef DEBUG
   if (not Matrix(r, c).RowMap().SameAs(mat.RowMap())) dserror("cannot assign nonmatching matrices");
@@ -112,7 +113,7 @@ void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Zero()
+void CORE::LINALG::BlockSparseMatrixBase::Zero()
 {
   for (auto& block : blocks_) block.Zero();
 }
@@ -120,7 +121,7 @@ void LINALG::BlockSparseMatrixBase::Zero()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Reset()
+void CORE::LINALG::BlockSparseMatrixBase::Reset()
 {
   for (int i = 0; i < Rows(); ++i)
   {
@@ -134,7 +135,7 @@ void LINALG::BlockSparseMatrixBase::Reset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Complete(bool enforce_complete)
+void CORE::LINALG::BlockSparseMatrixBase::Complete(bool enforce_complete)
 {
   for (int r = 0; r < Rows(); ++r)
   {
@@ -170,7 +171,7 @@ void LINALG::BlockSparseMatrixBase::Complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Complete(
+void CORE::LINALG::BlockSparseMatrixBase::Complete(
     const Epetra_Map& domainmap, const Epetra_Map& rangemap, bool enforce_complete)
 {
   dserror("Complete with arguments not supported for block matrices");
@@ -179,7 +180,7 @@ void LINALG::BlockSparseMatrixBase::Complete(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::BlockSparseMatrixBase::Filled() const
+bool CORE::LINALG::BlockSparseMatrixBase::Filled() const
 {
   for (const auto& block : blocks_)
     if (not block.Filled()) return false;
@@ -189,7 +190,7 @@ bool LINALG::BlockSparseMatrixBase::Filled() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::UnComplete()
+void CORE::LINALG::BlockSparseMatrixBase::UnComplete()
 {
   for (auto& block : blocks_) block.UnComplete();
 }
@@ -197,7 +198,7 @@ void LINALG::BlockSparseMatrixBase::UnComplete()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::ApplyDirichlet(
+void CORE::LINALG::BlockSparseMatrixBase::ApplyDirichlet(
     const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock)
 {
   int rows = Rows();
@@ -207,7 +208,7 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(
     Teuchos::RCP<Epetra_Vector> rowtoggle = rangemaps_.ExtractVector(dbctoggle, rblock);
     for (int cblock = 0; cblock < cols; ++cblock)
     {
-      LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
+      CORE::LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
       bmat.ApplyDirichlet(rowtoggle, diagonalblock and rblock == cblock);
     }
   }
@@ -215,7 +216,8 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock)
+void CORE::LINALG::BlockSparseMatrixBase::ApplyDirichlet(
+    const Epetra_Map& dbcmap, bool diagonalblock)
 {
   const int rows = Rows();
   const int cols = Cols();
@@ -223,7 +225,7 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, boo
   {
     for (int cblock = 0; cblock < cols; ++cblock)
     {
-      LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
+      CORE::LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
       bmat.ApplyDirichlet(dbcmap, diagonalblock and rblock == cblock);
     }
   }
@@ -231,8 +233,8 @@ void LINALG::BlockSparseMatrixBase::ApplyDirichlet(const Epetra_Map& dbcmap, boo
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::BlockSparseMatrixBase::IsDbcApplied(
-    const Epetra_Map& dbcmap, bool diagonalblock, const LINALG::SparseMatrix* trafo) const
+bool CORE::LINALG::BlockSparseMatrixBase::IsDbcApplied(
+    const Epetra_Map& dbcmap, bool diagonalblock, const CORE::LINALG::SparseMatrix* trafo) const
 {
   const int rows = Rows();
   const int cols = Cols();
@@ -252,7 +254,7 @@ bool LINALG::BlockSparseMatrixBase::IsDbcApplied(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::BlockSparseMatrixBase::SetUseTranspose(bool UseTranspose)
+int CORE::LINALG::BlockSparseMatrixBase::SetUseTranspose(bool UseTranspose)
 {
   for (auto& block : blocks_) block.SetUseTranspose(UseTranspose);
   usetranspose_ = UseTranspose;
@@ -262,7 +264,8 @@ int LINALG::BlockSparseMatrixBase::SetUseTranspose(bool UseTranspose)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int CORE::LINALG::BlockSparseMatrixBase::Apply(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   int rows = Rows();
   int cols = Cols();
@@ -277,7 +280,7 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_Mul
       for (int cblock = 0; cblock < cols; ++cblock)
       {
         Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.ExtractVector(X, cblock);
-        const LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
+        const CORE::LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0)
           dserror("failed to apply vector to matrix block (%d,%d): err=%d", rblock, cblock, err);
@@ -295,7 +298,7 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_Mul
       for (int cblock = 0; cblock < rows; ++cblock)
       {
         Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.ExtractVector(X, cblock);
-        const LINALG::SparseMatrix& bmat = Matrix(cblock, rblock);
+        const CORE::LINALG::SparseMatrix& bmat = Matrix(cblock, rblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0) dserror("failed to apply vector to matrix: err=%d", err);
         rowresult->Update(1.0, *rowy, 1.0);
@@ -310,18 +313,18 @@ int LINALG::BlockSparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_Mul
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::BlockSparseMatrixBase::ApplyInverse(
+int CORE::LINALG::BlockSparseMatrixBase::ApplyInverse(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  dserror("LINALG::BlockSparseMatrixBase::ApplyInverse not implemented");
+  dserror("CORE::LINALG::BlockSparseMatrixBase::ApplyInverse not implemented");
   return -1;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Add(const LINALG::SparseOperator& A, const bool transposeA,
-    const double scalarA, const double scalarB)
+void CORE::LINALG::BlockSparseMatrixBase::Add(const CORE::LINALG::SparseOperator& A,
+    const bool transposeA, const double scalarA, const double scalarB)
 {
   A.AddOther(*this, transposeA, scalarA, scalarB);
 }
@@ -329,7 +332,7 @@ void LINALG::BlockSparseMatrixBase::Add(const LINALG::SparseOperator& A, const b
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& A,
+void CORE::LINALG::BlockSparseMatrixBase::AddOther(CORE::LINALG::BlockSparseMatrixBase& A,
     const bool transposeA, const double scalarA, const double scalarB) const
 {
   A.Add(*this, transposeA, scalarA, scalarB);
@@ -338,8 +341,8 @@ void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrixBase& A, const bool transposeA,
-    const double scalarA, const double scalarB) const
+void CORE::LINALG::BlockSparseMatrixBase::AddOther(CORE::LINALG::SparseMatrixBase& A,
+    const bool transposeA, const double scalarA, const double scalarB) const
 {
   dserror("BlockSparseMatrix and SparseMatrix cannot be added");
 }
@@ -347,7 +350,7 @@ void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrixBase& A, const 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Add(const LINALG::BlockSparseMatrixBase& A,
+void CORE::LINALG::BlockSparseMatrixBase::Add(const CORE::LINALG::BlockSparseMatrixBase& A,
     const bool transposeA, const double scalarA, const double scalarB)
 {
   for (int i = 0; i < Rows(); i++)
@@ -365,7 +368,7 @@ void LINALG::BlockSparseMatrixBase::Add(const LINALG::BlockSparseMatrixBase& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::BlockSparseMatrixBase::Scale(double ScalarConstant)
+int CORE::LINALG::BlockSparseMatrixBase::Scale(double ScalarConstant)
 {
   for (int i = 0; i < Rows(); i++)
   {
@@ -381,7 +384,7 @@ int LINALG::BlockSparseMatrixBase::Scale(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::BlockSparseMatrixBase::Multiply(
+int CORE::LINALG::BlockSparseMatrixBase::Multiply(
     bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   if (TransA) dserror("transpose multiply not implemented for BlockSparseMatrix");
@@ -391,32 +394,38 @@ int LINALG::BlockSparseMatrixBase::Multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::BlockSparseMatrixBase::NormInf() const { return -1; }
+double CORE::LINALG::BlockSparseMatrixBase::NormInf() const { return -1; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const char* LINALG::BlockSparseMatrixBase::Label() const { return "LINALG::BlockSparseMatrixBase"; }
+const char* CORE::LINALG::BlockSparseMatrixBase::Label() const
+{
+  return "CORE::LINALG::BlockSparseMatrixBase";
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::BlockSparseMatrixBase::UseTranspose() const { return usetranspose_; }
+bool CORE::LINALG::BlockSparseMatrixBase::UseTranspose() const { return usetranspose_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::BlockSparseMatrixBase::HasNormInf() const { return false; }
+bool CORE::LINALG::BlockSparseMatrixBase::HasNormInf() const { return false; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& LINALG::BlockSparseMatrixBase::Comm() const { return FullDomainMap().Comm(); }
+const Epetra_Comm& CORE::LINALG::BlockSparseMatrixBase::Comm() const
+{
+  return FullDomainMap().Comm();
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorDomainMap() const
+const Epetra_Map& CORE::LINALG::BlockSparseMatrixBase::OperatorDomainMap() const
 {
   return FullDomainMap();
 }
@@ -424,12 +433,16 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorDomainMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const { return FullRangeMap(); }
+const Epetra_Map& CORE::LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
+{
+  return FullRangeMap();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::GetPartialExtractor(const MultiMapExtractor& full_extractor,
-    const std::vector<unsigned>& block_ids, MultiMapExtractor& partial_extractor) const
+void CORE::LINALG::BlockSparseMatrixBase::GetPartialExtractor(
+    const MultiMapExtractor& full_extractor, const std::vector<unsigned>& block_ids,
+    MultiMapExtractor& partial_extractor) const
 {
   const unsigned num_blocks = block_ids.size();
 
@@ -450,24 +463,24 @@ void LINALG::BlockSparseMatrixBase::GetPartialExtractor(const MultiMapExtractor&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(const BlockSparseMatrixBase& A,
-    bool transA, const BlockSparseMatrixBase& B, bool transB, bool explicitdirichlet,
-    bool savegraph, bool completeoutput)
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CORE::LINALG::Multiply(
+    const BlockSparseMatrixBase& A, bool transA, const BlockSparseMatrixBase& B, bool transB,
+    bool explicitdirichlet, bool savegraph, bool completeoutput)
 {
   if (!A.Filled() || !B.Filled())
-    dserror("LINALG::BlockSparseMatrixBase::MatrixMultiyply: we expect A and B to be filled");
+    dserror("CORE::LINALG::BlockSparseMatrixBase::MatrixMultiyply: we expect A and B to be filled");
 
   if (A.Cols() != B.Rows() /*|| !A.FullDomainMap().SameAs(B.FullRowMap())*/)
   {
-    dserror("LINALG::BlockSparseMatrixBase::MatrixMultiply: A and B not compatible");
+    dserror("CORE::LINALG::BlockSparseMatrixBase::MatrixMultiply: A and B not compatible");
   }
 
 
   int npr = 81;  // estimated number of entries per row in each block
 
   // generate result matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> C =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> C =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           B.DomainExtractor(), A.RangeExtractor(), npr, explicitdirichlet, savegraph));
 
   // nested loop over all blocks
@@ -476,14 +489,14 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(const BlockSparseMa
     for (int j = 0; j < C->Cols(); j++)
     {
       // build block C(i,j)
-      Teuchos::RCP<SparseMatrix> Cij =
-          Teuchos::rcp(new LINALG::SparseMatrix(C->RangeMap(i), npr, explicitdirichlet, savegraph));
+      Teuchos::RCP<SparseMatrix> Cij = Teuchos::rcp(
+          new CORE::LINALG::SparseMatrix(C->RangeMap(i), npr, explicitdirichlet, savegraph));
 
       for (int l = 0; l < C->Cols(); l++)
       {
         // build submatrices for row i and j
         Teuchos::RCP<SparseMatrix> tmpij =
-            LINALG::Multiply(A.Matrix(i, l), false, B.Matrix(l, j), false, true);
+            CORE::LINALG::Multiply(A.Matrix(i, l), false, B.Matrix(l, j), false, true);
         Cij->Add(*tmpij, false, 1.0, 1.0);
       }
 
@@ -491,7 +504,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(const BlockSparseMa
       if (completeoutput) Cij->Complete(C->DomainMap(j), C->RangeMap(i));
 
       // assign Cij block
-      C->Assign(i, j, LINALG::View, *Cij);
+      C->Assign(i, j, CORE::LINALG::View, *Cij);
     }
   }
 
@@ -503,13 +516,13 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(const BlockSparseMa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINALG::BlockMatrix2x2(
-    LINALG::SparseMatrix& A00, LINALG::SparseMatrix& A01, LINALG::SparseMatrix& A10,
-    LINALG::SparseMatrix& A11)
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
+CORE::LINALG::BlockMatrix2x2(CORE::LINALG::SparseMatrix& A00, CORE::LINALG::SparseMatrix& A01,
+    CORE::LINALG::SparseMatrix& A10, CORE::LINALG::SparseMatrix& A11)
 {
   if (!A00.RangeMap().SameAs(A01.RangeMap()) || !A00.DomainMap().SameAs(A10.DomainMap()) ||
       !A01.DomainMap().SameAs(A11.DomainMap()) || !A10.RangeMap().SameAs(A11.RangeMap()))
-    dserror("LINALG::BlockMatrix2x2: block maps are not compatible.");
+    dserror("CORE::LINALG::BlockMatrix2x2: block maps are not compatible.");
 
 
   // generate range map
@@ -533,15 +546,16 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINA
       Teuchos::rcp(new MultiMapExtractor(*domain_map, domain_maps));
 
   // generate result matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> C = Teuchos::rcp(
-      new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainMMex, *rangeMMex));
-  // Teuchos::RCP<LINALG::BlockSparseMatrixBase> Cb =
-  // Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(C);
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> C =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *domainMMex, *rangeMMex));
+  // Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Cb =
+  // Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(C);
   // assign matrices
-  C->Assign(0, 0, LINALG::View, A00);
-  C->Assign(0, 1, LINALG::View, A01);
-  C->Assign(1, 0, LINALG::View, A10);
-  C->Assign(1, 1, LINALG::View, A11);
+  C->Assign(0, 0, CORE::LINALG::View, A00);
+  C->Assign(0, 1, CORE::LINALG::View, A01);
+  C->Assign(1, 0, CORE::LINALG::View, A10);
+  C->Assign(1, 1, CORE::LINALG::View, A11);
 
   C->Complete();
 
@@ -550,7 +564,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINA
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::BlockSparseMatrixBase& mat)
+std::ostream& CORE::LINALG::operator<<(
+    std::ostream& os, const CORE::LINALG::BlockSparseMatrixBase& mat)
 {
   for (int i = 0; i < mat.Rows(); ++i)
   {
@@ -568,7 +583,7 @@ std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::BlockSparseMatr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
+CORE::LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
     : mat_(mat), scratch_lcols_(mat_.Rows())
 {
 }
@@ -576,9 +591,9 @@ LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrix
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
+void CORE::LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::DefaultBlockMatrixStrategy::Complete");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::DefaultBlockMatrixStrategy::Complete");
 
   if (mat_.Filled() and not enforce_complete)
   {
@@ -726,10 +741,11 @@ void LINALG::DefaultBlockMatrixStrategy::Complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(
-    Teuchos::RCP<LINALG::SparseOperator> input_matrix)
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(
+    Teuchos::RCP<CORE::LINALG::SparseOperator> input_matrix)
 {
-  auto block_matrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(input_matrix);
+  auto block_matrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(input_matrix);
   dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
 
   return block_matrix;
@@ -737,11 +753,12 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockSparseMatrixBaseA
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::BlockSparseMatrixBase>
-LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
-    Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
+Teuchos::RCP<const CORE::LINALG::BlockSparseMatrixBase>
+CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> input_matrix)
 {
-  auto block_matrix = Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(input_matrix);
+  auto block_matrix =
+      Teuchos::rcp_dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase>(input_matrix);
   dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
 
   return block_matrix;

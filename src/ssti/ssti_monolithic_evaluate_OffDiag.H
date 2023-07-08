@@ -20,11 +20,11 @@ namespace ADAPTER
   class SSIStructureWrapper;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -46,8 +46,8 @@ namespace SSTI
    public:
     //! constructor
     explicit ThermoStructureOffDiagCoupling(
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapstructure,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapstructure,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapthermo,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
@@ -57,28 +57,28 @@ namespace SSTI
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void EvaluateOffDiagBlockStructureThermoDomain(
-        Teuchos::RCP<LINALG::SparseOperator> structurethermodomain);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs in domain
     void EvaluateOffDiagBlockThermoStructureDomain(
-        Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain);
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
     void EvaluateOffDiagBlockThermoStructureInterface(
-        Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface);
 
    private:
     void CopySlaveToMasterThermoStructureInterface(
-        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
-        Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix);
 
     void EvaluateThermoStructureInterfaceSlaveSide(
-        Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix);
 
     //! map extractor associated with all degrees of freedom inside structure field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapstructure_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapstructure_;
 
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapthermo_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> full_map_structure_;

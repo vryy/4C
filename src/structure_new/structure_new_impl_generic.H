@@ -18,11 +18,11 @@
 #include <NOX_Abstract_Vector.H>
 
 // forward declaration ...
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {
@@ -49,7 +49,7 @@ namespace STR
        * Normally this one is unnecessary, since it makes more sense
        * to evaluate the stiffness and right hand side at once, because of
        * the lower computational overhead. */
-      virtual bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) = 0;
+      virtual bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) = 0;
 
       /*! \brief Apply force and stiff at once
        *
@@ -57,11 +57,11 @@ namespace STR
        *  the difference between this call and first call ApplyForce and
        *  then ApplyStiff is mentionable because of the projection operations. */
       virtual bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) = 0;
+          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
 
       bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
           const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-          Epetra_Vector& f, LINALG::SparseOperator& jac);
+          Epetra_Vector& f, CORE::LINALG::SparseOperator& jac);
 
       /*! \brief Remove contributions from the structural right-hand side stemming
        *  from any condensation operations (typical example is contact)
@@ -70,7 +70,7 @@ namespace STR
       void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
 
       //! derived
-      bool AssembleJac(LINALG::SparseOperator& jac,
+      bool AssembleJac(CORE::LINALG::SparseOperator& jac,
           const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override
       {
         return false;
@@ -159,7 +159,7 @@ namespace STR
 
       //! compute the scaling operator for element based scaling using PTC
       void ComputeJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
       /*! \brief Print jacbian into text file for later use in MATLAB
        *

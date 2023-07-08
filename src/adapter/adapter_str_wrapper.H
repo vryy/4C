@@ -123,20 +123,20 @@ namespace ADAPTER
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return structure_->DomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return structure_->SystemMatrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return structure_->BlockSystemMatrix();
     }
 
     /// switch structure field to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
     {
       structure_->UseBlockMatrix(domainmaps, rangemaps);
     }
@@ -187,10 +187,13 @@ namespace ADAPTER
     INPAR::STR::STC_Scale GetSTCAlgo() override { return structure_->GetSTCAlgo(); }
 
     /// access to scaling matrix for STC
-    Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override { return structure_->GetSTCMat(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
+    {
+      return structure_->GetSTCMat();
+    }
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() override
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return structure_->GetDBCMapExtractor();
     }
@@ -412,7 +415,10 @@ namespace ADAPTER
     }
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<LINALG::Solver> LinearSolver() override { return structure_->LinearSolver(); }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
+    {
+      return structure_->LinearSolver();
+    }
 
     //@}
 

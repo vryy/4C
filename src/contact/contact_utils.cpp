@@ -343,7 +343,7 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int interface_id,
-    const int nln_iter, const LINALG::SerialDenseMatrix& conservation_data,
+    const int nln_iter, const CORE::LINALG::SerialDenseMatrix& conservation_data,
     const std::string& ofile_path, const std::string& prefix)
 {
   if (mypid != 0) return;

@@ -231,7 +231,7 @@ void SSI::SSIBase::Setup()
   }
 
   // construct vector of zeroes
-  zeros_structure_ = LINALG::CreateVector(*structure_->DofRowMap());
+  zeros_structure_ = CORE::LINALG::CreateVector(*structure_->DofRowMap());
 
   // set flag
   SetIsSetup(true);

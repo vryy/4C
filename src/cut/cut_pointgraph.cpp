@@ -361,7 +361,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::PlotPoints(Element *element)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
-    std::map<vertex_t, LINALG::Matrix<3, 1>> &local,
+    std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> &local,
     std::vector<CORE::GEO::CUT::Cycle> &cycles) /* non-member function */
 {
   name_map_t name_map = boost::get(boost::vertex_name, g);
@@ -392,7 +392,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
   vertex_iterator vi, vi_end;
   for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
   {
-    const LINALG::Matrix<3, 1> &pos = local[*vi];
+    const CORE::LINALG::Matrix<3, 1> &pos = local[*vi];
 #if DEBUG_POINTGRAPH
     std::cout << "First coordinate before substraction " << std::setprecision(16) << pos
               << std::endl;
@@ -405,7 +405,7 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
     adjacency_iterator ai, ai_end;
     for (boost::tie(ai, ai_end) = boost::adjacent_vertices(*vi, g); ai != ai_end; ++ai)
     {
-      LINALG::Matrix<3, 1> d = local[*ai];
+      CORE::LINALG::Matrix<3, 1> d = local[*ai];
 
 #if DEBUG_POINTGRAPH
       std::cout << "Adjacent point is " << name_map[*ai]->Id() << std::endl;
@@ -626,21 +626,21 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(Side *side, Cycle &cycl
   // Use geometry to find the right embedding and find the cycles.
   // find local coordinates
 
-  std::map<vertex_t, LINALG::Matrix<3, 1>> local;
+  std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> local;
 
   vertex_iterator vi, vi_end;
   for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
   {
     // prepare vars
     Point *p = name_map[*vi];
-    LINALG::Matrix<3, 1> xyz(p->X());
-    LINALG::Matrix<3, 1> tmpmat;
+    CORE::LINALG::Matrix<3, 1> xyz(p->X());
+    CORE::LINALG::Matrix<3, 1> tmpmat;
 
     // get coords
     side->LocalCoordinates(xyz, tmpmat);
 
     // add to map
-    std::pair<vertex_t, LINALG::Matrix<3, 1>> tmppair(*vi, tmpmat);
+    std::pair<vertex_t, CORE::LINALG::Matrix<3, 1>> tmppair(*vi, tmpmat);
     local.insert(tmppair);
   }
 
@@ -800,15 +800,15 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
 
     // find local coordinates
 
-    std::map<vertex_t, LINALG::Matrix<3, 1>> local;
+    std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> local;
 
     vertex_iterator vi, vi_end;
     for (boost::tie(vi, vi_end) = boost::vertices(g); vi != vi_end; ++vi)
     {
       // prepare vars
       Point *p = name_map[*vi];
-      const LINALG::Matrix<3, 1> xyz(p->X(), true);
-      LINALG::Matrix<3, 1> rst;
+      const CORE::LINALG::Matrix<3, 1> xyz(p->X(), true);
+      CORE::LINALG::Matrix<3, 1> rst;
 
       // get local coordinates from the side element
       side->LocalCoordinates(xyz, rst);
@@ -817,7 +817,7 @@ void CORE::GEO::CUT::IMPL::PointGraph::Graph::FindCycles(
       std::cout << "Local coordinate on the side are" << rst << std::endl;
 #endif
 
-      std::pair<vertex_t, LINALG::Matrix<3, 1>> tmppair(*vi, rst);
+      std::pair<vertex_t, CORE::LINALG::Matrix<3, 1>> tmppair(*vi, rst);
       local.insert(tmppair);
     }
 
@@ -976,7 +976,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
     plain_int_set &row = i->second;
     if (row.size() < 2)
     {
-      LINALG::Matrix<3, 1> cut_pointxyz;
+      CORE::LINALG::Matrix<3, 1> cut_pointxyz;
       // if there is  point in the poingraph, that have no less than neighbors
       Point *cut_point = all_points_[i->first];
       cut_point->Coordinates(cut_pointxyz.A());
@@ -984,7 +984,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
       for (plain_edge_set::const_iterator e = cut_point->CutEdges().begin();
            e != cut_point->CutEdges().end(); ++e)
       {
-        LINALG::Matrix<3, 1> edge_vector;
+        CORE::LINALG::Matrix<3, 1> edge_vector;
         Edge *ed = *e;
 
         // get the vector from opposite node of the edge to cutting point
@@ -1006,8 +1006,8 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
           for (plain_side_set::const_iterator s = ed->Sides().begin(); s != ed->Sides().end(); ++s)
           {
             // getting side normal with respect to resp(0,0) by default local coordiantes
-            LINALG::Matrix<2, 1> resp;
-            LINALG::Matrix<3, 1> norm_vec;
+            CORE::LINALG::Matrix<2, 1> resp;
+            CORE::LINALG::Matrix<3, 1> norm_vec;
             Side *sd = *s;
             sd->Normal(resp, norm_vec);
 
@@ -1015,7 +1015,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
                  el != sd->Elements().end(); ++el)
             {
               // getting element center for this element
-              LINALG::Matrix<3, 1> element_center;
+              CORE::LINALG::Matrix<3, 1> element_center;
               Element *elmnt = *el;
               if (elmnt->Shape() != ::DRT::Element::hex8)
               {
@@ -1028,7 +1028,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
               }
               elmnt->ElementCenter(element_center);
               // getting vector pointing outward the element
-              LINALG::Matrix<3, 1> out_vec;
+              CORE::LINALG::Matrix<3, 1> out_vec;
               out_vec.Update(1.0, cut_pointxyz, -1.0, element_center);
               // if normal is pointing inwards, reverse it to point outwards
               if (out_vec.Dot(norm_vec) < 0) norm_vec.Scale(-1.0);

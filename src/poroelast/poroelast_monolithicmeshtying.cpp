@@ -25,7 +25,8 @@
 #include "linalg_utils_sparse_algebra_manipulation.H"
 
 POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
@@ -37,7 +38,7 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   mortar_adapter_->Setup(
       StructureField()->Discretization(), StructureField()->Discretization(), coupleddof, "Mortar");
 
-  fvelactiverowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  fvelactiverowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
@@ -87,10 +88,10 @@ void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   Teuchos::RCP<Epetra_Vector> sdisp = StructureField()->WriteAccessDispnp();
 
   // for the EvaluatePoroMt() method RCPs on the matrices are needed...
-  Teuchos::RCP<LINALG::SparseMatrix> f =
-      Teuchos::rcpFromRef<LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 1));
-  Teuchos::RCP<LINALG::SparseMatrix> k_fs =
-      Teuchos::rcpFromRef<LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 0));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> f =
+      Teuchos::rcpFromRef<CORE::LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 1));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fs =
+      Teuchos::rcpFromRef<CORE::LINALG::SparseMatrix>(systemmatrix_->Matrix(1, 0));
 
   Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
 
@@ -99,8 +100,8 @@ void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> 
       f, k_fs, frhs, FluidStructureCoupling(), FluidField()->DofRowMap());
 
   // assign modified parts of system matrix into full system matrix
-  systemmatrix_->Assign(1, 1, LINALG::View, *f);
-  systemmatrix_->Assign(1, 0, LINALG::View, *k_fs);
+  systemmatrix_->Assign(1, 1, CORE::LINALG::View, *f);
+  systemmatrix_->Assign(1, 0, CORE::LINALG::View, *k_fs);
 
   // assign modified part of RHS vector into full RHS vector
   Extractor()->InsertVector(*frhs, 1, *rhs_);
@@ -210,7 +211,7 @@ void POROELAST::MonolithicMeshtying::SetupExtractor()
   factivenmap = mortar_adapter_->GetPoroStrategy()->FluidActiveNDofMap();
 
   // build the complement part of the map
-  factivenmapcomplement = LINALG::SplitMap(*FluidField()->VelocityRowMap(), *factivenmap);
+  factivenmapcomplement = CORE::LINALG::SplitMap(*FluidField()->VelocityRowMap(), *factivenmap);
 
   // write things into the vector for ->Setup
   fluidveldofmapvec.emplace_back(factivenmap);

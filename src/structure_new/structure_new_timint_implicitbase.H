@@ -48,7 +48,7 @@ namespace STR
       INPAR::STR::STC_Scale GetSTCAlgo() override;
 
       /// Get stc matrix (derived)
-      Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
 
       /// Update routine for coupled problems with monolithic approach with time adaptivity
       void Update(double endtime) override;
@@ -67,15 +67,15 @@ namespace STR
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements
       //!      (structural block only)
-      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
 
       /// Return stiffness,
       /// i.e. force residual differentiated by displacements
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
       ///! FixMe switch structure field to block matrix in fsi simulations
-      void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override;
+      void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
       /// @}
 
       //! print summary after step

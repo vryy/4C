@@ -13,7 +13,8 @@
 #include "stru_multi_microstatic.H"
 
 void STRUMULTI::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
-    const LINALG::Matrix<3, 3>& F_inv, const LINALG::Matrix<6, 1>& S, LINALG::Matrix<6, 6>& cmat)
+    const CORE::LINALG::Matrix<3, 3>& F_inv, const CORE::LINALG::Matrix<6, 1>& S,
+    CORE::LINALG::Matrix<6, 6>& cmat)
 {
   // For details concerning the conversion of the constitutive tensor
   // relating first Piola Kirchhoff stresses and deformation gradient

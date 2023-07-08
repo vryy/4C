@@ -25,11 +25,11 @@ namespace ALE
   namespace UTILS
   {
     /// (FSI) interface block matrix split strategy
-    class InterfaceSplitStrategy : public LINALG::DefaultBlockMatrixStrategy
+    class InterfaceSplitStrategy : public CORE::LINALG::DefaultBlockMatrixStrategy
     {
      public:
-      explicit InterfaceSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-          : LINALG::DefaultBlockMatrixStrategy(mat)
+      explicit InterfaceSplitStrategy(CORE::LINALG::BlockSparseMatrixBase& mat)
+          : CORE::LINALG::DefaultBlockMatrixStrategy(mat)
       {
       }
 
@@ -42,14 +42,14 @@ namespace ALE
         {
           // if we have an element with conditioned nodes, we have to do the
           // default assembling
-          LINALG::DefaultBlockMatrixStrategy::Assemble(
+          CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(
               eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
         else
         {
           // if there are no conditioned nodes we can simply assemble to the
           // internal matrix
-          LINALG::SparseMatrix& matrix = Mat().Matrix(0, 0);
+          CORE::LINALG::SparseMatrix& matrix = Mat().Matrix(0, 0);
           matrix.Assemble(eid, lmstride, Aele, lmrow, lmrowowner, lmcol);
         }
       }
@@ -57,7 +57,7 @@ namespace ALE
       void Assemble(double val, int rgid, int cgid)
       {
         // forward single value assembling
-        LINALG::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
+        CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(val, rgid, cgid);
       }
 
       void SetCondElements(Teuchos::RCP<std::set<int>> condelements)

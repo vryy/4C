@@ -21,13 +21,13 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FBI
 {
@@ -74,10 +74,10 @@ namespace FBI
     void AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
         const DRT::Discretization& discretization1, const DRT::Discretization& discretization2,
         std::vector<int> const& elegid,
-        std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-        std::vector<LINALG::SerialDenseVector>* eleforce,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff);
+        std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+        std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff);
 
   }  // namespace UTILS
 }  // namespace FBI

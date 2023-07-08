@@ -80,9 +80,10 @@ namespace BEAMINTERACTION
      * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
      * @return True if pair is in contact.
      */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -92,7 +93,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
    private:
@@ -107,13 +108,13 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
-        LINALG::Matrix<n_dof_pair_, 1, double>& local_force,
-        LINALG::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
+        CORE::LINALG::Matrix<n_dof_pair_, 1, double>& local_force,
+        CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double>& local_stiff) const;
   };
 }  // namespace BEAMINTERACTION
 

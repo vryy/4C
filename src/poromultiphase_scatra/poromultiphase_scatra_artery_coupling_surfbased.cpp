@@ -188,7 +188,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) dserror("Setup() has not been called");
 
@@ -205,11 +205,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::Evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::SetupSystem(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art)
 {
   // call base class
   POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(sysmat, rhs,

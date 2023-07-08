@@ -62,8 +62,8 @@ namespace GEOMETRYPAIR
      * @param q_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-        const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    void Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+        const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
         std::vector<LineSegment<scalar_type>>& segments) const override;
   };
 }  // namespace GEOMETRYPAIR

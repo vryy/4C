@@ -263,7 +263,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddDiscretization
   // Extract the vector according to the GIDs needed on this rank.
   Teuchos::RCP<Epetra_Vector> vector_extract =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*node_gid_map_, true));
-  LINALG::Export(*vector, *vector_extract);
+  CORE::LINALG::Export(*vector, *vector_extract);
 
   // Add the values form the vector to the writer data.
   const int num_my_gid = node_gid_map_->NumMyElements();

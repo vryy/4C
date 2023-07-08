@@ -37,7 +37,7 @@ FSI::LungMonolithicStructureSplit::LungMonolithicStructureSplit(
   intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap =
-      LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
   // Check whether the intersection is empty
   if (intersectionmap->NumGlobalElements() != 0)
@@ -192,10 +192,10 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // ale
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
   if (a == Teuchos::null) dserror("expect ale block matrix");
 
-  LINALG::SparseMatrix& aig = a->Matrix(0, 1);
+  CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
 
   Teuchos::RCP<Epetra_Vector> fveln = FluidField()->ExtractInterfaceVeln();
   Teuchos::RCP<Epetra_Vector> sveln = FluidToStruct(fveln);
@@ -213,7 +213,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   Teuchos::RCP<Epetra_Vector> veln = StructureField()->Interface()->InsertFSICondVector(sveln);
   rhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
 
-  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructureField()->SystemMatrix();
   s->Apply(*veln, *rhs);
 
   Teuchos::RCP<Epetra_Vector> addrhs = Teuchos::rcp(new Epetra_Vector(veln->Map()));
@@ -237,15 +237,15 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   // split in two blocks according to inner and fsi structure dofs
   Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, StructureField()->Discretization()->Comm()));
-  LINALG::MapExtractor extractor;
+  CORE::LINALG::MapExtractor extractor;
   extractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> constrstructblocks =
-      AddStructConstrMatrix_->Matrix(1, 0).Split<LINALG::DefaultBlockMatrixStrategy>(
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> constrstructblocks =
+      AddStructConstrMatrix_->Matrix(1, 0).Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *structfield->FSIInterface(), extractor);
   constrstructblocks->Complete();
 
-  LINALG::SparseMatrix& csig = constrstructblocks->Matrix(0, 1);
+  CORE::LINALG::SparseMatrix& csig = constrstructblocks->Matrix(0, 1);
 
   rhs = Teuchos::rcp(new Epetra_Vector(csig.RowMap()));
   csig.Apply(*sveln, *rhs);
@@ -255,7 +255,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // constraint ale
   //--------------------------------------------------------------------------------
-  LINALG::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0, 1);
+  CORE::LINALG::SparseMatrix& caig = ConstrAleMatrix_->Matrix(0, 1);
   caig.Apply(*fveln, *rhs);
   rhs->Scale(-1. * Dt());
   Extractor().AddVector(*rhs, 3, f);
@@ -263,13 +263,13 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // shape derivatives
   //--------------------------------------------------------------------------------
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = fluidfield->ShapeDerivatives();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = fluidfield->ShapeDerivatives();
 
   if (mmm != Teuchos::null)
   {
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
-    LINALG::SparseMatrix& fmGg = mmm->Matrix(3, 1);
+    CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
+    CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
+    CORE::LINALG::SparseMatrix& fmGg = mmm->Matrix(3, 1);
 
     rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
     fmig.Apply(*fveln, *rhs);
@@ -286,8 +286,8 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
     veln->Scale(-1. * Dt());
     Extractor().AddVector(*veln, 1, f);
 
-    LINALG::SparseMatrix& afmgg = AddFluidShapeDerivMatrix_->Matrix(1, 1);
-    LINALG::SparseMatrix& afmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
+    CORE::LINALG::SparseMatrix& afmgg = AddFluidShapeDerivMatrix_->Matrix(1, 1);
+    CORE::LINALG::SparseMatrix& afmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
 
     rhs = Teuchos::rcp(new Epetra_Vector(afmgg.RowMap()));
     afmgg.Apply(*fveln, *rhs);
@@ -307,7 +307,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
 
@@ -318,35 +318,35 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   const CORE::ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
   double scale = FluidField()->ResidualScaling();
   double timescale = FluidField()->TimeScaling();
 
   /*----------------------------------------------------------------------*/
   // fluid part
-  mat.Assign(1, 1, LINALG::View, *f);
+  mat.Assign(1, 1, CORE::LINALG::View, *f);
 
   // fluid linearization with respect to mesh motion block
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> mmm = FluidField()->ShapeDerivatives();
   const CORE::ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   if (mmm != Teuchos::null)
   {
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
-    LINALG::SparseMatrix& fmiG = mmm->Matrix(0, 3);
+    CORE::LINALG::SparseMatrix& fmii = mmm->Matrix(0, 0);
+    CORE::LINALG::SparseMatrix& fmig = mmm->Matrix(0, 1);
+    CORE::LINALG::SparseMatrix& fmiG = mmm->Matrix(0, 3);
 
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1, 0);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
-    LINALG::SparseMatrix& fmgG = mmm->Matrix(1, 3);
+    CORE::LINALG::SparseMatrix& fmgi = mmm->Matrix(1, 0);
+    CORE::LINALG::SparseMatrix& fmgg = mmm->Matrix(1, 1);
+    CORE::LINALG::SparseMatrix& fmgG = mmm->Matrix(1, 3);
 
-    LINALG::SparseMatrix& fmGi = mmm->Matrix(3, 0);
-    LINALG::SparseMatrix& fmGg = mmm->Matrix(3, 1);
-    LINALG::SparseMatrix& fmGG = mmm->Matrix(3, 3);
+    CORE::LINALG::SparseMatrix& fmGi = mmm->Matrix(3, 0);
+    CORE::LINALG::SparseMatrix& fmGg = mmm->Matrix(3, 1);
+    CORE::LINALG::SparseMatrix& fmGG = mmm->Matrix(3, 3);
 
-    LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
-    LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3, 3);
+    CORE::LINALG::SparseMatrix& addfmGg = AddFluidShapeDerivMatrix_->Matrix(3, 1);
+    CORE::LINALG::SparseMatrix& addfmGG = AddFluidShapeDerivMatrix_->Matrix(3, 3);
 
     mat.Matrix(1, 1).Add(fmig, false, 1. / timescale, 1.0);
     mat.Matrix(1, 1).Add(fmgg, false, 1. / timescale, 1.0);
@@ -379,7 +379,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield =
       Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
-  LINALG::SparseMatrix& s = *StructureField()->SystemMatrix();
+  CORE::LINALG::SparseMatrix& s = *StructureField()->SystemMatrix();
   s.Add(AddStructConstrMatrix_->Matrix(0, 0), false, 1.0, 1.0);
 
   siitransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(0), 1.0,
@@ -405,7 +405,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   // structure constraint part
 
   // split in two blocks according to inner and fsi structure dofs
-  LINALG::MapExtractor extractor;
+  CORE::LINALG::MapExtractor extractor;
 
   sciitransform_(AddStructConstrMatrix_->Matrix(0, 1), *structfield->FSIInterface()->Map(0),
       *ConstrMap_, 1., NULL, NULL, mat.Matrix(0, 3), true, false);
@@ -416,21 +416,21 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   /*----------------------------------------------------------------------*/
   // ale part
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = AleField()->BlockSystemMatrix();
 
   if (a == Teuchos::null) dserror("expect ale block matrix");
 
   a->Complete();
 
-  LINALG::SparseMatrix& aii = a->Matrix(0, 0);
-  LINALG::SparseMatrix& aig = a->Matrix(0, 1);
-  LINALG::SparseMatrix& aiG = a->Matrix(0, 3);
+  CORE::LINALG::SparseMatrix& aii = a->Matrix(0, 0);
+  CORE::LINALG::SparseMatrix& aig = a->Matrix(0, 1);
+  CORE::LINALG::SparseMatrix& aiG = a->Matrix(0, 3);
 
   aiGtransform_(a->FullRowMap(), a->FullColMap(), aiG, 1.,
       CORE::ADAPTER::CouplingSlaveConverter(*coupsaout_), mat.Matrix(2, 0));
   aigtransform_(a->FullRowMap(), a->FullColMap(), aig, 1. / timescale,
       CORE::ADAPTER::CouplingSlaveConverter(*icoupfa_), mat.Matrix(2, 1));
-  mat.Assign(2, 2, LINALG::View, aii);
+  mat.Assign(2, 2, CORE::LINALG::View, aii);
 
   /*----------------------------------------------------------------------*/
   // constraint part -> fluid
@@ -452,7 +452,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
   /*----------------------------------------------------------------------*/
   // constraint part -> ale
 
-  LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
+  CORE::LINALG::SparseMatrix& caiG = ConstrAleMatrix_->Matrix(0, 3);
   caiGtransform_(*coupfsout_->MasterDofMap(), caiG.ColMap(), caiG, 1.0,
       CORE::ADAPTER::CouplingMasterConverter(*coupfsout_), mat.Matrix(3, 0), true, true);
 

@@ -92,7 +92,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::Plot::Direction::ReadSparseVectorFromM
   Teuchos::RCP<const Epetra_Map> prbdofs = plot_.strat_->ProblemDofs();
   Teuchos::RCP<const Epetra_Map> lmdofs = plot_.strat_->LMDoFRowMapPtr(false);
 
-  Teuchos::RCP<Epetra_Map> full_map = LINALG::MergeMap(prbdofs, lmdofs, false);
+  Teuchos::RCP<Epetra_Map> full_map = CORE::LINALG::MergeMap(prbdofs, lmdofs, false);
   Teuchos::RCP<Epetra_Vector> direction = Teuchos::rcp(new Epetra_Vector(*full_map, true));
 
 
@@ -170,7 +170,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector
     Teuchos::RCP<Epetra_Map> slbody_dofs = FindConnectedDofs(snode, *plot_.discret_);
 
     x_dir_ptr = Teuchos::rcp(new Epetra_Vector(*slbody_dofs, true));
-    LINALG::ExtractMyVector(dir, *x_dir_ptr);
+    CORE::LINALG::ExtractMyVector(dir, *x_dir_ptr);
   }
   else
   {
@@ -184,7 +184,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector
     Teuchos::RCP<Epetra_Map> mabody_dofs = FindConnectedDofs(mnode, *plot_.discret_);
 
     y_dir_ptr = Teuchos::rcp(new Epetra_Vector(*mabody_dofs, true));
-    LINALG::ExtractMyVector(dir, *y_dir_ptr);
+    CORE::LINALG::ExtractMyVector(dir, *y_dir_ptr);
   }
   else
   {
@@ -454,7 +454,7 @@ void CONTACT::AUG::Plot::Setup()
   X_.Reshape(opt_.resolution_x_, opt_.resolution_y_);
   Y_.Reshape(opt_.resolution_x_, opt_.resolution_y_);
   Z_.resize(std::max(static_cast<int>(type_), 0),
-      LINALG::SerialDenseMatrix(opt_.resolution_x_, opt_.resolution_y_));
+      CORE::LINALG::SerialDenseMatrix(opt_.resolution_x_, opt_.resolution_y_));
 
   std::vector<double> x;
   LinSpace(opt_.min_x_, opt_.max_x_, opt_.resolution_x_, x);
@@ -482,7 +482,7 @@ void CONTACT::AUG::Plot::Setup()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::ReadRefPoints(const Teuchos::ParameterList& plot_params)
 {
-  ref_points_.resize(2, LINALG::Matrix<3, 1>(true));
+  ref_points_.resize(2, CORE::LINALG::Matrix<3, 1>(true));
 
   ReadRefPoint(plot_params, "FIRST_REF_POINT", ref_points_[0].A());
   ReadRefPoint(plot_params, "SECOND_REF_POINT", ref_points_[1].A());
@@ -710,7 +710,7 @@ void CONTACT::AUG::Plot::Execute(const NOX::Solver::Generic& solver)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::GetSupportPoints(
-    enum INPAR::CONTACT::PlotSupportType stype, LINALG::SerialDenseMatrix& support_mat)
+    enum INPAR::CONTACT::PlotSupportType stype, CORE::LINALG::SerialDenseMatrix& support_mat)
 {
   switch (stype)
   {
@@ -765,7 +765,7 @@ void CONTACT::AUG::Plot::GetSupportPoints(
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::ComputeDistancePosition()
 {
-  const LINALG::Matrix<3, 1> ref_pos(ref_points_[0].A(), true);
+  const CORE::LINALG::Matrix<3, 1> ref_pos(ref_points_[0].A(), true);
 
   const Epetra_Map& slrownodes = strat_->SlRowNodes();
   const unsigned num_my_nodes = slrownodes.NumMyElements();
@@ -778,7 +778,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    LINALG::Matrix<3, 1> distance(node->X(), false);
+    CORE::LINALG::Matrix<3, 1> distance(node->X(), false);
     distance.Update(-1.0, ref_pos, 1.0);
 
     const double d_nrm2 = distance.Norm2();
@@ -790,7 +790,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Plot::ComputeAnglePosition()
 {
-  LINALG::Matrix<3, 1> ref12(ref_points_[0], false);
+  CORE::LINALG::Matrix<3, 1> ref12(ref_points_[0], false);
   ref12.Update(1.0, ref_points_[1], -1.0);
 
   const Epetra_Map& slrownodes = strat_->SlRowNodes();
@@ -804,8 +804,8 @@ void CONTACT::AUG::Plot::ComputeAnglePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    const LINALG::Matrix<3, 1> ref3(node->X(), true);
-    LINALG::Matrix<3, 1> ref13(ref_points_[0], false);
+    const CORE::LINALG::Matrix<3, 1> ref3(node->X(), true);
+    CORE::LINALG::Matrix<3, 1> ref13(ref_points_[0], false);
     ref13.Update(1.0, ref3, -1.0);
 
     const double iproduct = ref12.Dot(ref13);
@@ -956,13 +956,13 @@ void CONTACT::AUG::Plot::ModifyStepLength(const INPAR::CONTACT::PlotSupportType 
   {
     case INPAR::CONTACT::PlotSupportType::step_length:
     {
-      LINALG::AssembleMyVector(0.0, mod_step, alpha, full_x_dir);
+      CORE::LINALG::AssembleMyVector(0.0, mod_step, alpha, full_x_dir);
 
       break;
     }
     default:
     {
-      LINALG::AssembleMyVector(0.0, mod_step, 1.0, full_x_dir);
+      CORE::LINALG::AssembleMyVector(0.0, mod_step, 1.0, full_x_dir);
 
       break;
     }
@@ -995,7 +995,7 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
       if (file_open_mode_ != (std::ios_base::out | std::ios_base::app) or nlines < 1)
         outputfile << std::setw(24) << "x" << std::setw(24) << "y\n";
 
-      std::vector<const LINALG::SerialDenseMatrix*> columndata(2, NULL);
+      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(2, NULL);
       columndata[0] = &X_;
       columndata[1] = &Y_;
 
@@ -1042,7 +1042,7 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
       outputfile << std::setw(24) << "x" << std::setw(24) << "y" << std::setw(24) << "u"
                  << std::setw(24) << "v\n";
 
-      std::vector<const LINALG::SerialDenseMatrix*> columndata(4, NULL);
+      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(4, NULL);
       columndata[0] = &X_;
       columndata[1] = &Y_;
       columndata[2] = &Z_[0];
@@ -1162,10 +1162,10 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSurfaceDirections(const Epetra_Vect
     case INPAR::CONTACT::PlotDirectionSplit::displacement_lagrange_multiplier:
     {
       x_dir_ptr = Teuchos::rcp(new Epetra_Vector(*plot_.strat_->ProblemDofs(), true));
-      LINALG::ExtractMyVector(dir, *x_dir_ptr);
+      CORE::LINALG::ExtractMyVector(dir, *x_dir_ptr);
 
       y_dir_ptr = Teuchos::rcp(new Epetra_Vector(plot_.strat_->LMDoFRowMap(false), true));
-      LINALG::ExtractMyVector(dir, *y_dir_ptr);
+      CORE::LINALG::ExtractMyVector(dir, *y_dir_ptr);
 
       break;
     }
@@ -1343,9 +1343,9 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
 
   const unsigned num_vecs = dirs.size();
 
-  Teuchos::RCP<const LINALG::SparseMatrix> wgap_grad_ptr =
+  Teuchos::RCP<const CORE::LINALG::SparseMatrix> wgap_grad_ptr =
       strat_->GetWeightedGapGradient(wgap_type, MapType::all_slave_nodes);
-  const LINALG::SparseMatrix& wgap_grad = *wgap_grad_ptr;
+  const CORE::LINALG::SparseMatrix& wgap_grad = *wgap_grad_ptr;
 
   std::vector<Epetra_Vector> wgap_dir_grads(num_vecs, Epetra_Vector(wgap_grad.RangeMap()));
   Epetra_Vector curr_dir(wgap_grad.DomainMap());
@@ -1429,8 +1429,8 @@ void NOX::NLN::Solver::PrePostOp::CONTACT::Plot::runPostIterate(const NOX::Solve
   plot_.Do(solver);
 }
 
-template void CONTACT::AUG::WriteMatrixToFile<LINALG::SerialDenseMatrix>(
-    std::ofstream& outputfile, const LINALG::SerialDenseMatrix& mat, const unsigned precison);
-template void CONTACT::AUG::WriteColumnDataToFile<LINALG::SerialDenseMatrix>(
-    std::ofstream& outputfile, const std::vector<const LINALG::SerialDenseMatrix*>& mat,
+template void CONTACT::AUG::WriteMatrixToFile<CORE::LINALG::SerialDenseMatrix>(
+    std::ofstream& outputfile, const CORE::LINALG::SerialDenseMatrix& mat, const unsigned precison);
+template void CONTACT::AUG::WriteColumnDataToFile<CORE::LINALG::SerialDenseMatrix>(
+    std::ofstream& outputfile, const std::vector<const CORE::LINALG::SerialDenseMatrix*>& mat,
     const unsigned precision);

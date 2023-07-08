@@ -23,7 +23,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
     const int probnum)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
@@ -61,7 +61,7 @@ void SCATRA::TimIntOneStepTheta::Setup()
   // fine-scale vector at time n+1
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    fsphinp_ = LINALG::CreateVector(*dofrowmap, true);
+    fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters

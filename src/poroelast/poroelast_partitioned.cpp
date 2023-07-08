@@ -18,7 +18,8 @@
 #include "linalg_utils_sparse_algebra_create.H"
 
 POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& timeparams, Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp()))))
@@ -28,7 +29,7 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
   itmax_ = porodyn.get<int>("ITEMAX");     // default: =10
   ittol_ = porodyn.get<double>("INCTOL");  // default: =1e-6
 
-  fluidveln_ = LINALG::CreateVector(*(FluidField()->DofRowMap()), true);
+  fluidveln_ = CORE::LINALG::CreateVector(*(FluidField()->DofRowMap()), true);
   fluidveln_->PutScalar(0.0);
 }
 

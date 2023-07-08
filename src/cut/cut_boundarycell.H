@@ -74,12 +74,13 @@ namespace CORE::GEO
       /*!
       \brief Returns the center of tri3 and quad4 boundarycell
        */
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint) = 0;
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) = 0;
 
       /*!
       \brief Get the outward normal vector for the tri3 and quad4 boundarycell
        */
-      virtual void Normal(const LINALG::Matrix<2, 1>& xsi, LINALG::Matrix<3, 1>& normal) const = 0;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const = 0;
 
       /*!
       \brief Get the corner points of the boundarycell in Cylce for geometrical operations
@@ -102,7 +103,8 @@ namespace CORE::GEO
       template <::DRT::Element::DiscretizationType celldistype>
       void AssignOffset(int idx, double offset)
       {
-        LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
+        CORE::LINALG::Matrix<3,
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement>
             xyz_mat(xyz_, true);
         for (unsigned int n = 0;
              n < CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement; ++n)
@@ -148,7 +150,7 @@ namespace CORE::GEO
       /*!
       \brief Get the normal vector for the arbitrary boundarycell alone
        */
-      virtual LINALG::Matrix<3, 1> GetNormalVector() = 0;
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector() = 0;
 
       /*! \brief Print the corner points on screen
        *
@@ -166,17 +168,17 @@ namespace CORE::GEO
       factor to be multiplied with integration weight and normal vector of the boundarycell
        */
       template <::DRT::Element::DiscretizationType celldistype>
-      void Transform(const LINALG::Matrix<2, 1>& eta, LINALG::Matrix<3, 1>& x_gp_lin,
-          LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
+      void Transform(const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
+          CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool referencepos = false)
       {
         const int numnodes =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
-        LINALG::Matrix<3, numnodes> xyze(xyz_, true);
-        if (referencepos) xyze = LINALG::Matrix<3, numnodes>(xyz_ref_, true);
+        CORE::LINALG::Matrix<3, numnodes> xyze(xyz_, true);
+        if (referencepos) xyze = CORE::LINALG::Matrix<3, numnodes>(xyz_ref_, true);
 
-        LINALG::Matrix<numnodes, 1> funct(false);
-        LINALG::Matrix<2, numnodes> deriv(false);
-        LINALG::Matrix<2, 2> metrictensor(false);
+        CORE::LINALG::Matrix<numnodes, 1> funct(false);
+        CORE::LINALG::Matrix<2, numnodes> deriv(false);
+        CORE::LINALG::Matrix<2, 2> metrictensor(false);
 
         CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
@@ -191,9 +193,9 @@ namespace CORE::GEO
           // For Tri's this method of determining the area and thus the gp-weights is more robust.
           //  It is needed for TRI's which are small/ill-conditioned but large enough to affect the
           //  simulation.
-          static LINALG::Matrix<3, 1> p0(true);
-          static LINALG::Matrix<3, 1> p1(true);
-          static LINALG::Matrix<3, 1> p2(true);
+          static CORE::LINALG::Matrix<3, 1> p0(true);
+          static CORE::LINALG::Matrix<3, 1> p1(true);
+          static CORE::LINALG::Matrix<3, 1> p2(true);
           for (unsigned dim = 0; dim < 3; ++dim)
           {
             p0(dim) = xyze(dim, 0);
@@ -209,7 +211,7 @@ namespace CORE::GEO
       }
 
       /// Reset the point with local index lid
-      void ResetPos(int lid, LINALG::Matrix<3, 1> newpos)
+      void ResetPos(int lid, CORE::LINALG::Matrix<3, 1> newpos)
       {
         if (lid > xyz_.N()) dserror("Index out of range! %d > %d", lid, xyz_.N());
 
@@ -224,8 +226,8 @@ namespace CORE::GEO
       which elem1 is derived
        */
       template <::DRT::Element::DiscretizationType celldistype>
-      void TransformLocalCoords(Element* elem1, const LINALG::Matrix<2, 1>& eta,
-          LINALG::Matrix<3, 1>& x_gp_lin, LINALG::Matrix<3, 1>& normal, double& drs,
+      void TransformLocalCoords(Element* elem1, const CORE::LINALG::Matrix<2, 1>& eta,
+          CORE::LINALG::Matrix<3, 1>& x_gp_lin, CORE::LINALG::Matrix<3, 1>& normal, double& drs,
           bool shadow = false);
 
      protected:
@@ -235,10 +237,10 @@ namespace CORE::GEO
       double MyArea()
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
-        LINALG::Matrix<numnodes, 1> funct;
-        LINALG::Matrix<2, numnodes> deriv;
-        LINALG::Matrix<2, 2> metrictensor;
+        CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
+        CORE::LINALG::Matrix<numnodes, 1> funct;
+        CORE::LINALG::Matrix<2, numnodes> deriv;
+        CORE::LINALG::Matrix<2, 2> metrictensor;
 
         CORE::DRT::UTILS::GaussRule2D gaussrule = this->MySimpleGaussRule();
         CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
@@ -262,11 +264,11 @@ namespace CORE::GEO
        *  \author shahmiri
        *  \date 07/12 */
       template <::DRT::Element::DiscretizationType distype>
-      void MyElementCenter(LINALG::Matrix<3, 1>& center, LINALG::Matrix<3, 1>& midpoint)
+      void MyElementCenter(CORE::LINALG::Matrix<3, 1>& center, CORE::LINALG::Matrix<3, 1>& midpoint)
       {
         const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-        LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
-        LINALG::Matrix<numnodes, 1> funct;
+        CORE::LINALG::Matrix<3, numnodes> xyze(this->xyz_, true);
+        CORE::LINALG::Matrix<numnodes, 1> funct;
         CORE::DRT::UTILS::shape_function<distype>(center, funct);
         midpoint.Multiply(xyze, funct);
       }
@@ -300,13 +302,14 @@ namespace CORE::GEO
 
       virtual double Area() { return 0.0; };
 
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
 
-      virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
 
       virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
-      virtual LINALG::Matrix<3, 1> GetNormalVector();
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return true; };
 
@@ -337,13 +340,14 @@ namespace CORE::GEO
 
       virtual double Area();
 
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
 
-      virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
 
       virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
-      virtual LINALG::Matrix<3, 1> GetNormalVector();
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); };
 
@@ -373,13 +377,14 @@ namespace CORE::GEO
 
       virtual double Area();
 
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
 
-      virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
 
       virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
-      virtual LINALG::Matrix<3, 1> GetNormalVector();
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
 
       /** \brief  A first step to validate if a boundary cell is valid.
        *
@@ -414,13 +419,14 @@ namespace CORE::GEO
       // Maybe shoelace theorem can be used here?
       virtual double Area() { return MyArea<::DRT::Element::quad4>(); }
 
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
 
-      virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
 
       virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
-      virtual LINALG::Matrix<3, 1> GetNormalVector();
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
 
       // Probably not the best way...
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
@@ -439,7 +445,7 @@ namespace CORE::GEO
      public:
       ArbitraryBoundaryCell(const Epetra_SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
-          const LINALG::Matrix<3, 1>& normal)
+          const CORE::LINALG::Matrix<3, 1>& normal)
           : BoundaryCell(xyz, facet, points), gaussRule_(gaussRule), normal_(normal)
       {
       }
@@ -452,13 +458,14 @@ namespace CORE::GEO
 
       virtual double Area() { return 0.0; }
 
-      virtual void ElementCenter(LINALG::Matrix<3, 1>& midpoint);
+      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
 
-      virtual void Normal(const LINALG::Matrix<2, 1>& pos, LINALG::Matrix<3, 1>& normal) const;
+      virtual void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
 
       virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
 
-      virtual LINALG::Matrix<3, 1> GetNormalVector();
+      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
 
       virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
 
@@ -470,7 +477,7 @@ namespace CORE::GEO
 
      private:
       CORE::DRT::UTILS::GaussIntegration gaussRule_;
-      LINALG::Matrix<3, 1> normal_;
+      CORE::LINALG::Matrix<3, 1> normal_;
     };
 
   }  // namespace CUT

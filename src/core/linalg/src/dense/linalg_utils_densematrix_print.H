@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of dense matrix printing methods for namespace LINALG
+\brief A collection of dense matrix printing methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -14,7 +14,7 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
   \brief Print content of SerialDenseMatrix in Matlab format
@@ -26,6 +26,6 @@ namespace LINALG
   void PrintSerialDenseMatrixInMatlabFormat(
       std::string filename, const Epetra_SerialDenseMatrix& A, const bool newfile = true);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_DENSEMATRIX_PRINT_H

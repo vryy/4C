@@ -34,7 +34,7 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void ProjectFibersToGaussPoints(DRT::Node** nodes,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
           FIBER::NodalFiberHolder& gpFiberHolder);
 
@@ -54,9 +54,9 @@ namespace DRT
           const std::array<std::array<double, dim>,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
               quantity,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
-          std::vector<LINALG::Matrix<dim, 1>>& quantityProjected);
+          std::vector<CORE::LINALG::Matrix<dim, 1>>& quantityProjected);
 
       /*!
        * @brief Projectsd a double from the nodes with the shapefunctions into the innder of the
@@ -72,7 +72,7 @@ namespace DRT
           const std::array<double,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
               quantity,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>& shapefcts,
           std::vector<double>& quantityProjected);
 
@@ -87,7 +87,7 @@ namespace DRT
        */
       template <std::size_t dim>
       void SetupCardiacFibers(
-          const NodalFiberHolder& fibers, std::vector<LINALG::Matrix<dim, 1>>& f);
+          const NodalFiberHolder& fibers, std::vector<CORE::LINALG::Matrix<dim, 1>>& f);
 
       /*!
        * \brief Check whether all nodes of the element have fibers.

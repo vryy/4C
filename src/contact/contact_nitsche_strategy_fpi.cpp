@@ -37,10 +37,10 @@ void CONTACT::CoNitscheStrategyFpi::DoContactSearch()
 }
 
 bool CONTACT::CoNitscheStrategyFpi::CheckNitscheContactState(
-    CONTACT::CoElement* cele,         // the contact element
-    const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-    const double& full_fsi_traction,  // stressfluid + penalty
-    double& gap                       // gap
+    CONTACT::CoElement* cele,               // the contact element
+    const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+    const double& full_fsi_traction,        // stressfluid + penalty
+    double& gap                             // gap
 )
 {
   return CONTACT::UTILS::CheckNitscheContactState(

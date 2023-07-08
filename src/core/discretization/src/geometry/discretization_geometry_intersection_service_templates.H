@@ -25,7 +25,7 @@ namespace CORE::GEO
   template <class M>
   static inline bool SurfaceElementIsPlane(const M& xyze)
   {
-    static LINALG::Matrix<3, 1> elenorm;
+    static CORE::LINALG::Matrix<3, 1> elenorm;
     // xyze 3 x 4
 
     if (xyze.N() == 3) return true;
@@ -55,7 +55,7 @@ namespace CORE::GEO
   template <class M1, class M2>
   static inline bool pointInPlaneSurfaceElement(const M1& xyze, const M2& xyze_points)
   {
-    static LINALG::Matrix<3, 1> elenorm;
+    static CORE::LINALG::Matrix<3, 1> elenorm;
     // xyze 3 x ...
 
     elenorm(0) = -(xyze(2, 0) * xyze(1, 1)) + xyze(1, 0) * xyze(2, 1) + xyze(2, 0) * xyze(1, 2) -
@@ -86,7 +86,7 @@ namespace CORE::GEO
   )
   {
     // normal vector on plane xyze
-    static LINALG::Matrix<3, 1> elenorm;
+    static CORE::LINALG::Matrix<3, 1> elenorm;
     // xyze 3 x ...
 
     // cross product -> normal vector
@@ -122,11 +122,11 @@ namespace CORE::GEO
   )
   {
     // create planes consisting of 3 nodes each
-    LINALG::Matrix<3, 1> v01;
-    LINALG::Matrix<3, 1> v02;
-    LINALG::Matrix<3, 1> v03;
-    //    LINALG::Matrix<3,1> v12;
-    //    LINALG::Matrix<3,1> v13;
+    CORE::LINALG::Matrix<3, 1> v01;
+    CORE::LINALG::Matrix<3, 1> v02;
+    CORE::LINALG::Matrix<3, 1> v03;
+    //    CORE::LINALG::Matrix<3,1> v12;
+    //    CORE::LINALG::Matrix<3,1> v13;
     for (int isd = 0; isd < 3; ++isd) v01(isd, 0) = xyze(isd, 1) - xyze(isd, 0);
     for (int isd = 0; isd < 3; ++isd) v02(isd, 0) = xyze(isd, 2) - xyze(isd, 0);
     for (int isd = 0; isd < 3; ++isd) v03(isd, 0) = xyze(isd, 3) - xyze(isd, 0);
@@ -134,10 +134,10 @@ namespace CORE::GEO
         for (int isd = 0; isd < 3; ++isd)  v13(isd,0) = xyze(isd,3)-xyze(isd,1);
     */
     // create 4 normal vectors to each tet surface plane
-    const LINALG::Matrix<3, 1> nplane012 = CORE::GEO::computeCrossProduct(v01, v02);
-    /*    const LINALG::Matrix<3,1> nplane013 = GEO::computeCrossProduct(v01,v03);
-        const LINALG::Matrix<3,1> nplane023 = GEO::computeCrossProduct(v02,v03);
-        const LINALG::Matrix<3,1> nplane123 = GEO::computeCrossProduct(v12,v13);
+    const CORE::LINALG::Matrix<3, 1> nplane012 = CORE::GEO::computeCrossProduct(v01, v02);
+    /*    const CORE::LINALG::Matrix<3,1> nplane013 = GEO::computeCrossProduct(v01,v03);
+        const CORE::LINALG::Matrix<3,1> nplane023 = GEO::computeCrossProduct(v02,v03);
+        const CORE::LINALG::Matrix<3,1> nplane123 = GEO::computeCrossProduct(v12,v13);
     */
     // compute norm (area) of each plane
     const double norm012 = nplane012.Norm2();
@@ -183,10 +183,10 @@ namespace CORE::GEO
 
   //! template of extended aligned bounding boxes
   template <int ndim, ::DRT::Element::DiscretizationType distype, class M>
-  static inline LINALG::Matrix<3, 2> computeFastXAABBT(
+  static inline CORE::LINALG::Matrix<3, 2> computeFastXAABBT(
       const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
   {
-    LINALG::Matrix<3, 2> XAABB;
+    CORE::LINALG::Matrix<3, 2> XAABB;
 
     // first node
     for (int dim = 0; dim < 3; ++dim)
@@ -243,8 +243,8 @@ namespace CORE::GEO
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
   template <class M>
-  LINALG::Matrix<3, 2> computeFastXAABB(::DRT::Element::DiscretizationType distype, const M& xyze,
-      const CORE::GEO::EleGeoType eleGeoType)
+  CORE::LINALG::Matrix<3, 2> computeFastXAABB(::DRT::Element::DiscretizationType distype,
+      const M& xyze, const CORE::GEO::EleGeoType eleGeoType)
   {
     switch (distype)
     {
@@ -278,14 +278,14 @@ namespace CORE::GEO
         std::cout << DistypeToString(distype) << std::endl;
         dserror("add your distype to this switch!");
     }
-    return LINALG::Matrix<3, 2>(true);
+    return CORE::LINALG::Matrix<3, 2>(true);
   }
 
 
   //! checks if two XAABB's intersect
   template <int dim>
   static inline bool intersectionOfXAABB(
-      const LINALG::Matrix<3, 2>& cutterXAABB, const LINALG::Matrix<3, 2>& xfemXAABB)
+      const CORE::LINALG::Matrix<3, 2>& cutterXAABB, const CORE::LINALG::Matrix<3, 2>& xfemXAABB)
   {
     // check XAABB for intersection
     for (int i = 0; i < dim; i++)

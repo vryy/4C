@@ -142,12 +142,13 @@ namespace FSI
 
     void InitDopNormals();
 
-    std::map<int, LINALG::Matrix<9, 2>> CalcBackgroundDops(
+    std::map<int, CORE::LINALG::Matrix<9, 2>> CalcBackgroundDops(
         Teuchos::RCP<DRT::Discretization> searchdis);
 
-    LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
+    CORE::LINALG::Matrix<9, 2> CalcDop(DRT::Element& ele);
 
-    std::vector<int> Search(DRT::Element& ele, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
+    std::vector<int> Search(
+        DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
     //! Spatial dimension of the problem
     int dim_;
@@ -156,7 +157,7 @@ namespace FSI
     Teuchos::RCP<CORE::GEO::SearchTree> searchTree_;
 
     //! Dop normals for search algorithm
-    LINALG::Matrix<9, 3> dopnormals_;
+    CORE::LINALG::Matrix<9, 3> dopnormals_;
 
     std::map<int, std::vector<int>> fluidaleelemap_;
 

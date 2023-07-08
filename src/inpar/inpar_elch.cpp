@@ -147,11 +147,11 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &sclcontrol);
   BoolParameter("INITPOTCALC", "No", "calculate initial potential field?", &sclcontrol);
   IntParameter("SOLVER", -1, "solver for coupled SCL problem", &sclcontrol);
-  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "undefined",
+  setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "undefined",
       "type of global system matrix in global system of equations",
       tuple<std::string>("undefined", "block", "sparse"),
-      tuple<LINALG::MatrixType>(LINALG::MatrixType::undefined, LINALG::MatrixType::block_field,
-          LINALG::MatrixType::sparse),
+      tuple<CORE::LINALG::MatrixType>(CORE::LINALG::MatrixType::undefined,
+          CORE::LINALG::MatrixType::block_field, CORE::LINALG::MatrixType::sparse),
       &sclcontrol);
   IntParameter("ADAPT_TIME_STEP", -1,
       "time step when time step size should be updated to 'ADAPTED_TIME_STEP_SIZE'.", &sclcontrol);

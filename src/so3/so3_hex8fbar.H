@@ -210,17 +210,19 @@ namespace DRT
           DRT::ELEMENTS::PreStress& prestress) override;
 
       //! Calculate nonlinear stiffness and mass matrix
-      virtual void nlnstiffmass(std::vector<int>& lm,             ///< location matrix
-          std::vector<double>& disp,                              ///< current displacements
-          std::vector<double>* acc,                               // current accelerations
-          std::vector<double>& residual,                          ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH8, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOH8, 1>* forceinert,             // element inertial force vector
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+      virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,                   ///< current displacements
+          std::vector<double>* acc,                    // current accelerations
+          std::vector<double>& residual,               ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* forceinert,  // element inertial force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+              eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,     ///< stress output option
           const INPAR::STR::StrainType iostrain,     ///< strain output option

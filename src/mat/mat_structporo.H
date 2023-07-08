@@ -229,8 +229,8 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const LINALG::Matrix<3, 3>& defgrad, const double& press,
-        LINALG::Matrix<6, 1>& couplstress) const;
+    void CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrad, const double& press,
+        CORE::LINALG::Matrix<6, 1>& couplstress) const;
 
     /*!
      * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
@@ -239,8 +239,8 @@ namespace MAT
      * @param[in] press         pressure at gauss point
      * @param[out] couplstress  coupling stress at gauss point
      */
-    void CouplStress(const LINALG::Matrix<2, 2>& defgrad, const double& press,
-        LINALG::Matrix<4, 1>& couplstress) const;
+    void CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrad, const double& press,
+        CORE::LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  //!< (i) parameter list
@@ -272,37 +272,41 @@ namespace MAT
 
     //! @name Evaluation methods
 
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int EleID) override
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int EleID) override
     {
       mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     }
 
-    void StrainEnergy(
-        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int EleID) override
+    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,
+        const int EleID) override
     {
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
     }
 
-    void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID) override
+    void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        CORE::LINALG::Matrix<3, 3>* rcg_new, CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp,
+        const int eleGID) override
     {
       mat_->EvaluateGEMM(stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new,
           rcg_old, gp, eleGID);
     }
 
-    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
-        int gp, int eleGID, const double* concentration, const double* temp,
-        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
+    void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+        const double* concentration, const double* temp, double* d_cauchyndir_dT,
+        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
     {
       mat_->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
           d_cauchyndir_ddir, d_cauchyndir_dF, d2_cauchyndir_dF2, d2_cauchyndir_dF_dn,

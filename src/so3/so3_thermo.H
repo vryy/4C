@@ -224,13 +224,13 @@ namespace DRT
       };
 
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<nsd_, nsd_>> invJ_;
+      std::vector<CORE::LINALG::Matrix<nsd_, nsd_>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of coordinates of current integration point in reference coordinates
-      std::vector<LINALG::Matrix<nsd_, 1>> xsi_;
+      std::vector<CORE::LINALG::Matrix<nsd_, 1>> xsi_;
 
       CORE::DRT::UTILS::GaussIntegration intpoints_;
 
@@ -264,8 +264,8 @@ namespace DRT
       virtual void lin_fint_tsi(DRT::Element::LocationArray& la,  //!< location array
           std::vector<double>& disp,                              //!< current displacements
           std::vector<double>& temp,                              //!< current temperature
-          LINALG::Matrix<numdofperelement_, 1>* force,            //!< element internal force vector
-          LINALG::Matrix<numgpt_post, numstr_>* elestress,        //!< stresses at GP
+          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
           Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress  //!< stress output option
       );
@@ -274,7 +274,7 @@ namespace DRT
       virtual void lin_kdT_tsi(DRT::Element::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  // current temperatures
-          LINALG::Matrix<numdofperelement_, nen_>*
+          CORE::LINALG::Matrix<numdofperelement_, nen_>*
               stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
           Teuchos::ParameterList& params);
 
@@ -283,12 +283,12 @@ namespace DRT
           DRT::Discretization& discretization,  ///< discretisation to extract knot vector
           std::vector<double>& disp,            //!< current displacements
           std::vector<double>& temp,            //!< current temperature
-          LINALG::Matrix<numdofperelement_, numdofperelement_>*
-              stiffmatrix,                                  // element stiffness matrix
-          LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
-          LINALG::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,                   //!< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress             //!< stress output option
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+              stiffmatrix,                                        // element stiffness matrix
+          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
+          Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress  //!< stress output option
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
@@ -296,7 +296,7 @@ namespace DRT
           DRT::Discretization& discretization,  ///< discretisation to extract knot vector
           std::vector<double>& disp,            //!< (i): current displacement
           std::vector<double>& temp,            //!< current temperature
-          LINALG::Matrix<numdofperelement_, nen_>*
+          CORE::LINALG::Matrix<numdofperelement_, nen_>*
               stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
           Teuchos::ParameterList& params);
 
@@ -307,19 +307,21 @@ namespace DRT
       //! is passed.
       //! Add whatever your material needs, but make sure that exchange is not
       //! overdone performance-wise.
-      void Materialize(
-          LINALG::Matrix<numstr_, 1>* stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
-          LINALG::Matrix<numstr_, 1>*
+      void Materialize(CORE::LINALG::Matrix<numstr_, 1>*
+                           stresstemp,  //!< (o): Voigt-Vector of stresses at current gp
+          CORE::LINALG::Matrix<numstr_, 1>*
               ctemp,  //!< (o): temperature dependent tangent matrix at current gp
-          LINALG::Matrix<1, 1>*
+          CORE::LINALG::Matrix<1, 1>*
               Ntemp,  // element temperature: (shapefcts . element temperature) at current gp
-          LINALG::Matrix<numstr_, numstr_>* cmat,  //!< (o): material tangent matrix at current gp
-          LINALG::Matrix<numstr_, 1>* glstrain,    //!< (o): total strain
+          CORE::LINALG::Matrix<numstr_, numstr_>*
+              cmat,  //!< (o): material tangent matrix at current gp
+          CORE::LINALG::Matrix<numstr_, 1>* glstrain,  //!< (o): total strain
           Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
 
       //! calculate the constant temperature tangent for stresstemp
-      void Ctemp(LINALG::Matrix<numstr_, 1>* ctemp,  //!< temperature dependent material tangent
+      void Ctemp(
+          CORE::LINALG::Matrix<numstr_, 1>* ctemp,  //!< temperature dependent material tangent
           Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
       // TODO this should really not be necessary if we use one consistent GP definition
@@ -329,24 +331,25 @@ namespace DRT
       //@}
 
       //! calculate nonlinear B-operator (6x24)
-      void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          LINALG::Matrix<nsd_, nsd_>* defgrd, LINALG::Matrix<nsd_, nen_>* N_XYZ);
+      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+          CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ);
 
       //! calculates nonlinear B-operator in vector notation (1x24)
-      void CalculateBopVec(LINALG::Matrix<1, numdofperelement_>& bopvec,
-          LINALG::Matrix<nsd_, nsd_>& defgrd, LINALG::Matrix<nsd_, nen_>& N_XYZ);
+      void CalculateBopVec(CORE::LINALG::Matrix<1, numdofperelement_>& bopvec,
+          CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ);
 
       //! calculate linear B-operator
-      void CalculateBoplin(
-          LINALG::Matrix<numstr_, numdofperelement_>* boplin, LINALG::Matrix<nsd_, nen_>* N_XYZ);
+      void CalculateBoplin(CORE::LINALG::Matrix<numstr_, numdofperelement_>* boplin,
+          CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ);
 
       //! push forward of material stresses to the current, spatial configuration
-      void PK2toCauchy(LINALG::Matrix<numstr_, 1>* stress, LINALG::Matrix<nsd_, nsd_>* defgrd,
-          LINALG::Matrix<nsd_, nsd_>* cauchystress);
+      void PK2toCauchy(CORE::LINALG::Matrix<numstr_, 1>* stress,
+          CORE::LINALG::Matrix<nsd_, nsd_>* defgrd, CORE::LINALG::Matrix<nsd_, nsd_>* cauchystress);
 
       //! push forward of Green-Lagrange strain to Euler-Almansi strains
-      void GLtoEA(LINALG::Matrix<numstr_, 1>* glstrain, LINALG::Matrix<nsd_, nsd_>* defgrd,
-          LINALG::Matrix<nsd_, nsd_>* euler_almansi);
+      void GLtoEA(CORE::LINALG::Matrix<numstr_, 1>* glstrain,
+          CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
+          CORE::LINALG::Matrix<nsd_, nsd_>* euler_almansi);
 
       //! @name TSI and thermoplasticity related stuff
 
@@ -355,19 +358,19 @@ namespace DRT
       virtual void nln_stifffint_tsi_fbar(DRT::Element::LocationArray& la,  //!< location array
           std::vector<double>& disp,  //!< current displacements
           std::vector<double>& temp,  //!< current temperature
-          LINALG::Matrix<numdofperelement_, numdofperelement_>*
-              stiffmatrix,                                  // element stiffness matrix
-          LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
-          LINALG::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,                   //!< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress             //!< stress output option
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+              stiffmatrix,                                        // element stiffness matrix
+          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
+          Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress  //!< stress output option
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
       virtual void nln_kdT_tsi_fbar(DRT::Element::LocationArray& la,
           std::vector<double>& disp,  //!< (i): current displacement
           std::vector<double>& temp,  //!< current temperature
-          LINALG::Matrix<numdofperelement_, nen_>*
+          CORE::LINALG::Matrix<numdofperelement_, nen_>*
               stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
           Teuchos::ParameterList& params);
 

@@ -350,12 +350,12 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
   }
 
   // initialize exact solution
-  LINALG::Matrix<msd_, 1> L_ex(true);
+  CORE::LINALG::Matrix<msd_, 1> L_ex(true);
   double r_ex = 0.0;
-  LINALG::Matrix<nsd_, 1> w_ex(true);
+  CORE::LINALG::Matrix<nsd_, 1> w_ex(true);
 
   // initialize spatial coordinates
-  LINALG::Matrix<nsd_, 1> xyz(true);
+  CORE::LINALG::Matrix<nsd_, 1> xyz(true);
 
   // get function number
   const int calcerrfunctno =
@@ -375,8 +375,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
   Epetra_SerialDenseVector weg;
 
   // ease notation
-  LINALG::SerialDenseMatrix N = shapes_->shfunct;
-  LINALG::SerialDenseVector fac = shapes_->jfac;
+  CORE::LINALG::SerialDenseMatrix N = shapes_->shfunct;
+  CORE::LINALG::SerialDenseVector fac = shapes_->jfac;
   unsigned int nqpoints = shapes_->nqpoints_;
   unsigned int ndofs = shapes_->ndofs_;
 
@@ -473,13 +473,13 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       // jfac is a vector containing the jacobian times the weight of the quadrature points
       const double fac = shapes_->jfac(q);
       // xyz is a vector containing the coordiantes of the quadrature points in real coordinates
-      LINALG::Matrix<nsd_, 1> xyz(false);
+      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
       // Filling xyz with the values take from the element xyzreal matrix
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_->xyzreal(d, q);
       // Declaring vectors for interior variables
-      LINALG::Matrix<msd_, 1> L(true);
+      CORE::LINALG::Matrix<msd_, 1> L(true);
       double r = 0.0;
-      LINALG::Matrix<nsd_, 1> w(true);
+      CORE::LINALG::Matrix<nsd_, 1> w(true);
 
       dsassert(initfield != NULL && startfunc != NULL,
           "initfield or startfuncno not set for initial value");
@@ -553,18 +553,18 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       // shapesface_->jfac contains the jacobian evaluated in the quadrature points
       const double fac = shapesface_->jfac(q);
       // xyz is the vector containing the coordinates of the quadrature points
-      LINALG::Matrix<nsd_, 1> xyz(false);
+      CORE::LINALG::Matrix<nsd_, 1> xyz(false);
 
       // Taking the real coordinates of quadrature points of the current face
       for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapesface_->xyzreal(d, q);
 
       // Creating the vector of traces variables
       double r;
-      LINALG::Matrix<nsd_, 1> w(false);
+      CORE::LINALG::Matrix<nsd_, 1> w(false);
 
       // Create dummy variables
       double dummy_r;
-      LINALG::Matrix<nsd_, 1> dummy_w;
+      CORE::LINALG::Matrix<nsd_, 1> dummy_w;
 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
@@ -763,7 +763,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
-    LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
+    CORE::LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
     // Cycling throught the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
@@ -836,8 +836,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int funcnum,
-    const LINALG::Matrix<nsd_, 1>& xyz, const double t, LINALG::Matrix<msd_, 1>& L, double& r,
-    LINALG::Matrix<nsd_, 1>& w) const
+    const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, CORE::LINALG::Matrix<msd_, 1>& L,
+    double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const
 {
   r = DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
@@ -858,7 +858,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateAll(const int func
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateDensityMomentum(const int funcnum,
-    const LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r, LINALG::Matrix<nsd_, 1>& w) const
+    const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t, double& r,
+    CORE::LINALG::Matrix<nsd_, 1>& w) const
 {
   r = DRT::Problem::Instance()
           ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcnum - 1)
@@ -1037,7 +1038,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMaterialMatrix(
-    const Teuchos::RCP<MAT::Material>& mat, const LINALG::Matrix<nsd_, 1>& xyz,
+    const Teuchos::RCP<MAT::Material>& mat, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
     Epetra_SerialDenseMatrix& DL, Epetra_SerialDenseMatrix& Dw)
 {
   // initialize DL and Dw
@@ -1118,15 +1119,15 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
   const double time = fldparatimint_->Time();
 
   // ease notation
-  LINALG::SerialDenseMatrix N = shapes_.shfunct;
-  LINALG::SerialDenseMatrix Nn = shapes_.funct;
-  LINALG::SerialDenseMatrix Nxyz = shapes_.shderxy;
-  LINALG::SerialDenseMatrix Nnxyz = shapes_.derxy;
-  LINALG::SerialDenseVector fac = shapes_.jfac;
+  CORE::LINALG::SerialDenseMatrix N = shapes_.shfunct;
+  CORE::LINALG::SerialDenseMatrix Nn = shapes_.funct;
+  CORE::LINALG::SerialDenseMatrix Nxyz = shapes_.shderxy;
+  CORE::LINALG::SerialDenseMatrix Nnxyz = shapes_.derxy;
+  CORE::LINALG::SerialDenseVector fac = shapes_.jfac;
   unsigned int nqpoints = shapes_.nqpoints_;
 
   // extract interior nodal values
-  LINALG::Matrix<nsd_, 1> xyze;
+  CORE::LINALG::Matrix<nsd_, 1> xyze;
   Epetra_SerialDenseMatrix Le(msd_, ndofs_);
   Epetra_SerialDenseVector re(ndofs_);
   Epetra_SerialDenseMatrix we(nsd_, ndofs_);
@@ -1170,7 +1171,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
       for (unsigned int d = 0; d < nsd_; ++d) ae(d, n) = alevel[n * nsd_ + d];
 
   // initialize values interpolated on gauss points
-  LINALG::Matrix<nsd_, 1> xyzeg;
+  CORE::LINALG::Matrix<nsd_, 1> xyzeg;
   Epetra_SerialDenseMatrix feg(1 + nsd_, nqpoints);
   Epetra_SerialDenseVector drdteg(nqpoints);
   Epetra_SerialDenseMatrix dwdteg(nsd_, nqpoints);
@@ -1306,13 +1307,13 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
   const double invtimefac = 1.0 / (fldparatimint_->TimeFac());
 
   // ease notation
-  LINALG::SerialDenseMatrix N = shapes_.shfunct;
-  LINALG::SerialDenseMatrix Nxyz = shapes_.shderxy;
-  LINALG::SerialDenseVector fac = shapes_.jfac;
+  CORE::LINALG::SerialDenseMatrix N = shapes_.shfunct;
+  CORE::LINALG::SerialDenseMatrix Nxyz = shapes_.shderxy;
+  CORE::LINALG::SerialDenseVector fac = shapes_.jfac;
   unsigned int nqpoints = shapes_.nqpoints_;
 
   // extract interior nodal values
-  LINALG::Matrix<nsd_, 1> xyze;
+  CORE::LINALG::Matrix<nsd_, 1> xyze;
   Epetra_SerialDenseMatrix DLe(msd_, msd_);
   Epetra_SerialDenseMatrix Dwe(msd_, msd_);
   Epetra_SerialDenseMatrix Dwemod(nsd_ * nsd_ + (msd_ - nsd_), ndofs_);
@@ -1331,7 +1332,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
   }
 
   // initialize values interpolated on gauss points
-  LINALG::Matrix<nsd_, 1> xyzeg;
+  CORE::LINALG::Matrix<nsd_, 1> xyzeg;
   Epetra_SerialDenseMatrix DLeg(msd_, msd_);
   Epetra_SerialDenseMatrix Dweg(msd_, msd_);
   Epetra_SerialDenseMatrix dDwdxyzeg((nsd_ * nsd_ + (msd_ - nsd_)) * nsd_, nqpoints);
@@ -1485,10 +1486,10 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
 
   // ease notation
   CORE::DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
-  LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
-  LINALG::SerialDenseMatrix Nn = shapesface_.funct;
-  LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
-  LINALG::SerialDenseVector facf = shapesface_.jfac;
+  CORE::LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
+  CORE::LINALG::SerialDenseMatrix Nn = shapesface_.funct;
+  CORE::LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
+  CORE::LINALG::SerialDenseVector facf = shapesface_.jfac;
   unsigned int nfqpoints = shapesface_.nqpoints_;
   unsigned int nfdofs = shapesface_.nfdofs_;
   unsigned int nfn = shapesface_.nfn_;
@@ -1530,7 +1531,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   }
 
   // initialize values interpolated on gauss points
-  LINALG::Matrix<nsd_, 1> xyzefg;
+  CORE::LINALG::Matrix<nsd_, 1> xyzefg;
   Epetra_SerialDenseMatrix Lefg(msd_, nfqpoints);
   Epetra_SerialDenseVector refg(nfqpoints);
   Epetra_SerialDenseMatrix wefg(nsd_, nfqpoints);
@@ -1666,14 +1667,14 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
 
   // ease notation
   CORE::DRT::UTILS::ShapeValuesInteriorOnFace Ni = shapesface_.shfunctI;
-  LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
-  LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
-  LINALG::SerialDenseVector facf = shapesface_.jfac;
+  CORE::LINALG::SerialDenseMatrix Nf = shapesface_.shfunct;
+  CORE::LINALG::SerialDenseMatrix nxyz = shapesface_.normals;
+  CORE::LINALG::SerialDenseVector facf = shapesface_.jfac;
   unsigned int nfqpoints = shapesface_.nqpoints_;
   unsigned int nfdofs = shapesface_.nfdofs_;
 
   // initialize values interpolated on gauss points
-  LINALG::Matrix<nsd_, 1> xyzefg;
+  CORE::LINALG::Matrix<nsd_, 1> xyzefg;
   Epetra_SerialDenseMatrix DLefg(msd_, msd_);
   Epetra_SerialDenseMatrix Dwefg(msd_, msd_);
 

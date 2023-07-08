@@ -299,8 +299,8 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
       case INPAR::S2I::coupling_matching_nodes:
       {
         // pass master-side scatra degrees of freedom to thermo discretization
-        const Teuchos::RCP<Epetra_Vector> imasterphinp =
-            LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(), true);
+        const Teuchos::RCP<Epetra_Vector> imasterphinp = CORE::LINALG::CreateVector(
+            *scatra_->ScaTraField()->Discretization()->DofRowMap(), true);
         strategyscatra_->InterfaceMaps()->InsertVector(
             strategyscatra_->CouplingAdapter()->MasterToSlave(
                 strategyscatra_->InterfaceMaps()->ExtractVector(*scatra, 2)),
@@ -332,7 +332,7 @@ void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vect
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Epetra_Vector> iscatra =
                 Teuchos::rcp(new Epetra_Vector(*thermodis.DofRowMap(1)));
-            LINALG::Export(*scatra, *iscatra);
+            CORE::LINALG::Export(*scatra, *iscatra);
             thermodis.SetState(1, "scatra", iscatra);
           }
         }
@@ -380,7 +380,7 @@ void STI::Algorithm::TransferThermoToScatra(const Teuchos::RCP<const Epetra_Vect
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Epetra_Vector> ithermo =
             Teuchos::rcp(new Epetra_Vector(*scatradis.DofRowMap(1)));
-        LINALG::Export(*thermo, *ithermo);
+        CORE::LINALG::Export(*thermo, *ithermo);
         scatradis.SetState(1, "thermo", ithermo);
       }
     }

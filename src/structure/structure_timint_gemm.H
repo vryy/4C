@@ -40,14 +40,14 @@ namespace STR
     //@{
 
     //! Constructor
-    TimIntGEMM(const Teuchos::ParameterList& timeparams,  //!< time parameters
-        const Teuchos::ParameterList& ioparams,           //!< ioflags
-        const Teuchos::ParameterList& sdynparams,         //!< input parameters
-        const Teuchos::ParameterList& xparams,            //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,              //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,       //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
+    TimIntGEMM(const Teuchos::ParameterList& timeparams,   //!< time parameters
+        const Teuchos::ParameterList& ioparams,            //!< ioflags
+        const Teuchos::ParameterList& sdynparams,          //!< input parameters
+        const Teuchos::ParameterList& xparams,             //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
     //! Destructor
@@ -76,7 +76,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -253,14 +253,14 @@ namespace STR
     void EvaluateMidState();
 
     //! Evaluate ordinary internal force, its stiffness at mid-state
-    void ApplyForceStiffInternalMid(const double time,  //!< evaluation time
-        const double dt,                                //!< step size
-        const Teuchos::RCP<Epetra_Vector> dis,          //!< displacement state at t_n
-        const Teuchos::RCP<Epetra_Vector> disn,         //!< displacement state at t_{n+1}
-        const Teuchos::RCP<Epetra_Vector> disi,         //!< residual displacements
-        const Teuchos::RCP<Epetra_Vector> vel,          // velocity state
-        Teuchos::RCP<Epetra_Vector> fint,               //!< internal force
-        Teuchos::RCP<LINALG::SparseOperator> stiff      //!< stiffness matrix
+    void ApplyForceStiffInternalMid(const double time,    //!< evaluation time
+        const double dt,                                  //!< step size
+        const Teuchos::RCP<Epetra_Vector> dis,            //!< displacement state at t_n
+        const Teuchos::RCP<Epetra_Vector> disn,           //!< displacement state at t_{n+1}
+        const Teuchos::RCP<Epetra_Vector> disi,           //!< residual displacements
+        const Teuchos::RCP<Epetra_Vector> vel,            // velocity state
+        Teuchos::RCP<Epetra_Vector> fint,                 //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff  //!< stiffness matrix
     );
 
     //! Evaluate ordinary internal force at mid-state

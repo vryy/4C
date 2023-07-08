@@ -76,8 +76,8 @@ DRT::ELEMENTS::Spring3::Spring3(int id, int owner)
     : DRT::Element(id, owner),
       data_(),
       isinit_(false),
-      diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
-      deltatheta_(LINALG::Matrix<1, 3>(true)),
+      diff_disp_ref_(CORE::LINALG::Matrix<1, 3>(true)),
+      deltatheta_(CORE::LINALG::Matrix<1, 3>(true)),
       material_(0),
       lrefe_(0),
       lcurr_(0),
@@ -85,8 +85,8 @@ DRT::ELEMENTS::Spring3::Spring3(int id, int owner)
       NormMoment(0),
       NormForce(0),
       RatioNormForceMoment(0),
-      Theta0_(LINALG::Matrix<3, 1>(true)),
-      Theta_(LINALG::Matrix<3, 1>(true))
+      Theta0_(CORE::LINALG::Matrix<3, 1>(true)),
+      Theta_(CORE::LINALG::Matrix<3, 1>(true))
 {
   return;
 }
@@ -151,7 +151,7 @@ void DRT::ELEMENTS::Spring3::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Print the change in angle of this element            mukherjee 04/15 |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<1, 3> DRT::ELEMENTS::Spring3::DeltaTheta() const { return deltatheta_; }
+CORE::LINALG::Matrix<1, 3> DRT::ELEMENTS::Spring3::DeltaTheta() const { return deltatheta_; }
 
 /*----------------------------------------------------------------------*
  |(public)                                               mukherjee 04/15|
@@ -159,13 +159,13 @@ LINALG::Matrix<1, 3> DRT::ELEMENTS::Spring3::DeltaTheta() const { return deltath
 DRT::Element::DiscretizationType DRT::ELEMENTS::Spring3::Shape() const { return line2; }
 
 void DRT::ELEMENTS::Spring3::GetCurrTangents(
-    std::vector<double>& disp, std::vector<LINALG::Matrix<3, 1>>& Tcurr)
+    std::vector<double>& disp, std::vector<CORE::LINALG::Matrix<3, 1>>& Tcurr)
 {
   // rotational displacement at a certain node between this and last iteration step
-  LINALG::Matrix<3, 1> deltatheta(true);
+  CORE::LINALG::Matrix<3, 1> deltatheta(true);
   // rotational displacement at a certain node between this and last iteration step in quaternion
   // form
-  LINALG::Matrix<4, 1> deltaQ(true);
+  CORE::LINALG::Matrix<4, 1> deltaQ(true);
   // Compute current nodal triads
   for (int node = 0; node < 2; node++)
   {
@@ -195,7 +195,7 @@ void DRT::ELEMENTS::Spring3::GetCurrTangents(
     // intricate calculations
     Qnew_[node].Scale(1 / Qnew_[node].Norm2());
 
-    LINALG::Matrix<3, 3> Triad(true);
+    CORE::LINALG::Matrix<3, 3> Triad(true);
     CORE::LARGEROTATIONS::quaterniontotriad(Qnew_[node], Triad);
     for (int i = 0; i < 3; i++)
       Tcurr[node](i) = Triad(i, 0);  // reference CheckOrientation StatMechManager
@@ -207,7 +207,8 @@ void DRT::ELEMENTS::Spring3::GetCurrTangents(
 }  // DRT::ELEMENTS::Beam3::UpdateNodalTriad
 
 // brief! Return current tangent of beam3r elements connected to beam3 element
-void DRT::ELEMENTS::Spring3::TcurrBeam3r(LINALG::Matrix<3, 1>& Tcurr1, LINALG::Matrix<3, 1>& Tcurr2)
+void DRT::ELEMENTS::Spring3::TcurrBeam3r(
+    CORE::LINALG::Matrix<3, 1>& Tcurr1, CORE::LINALG::Matrix<3, 1>& Tcurr2)
 {
   DRT::Node* node1 = this->Nodes()[0];
   DRT::Element* Element1 = node1->Elements()[0];
@@ -234,7 +235,8 @@ void DRT::ELEMENTS::Spring3::TcurrBeam3r(LINALG::Matrix<3, 1>& Tcurr1, LINALG::M
 }
 
 // brief! Return current tangent of beam3r elements connected to beam3 element
-void DRT::ELEMENTS::Spring3::TrefBeam3r(LINALG::Matrix<3, 1>& Tref1, LINALG::Matrix<3, 1>& Tref2)
+void DRT::ELEMENTS::Spring3::TrefBeam3r(
+    CORE::LINALG::Matrix<3, 1>& Tref1, CORE::LINALG::Matrix<3, 1>& Tref2)
 {
   DRT::Node* node1 = this->Nodes()[0];
   DRT::Element* Element1 = node1->Elements()[0];
@@ -358,7 +360,8 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Spring3::Lines()
 /*-----------------------------------------------------------------------------*
  |  Initialize reference Tangents (public)                        mueller 10/12|
  *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Spring3::SetInitialTangents(std::vector<LINALG::Matrix<4, 1>>& initquaternions)
+void DRT::ELEMENTS::Spring3::SetInitialTangents(
+    std::vector<CORE::LINALG::Matrix<4, 1>>& initquaternions)
 {
   //  if(initquaternions.Norm2()!=0.0)
   {
@@ -368,7 +371,7 @@ void DRT::ELEMENTS::Spring3::SetInitialTangents(std::vector<LINALG::Matrix<4, 1>
     dispthetanew_.resize(NumNode());
     trefNode_.resize(2);
 
-    LINALG::Matrix<3, 3> Triad(true);
+    CORE::LINALG::Matrix<3, 3> Triad(true);
     //     initquatern
     for (int node = 0; node < 2; node++)
     {
@@ -452,7 +455,7 @@ void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& x
          location++)  // Location of torsional spring. There are three locations
     {
       double dotprod = 0.0;
-      LINALG::Matrix<1, 3> crossprod(true);
+      CORE::LINALG::Matrix<1, 3> crossprod(true);
       double CosTheta = 0.0;
       double SinTheta = 0.0;
 
@@ -550,7 +553,7 @@ int DRT::ELEMENTS::Spring3Type::Initialize(DRT::Discretization& dis)
 
   // reference nodal tangent positions
   std::vector<double> rotrefe;
-  LINALG::Matrix<3, 1> trefNodeAux(true);
+  CORE::LINALG::Matrix<3, 1> trefNodeAux(true);
   // resize vectors for the number of coordinates we need to store
   xrefe.resize(3 * 2);
   rotrefe.resize(3 * 2);

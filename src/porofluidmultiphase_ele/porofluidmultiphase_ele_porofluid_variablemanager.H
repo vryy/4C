@@ -85,7 +85,7 @@ namespace DRT
       to the gauss points.
       All other methods are (more or less) constant access methods.
 
-      As fixed sized LINALG::Matrix is used for saving the values, almost
+      As fixed sized CORE::LINALG::Matrix is used for saving the values, almost
       all variables managers are templated by the number of space dimensions 'nsd'
       and the number of element nodes 'nen'.
 
@@ -117,12 +117,12 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         virtual void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0) = 0;
 
         //! evaluate variables at gauss point
         virtual void EvaluateGPVariables(
-            const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
             ) = 0;
 
@@ -135,18 +135,18 @@ namespace DRT
 
         //! @name Access methods
         virtual const std::vector<double>* Phinp() const = 0;
-        virtual const LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
+        virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const = 0;
         virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const = 0;
         virtual bool ElementHasValidVolFracSpecies(const int ivolfrac) const = 0;
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradPhinp() const = 0;
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const = 0;
         virtual const std::vector<double>* Phidtnp() const = 0;
         virtual const std::vector<double>* Hist() const = 0;
-        virtual const LINALG::Matrix<nsd, 1>* ConVelnp() const = 0;
+        virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const = 0;
         virtual double DivConVelnp() const = 0;
-        virtual const LINALG::Matrix<nsd, nen>* EConVelnp() const = 0;
-        virtual const LINALG::Matrix<nsd, 1>* Dispnp() const = 0;
+        virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const = 0;
+        virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const = 0;
         virtual const std::vector<double>* Scalarnp() const = 0;
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradScalarnp() const = 0;
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const = 0;
         //@}
       };
 
@@ -199,7 +199,7 @@ namespace DRT
           dserror("Access method Phinp() not implemented! Wrong VariableManager?");
           return NULL;
         };
-        virtual const LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
+        virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
         {
           dserror("Access method ElementPhinp() not implemented! Wrong VariableManager?");
           return NULL;
@@ -218,7 +218,7 @@ namespace DRT
               "VariableManager?");
           return 0.0;
         };
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradPhinp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const
         {
           dserror("Access method GradPhinp() not implemented! Wrong VariableManager?");
           return NULL;
@@ -234,7 +234,7 @@ namespace DRT
           dserror("Access method Hist() not implemented! Wrong VariableManager?");
           return NULL;
         };
-        virtual const LINALG::Matrix<nsd, 1>* ConVelnp() const
+        virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const
         {
           dserror("Access method ConVelnp() not implemented! Wrong VariableManager?");
           return NULL;
@@ -244,12 +244,12 @@ namespace DRT
           dserror("Access method DivConVelnp() not implemented! Wrong VariableManager?");
           return 0.0;
         };
-        virtual const LINALG::Matrix<nsd, nen>* EConVelnp() const
+        virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const
         {
           dserror("Access method EConVelnp() not implemented! Wrong VariableManager?");
           return NULL;
         };
-        virtual const LINALG::Matrix<nsd, 1>* Dispnp() const
+        virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const
         {
           dserror("Access method Dispnp() not implemented! Wrong VariableManager?");
           return NULL;
@@ -259,7 +259,7 @@ namespace DRT
           dserror("Access method Salarnp() not implemented! Wrong VariableManager?");
           return NULL;
         };
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradScalarnp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const
         {
           dserror("Access method GradScalarnp() not implemented! Wrong VariableManager?");
           return NULL;
@@ -309,12 +309,12 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         virtual void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
 
         //! evaluate state vector at gauss point
         virtual void EvaluateGPVariables(
-            const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 
@@ -326,14 +326,14 @@ namespace DRT
         }
 
        protected:
-        virtual const LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
+        virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
         {
           this->CheckIsExtracted();
           return &ephinp_[k];
         }
 
         //! state variables at t_(n+1) or t_(n+alpha_F)
-        std::vector<LINALG::Matrix<nen, 1>> ephinp_;
+        std::vector<CORE::LINALG::Matrix<nen, 1>> ephinp_;
 
         //! scalar at t_(n+1) or t_(n+alpha_F)
         std::vector<double> phinp_;
@@ -363,13 +363,14 @@ namespace DRT
         virtual ~VariableManagerPhiGradPhi(){};
 
         //! evaluate phi and its gradient at gauss point
-        void EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+        void EvaluateGPVariables(
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 
         //! access method
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradPhinp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const
         {
           this->CheckIsEvaluated();
           return &gradphi_;
@@ -377,7 +378,7 @@ namespace DRT
 
        private:
         //! spatial gradient of current scalar value
-        std::vector<LINALG::Matrix<nsd, 1>> gradphi_;
+        std::vector<CORE::LINALG::Matrix<nsd, 1>> gradphi_;
       };
 
       /*----------------------------------------------------------------------*
@@ -408,19 +409,22 @@ namespace DRT
 
         //! @name Access methods
         virtual const std::vector<double>* Phinp() const { return varmanager_->Phinp(); };
-        virtual const LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
+        virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
         {
           return varmanager_->ElementPhinp(k);
         };
         virtual double DivConVelnp() const { return varmanager_->DivConVelnp(); };
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradPhinp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const
         {
           return varmanager_->GradPhinp();
         };
         virtual const std::vector<double>* Phidtnp() const { return varmanager_->Phidtnp(); };
 
         virtual const std::vector<double>* Hist() const { return varmanager_->Hist(); };
-        virtual const LINALG::Matrix<nsd, 1>* ConVelnp() const { return varmanager_->ConVelnp(); };
+        virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const
+        {
+          return varmanager_->ConVelnp();
+        };
         virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const
         {
           return varmanager_->ElementHasValidVolFracPressure(ivolfrac);
@@ -429,13 +433,16 @@ namespace DRT
         {
           return varmanager_->ElementHasValidVolFracSpecies(ivolfrac);
         };
-        virtual const LINALG::Matrix<nsd, nen>* EConVelnp() const
+        virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const
         {
           return varmanager_->EConVelnp();
         };
-        virtual const LINALG::Matrix<nsd, 1>* Dispnp() const { return varmanager_->Dispnp(); };
+        virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const
+        {
+          return varmanager_->Dispnp();
+        };
         virtual const std::vector<double>* Scalarnp() const { return varmanager_->Scalarnp(); };
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradScalarnp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const
         {
           return varmanager_->GradScalarnp();
         };
@@ -490,11 +497,12 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+        void EvaluateGPVariables(
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 
@@ -516,9 +524,9 @@ namespace DRT
 
        private:
         //! time derivatives of state variables at t_(n+1)
-        std::vector<LINALG::Matrix<nen, 1>> ephidtnp_;
+        std::vector<CORE::LINALG::Matrix<nen, 1>> ephidtnp_;
         //! history vector of transported scalars
-        std::vector<LINALG::Matrix<nen, 1>> ehist_;
+        std::vector<CORE::LINALG::Matrix<nen, 1>> ehist_;
 
         //! time derivative of scalar at t_(n+1)
         std::vector<double> phidtnp_;
@@ -564,21 +572,22 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+        void EvaluateGPVariables(
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 
         //! @name Access methods
-        virtual const LINALG::Matrix<nsd, 1>* ConVelnp() const
+        virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const
         {
           this->varmanager_->CheckIsEvaluated();
           return &convelint_;
         }
-        virtual const LINALG::Matrix<nsd, 1>* Dispnp() const
+        virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const
         {
           this->varmanager_->CheckIsEvaluated();
           return &dispint_;
@@ -588,7 +597,7 @@ namespace DRT
           this->varmanager_->CheckIsEvaluated();
           return divconvelint_;
         }
-        virtual const LINALG::Matrix<nsd, nen>* EConVelnp() const
+        virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const
         {
           this->varmanager_->CheckIsEvaluated();
           return &econvelnp_;
@@ -603,18 +612,18 @@ namespace DRT
         const int ndsdisp_;
 
         //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
-        LINALG::Matrix<nsd, nen> econvelnp_;
+        CORE::LINALG::Matrix<nsd, nen> econvelnp_;
         //! nodal displacement values for ALE
-        LINALG::Matrix<nsd, nen> edispnp_;
+        CORE::LINALG::Matrix<nsd, nen> edispnp_;
 
         // velocity divergence required for conservative form
         double divconvelint_;
 
         // structure velocity
-        LINALG::Matrix<nsd, 1> convelint_;
+        CORE::LINALG::Matrix<nsd, 1> convelint_;
 
         // gauss point displacements
-        LINALG::Matrix<nsd, 1> dispint_;
+        CORE::LINALG::Matrix<nsd, 1> dispint_;
       };
 
 
@@ -652,10 +661,11 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
 
-        void EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+        void EvaluateGPVariables(
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 
@@ -667,7 +677,7 @@ namespace DRT
         };
 
         //! access method
-        virtual const std::vector<LINALG::Matrix<nsd, 1>>* GradScalarnp() const
+        virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const
         {
           this->varmanager_->CheckIsEvaluated();
           return &gradscalarnp_;
@@ -678,13 +688,13 @@ namespace DRT
         const int ndsscalar_;
 
         //! nodal scalar values for scatra coupling
-        std::vector<LINALG::Matrix<nen, 1>> escalarnp_;
+        std::vector<CORE::LINALG::Matrix<nen, 1>> escalarnp_;
 
         //! scalar values
         std::vector<double> scalarnp_;
 
         //! spatial gradient of current scalar value
-        std::vector<LINALG::Matrix<nsd, 1>> gradscalarnp_;
+        std::vector<CORE::LINALG::Matrix<nsd, 1>> gradscalarnp_;
       };
 
       /*----------------------------------------------------------------------*
@@ -725,11 +735,12 @@ namespace DRT
         //! otherwise it has to be explicitly passed from the caller
         void ExtractElementAndNodeValues(const DRT::Element& ele,
             const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-            LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
+            CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum = 0);
 
         //! evaluate variables at gauss point
-        void EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-            const LINALG::Matrix<nsd, nen>&
+        void EvaluateGPVariables(
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+            const CORE::LINALG::Matrix<nsd, nen>&
                 derxy  //! array for shape function derivatives w.r.t x,y,z
         );
 

@@ -16,7 +16,7 @@
 #include <Sacado.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /// Serial dense matrix with FAD (automatic differentiation data type) numbers and templated
   /// dimensions
@@ -85,20 +85,20 @@ namespace LINALG
     /// Convert FADMatrix to Matrix<rows,cols,double>
     inline Matrix<rows, cols> ConverttoDouble() const
     {
-      LINALG::Matrix<rows, cols> tmp(true);
+      CORE::LINALG::Matrix<rows, cols> tmp(true);
       for (unsigned i = 0; i < rows; ++i)
         for (unsigned j = 0; j < cols; ++j) tmp(i, j) = (*this)(i, j).val();
 
       return tmp;
     };
   };
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 /// Save first derivatives in a 3x3 double matrix
 template <typename T>
 inline void FirstDerivToMatrix(FAD const& r_fad,  ///< FAD function
-    LINALG::Matrix<3, 3, T>& out)                 ///< First derivatives
+    CORE::LINALG::Matrix<3, 3, T>& out)           ///< First derivatives
 {
   for (int i = 0; i < 3; ++i) out(i, i) = r_fad.dx(i);
   out(0, 1) = r_fad.dx(3);

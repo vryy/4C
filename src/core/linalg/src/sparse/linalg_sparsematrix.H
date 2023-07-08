@@ -20,7 +20,7 @@
 #include "utils_exceptions.H"
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   // forward declarations:
   class BlockSparseMatrixBase;
@@ -92,8 +92,8 @@ namespace LINALG
     template <typename... T>
     SparseMatrix(T...) = delete;
     /// construction of sparse matrix
-    SparseMatrix(
-        Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps);
+    SparseMatrix(Teuchos::RCP<Epetra_CrsGraph> crsgraph,
+        Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dbcmaps);
 
     /// construction of sparse matrix
     SparseMatrix(const Epetra_Map& rowmap, const int npr, bool explicitdirichlet = true,
@@ -295,7 +295,7 @@ namespace LINALG
     /// is needed to treat efficiently Dirichlet BCs with local co-ordinate systems.
     /// The transformation matrix #trafo basically holds rotation matrices
     /// for the DOFs of the nodes.
-    void ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+    void ApplyDirichletWithTrafo(Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my
@@ -385,8 +385,8 @@ namespace LINALG
     \param scalarA    (in)     : scaling factor for #A
     \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
     */
-    void Put(
-        const LINALG::SparseMatrix& A, const double scalarA, Teuchos::RCP<const Epetra_Map> rowmap);
+    void Put(const CORE::LINALG::SparseMatrix& A, const double scalarA,
+        Teuchos::RCP<const Epetra_Map> rowmap);
 
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
@@ -496,7 +496,7 @@ namespace LINALG
             BlockSparseMatrix.
      */
     template <class Strategy>
-    Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy>> Split(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> Split(
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
@@ -524,7 +524,7 @@ namespace LINALG
     Teuchos::RCP<Epetra_CrsGraph> graph_;
 
     /// Dirichlet row map (if known)
-    Teuchos::RCP<LINALG::MultiMapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dbcmaps_;
 
     /// whether to modify the matrix graph on apply Dirichlet
     bool explicitdirichlet_;
@@ -537,7 +537,7 @@ namespace LINALG
   };
 
   /// output of SparseMatrix
-  std::ostream& operator<<(std::ostream& os, const LINALG::SparseMatrix& mat);
+  std::ostream& operator<<(std::ostream& os, const CORE::LINALG::SparseMatrix& mat);
 
   /// matrix matrix multiplication
   Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA, const SparseMatrix& B,
@@ -548,22 +548,23 @@ namespace LINALG
       bool transB, bool explicitdirichlet, bool savegraph, bool completeoutput = true);
 
   /// merge 2x2 system
-  Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii, const LINALG::SparseMatrix& Aig,
-      const LINALG::SparseMatrix& Agi, const LINALG::SparseMatrix& Agg);
+  Teuchos::RCP<SparseMatrix> Merge(const CORE::LINALG::SparseMatrix& Aii,
+      const CORE::LINALG::SparseMatrix& Aig, const CORE::LINALG::SparseMatrix& Agi,
+      const CORE::LINALG::SparseMatrix& Agg);
 
 
-  Teuchos::RCP<LINALG::SparseMatrix> Eye(const Epetra_Map& map);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> Eye(const Epetra_Map& map);
 
   //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<const LINALG::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
-      Teuchos::RCP<const LINALG::SparseOperator> input_matrix);
+  Teuchos::RCP<const CORE::LINALG::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
+      Teuchos::RCP<const CORE::LINALG::SparseOperator> input_matrix);
 
   //! Cast matrix of type SparseOperator to SparseMatrix and check in debug mode if cast was
   //! successful
-  Teuchos::RCP<LINALG::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
-      Teuchos::RCP<LINALG::SparseOperator> input_matrix);
-}  // namespace LINALG
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
+      Teuchos::RCP<CORE::LINALG::SparseOperator> input_matrix);
+}  // namespace CORE::LINALG
 
 
 
@@ -583,13 +584,13 @@ namespace LINALG
         BlockSparseMatrix.
  */
 template <class Strategy>
-Teuchos::RCP<LINALG::BlockSparseMatrix<Strategy>> LINALG::SparseMatrix::Split(
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<Strategy>> CORE::LINALG::SparseMatrix::Split(
     const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const
 {
   // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
   // all entries will be inserted at once anyway
   Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<Strategy>(
           domainmaps, rangemaps, 0, explicitdirichlet_, savegraph_));
 
   // perform matrix splitting

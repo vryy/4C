@@ -151,13 +151,13 @@ namespace MAT
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new FluidPoro(*this)); }
 
     //! compute reaction tensor - 2D
-    void ComputeReactionTensor(LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
+    void ComputeReactionTensor(CORE::LINALG::Matrix<2, 2>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
 
     //! compute reaction tensor - 3D
-    void ComputeReactionTensor(LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
+    void ComputeReactionTensor(CORE::LINALG::Matrix<3, 3>& reaction_tensor, const double& J,
         const double& porosity,
         const std::vector<std::vector<double>>& anisotropic_permeability_directions = {},
         const std::vector<double>& anisotropic_permeability_coeffs = {}) const;
@@ -166,12 +166,12 @@ namespace MAT
     double ComputeReactionCoeff() const;
 
     //! compute linearization of reaction tensor - 2D
-    void ComputeLinMatReactionTensor(LINALG::Matrix<2, 2>& linreac_dphi,
-        LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
+    void ComputeLinMatReactionTensor(CORE::LINALG::Matrix<2, 2>& linreac_dphi,
+        CORE::LINALG::Matrix<2, 2>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! compute linearization of reaction tensor - 3D
-    void ComputeLinMatReactionTensor(LINALG::Matrix<3, 3>& linreac_dphi,
-        LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
+    void ComputeLinMatReactionTensor(CORE::LINALG::Matrix<3, 3>& linreac_dphi,
+        CORE::LINALG::Matrix<3, 3>& linreac_dJ, const double& J, const double& porosity) const;
 
     //! effective viscosity (zero for Darcy and greater than zero for Darcy-Brinkman)
     double EffectiveViscosity() const;

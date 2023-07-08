@@ -47,7 +47,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
       DRT::UTILS::ExtractMyValues(*scalarnp, *myscalar, la[1].lm_);
 
       // element vector for k-th scalar
-      std::vector<LINALG::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
+      std::vector<CORE::LINALG::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
       for (int k = 0; k < numscal; ++k)
       {
         for (int i = 0; i < Membrane<distype>::numnod_; ++i)
@@ -64,7 +64,7 @@ void DRT::ELEMENTS::MembraneScatra<distype>::PreEvaluate(Teuchos::ParameterList&
           new std::vector<std::vector<double>>(numgp, std::vector<double>(numscal, 0.0)));
 
       // allocate vector for shape functions and matrix for derivatives at gp
-      LINALG::Matrix<Membrane<distype>::numnod_, 1> shapefcts(true);
+      CORE::LINALG::Matrix<Membrane<distype>::numnod_, 1> shapefcts(true);
 
       // loop over gauss points
       for (int gp = 0; gp < numgp; ++gp)

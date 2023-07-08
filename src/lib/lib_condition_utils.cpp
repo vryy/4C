@@ -43,7 +43,7 @@ namespace
       }
     }
 
-    Teuchos::RCP<Epetra_Map> condnodemap = LINALG::CreateMap(condnodeset, dis.Comm());
+    Teuchos::RCP<Epetra_Map> condnodemap = CORE::LINALG::CreateMap(condnodeset, dis.Comm());
     return condnodemap;
   }
 }  // namespace
@@ -392,7 +392,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
       std::map<int, Teuchos::RCP<DRT::Element>>& geometry = cond->Geometry();
       std::transform(geometry.begin(), geometry.end(),
           std::inserter(elementset, elementset.begin()),
-          LINALG::select1st<std::pair<int, Teuchos::RCP<DRT::Element>>>());
+          CORE::LINALG::select1st<std::pair<int, Teuchos::RCP<DRT::Element>>>());
     }
   }
   else
@@ -410,7 +410,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ConditionElementMap(
     }
   }
 
-  return LINALG::CreateMap(elementset, dis.Comm());
+  return CORE::LINALG::CreateMap(elementset, dis.Comm());
 }
 
 

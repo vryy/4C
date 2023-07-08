@@ -21,9 +21,9 @@ MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>
 
 MAT::ELASTIC::Coup13aPow::Coup13aPow(MAT::ELASTIC::PAR::Coup13aPow* params) : params_(params) {}
 
-void MAT::ELASTIC::Coup13aPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::Coup13aPow::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
+    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+    const int gp, const int eleGID)
 {
   // material Constants
   const double c = params_->c_;
@@ -35,8 +35,9 @@ void MAT::ELASTIC::Coup13aPow::AddStrainEnergy(double& psi, const LINALG::Matrix
   psi += c * pow((prinv(0) * (pow(prinv(2), -a)) - 3.), d);
 }
 
-void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   const double c = params_->c_;
   const int d = params_->d_;

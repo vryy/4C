@@ -249,8 +249,9 @@ double STR::IMPLICIT::GenAlpha::GetModelValue(const Epetra_Vector& x)
   accm.Update(alpham_, accn, 1.0 - alpham_);
 
   const double dt = (*GlobalState().GetDeltaTime())[0];
-  Teuchos::RCP<const LINALG::SparseOperator> mass_ptr = GlobalState().GetMassMatrix();
-  const LINALG::SparseMatrix& mass = dynamic_cast<const LINALG::SparseMatrix&>(*mass_ptr);
+  Teuchos::RCP<const CORE::LINALG::SparseOperator> mass_ptr = GlobalState().GetMassMatrix();
+  const CORE::LINALG::SparseMatrix& mass =
+      dynamic_cast<const CORE::LINALG::SparseMatrix&>(*mass_ptr);
   Epetra_Vector tmp(mass.RangeMap(), true);
 
   double kin_energy_incr = 0.0;
@@ -368,7 +369,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x, Epetra_Vector& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
 
@@ -389,7 +390,7 @@ bool STR::IMPLICIT::GenAlpha::ApplyStiff(const Epetra_Vector& x, LINALG::SparseO
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   // ---------------------------------------------------------------------------
@@ -419,7 +420,7 @@ bool STR::IMPLICIT::GenAlpha::AssembleForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::AssembleJac(LINALG::SparseOperator& jac,
+bool STR::IMPLICIT::GenAlpha::AssembleJac(CORE::LINALG::SparseOperator& jac,
     const std::vector<INPAR::STR::ModelType>* without_these_models) const
 {
   CheckInitSetup();
@@ -434,18 +435,18 @@ bool STR::IMPLICIT::GenAlpha::AssembleJac(LINALG::SparseOperator& jac,
 void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
-  LINALG::AssembleMyVector(1.0, f, alphaf_, *fviscon_ptr_);
-  LINALG::AssembleMyVector(1.0, f, 1 - alphaf_, *fvisconp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, alphaf_, *fviscon_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1 - alphaf_, *fvisconp_ptr_);
   // inertial forces at t_{n+1-alpha_m}
-  LINALG::AssembleMyVector(1.0, f, 1 - alpham_, *finertianp_ptr_);
-  LINALG::AssembleMyVector(1.0, f, alpham_, *finertian_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1 - alpham_, *finertianp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, alpham_, *finertian_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(LINALG::SparseOperator& jac) const
+void STR::IMPLICIT::GenAlpha::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);

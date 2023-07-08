@@ -24,10 +24,10 @@ namespace CORE::GEO
 
   //! map position from eta to xi space
   inline void mapEtaToXi3D(const CORE::GEO::DomainIntCell& cell,
-      const LINALG::Matrix<3, 1>& pos_eta_domain, LINALG::Matrix<3, 1>& pos_xsi_domain)
+      const CORE::LINALG::Matrix<3, 1>& pos_eta_domain, CORE::LINALG::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates
-    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     CORE::GEO::elementToCurrentCoordinates(cell.Shape(), xyze_cell, pos_eta_domain, pos_xsi_domain);
     return;
   }
@@ -35,17 +35,17 @@ namespace CORE::GEO
 
   //! compute determinant from eta to xi space
   template <::DRT::Element::DiscretizationType distype>
-  static inline double detEtaToXi3DT(
-      const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
+  static inline double detEtaToXi3DT(const CORE::LINALG::SerialDenseMatrix& xyze_cell,
+      const CORE::LINALG::Matrix<3, 1>& pos_eta_domain)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     // get shape function derivative
-    static LINALG::Matrix<3, numNodes> deriv;
+    static CORE::LINALG::Matrix<3, numNodes> deriv;
     CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, pos_eta_domain(0), pos_eta_domain(1), pos_eta_domain(2), distype);
 
     // get jacobian matrix ...
-    static LINALG::Matrix<3, 3> xjm;
+    static CORE::LINALG::Matrix<3, 3> xjm;
     xjm.Clear();
 
     for (int inode = 0; inode < numNodes; ++inode)
@@ -59,10 +59,10 @@ namespace CORE::GEO
 
   //! get determinant between eta and xi space
   inline double detEtaToXi3D(
-      const CORE::GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
+      const CORE::GEO::DomainIntCell& cell, const CORE::LINALG::Matrix<3, 1>& pos_eta_domain)
   {
     // get node coordinates
-    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     switch (cell.Shape())
     {
       case ::DRT::Element::tet4:
@@ -90,7 +90,7 @@ namespace CORE::GEO
 
   //! get determinant between eta and xi space
   inline double detXiD_over_EtaD(
-      const CORE::GEO::DomainIntCell& cell, const LINALG::Matrix<3, 1>& pos_eta_domain)
+      const CORE::GEO::DomainIntCell& cell, const CORE::LINALG::Matrix<3, 1>& pos_eta_domain)
   {
     return CORE::GEO::detEtaToXi3D(cell, pos_eta_domain);
   }
@@ -99,13 +99,13 @@ namespace CORE::GEO
 
   //! map position from eta^boundary to xi^boundary space
   template <::DRT::Element::DiscretizationType distype, class M>
-  inline void mapEtaBToXiBT(const M& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary,
-      LINALG::Matrix<2, 1>& pos_xsi_boundary)
+  inline void mapEtaBToXiBT(const M& xyze_cell, const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary,
+      CORE::LINALG::Matrix<2, 1>& pos_xsi_boundary)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // create shape function vectors
-    static LINALG::Matrix<numNodes, 1> funct;
+    static CORE::LINALG::Matrix<numNodes, 1> funct;
     CORE::DRT::UTILS::shape_function_2D(funct, pos_eta_boundary(0), pos_eta_boundary(1), distype);
 
     // does this make sense
@@ -120,10 +120,11 @@ namespace CORE::GEO
 
   //! map position from eta^boundary to xi^boundary space
   inline void mapEtaBToXiB(const CORE::GEO::BoundaryIntCell& cell,
-      const LINALG::Matrix<2, 1>& pos_eta_boundary, LINALG::Matrix<2, 1>& pos_xsi_boundary)
+      const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary,
+      CORE::LINALG::Matrix<2, 1>& pos_xsi_boundary)
   {
     // get node coordinates
-    const LINALG::SerialDenseMatrix& xyze_cell(
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(
         cell.CellNodalPosXiBoundary());  // TODO check was xi domain before
     switch (cell.Shape())
     {
@@ -152,10 +153,11 @@ namespace CORE::GEO
 
   //! map position from eta^boundary to xi^domain space
   inline void mapEtaBToXiD(const CORE::GEO::BoundaryIntCell& cell,
-      const LINALG::Matrix<2, 1>& pos_eta_boundary, LINALG::Matrix<3, 1>& pos_xsi_domain)
+      const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary,
+      CORE::LINALG::Matrix<3, 1>& pos_xsi_domain)
   {
     // get cell node coordinates in xi_domain
-    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiDomain());
     CORE::GEO::elementToCurrentCoordinates(
         cell.Shape(), xyze_cell, pos_eta_boundary, pos_xsi_domain);
     return;
@@ -164,18 +166,18 @@ namespace CORE::GEO
 
   //! get determinant between eta^boundary and xi^boundary space
   template <::DRT::Element::DiscretizationType distype>
-  static inline double detEtaBToXiBT(
-      const LINALG::SerialDenseMatrix& xyze_cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
+  static inline double detEtaBToXiBT(const CORE::LINALG::SerialDenseMatrix& xyze_cell,
+      const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     // get shape function derivative
-    static LINALG::Matrix<2, numNodes> deriv;
+    static CORE::LINALG::Matrix<2, numNodes> deriv;
     CORE::DRT::UTILS::shape_function_2D_deriv1(
         deriv, pos_eta_boundary(0), pos_eta_boundary(1), distype);
 
     // get jacobian matrix ...
-    static LINALG::Matrix<2, 2> xjm;
+    static CORE::LINALG::Matrix<2, 2> xjm;
     xjm.Clear();
 
     for (int inode = 0; inode < numNodes; ++inode)
@@ -189,10 +191,10 @@ namespace CORE::GEO
 
   //! get determinant between eta^boundary and xi^boundary space
   inline double detEtaBToXiB(
-      const CORE::GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
+      const CORE::GEO::BoundaryIntCell& cell, const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
     // get node coordinates
-    const LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiBoundary());
+    const CORE::LINALG::SerialDenseMatrix& xyze_cell(cell.CellNodalPosXiBoundary());
     switch (cell.Shape())
     {
       case ::DRT::Element::tri3:
@@ -214,7 +216,7 @@ namespace CORE::GEO
 
   //! get determinant: det( xi^boundary / eta^boundary)
   inline double detXiB_over_EtaB(
-      const CORE::GEO::BoundaryIntCell& cell, const LINALG::Matrix<2, 1>& pos_eta_boundary)
+      const CORE::GEO::BoundaryIntCell& cell, const CORE::LINALG::Matrix<2, 1>& pos_eta_boundary)
   {
     return detEtaBToXiB(cell, pos_eta_boundary);
   }

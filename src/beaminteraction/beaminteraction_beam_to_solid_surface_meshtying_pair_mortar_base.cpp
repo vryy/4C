@@ -62,12 +62,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       visualization_nodal_forces != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> r;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, double> lambda_discret;
-    LINALG::Matrix<3, 1, double> xi_mortar_node;
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    CORE::LINALG::Matrix<3, 1, scalar_type> X;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r;
+    CORE::LINALG::Matrix<3, 1, scalar_type> u;
+    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
+    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -233,14 +233,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
     {
       // Get the global moment vector.
       auto line_load_moment_origin =
-          visualization_params.get<Teuchos::RCP<LINALG::Matrix<3, 1, double>>>(
+          visualization_params.get<Teuchos::RCP<CORE::LINALG::Matrix<3, 1, double>>>(
               "global_coupling_moment_origin");
 
       // Initialize variables for local values.
-      LINALG::Matrix<3, 1, double> dr_beam_ref(true);
-      LINALG::Matrix<3, 1, double> lambda_gauss_point(true);
-      LINALG::Matrix<3, 1, double> r_gauss_point(true);
-      LINALG::Matrix<3, 1, double> temp_moment(true);
+      CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+      CORE::LINALG::Matrix<3, 1, double> lambda_gauss_point(true);
+      CORE::LINALG::Matrix<3, 1, double> r_gauss_point(true);
+      CORE::LINALG::Matrix<3, 1, double> temp_moment(true);
 
       // Initialize scalar variables.
       double segment_jacobian = 0.0;

@@ -131,7 +131,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::Se
 /*----------------------------------------------------------------------*/
 
 void FBI::FBIBinningGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,
+    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
     Teuchos::RCP<const Epetra_Vector> disp) const
 {
   positions->clear();

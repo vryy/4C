@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*! \file
 
-\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief CORE::LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 
 \level 0
 

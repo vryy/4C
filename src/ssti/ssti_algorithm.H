@@ -32,7 +32,7 @@ namespace INPAR
   }
 }  // namespace INPAR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }

@@ -28,8 +28,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double vol                           //!< element volume
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double vol                                 //!< element volume
 )
 {
   //----------------------------------------------------------------------
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
 )
 {
   /*
@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauTaylorHughesZarins(
 
   // effective velocity at element center:
   // (weighted) convective velocity + individual migration velocity
-  LINALG::Matrix<nsd_, 1> veleff(convelint);
+  CORE::LINALG::Matrix<nsd_, 1> veleff(convelint);
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -208,8 +208,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaValentin(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double vol                           //!< element volume
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double vol                                 //!< element volume
 )
 {
   /*
@@ -276,8 +276,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauFrancaShakibCodina(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double vol                           //!< element volume
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double vol                                 //!< element volume
 )
 {
   /*
@@ -349,8 +349,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTauCodina(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double vol                           //!< element volume
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double vol                                 //!< element volume
 )
 {
   /*
@@ -466,8 +466,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
     const double densnp,    //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double vol                           //!< element volume
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double vol                                 //!< element volume
 )
 {
   // get number of dimensions (convert from int to double)
@@ -506,9 +506,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcTau1DExact(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
-    const double vol,                         //!< element volume
-    const double vel_norm,                    //!< norm of velocity
-    const LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
+    const double vol,                               //!< element volume
+    const double vel_norm,                          //!< norm of velocity
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
 )
 {
   // define and initialize streamlength
@@ -523,7 +523,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
     // normed velocity vector
     case INPAR::SCATRA::streamlength:
     {
-      LINALG::Matrix<nsd_, 1> velino(true);
+      CORE::LINALG::Matrix<nsd_, 1> velino(true);
       if (vel_norm >= 1e-6)
         velino.Update(1.0 / vel_norm, convelint);
       else
@@ -533,7 +533,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
       }
 
       // get streamlength using the normed velocity at element centre
-      LINALG::Matrix<nen_, 1> tmp;
+      CORE::LINALG::Matrix<nen_, 1> tmp;
       tmp.MultiplyTN(derxy_, velino);
       const double val = tmp.Norm1();
       h = 2.0 / val;  // h=streamlength
@@ -570,14 +570,14 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCharEleLength(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
-    const double vol,                          //!< element volume
-    const int k,                               //!< id of current scalar
-    const double densnp,                       //!< density at t_(n+1)
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient
-    const double conv_phi,                     //!< convective contribution
-    const double scatrares,                    //!< residual of convection-diffusion-reaction eq
-    const double tau                           //!< the stabilisation parameter
+    const double vol,                                //!< element volume
+    const int k,                                     //!< id of current scalar
+    const double densnp,                             //!< density at t_(n+1)
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient
+    const double conv_phi,                           //!< convective contribution
+    const double scatrares,  //!< residual of convection-diffusion-reaction eq
+    const double tau         //!< the stabilisation parameter
 )
 {
   // get number of dimensions
@@ -637,7 +637,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcArtificialDiff(
     if (phiref > 1e-12 and grad_norm > 1e-12)
     {
       // normalized gradient of phi
-      LINALG::Matrix<nsd_, 1> normalized_gradphi(true);
+      CORE::LINALG::Matrix<nsd_, 1> normalized_gradphi(true);
       normalized_gradphi.Update(1.0, gradphi, 0.0);
       normalized_gradphi.Scale(1.0 / grad_norm);
 
@@ -859,7 +859,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
 
   // diffusive part used in stabilization terms
   double diff_phi(0.0);
-  LINALG::Matrix<nen_, 1> diff(true);
+  CORE::LINALG::Matrix<nen_, 1> diff(true);
 
   // diffusive term using current scalar value for higher-order elements
   // Note: has to be recomputed here every time, since the diffusion coefficient may have changed
@@ -898,25 +898,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcStrongResidual(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
-    const DRT::Element* ele,                   //!< the element we are dealing with
-    LINALG::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
-    const double densam,                       //!< density at t_(n+am)
-    const double densnp,                       //!< density at t_(n+1)
-    const double visc,                         //!< fluid viscosity
-    const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-    const double tau                           //!< the stabilisation parameter
+    const DRT::Element* ele,                         //!< the element we are dealing with
+    CORE::LINALG::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
+    const double densam,                             //!< density at t_(n+am)
+    const double densnp,                             //!< density at t_(n+1)
+    const double visc,                               //!< fluid viscosity
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
+    const double tau                                 //!< the stabilisation parameter
 )
 {
   // definitions
-  LINALG::Matrix<nsd_, 1> acc;
-  LINALG::Matrix<nsd_, nsd_> vderxy;
-  LINALG::Matrix<nsd_, 1> conv;
-  LINALG::Matrix<nsd_, 1> gradp;
-  LINALG::Matrix<nsd_, 1> epsilonvel;
-  LINALG::Matrix<nsd_, 1> bodyforce;
-  LINALG::Matrix<nsd_, 1> pressuregrad;
-  LINALG::Matrix<nsd_, nen_> nodebodyforce;
-  LINALG::Matrix<nsd_, nen_> nodepressuregrad;
+  CORE::LINALG::Matrix<nsd_, 1> acc;
+  CORE::LINALG::Matrix<nsd_, nsd_> vderxy;
+  CORE::LINALG::Matrix<nsd_, 1> conv;
+  CORE::LINALG::Matrix<nsd_, 1> gradp;
+  CORE::LINALG::Matrix<nsd_, 1> epsilonvel;
+  CORE::LINALG::Matrix<nsd_, 1> bodyforce;
+  CORE::LINALG::Matrix<nsd_, 1> pressuregrad;
+  CORE::LINALG::Matrix<nsd_, nen_> nodebodyforce;
+  CORE::LINALG::Matrix<nsd_, nen_> nodepressuregrad;
 
   // get acceleration or momentum history data
   acc.Multiply(eaccnp_, funct_);
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocity(
  *---------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrVelocityVisc(
-    LINALG::Matrix<nsd_, 1>& epsilonvel)
+    CORE::LINALG::Matrix<nsd_, 1>& epsilonvel)
 {
   if (nsd_ == 3)
   {

@@ -24,7 +24,7 @@
  | constructor                                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
@@ -74,8 +74,8 @@ void SCATRA::ScaTraTimIntLoma::SetupSplitter()
   // set up a species-temperature splitter (if more than one scalar)
   if (NumScal() > 1)
   {
-    splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    LINALG::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
+    splitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor);
+    CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, NumScal() - 1, *splitter_);
   }
 
   return;

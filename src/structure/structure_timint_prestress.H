@@ -41,9 +41,10 @@ namespace STR
         const Teuchos::ParameterList& sdynparams,              //!< input parameters
         const Teuchos::ParameterList& xparams,                 //!< extra flags
         const Teuchos::RCP<DRT::Discretization>& actdis,       //!< current discretisation
-        const Teuchos::RCP<LINALG::Solver>& solver,            //!< the solver
-        const Teuchos::RCP<LINALG::Solver>& contactsolver,     //!< the solver for contact meshtying
-        const Teuchos::RCP<IO::DiscretizationWriter>& output   //!< the output
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,      //!< the solver
+        const Teuchos::RCP<CORE::LINALG::Solver>&
+            contactsolver,                                    //!< the solver for contact meshtying
+        const Teuchos::RCP<IO::DiscretizationWriter>& output  //!< the output
     );
 
     void Setup() override;

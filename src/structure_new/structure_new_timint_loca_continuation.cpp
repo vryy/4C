@@ -101,7 +101,7 @@ void STR::TIMINT::LOCAContinuation::Setup()
   // create nox nln global data
   // ---------------------------------------------------------------------------
   std::vector<enum NOX::NLN::SolutionType> soltypes(0);
-  std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> linsolvers;
+  std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> linsolvers;
   // convert the INPAR::STR::ModelType to a NOX::NLN::SolType
   STR::NLN::ConvertModelType2SolType(
       soltypes, linsolvers, DataSDyn().GetModelTypes(), DataSDyn().GetLinSolvers());
@@ -129,7 +129,7 @@ void STR::TIMINT::LOCAContinuation::Setup()
   // ---------------------------------------------------------------------------
   Teuchos::RCP<NOX::Epetra::Vector> soln_ptr = Teuchos::rcp(new NOX::Epetra::Vector(
       DataGlobalState().GetMutableDisNp(), NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<LINALG::SparseOperator> jac_ptr = DataGlobalState().GetMutableJacobian();
+  Teuchos::RCP<CORE::LINALG::SparseOperator> jac_ptr = DataGlobalState().GetMutableJacobian();
 
   // ---------------------------------------------------------------------------
   // Build linear system, loca group, outer/inner/loca status tests

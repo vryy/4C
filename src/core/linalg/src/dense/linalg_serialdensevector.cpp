@@ -14,19 +14,19 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector() : Epetra_SerialDenseVector(), allocatedSize_(0)
+CORE::LINALG::SerialDenseVector::SerialDenseVector() : Epetra_SerialDenseVector(), allocatedSize_(0)
 {
-  SetLabel("LINALG::SerialDenseVector");
+  SetLabel("CORE::LINALG::SerialDenseVector");
 }
 
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(int Length, bool init)
+CORE::LINALG::SerialDenseVector::SerialDenseVector(int Length, bool init)
     : Epetra_SerialDenseVector(), allocatedSize_(0)
 {
-  SetLabel("LINALG::SerialDenseVector");
+  SetLabel("CORE::LINALG::SerialDenseVector");
   if (Length < 0) throw ReportError("Length = " + toString(Length) + ". Should be >= 0", -1);
 
   int errorcode = 0;
@@ -42,25 +42,26 @@ LINALG::SerialDenseVector::SerialDenseVector(int Length, bool init)
 /*----------------------------------------------------------------------*
  | ctor (public)                                              nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(Epetra_DataAccess CV, double* Values, int Length)
+CORE::LINALG::SerialDenseVector::SerialDenseVector(Epetra_DataAccess CV, double* Values, int Length)
     : Epetra_SerialDenseVector(CV, Values, Length), allocatedSize_(0)
 {
-  SetLabel("LINALG::SerialDenseVector");
+  SetLabel("CORE::LINALG::SerialDenseVector");
 }
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(Epetra_SerialDenseVector& Source, Epetra_DataAccess CV)
+CORE::LINALG::SerialDenseVector::SerialDenseVector(
+    Epetra_SerialDenseVector& Source, Epetra_DataAccess CV)
     : Epetra_SerialDenseVector(CV, Source.Values(), Source.Length()), allocatedSize_(0)
 {
-  SetLabel("LINALG::SerialDenseVector");
+  SetLabel("CORE::LINALG::SerialDenseVector");
 }
 
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(const SerialDenseVector& Source)
+CORE::LINALG::SerialDenseVector::SerialDenseVector(const SerialDenseVector& Source)
     : Epetra_SerialDenseVector(Source)
 {
   if (CV_ == Copy) allocatedSize_ = M_;
@@ -69,20 +70,20 @@ LINALG::SerialDenseVector::SerialDenseVector(const SerialDenseVector& Source)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                         nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::SerialDenseVector(const Epetra_SerialDenseVector& Source)
+CORE::LINALG::SerialDenseVector::SerialDenseVector(const Epetra_SerialDenseVector& Source)
     : Epetra_SerialDenseVector(Source)
 {
   if (CV_ == Copy) allocatedSize_ = M_;
-  SetLabel("LINALG::SerialDenseVector");
+  SetLabel("CORE::LINALG::SerialDenseVector");
 }
 
 /*----------------------------------------------------------------------*
  | dtor (public)                                             mwgee 05/07|
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseVector::~SerialDenseVector() {}
+CORE::LINALG::SerialDenseVector::~SerialDenseVector() {}
 
 // << operator
-// ostream& operator << (ostream& os, const LINALG::SerialDenseVector& vector)
+// ostream& operator << (ostream& os, const CORE::LINALG::SerialDenseVector& vector)
 //{
 //  vector.Print(os);
 //  return os;
@@ -93,7 +94,7 @@ LINALG::SerialDenseVector::~SerialDenseVector() {}
 /*----------------------------------------------------------------------*
  |  size the matrix but do not init to zero  (public)        mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::LightSize(int Length)
+int CORE::LINALG::SerialDenseVector::LightSize(int Length)
 {
   if (Length < 0) return (-1);
 
@@ -119,7 +120,7 @@ int LINALG::SerialDenseVector::LightSize(int Length)
 /*----------------------------------------------------------------------*
  |  size the matrix but and init to zero  (public)     kronbichler 08/14|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::Size(int Length)
+int CORE::LINALG::SerialDenseVector::Size(int Length)
 {
   int err = LightSize(Length);
   Zero();
@@ -131,7 +132,7 @@ int LINALG::SerialDenseVector::Size(int Length)
 /*----------------------------------------------------------------------*
  |  resize the matrix but do not init excess space to zero  mwgee 05/07|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::LightResize(int Length)
+int CORE::LINALG::SerialDenseVector::LightResize(int Length)
 {
   if (Length < 0) return (-1);
 
@@ -173,7 +174,7 @@ int LINALG::SerialDenseVector::LightResize(int Length)
 /*----------------------------------------------------------------------*
  |  resize the matrix and init excess space to zero    kronbichler 08/14|
  *----------------------------------------------------------------------*/
-int LINALG::SerialDenseVector::Resize(int Length)
+int CORE::LINALG::SerialDenseVector::Resize(int Length)
 {
   const int oldsize = M_;
   int err = LightResize(Length);
@@ -187,9 +188,9 @@ int LINALG::SerialDenseVector::Resize(int Length)
  |   Update vector components with scaled values of B,                  |
  |   this = ScalarThis * this + ScalarB * B         (public) bborn 08/08|
  *----------------------------------------------------------------------*/
-void LINALG::SerialDenseVector::Update(const double& ScalarB, /*!< scale for input vector */
-    const Epetra_SerialDenseVector& B,                        /*!< input vector */
-    const double& ScalarThis                                  /*!< scale for this vector */
+void CORE::LINALG::SerialDenseVector::Update(const double& ScalarB, /*!< scale for input vector */
+    const Epetra_SerialDenseVector& B,                              /*!< input vector */
+    const double& ScalarThis                                        /*!< scale for this vector */
 )
 {
   Scale(ScalarThis);
@@ -201,4 +202,4 @@ void LINALG::SerialDenseVector::Update(const double& ScalarB, /*!< scale for inp
  |   Set vector components to zero                                      |
  |   this = 0.0                                     (public) a.ger 11/08|
  *----------------------------------------------------------------------*/
-void LINALG::SerialDenseVector::Zero() { memset(A(), 0, M() * N() * sizeof(double)); }
+void CORE::LINALG::SerialDenseVector::Zero() { memset(A(), 0, M() * N() * sizeof(double)); }

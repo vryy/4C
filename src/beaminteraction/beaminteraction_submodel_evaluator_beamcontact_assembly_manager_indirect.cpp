@@ -53,7 +53,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::EvaluateForceStiff(
     Teuchos::RCP<::DRT::Discretization> discret,
     const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
-    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
+    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat)
 {
   // Evaluate the global mortar matrices.
   mortar_manager_->EvaluateGlobalCouplingContributions(data_state->GetDisColNp());

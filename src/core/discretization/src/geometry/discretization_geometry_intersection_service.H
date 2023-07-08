@@ -38,7 +38,7 @@ namespace CORE::GEO
   */
   template <int length>
   bool comparePoints(
-      const LINALG::Matrix<length, 1>& point1, const LINALG::Matrix<length, 1>& point2)
+      const CORE::LINALG::Matrix<length, 1>& point1, const CORE::LINALG::Matrix<length, 1>& point2)
   {
     for (int i = 0; i < length; i++)
       if (fabs(point1(i) - point2(i)) > TOL7)
@@ -49,11 +49,11 @@ namespace CORE::GEO
   }
 
 
-  const std::map<int, LINALG::Matrix<3, 2>> getCurrentXAABBs(const ::DRT::Discretization& dis,
-      const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+  const std::map<int, CORE::LINALG::Matrix<3, 2>> getCurrentXAABBs(const ::DRT::Discretization& dis,
+      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
 
-  const std::map<int, LINALG::Matrix<3, 2>> getTriangleXAABBs(
+  const std::map<int, CORE::LINALG::Matrix<3, 2>> getTriangleXAABBs(
       const std::vector<std::vector<int>>& triangleList,
       const std::vector<CORE::GEO::InterfacePoint>& pointList);
 
@@ -65,8 +65,8 @@ namespace CORE::GEO
   \param xyze           (in)  nodal position array (3,numnodes)
   \return extended axis-aligned bounding box  (XAABB) for an element
    */
-  LINALG::Matrix<6, 2> computeContact18Dop(
-      const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze);
+  CORE::LINALG::Matrix<6, 2> computeContact18Dop(
+      const ::DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze);
 
 
   /*!
@@ -78,7 +78,7 @@ namespace CORE::GEO
   \return true if the DOP's intersect or false otherwise
    */
   bool intersectionOfKDOPs(
-      const LINALG::Matrix<9, 2>& cutterDOP, const LINALG::Matrix<9, 2>& xfemDOP);
+      const CORE::LINALG::Matrix<9, 2>& cutterDOP, const CORE::LINALG::Matrix<9, 2>& xfemDOP);
 
   /*!
   \brief checks the intersection between two bounding volumes (AABB)
@@ -87,7 +87,7 @@ namespace CORE::GEO
   \return true if the AABB's intersect or false otherwise
    */
   bool intersectionOfBVs(
-      const LINALG::Matrix<3, 2>& currentBV, const LINALG::Matrix<3, 2>& queryBV);
+      const CORE::LINALG::Matrix<3, 2>& currentBV, const CORE::LINALG::Matrix<3, 2>& queryBV);
 
   /*!
   \brief checks the overlap of two intervals in one coordinate
@@ -107,8 +107,8 @@ namespace CORE::GEO
   \param xyze_element   (in)         : coordinates of the element
   \param eleGeoType     (out)        : element geometric type CARTESIAN LINEAR or HIGHERORDER
    */
-  void checkGeoType(const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element,
-      EleGeoType& eleGeoType);
+  void checkGeoType(const ::DRT::Element* element,
+      const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType);
 
   /*!
   \brief checks if an element is Cartesian, linear or higherorder
@@ -204,7 +204,7 @@ namespace CORE::GEO
   \param x                    (in)        : node in current coordinates
   */
   bool checkPositionWithinElement(const ::DRT::Element* element,
-      const LINALG::SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& x);
+      const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& x);
 
   /*!
   \brief  finds the nearest point for a given point on a surface element
@@ -221,8 +221,9 @@ namespace CORE::GEO
   \param distance              (out):   length of the normal
   */
   bool searchForNearestPointOnSurface(const ::DRT::Element* surfaceElement,
-      const LINALG::SerialDenseMatrix& xyze_surfaceElement, const LINALG::Matrix<3, 1>& physCoord,
-      LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& normal, double& distance);
+      const CORE::LINALG::SerialDenseMatrix& xyze_surfaceElement,
+      const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<2, 1>& eleCoord,
+      CORE::LINALG::Matrix<3, 1>& normal, double& distance);
 
 }  // namespace CORE::GEO
 

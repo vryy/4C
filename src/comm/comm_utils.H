@@ -78,8 +78,8 @@ namespace COMM_UTILS
    * \note You need to add the AreDistributedSparseMatricesIdentical method in both executables at
    * the same position in the code.
    *
-   * \note From LINALG::SparseOperator to CrsMatrix, just do:
-   * Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
+   * \note From CORE::LINALG::SparseOperator to CrsMatrix, just do:
+   * Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
    *
    * \param communicators (in): communicators containing local and global comm
    * \param matrix        (in): matrix to compare

@@ -334,42 +334,42 @@ double MAT::StructPoro::PorosityAv() const
   return porosityav;
 }
 
-void MAT::StructPoro::CouplStress(const LINALG::Matrix<3, 3>& defgrd, const double& press,
-    LINALG::Matrix<6, 1>& couplstress) const
+void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<3, 3>& defgrd, const double& press,
+    CORE::LINALG::Matrix<6, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
 
   // Right Cauchy-Green tensor = F^T * F
-  LINALG::Matrix<3, 3> cauchygreen;
+  CORE::LINALG::Matrix<3, 3> cauchygreen;
   cauchygreen.MultiplyTN(defgrd, defgrd);
 
   // inverse Right Cauchy-Green tensor
-  LINALG::Matrix<3, 3> C_inv;
+  CORE::LINALG::Matrix<3, 3> C_inv;
   C_inv.Invert(cauchygreen);
 
   // inverse Right Cauchy-Green tensor as vector
-  LINALG::Matrix<6, 1> C_inv_vec;
+  CORE::LINALG::Matrix<6, 1> C_inv_vec;
   for (int i = 0, k = 0; i < 3; i++)
     for (int j = 0; j < 3 - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
 
   for (int i = 0; i < 6; i++) couplstress(i) = -1.0 * J * press * C_inv_vec(i);
 }
 
-void MAT::StructPoro::CouplStress(const LINALG::Matrix<2, 2>& defgrd, const double& press,
-    LINALG::Matrix<4, 1>& couplstress) const
+void MAT::StructPoro::CouplStress(const CORE::LINALG::Matrix<2, 2>& defgrd, const double& press,
+    CORE::LINALG::Matrix<4, 1>& couplstress) const
 {
   const double J = defgrd.Determinant();
 
   // Right Cauchy-Green tensor = F^T * F
-  LINALG::Matrix<2, 2> cauchygreen;
+  CORE::LINALG::Matrix<2, 2> cauchygreen;
   cauchygreen.MultiplyTN(defgrd, defgrd);
 
   // inverse Right Cauchy-Green tensor
-  LINALG::Matrix<2, 2> C_inv;
+  CORE::LINALG::Matrix<2, 2> C_inv;
   C_inv.Invert(cauchygreen);
 
   // inverse Right Cauchy-Green tensor as vector
-  LINALG::Matrix<3, 1> C_inv_vec;
+  CORE::LINALG::Matrix<3, 1> C_inv_vec;
   for (int i = 0, k = 0; i < 2; i++)
     for (int j = 0; j < 2 - i; j++, k++) C_inv_vec(k) = C_inv(i + j, j);
 

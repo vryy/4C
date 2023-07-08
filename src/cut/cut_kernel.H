@@ -95,9 +95,10 @@ namespace CORE::GEO
         bool on_side_;
       };
 
-      unsigned FindNextCornerPoint(const std::vector<Point*>& points, LINALG::Matrix<3, 1>& x1,
-          LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3, LINALG::Matrix<3, 1>& b1,
-          LINALG::Matrix<3, 1>& b2, LINALG::Matrix<3, 1>& b3, unsigned i);
+      unsigned FindNextCornerPoint(const std::vector<Point*>& points,
+          CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2,
+          CORE::LINALG::Matrix<3, 1>& x3, CORE::LINALG::Matrix<3, 1>& b1,
+          CORE::LINALG::Matrix<3, 1>& b2, CORE::LINALG::Matrix<3, 1>& b3, unsigned i);
 
       /// check if the given corner points can belong to a point1 "element"
       bool IsValidPoint1(const std::vector<Point*>& corner_points);
@@ -112,14 +113,14 @@ namespace CORE::GEO
       bool IsValidQuad4(const std::vector<Point*>& points);
 
       template <int points>
-      double FindL2Scaling(LINALG::Matrix<3, points>& xyze)
+      double FindL2Scaling(CORE::LINALG::Matrix<3, points>& xyze)
       {
         double scale = 0;
-        LINALG::Matrix<3, 1> d;
+        CORE::LINALG::Matrix<3, 1> d;
         for (unsigned int i = 0; i < points; ++i)
         {
-          LINALG::Matrix<3, 1> x1(&xyze(0, i), true);
-          LINALG::Matrix<3, 1> x2(&xyze(0, (i + 1) % points), true);
+          CORE::LINALG::Matrix<3, 1> x1(&xyze(0, i), true);
+          CORE::LINALG::Matrix<3, 1> x2(&xyze(0, (i + 1) % points), true);
           d.Update(1, x2, -1, x1, 0);
           scale += d.Norm2();
         }
@@ -265,7 +266,8 @@ namespace CORE::GEO
       /// withinlimits with 3 manually specified (independent from each other) tolerances
       template <::DRT::Element::DiscretizationType elementType, class T, class floatType,
           unsigned int dim>
-      bool WithinLimitsSplittedQuad(const T& xsi, const LINALG::Matrix<dim, 1, floatType>& tol)
+      bool WithinLimitsSplittedQuad(
+          const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
       {
         if (elementType == ::DRT::Element::tri3)
         {
@@ -280,7 +282,7 @@ namespace CORE::GEO
 
       template <::DRT::Element::DiscretizationType elementType, class T, class floatType,
           unsigned int dim>
-      bool WithinLimits(const T& xsi, const LINALG::Matrix<dim, 1, floatType>& tol)
+      bool WithinLimits(const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
       {
         if (xsi.M() < CORE::DRT::UTILS::DisTypeToDim<elementType>::dim)
           dserror(
@@ -604,11 +606,12 @@ namespace CORE::GEO
        *
        *  \author sudhakar
        *  \date 11/14 */
-      double getAreaTri(const std::vector<Point*>& poly, LINALG::Matrix<3, 1>* normalvec = NULL);
+      double getAreaTri(
+          const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec = NULL);
       double getAreaTri(const double* a, const double* b, const double* c,
-          LINALG::Matrix<3, 1>* normalvec = NULL);
+          CORE::LINALG::Matrix<3, 1>* normalvec = NULL);
       template <class T>
-      double getAreaTri(const T& xyze, LINALG::Matrix<3, 1>* normalvec = NULL)
+      double getAreaTri(const T& xyze, CORE::LINALG::Matrix<3, 1>* normalvec = NULL)
       {
         if (xyze.M() != 3) dserror("Currently unsupported element dimension!");
         if (xyze.N() != 3) dserror("Wrong node number!");
@@ -741,10 +744,13 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        NewtonSolve(LINALG::Matrix<dim, 1>& xsi, bool checklimits) : Strategy(xsi, checklimits) {}
+        NewtonSolve(CORE::LINALG::Matrix<dim, 1>& xsi, bool checklimits)
+            : Strategy(xsi, checklimits)
+        {
+        }
 #ifdef CLN_CALC
         /// required constructor for CLN
-        NewtonSolve(LINALG::Matrix<dim, 1, ClnWrapper>& xsi, bool checklimits)
+        NewtonSolve(CORE::LINALG::Matrix<dim, 1, ClnWrapper>& xsi, bool checklimits)
             : Strategy(xsi, checklimits)
         {
         }
@@ -835,7 +841,7 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        DebugNewtonStrategy(LINALG::Matrix<dim, 1>& xsi, bool checklimits)
+        DebugNewtonStrategy(CORE::LINALG::Matrix<dim, 1>& xsi, bool checklimits)
             : Strategy(xsi, checklimits)
         {
         }
@@ -896,18 +902,18 @@ namespace CORE::GEO
       struct ComputePositionStaticMembers
       {
         /// nodal shape function values at the position xsi_
-        static LINALG::Matrix<numNodesElement, 1, floatType> funct_;
+        static CORE::LINALG::Matrix<numNodesElement, 1, floatType> funct_;
         /** nodal first derivative shape function values at the position xsi_ */
-        static LINALG::Matrix<probDim, numNodesElement, floatType> deriv1_;
+        static CORE::LINALG::Matrix<probDim, numNodesElement, floatType> deriv1_;
 
         /** \brief (extended) jacobian matrix
          *
          *  Keep in mind, that the jacobian has to be extended if dim < probDim! */
-        static LINALG::Matrix<probDim, probDim, floatType> A_;
+        static CORE::LINALG::Matrix<probDim, probDim, floatType> A_;
         /// right hand side vector b_ = -(px_ - x_(xsi_))
-        static LINALG::Matrix<probDim, 1, floatType> b_;
+        static CORE::LINALG::Matrix<probDim, 1, floatType> b_;
         /// newton increment (extended) parameter space coordinates
-        static LINALG::Matrix<probDim, 1, floatType> dx_;
+        static CORE::LINALG::Matrix<probDim, 1, floatType> dx_;
       };
 
       // Data storage of ComputePosition data members to inherit from
@@ -918,15 +924,15 @@ namespace CORE::GEO
           typename floatType = double>
       struct ComputePositionNoStaticMembers
       {
-        LINALG::Matrix<numNodesElement, 1, floatType> funct_;
+        CORE::LINALG::Matrix<numNodesElement, 1, floatType> funct_;
 
-        LINALG::Matrix<probDim, numNodesElement, floatType> deriv1_;
+        CORE::LINALG::Matrix<probDim, numNodesElement, floatType> deriv1_;
 
-        LINALG::Matrix<probDim, probDim, floatType> A_;
+        CORE::LINALG::Matrix<probDim, probDim, floatType> A_;
 
-        LINALG::Matrix<probDim, 1, floatType> b_;
+        CORE::LINALG::Matrix<probDim, 1, floatType> b_;
 
-        LINALG::Matrix<probDim, 1, floatType> dx_;
+        CORE::LINALG::Matrix<probDim, 1, floatType> dx_;
       };
 
 
@@ -954,7 +960,7 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        ComputePositionStrategy(LINALG::Matrix<dim, 1, floatType>& xsi, bool checklimits)
+        ComputePositionStrategy(CORE::LINALG::Matrix<dim, 1, floatType>& xsi, bool checklimits)
             : xsi_(xsi), xyze_(NULL), px_(NULL), tol_(0.0)
         {
         }
@@ -963,8 +969,8 @@ namespace CORE::GEO
          *
          *  \param xyze (in) : global nodal coordinates
          *  \param px   (in) : global position vector of the searched parameter space point */
-        void Setup(const LINALG::Matrix<probDim, numNodesElement, floatType>& xyze,
-            const LINALG::Matrix<probDim, 1, floatType>& px)
+        void Setup(const CORE::LINALG::Matrix<probDim, numNodesElement, floatType>& xyze,
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& px)
         {
           // std::cout << "Entering setup for the position strategy" << std::endl;
           xyze_ = &xyze;
@@ -995,7 +1001,7 @@ namespace CORE::GEO
         }
 
         /// get the local solution coordinates
-        const LINALG::Matrix<dim, 1, floatType>& LocalCoordinates() { return xsi_; }
+        const CORE::LINALG::Matrix<dim, 1, floatType>& LocalCoordinates() { return xsi_; }
         /// get the solution coordaintes in the CLN format
         /// initialize the solution variable to zero
         void SetupSolve()
@@ -1020,9 +1026,9 @@ namespace CORE::GEO
         }
 
         /// calculate the position rhs
-        void PositionRHS(const LINALG::Matrix<probDim, numNodesElement, floatType>& xyze,
-            const LINALG::Matrix<probDim, 1, floatType>& px,
-            LINALG::Matrix<probDim, 1, floatType>& b)
+        void PositionRHS(const CORE::LINALG::Matrix<probDim, numNodesElement, floatType>& xyze,
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& px,
+            CORE::LINALG::Matrix<probDim, 1, floatType>& b)
         {
           CORE::DRT::UTILS::shape_function<elementType>(xsi_, funct_);
           b = *px_;
@@ -1082,7 +1088,7 @@ namespace CORE::GEO
           CORE::DRT::UTILS::shape_function_deriv1<elementType>(xsi_, deriv1_);
           A_.MultiplyNT(*xyze_, deriv1_);
           dx_ = 0.0;
-          det = LINALG::gaussElimination<true, probDim, floatType>(A_, b_, dx_);
+          det = CORE::LINALG::gaussElimination<true, probDim, floatType>(A_, b_, dx_);
 
           if (debug)
           {
@@ -1107,7 +1113,7 @@ namespace CORE::GEO
 
         std::pair<bool, floatType> ConditionNumber()
         {
-          LINALG::Matrix<probDim, probDim, floatType> A_inv;
+          CORE::LINALG::Matrix<probDim, probDim, floatType> A_inv;
           floatType det = A_.Determinant();
           if (KERNEL::closeToZero(det))
           {
@@ -1136,12 +1142,12 @@ namespace CORE::GEO
        private:
         /** parameter space coordinates (final result of the calculation)
          * corresponding to the global position px_. */
-        LINALG::Matrix<dim, 1, floatType>& xsi_;
+        CORE::LINALG::Matrix<dim, 1, floatType>& xsi_;
 
         /// pointer to the global nodal positions
-        const LINALG::Matrix<probDim, numNodesElement, floatType>* xyze_;
+        const CORE::LINALG::Matrix<probDim, numNodesElement, floatType>* xyze_;
         /// global position vector (we are looking for the corresponding parameter coordinates)
-        const LINALG::Matrix<probDim, 1, floatType>* px_;
+        const CORE::LINALG::Matrix<probDim, 1, floatType>* px_;
 
         using MemberStoragePolicy<debug, probDim, elementType, numNodesElement, dim,
             floatType>::funct_;
@@ -1328,13 +1334,13 @@ namespace CORE::GEO
 #endif
       {
        public:
-        ComputePositionAdaptivePrecision(LINALG::Matrix<dim, 1>& xsi)
+        ComputePositionAdaptivePrecision(CORE::LINALG::Matrix<dim, 1>& xsi)
             : Strategy(clnxsi_, true), xsi_(xsi), clnxsi_(true), cond_infinity_(false)
         {
         }
 
-        bool operator()(const LINALG::Matrix<probDim, numNodesElement>& xyze,
-            const LINALG::Matrix<probDim, 1>& px)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<probDim, 1>& px)
         {
           if (!((elementType == ::DRT::Element::hex8) || (elementType == ::DRT::Element::tet4) ||
                   (elementType == ::DRT::Element::pyramid5) ||
@@ -1464,7 +1470,7 @@ namespace CORE::GEO
           return conv;
         }
 
-        const LINALG::Matrix<dim, 1, ClnWrapper>& LocalCoordinates()
+        const CORE::LINALG::Matrix<dim, 1, ClnWrapper>& LocalCoordinates()
         {
           return Strategy::LocalCoordinates();
         }
@@ -1480,28 +1486,29 @@ namespace CORE::GEO
         // and global coordinates based on loc coordinates calculated in the ComputePosition,
         // using conversion to very high reference precision
         ClnWrapper ComputeError(
-            const LINALG::Matrix<probDim,
+            const CORE::LINALG::Matrix<probDim,
                 CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement>&
                 ref_shape_xyz,
-            const LINALG::Matrix<probDim, 1>& glob_init,
-            const LINALG::Matrix<dim, 1, ClnWrapper>& loc_calc, int prec)
+            const CORE::LINALG::Matrix<probDim, 1>& glob_init,
+            const CORE::LINALG::Matrix<dim, 1, ClnWrapper>& loc_calc, int prec)
         {
           unsigned int prev_prec = ClnWrapper::GetPrecision();
           ClnWrapper::SetPrecision(prec);
           // Converting input data into higher precision floating point format
-          LINALG::Matrix<probDim,
+          CORE::LINALG::Matrix<probDim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement, ClnWrapper>
               cln_ref_shape_xyz;
-          LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_init;
-          LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_init;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc;
 
           ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
           ConvDoubleCLN(ref_shape_xyz, cln_ref_shape_xyz, prec);
           ConvDoubleCLN(glob_init, cln_glob_init, prec);
 
-          LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc;
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement,
-              1, ClnWrapper>
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc;
+          CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<elementType>::numNodePerElement, 1,
+              ClnWrapper>
               shapeFunct;
           CORE::DRT::UTILS::shape_function<elementType>(cln_loc_calc, shapeFunct);
           for (unsigned int inode = 0;
@@ -1515,7 +1522,7 @@ namespace CORE::GEO
           }
           // evaluating error by comparison with global position, that was set up initially and the
           // one that we obtained from the ComputePosition evaluation and the interpolation
-          LINALG::Matrix<probDim, 1, ClnWrapper> diff_vec;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> diff_vec;
           for (unsigned int i = 0; i < probDim; ++i)
             diff_vec(i) = cln_glob_calc(i) - cln_glob_init(i);
           // resetting precision to previous
@@ -1571,14 +1578,14 @@ namespace CORE::GEO
 
        private:
         // variable for cln computation
-        LINALG::Matrix<probDim, numNodesElement, ClnWrapper> clnxyze_;
+        CORE::LINALG::Matrix<probDim, numNodesElement, ClnWrapper> clnxyze_;
 
-        LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
+        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
 
         // reference to the double TMATRIX
-        LINALG::Matrix<dim, 1>& xsi_;
+        CORE::LINALG::Matrix<dim, 1>& xsi_;
 
-        LINALG::Matrix<dim, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<dim, 1, ClnWrapper> clnxsi_;
 
         // if condition number if infinity or not
         bool cond_infinity_;
@@ -1611,7 +1618,7 @@ namespace CORE::GEO
       class GenericComputePosition : Strategy
       {
        public:
-        GenericComputePosition(LINALG::Matrix<dim, 1>& xsi)
+        GenericComputePosition(CORE::LINALG::Matrix<dim, 1>& xsi)
             : Strategy(xsi, true)
 #ifdef CLN_CALC
               ,
@@ -1620,8 +1627,8 @@ namespace CORE::GEO
         {
         }
 
-        bool operator()(const LINALG::Matrix<probDim, numNodesElement>& xyze,
-            const LINALG::Matrix<probDim, 1>& px)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesElement>& xyze,
+            const CORE::LINALG::Matrix<probDim, 1>& px)
         {
           bool conv;
           this->Setup(xyze, px);
@@ -1650,7 +1657,10 @@ namespace CORE::GEO
           return conv;
         }
 
-        const LINALG::Matrix<dim, 1>& LocalCoordinates() { return Strategy::LocalCoordinates(); }
+        const CORE::LINALG::Matrix<dim, 1>& LocalCoordinates()
+        {
+          return Strategy::LocalCoordinates();
+        }
 
         std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
@@ -1666,7 +1676,7 @@ namespace CORE::GEO
         static std::vector<int> touched_edges_ids_;
 
         // to hold the reference to cln calculation object
-        LINALG::Matrix<dim, 1>& xsi_;
+        CORE::LINALG::Matrix<dim, 1>& xsi_;
 #endif
       };  // class GenericComputePosition
 
@@ -1690,7 +1700,7 @@ namespace CORE::GEO
                 elementType, computeCln>
       {
        public:
-        ComputePosition(LINALG::Matrix<dim, 1>& xsi)
+        ComputePosition(CORE::LINALG::Matrix<dim, 1>& xsi)
             : GenericComputePosition<
                   NewtonSolve<ComputePositionStrategy<false, probDim, elementType, numNodesElement>,
                       dim>,
@@ -1717,7 +1727,7 @@ namespace CORE::GEO
                 probDim, elementType>
       {
        public:
-        DebugComputePosition(LINALG::Matrix<dim, 1>& xsi)
+        DebugComputePosition(CORE::LINALG::Matrix<dim, 1>& xsi)
             : GenericComputePosition<
                   NewtonSolve<DebugNewtonStrategy<ComputePositionStrategy<true, probDim,
                                                       elementType, numNodesElement>,
@@ -1737,7 +1747,7 @@ namespace CORE::GEO
       struct ComputeDistanceStaticMembers
       {
         /// nodal shape function values at \c xsi
-        static LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
+        static CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
 
         /** nodal 1-st derivative values at \c xsi
          *
@@ -1745,7 +1755,7 @@ namespace CORE::GEO
          *  dimension is \f$ dim \times numNodesSide \f$. The remaining
          *  entries are filled with zeros. This is due to the use of an
          *  UTILS function, which expects this input. */
-        static LINALG::Matrix<probDim, numNodesSide, floatType> sideDeriv1_;
+        static CORE::LINALG::Matrix<probDim, numNodesSide, floatType> sideDeriv1_;
 
         /** \brief nodal 2-nd derivatives at \c xsi
          *
@@ -1755,25 +1765,25 @@ namespace CORE::GEO
          *  2-D case: \f$ \left( x_{,\xi \xi}, \;x_{,\eta \eta}, \;
          *                       x_{,\xi\eta} \right)
          *                \;\in \mathbb{R}^{3 \times N} \f$ */
-        static LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType> sideDeriv2_;
+        static CORE::LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType> sideDeriv2_;
 
         /// complete linearization matrix
-        static LINALG::Matrix<probDim, probDim, floatType> A_;
+        static CORE::LINALG::Matrix<probDim, probDim, floatType> A_;
         /// auxiliary matrix
-        static LINALG::Matrix<probDim, probDim, floatType> B_;
+        static CORE::LINALG::Matrix<probDim, probDim, floatType> B_;
         /** auxiliary matrix holding 2-nd derivatives at \c xsi_
          *  w.r.t. the parameter space coordinates */
-        static LINALG::Matrix<probDim, 2 * dimSide - 1, floatType> C_;
+        static CORE::LINALG::Matrix<probDim, 2 * dimSide - 1, floatType> C_;
         /// right hand side vector
-        static LINALG::Matrix<probDim, 1, floatType> b_;
+        static CORE::LINALG::Matrix<probDim, 1, floatType> b_;
         /** \brief solution increment
          *
          * (parameter space coordinates of the side + distance increment) */
-        static LINALG::Matrix<probDim, 1, floatType> dx_;
+        static CORE::LINALG::Matrix<probDim, 1, floatType> dx_;
         /// (unscaled) normal vectors
-        static LINALG::Matrix<probDim, 2, floatType> N_;
+        static CORE::LINALG::Matrix<probDim, 2, floatType> N_;
 
-        static LINALG::Matrix<probDim, 2, floatType> nvec_;  // proper normal vector
+        static CORE::LINALG::Matrix<probDim, 2, floatType> nvec_;  // proper normal vector
       };
 
       // Static storage class of ComputeDistance data members to inherit from
@@ -1784,25 +1794,25 @@ namespace CORE::GEO
           typename floatType = double>
       struct ComputeDistanceNoStaticMembers
       {
-        LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
+        CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
 
-        LINALG::Matrix<probDim, numNodesSide, floatType> sideDeriv1_;
+        CORE::LINALG::Matrix<probDim, numNodesSide, floatType> sideDeriv1_;
 
-        LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType> sideDeriv2_;
+        CORE::LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType> sideDeriv2_;
 
-        LINALG::Matrix<probDim, probDim, floatType> A_;
+        CORE::LINALG::Matrix<probDim, probDim, floatType> A_;
 
-        LINALG::Matrix<probDim, probDim, floatType> B_;
+        CORE::LINALG::Matrix<probDim, probDim, floatType> B_;
 
-        LINALG::Matrix<probDim, 2 * dimSide - 1, floatType> C_;
+        CORE::LINALG::Matrix<probDim, 2 * dimSide - 1, floatType> C_;
 
-        LINALG::Matrix<probDim, 1, floatType> b_;
+        CORE::LINALG::Matrix<probDim, 1, floatType> b_;
 
-        LINALG::Matrix<probDim, 1, floatType> dx_;
+        CORE::LINALG::Matrix<probDim, 1, floatType> dx_;
 
-        LINALG::Matrix<probDim, 2, floatType> N_;
+        CORE::LINALG::Matrix<probDim, 2, floatType> N_;
 
-        LINALG::Matrix<probDim, 2, floatType> nvec_;
+        CORE::LINALG::Matrix<probDim, 2, floatType> nvec_;
       };
 
       template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
@@ -1818,7 +1828,7 @@ namespace CORE::GEO
             private MemberStoragePolicy<debug, probDim, sideType, dimSide, numNodesSide, floatType>
       {
        public:
-        ComputeDistanceStrategy(LINALG::Matrix<probDim, 1, floatType>& xsi, bool checklimits)
+        ComputeDistanceStrategy(CORE::LINALG::Matrix<probDim, 1, floatType>& xsi, bool checklimits)
             : xsi_(xsi),
               // we do initializing of distance in SetupSolve, because xsi could be from derived
               // class and not initialize at this point yet
@@ -1834,8 +1844,8 @@ namespace CORE::GEO
          *
          *  \param xyze_side (in) : global coordinates of the considered side
          *  \param px        (in) : global coordinates of the considered point */
-        void Setup(const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            const LINALG::Matrix<probDim, 1, floatType>& px, bool zeroarea)
+        void Setup(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& px, bool zeroarea)
         {
           zeroarea_ = zeroarea;
           xyze_side_ = &xyze_side;
@@ -1870,25 +1880,25 @@ namespace CORE::GEO
         const floatType* SignedDistance() const { return distance_; }
 
         /// return the local solution vector (parameter space coordinates + distance)
-        const LINALG::Matrix<probDim, 1, floatType>& LocalCoordinates() const { return xsi_; }
+        const CORE::LINALG::Matrix<probDim, 1, floatType>& LocalCoordinates() const { return xsi_; }
 
         /// transform tolerance from global to local coordinates
         bool GetLocalTolerance(const floatType& global_tolerance,
-            LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
+            CORE::LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
 
         {
-          LINALG::Matrix<probDim, 1, floatType> real_tolerance;
+          CORE::LINALG::Matrix<probDim, 1, floatType> real_tolerance;
           // set all values of the vector to be equal to the global tolerance
           real_tolerance = global_tolerance;
           // extract part of the side from the Jacobian
-          LINALG::Matrix<probDim, dimSide, floatType> A;
+          CORE::LINALG::Matrix<probDim, dimSide, floatType> A;
           for (unsigned int row = 0; row < probDim; ++row)
           {
             for (unsigned int col = 0; col < dimSide; ++col) A(row, col) = A_(row, col);
           }
 
-          LINALG::Matrix<dimSide, dimSide, floatType> TN_inv;
-          LINALG::Matrix<dimSide, probDim, floatType> aux;
+          CORE::LINALG::Matrix<dimSide, dimSide, floatType> TN_inv;
+          CORE::LINALG::Matrix<dimSide, probDim, floatType> aux;
           TN_inv.MultiplyTN(A, A);
 
 
@@ -1907,7 +1917,7 @@ namespace CORE::GEO
         /// return isInfinite and possibly floatType
         std::pair<bool, floatType> ConditionNumber()
         {
-          LINALG::Matrix<probDim, probDim, floatType> A_inv;
+          CORE::LINALG::Matrix<probDim, probDim, floatType> A_inv;
           floatType det = A_.Determinant();
           if (KERNEL::closeToZero(det))
           {
@@ -1948,11 +1958,11 @@ namespace CORE::GEO
           DistanceSystem(*xyze_side_, *px_, distance_, A_, B_, C_, N_, b_);
         }
         /// compute the rhs value ( w/o distance contributions )
-        void DistanceRHS(const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            const LINALG::Matrix<probDim, 1, floatType>& px,
-            LINALG::Matrix<probDim, 1, floatType>& b)
+        void DistanceRHS(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& px,
+            CORE::LINALG::Matrix<probDim, 1, floatType>& b)
         {
-          LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
+          CORE::LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct_);
           b = px;
           b.Multiply(-1.0, xyze_side, sideFunct_, 1.0);
@@ -2009,7 +2019,7 @@ namespace CORE::GEO
             std::cout << "Matrix b  is  " << b_ << std::endl;
           }
 
-          floatType det = LINALG::gaussElimination<true, probDim, floatType>(A_, b_, dx_);
+          floatType det = CORE::LINALG::gaussElimination<true, probDim, floatType>(A_, b_, dx_);
 
           if (debug)
           {
@@ -2087,11 +2097,11 @@ namespace CORE::GEO
           file << "};\n";
 
           // calculate the points
-          LINALG::Matrix<numNodesSide, 1, floatType> surface;
+          CORE::LINALG::Matrix<numNodesSide, 1, floatType> surface;
 
           CORE::DRT::UTILS::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
 
-          LINALG::Matrix<probDim, 1, floatType> x1;
+          CORE::LINALG::Matrix<probDim, 1, floatType> x1;
           ;
 
           x1.Multiply(*xyze_side_, surface);
@@ -2116,7 +2126,7 @@ namespace CORE::GEO
         }
 
         /// get normal vectors
-        const LINALG::Matrix<probDim, 2, floatType>& GetNormalVector() { return nvec_; }
+        const CORE::LINALG::Matrix<probDim, 2, floatType>& GetNormalVector() { return nvec_; }
 
         /// get the adapted Newton tolerance
         floatType GetTolerance() const { return tol_; }
@@ -2135,7 +2145,8 @@ namespace CORE::GEO
           normal_plane_undefined
         };
 
-        enum NormalPlane DetectNormalPlane(const LINALG::Matrix<probDim, 1, floatType>& n) const
+        enum NormalPlane DetectNormalPlane(
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& n) const
         {
           if (probDim < 3) dserror("This function makes only sense for the 3-D case!");
 
@@ -2166,19 +2177,20 @@ namespace CORE::GEO
          *
          *  \author hiermeier
          *  \date 08/16    */
-        bool DistanceSystem(const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            const LINALG::Matrix<probDim, 1, floatType>& px, floatType* distance,
-            LINALG::Matrix<probDim, probDim, floatType>& A,
-            LINALG::Matrix<probDim, probDim, floatType>& B,
-            LINALG::Matrix<probDim, 2 * dimSide - 1, floatType>& C,
-            LINALG::Matrix<probDim, 2, floatType>& N, LINALG::Matrix<probDim, 1, floatType>& b)
+        bool DistanceSystem(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, 1, floatType>& px, floatType* distance,
+            CORE::LINALG::Matrix<probDim, probDim, floatType>& A,
+            CORE::LINALG::Matrix<probDim, probDim, floatType>& B,
+            CORE::LINALG::Matrix<probDim, 2 * dimSide - 1, floatType>& C,
+            CORE::LINALG::Matrix<probDim, 2, floatType>& N,
+            CORE::LINALG::Matrix<probDim, 1, floatType>& b)
         {
-          LINALG::Matrix<probDim, 1, floatType> n1(&N(0, 0), true);
-          LINALG::Matrix<probDim, 1, floatType> n2(&N(0, 1), true);
+          CORE::LINALG::Matrix<probDim, 1, floatType> n1(&N(0, 0), true);
+          CORE::LINALG::Matrix<probDim, 1, floatType> n2(&N(0, 1), true);
           /* get only the local side coordinates and use them to evaluate
            * the 1-st and 2-nd derivatives */
 
-          LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
+          CORE::LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
 
           // pre-evaluate some important variables
           B = 0.0;
@@ -2365,14 +2377,14 @@ namespace CORE::GEO
         }
 
         /// solution vector (parameter space coordinates + distance values)
-        LINALG::Matrix<probDim, 1, floatType>& xsi_;
+        CORE::LINALG::Matrix<probDim, 1, floatType>& xsi_;
 
         /// distance values
         floatType* distance_;
 
-        const LINALG::Matrix<probDim, numNodesSide, floatType>* xyze_side_;
+        const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>* xyze_side_;
         /// given global point coordinates
-        const LINALG::Matrix<probDim, 1, floatType>* px_;
+        const CORE::LINALG::Matrix<probDim, 1, floatType>* px_;
 
         using MemberStoragePolicy<debug, probDim, sideType, dimSide, numNodesSide,
             floatType>::sideFunct_;
@@ -2429,14 +2441,15 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        ComputeDistanceAdaptivePrecision(LINALG::Matrix<probDim, 1>& xsi, bool checklimits)
+        ComputeDistanceAdaptivePrecision(CORE::LINALG::Matrix<probDim, 1>& xsi, bool checklimits)
             : Strategy(clnxsi_, checklimits), xsi_(xsi), clnxsi_(true), cond_infinity_(false)
         {
         }
 
         /// start and solve the distance calculation
-        bool operator()(const LINALG::Matrix<probDim, numNodesSide>& xyze_side,
-            const LINALG::Matrix<probDim, 1>& px, double& distance, bool signeddistance = false)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesSide>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, 1>& px, double& distance,
+            bool signeddistance = false)
         {
           if (!((sideType == ::DRT::Element::hex8) || (sideType == ::DRT::Element::quad4) ||
                   (sideType == ::DRT::Element::hex8) || (sideType == ::DRT::Element::tri3) ||
@@ -2598,7 +2611,7 @@ namespace CORE::GEO
           return conv;
         }
         // get the local coordinates
-        const LINALG::Matrix<probDim, 1, ClnWrapper>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>& LocalCoordinates() const
         {
           return Strategy::LocalCoordinates();
         }
@@ -2609,7 +2622,7 @@ namespace CORE::GEO
 
         std::pair<bool, ClnWrapper> ConditionNumber() { return Strategy::ConditionNumber(); }
 
-        const LINALG::Matrix<probDim, 2, ClnWrapper> GetNormalVector()
+        const CORE::LINALG::Matrix<probDim, 2, ClnWrapper> GetNormalVector()
         {
           return Strategy::GetNormalVector();
         }
@@ -2634,13 +2647,13 @@ namespace CORE::GEO
         // and global coordinates based on loc coordinates and distance  calculated in the
         // ComputeDistance, using conversion to very high reference precision
         ClnWrapper ComputeError(
-            const LINALG::Matrix<probDim,
+            const CORE::LINALG::Matrix<probDim,
                 CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>&
-                refshape_xyze,                    // referenape
-            const LINALG::Matrix<probDim, 1>& p,  // global position of the point
-            const LINALG::Matrix<probDim, 1, ClnWrapper>&
+                refshape_xyze,                          // referenape
+            const CORE::LINALG::Matrix<probDim, 1>& p,  // global position of the point
+            const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>&
                 loc_calc,  // calculated wrt reference shape local position
-            const LINALG::Matrix<probDim, 2, ClnWrapper>& nvec,  // normal vector
+            const CORE::LINALG::Matrix<probDim, 2, ClnWrapper>& nvec,  // normal vector
             const ClnWrapper*
                 distance,  // distance from the projection on the reference shape  to the point
             int prec       // precision for calculation
@@ -2650,12 +2663,12 @@ namespace CORE::GEO
           ClnWrapper::SetPrecision(prec);
           // Converting input arrays  to higher precision floating points
           ClnWrapper clndistance;
-          LINALG::Matrix<probDim,
+          CORE::LINALG::Matrix<probDim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, ClnWrapper>
               xyze_side;
-          LINALG::Matrix<probDim, 1, ClnWrapper> clnxi;
-          LINALG::Matrix<probDim, 1, ClnWrapper> clnpx;
-          LINALG::Matrix<probDim, 1, ClnWrapper> n1;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnxi;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> n1;
 
           clndistance = cln::cl_float(distance[0], cln::float_format(prec));
           ConvDoubleCLN(refshape_xyze, xyze_side, prec);
@@ -2667,12 +2680,12 @@ namespace CORE::GEO
             n1(i) = cln::cl_float(nvec(i, 0), cln::float_format(prec));
           }
 
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1,
-              ClnWrapper>
+          CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
               surfaceFunct;
-          LINALG::Matrix<probDim, 1, ClnWrapper> b;
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> b;
 
-          LINALG::Matrix<dimSide, 1, ClnWrapper> clnxiside(clnxi.A(), true);
+          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> clnxiside(clnxi.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(clnxiside, surfaceFunct);
           b = clnpx;
           b.Multiply(-1.0, xyze_side, surfaceFunct, 1.0);
@@ -2684,7 +2697,7 @@ namespace CORE::GEO
           // in a special case add more of the distance
           if (probDim == 3 and dimSide == 1)
           {
-            LINALG::Matrix<probDim, 1, ClnWrapper> n2;
+            CORE::LINALG::Matrix<probDim, 1, ClnWrapper> n2;
             for (unsigned int i = 0; i < probDim; ++i)
               n2(i) = cln::cl_float(nvec(i, 1), cln::float_format(prec));
 
@@ -2708,9 +2721,9 @@ namespace CORE::GEO
         // get location of the point on the surface  as well as touched edges
         void GetTopologyInformation()
         {
-          LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
+          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
           this->GetLocalTolerance(SIDE_DETECTION_TOLERANCE, scaled_tolerance_side_touched_edges);
-          LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
           bool is_inside = WithinLimits<sideType>(clnxsi_, zero_tolerance_side);
           PointOnSurfacePlane point_on_surface = GetLocation(SIDE_DETECTION_TOLERANCE);
 
@@ -2735,23 +2748,23 @@ namespace CORE::GEO
             // if we are inside the "tolerance wrapper" around the side
             if (location_.WithinSide())
             {
-              LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+              CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
               // this means we are on the outer boundary of the tolerance
               if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
               {
                 // we transform our point to global tolerance and check if it is close enough to the
                 // nodal point of the side, that is common point of the touching edges
-                const LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
+                const CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
                     clnxyze_side_;
-                const LINALG::Matrix<probDim, 1, ClnWrapper>& xsi_global = clnpx_;
+                const CORE::LINALG::Matrix<probDim, 1, ClnWrapper>& xsi_global = clnpx_;
 
                 // find minimum distance and check if it is closer than 1e-14
-                LINALG::Matrix<probDim, 1, ClnWrapper> dist;
+                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> dist;
                 ClnWrapper min_dist;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                 {
                   // acess raw responsible for that node
-                  LINALG::Matrix<probDim, 1, ClnWrapper> coord(
+                  CORE::LINALG::Matrix<probDim, 1, ClnWrapper> coord(
                       clnxyze_side_latest.A() + inode * probDim, true);
                   dist.Update(1.0, coord, -1.0, xsi_global);
                   ClnWrapper tmp_dist = dist.Norm2();
@@ -2869,17 +2882,17 @@ namespace CORE::GEO
         static std::vector<int> touched_nodes_ids_;
 
         // variable for cln computation
-        LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
+        CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
 
         // global position of the point converted to cln precision
-        LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
+        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnpx_;
 
         ClnWrapper clndistance_;
 
         // reference to the double Matrix
-        LINALG::Matrix<probDim, 1>& xsi_;
+        CORE::LINALG::Matrix<probDim, 1>& xsi_;
 
-        LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<probDim, 1, ClnWrapper> clnxsi_;
 
         // determines position of this point with respect to the side limits (values:
         // inside/outsaide)
@@ -2912,7 +2925,7 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        GenericComputeDistance(LINALG::Matrix<probDim, 1>& xsi, bool checklimits)
+        GenericComputeDistance(CORE::LINALG::Matrix<probDim, 1>& xsi, bool checklimits)
             : Strategy(xsi, checklimits),
               xsi_ref_(xsi),
               cond_infinity_(false)
@@ -2924,8 +2937,9 @@ namespace CORE::GEO
         }
 
         /// start and solve the distance calculation
-        bool operator()(const LINALG::Matrix<probDim, numNodesSide>& xyze_side,
-            const LINALG::Matrix<probDim, 1>& px, double& distance, bool signeddistance = false)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesSide>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, 1>& px, double& distance,
+            bool signeddistance = false)
         {
           // now we are doing basic iteration on double precision
           bool conv;
@@ -3000,7 +3014,7 @@ namespace CORE::GEO
           return conv;
         }
         // get the local coordinates
-        const LINALG::Matrix<probDim, 1>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<probDim, 1>& LocalCoordinates() const
         {
           return Strategy::LocalCoordinates();
         }
@@ -3011,7 +3025,10 @@ namespace CORE::GEO
 
         std::pair<bool, double> ConditionNumber() { return Strategy::ConditionNumber(); }
 
-        const LINALG::Matrix<probDim, 2> GetNormalVector() { return Strategy::GetNormalVector(); }
+        const CORE::LINALG::Matrix<probDim, 2> GetNormalVector()
+        {
+          return Strategy::GetNormalVector();
+        }
 
         bool SurfaceWithinLimits(double tolerance = REFERENCETOL) const
         {
@@ -3048,12 +3065,12 @@ namespace CORE::GEO
             dserror("This method only works for tri3 side. Current side is %s",
                 ::DRT::DistypeToString(sideType).c_str());
 
-          LINALG::Matrix<dimSide, 1> scaled_tolerance;
+          CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
           double distance_tolerance = TOPOLOGICAL_TOLERANCE;
           // get tolerance with 1e-14 around the triangle
           this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
           // Diagonal one, corresponds to the middle one, tolerance there should be original
-          LINALG::Matrix<3, 1> real_tolerance;
+          CORE::LINALG::Matrix<3, 1> real_tolerance;
           real_tolerance(0) = 0.0;
           real_tolerance(1) = scaled_tolerance(1);
           real_tolerance(2) = 0.0;
@@ -3071,13 +3088,13 @@ namespace CORE::GEO
         //  conversion from global to local tolerance return false
         bool GetTopologyInformation()
         {
-          LINALG::Matrix<probDim, 1> xsi = this->LocalCoordinates();
+          CORE::LINALG::Matrix<probDim, 1> xsi = this->LocalCoordinates();
           // set up required tolerances
-          LINALG::Matrix<dimSide, 1> scaled_tolerance;
+          CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
           double distance_tolerance = SIDE_DETECTION_TOLERANCE;
           bool success = this->GetLocalTolerance(distance_tolerance, scaled_tolerance);
           if (not success) return false;
-          LINALG::Matrix<dimSide, 1> zero_tolerance_side;
+          CORE::LINALG::Matrix<dimSide, 1> zero_tolerance_side;
           zero_tolerance_side = 0.0;
           // find location
           bool is_inside = WithinLimits<sideType>(xsi, zero_tolerance_side);
@@ -3101,19 +3118,20 @@ namespace CORE::GEO
         // and global coordinates based on loc coordinates and distance  calculated in the
         // ComputeDistance
         double ComputeError(
-            const LINALG::Matrix<probDim,
+            const CORE::LINALG::Matrix<probDim,
                 CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>& xyze_side,
-            const LINALG::Matrix<probDim, 1>& px)
+            const CORE::LINALG::Matrix<probDim, 1>& px)
         {
-          const LINALG::Matrix<probDim, 1>& xsi = this->LocalCoordinates();
-          const LINALG::Matrix<probDim, 2>& n_vec = this->GetNormalVector();
+          const CORE::LINALG::Matrix<probDim, 1>& xsi = this->LocalCoordinates();
+          const CORE::LINALG::Matrix<probDim, 2>& n_vec = this->GetNormalVector();
           const double* distance = this->SignedDistance();
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1>
+          CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1>
               surfaceFunct;
-          LINALG::Matrix<probDim, 1> b;
-          LINALG::Matrix<probDim, 1> n1(n_vec.A(), true);
+          CORE::LINALG::Matrix<probDim, 1> b;
+          CORE::LINALG::Matrix<probDim, 1> n1(n_vec.A(), true);
 
-          LINALG::Matrix<dimSide, 1> xsi_side(xsi.A(), true);
+          CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(xsi_side, surfaceFunct);
           b = px;
 
@@ -3123,7 +3141,7 @@ namespace CORE::GEO
           b.Update(-distance[0] * n1norm_inv, n1, 1.0);
           if (probDim == 3 and dimSide == 1)
           {
-            LINALG::Matrix<probDim, 1> n2(n_vec.A() + probDim, true);
+            CORE::LINALG::Matrix<probDim, 1> n2(n_vec.A() + probDim, true);
             double n2norm_inv = 1.0 / n2.Norm2();
             b.Update(-distance[1] * n2norm_inv, n2, 1.0);
           }
@@ -3202,7 +3220,7 @@ namespace CORE::GEO
         // another triangle (only for tri3)
         PointOnSurfaceLoc sideLocation_triangle_split_;
         // we need to do detection of location and touching edge
-        LINALG::Matrix<probDim, 1>& xsi_ref_;
+        CORE::LINALG::Matrix<probDim, 1>& xsi_ref_;
 
         // if condition number is equal to infinity
         bool cond_infinity_;
@@ -3231,7 +3249,7 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        ComputeDistance(LINALG::Matrix<probDim, 1>& xsi, bool checklimits = true)
+        ComputeDistance(CORE::LINALG::Matrix<probDim, 1>& xsi, bool checklimits = true)
             : GenericComputeDistance<
                   NewtonSolve<ComputeDistanceStrategy<false, probDim, sideType>, probDim>, probDim,
                   sideType, computeCln>(xsi, checklimits)
@@ -3253,7 +3271,7 @@ namespace CORE::GEO
       {
        public:
         /// constructor
-        DebugComputeDistance(LINALG::Matrix<probDim, 1>& xsi, bool checklimits = true)
+        DebugComputeDistance(CORE::LINALG::Matrix<probDim, 1>& xsi, bool checklimits = true)
             : GenericComputeDistance<
                   NewtonSolve<DebugNewtonStrategy<ComputeDistanceStrategy<true, probDim, sideType>,
                                   probDim>,
@@ -3275,18 +3293,18 @@ namespace CORE::GEO
           typename floatType = double>
       struct ComputeIntersectionStaticMembers
       {
-        static LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
-        static LINALG::Matrix<numNodesEdge, 1, floatType> edgeFunct_;
-        static LINALG::Matrix<dimSide, numNodesSide, floatType> sideDeriv1_;
-        static LINALG::Matrix<dimEdge, numNodesEdge, floatType> edgeDeriv1_;
+        static CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
+        static CORE::LINALG::Matrix<numNodesEdge, 1, floatType> edgeFunct_;
+        static CORE::LINALG::Matrix<dimSide, numNodesSide, floatType> sideDeriv1_;
+        static CORE::LINALG::Matrix<dimEdge, numNodesEdge, floatType> edgeDeriv1_;
 
-        static LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_;
-        static LINALG::Matrix<probDim, dimEdge + dimSide, floatType> B_;
-        static LINALG::Matrix<dimEdge + dimSide, 1, floatType> b_;
-        static LINALG::Matrix<probDim, 1, floatType> c_;
+        static CORE::LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_;
+        static CORE::LINALG::Matrix<probDim, dimEdge + dimSide, floatType> B_;
+        static CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType> b_;
+        static CORE::LINALG::Matrix<probDim, 1, floatType> c_;
 
         /// increment in local coordinates d(xi1_side, xi2_side, xi_line)
-        static LINALG::Matrix<dimEdge + dimSide, 1, floatType> dx_;
+        static CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType> dx_;
       };
 
 
@@ -3302,17 +3320,17 @@ namespace CORE::GEO
           typename floatType = double>
       struct ComputeIntersectionNoStaticMembers
       {
-        LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
-        LINALG::Matrix<numNodesEdge, 1, floatType> edgeFunct_;
-        LINALG::Matrix<dimSide, numNodesSide, floatType> sideDeriv1_;
-        LINALG::Matrix<dimEdge, numNodesEdge, floatType> edgeDeriv1_;
+        CORE::LINALG::Matrix<numNodesSide, 1, floatType> sideFunct_;
+        CORE::LINALG::Matrix<numNodesEdge, 1, floatType> edgeFunct_;
+        CORE::LINALG::Matrix<dimSide, numNodesSide, floatType> sideDeriv1_;
+        CORE::LINALG::Matrix<dimEdge, numNodesEdge, floatType> edgeDeriv1_;
 
-        LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_;
-        LINALG::Matrix<probDim, dimEdge + dimSide, floatType> B_;
-        LINALG::Matrix<dimEdge + dimSide, 1, floatType> b_;
-        LINALG::Matrix<probDim, 1, floatType> c_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_;
+        CORE::LINALG::Matrix<probDim, dimEdge + dimSide, floatType> B_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType> b_;
+        CORE::LINALG::Matrix<probDim, 1, floatType> c_;
 
-        LINALG::Matrix<dimEdge + dimSide, 1, floatType> dx_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType> dx_;
       };
 
       /*--------------------------------------------------------------------------*/
@@ -3343,7 +3361,7 @@ namespace CORE::GEO
        public:
         /// constructor
         ComputeIntersectionStrategy(
-            LINALG::Matrix<dimEdge + dimSide, 1, floatType>& xsi, bool checklimits)
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& xsi, bool checklimits)
             : xsi_(xsi),
               xyze_side_(NULL),
               xyze_edge_(NULL),
@@ -3354,8 +3372,8 @@ namespace CORE::GEO
         {
         }
 
-        void Setup(const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            const LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge)
+        void Setup(const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge)
         {
           xyze_side_ = &xyze_side;
           xyze_edge_ = &xyze_edge;
@@ -3373,7 +3391,7 @@ namespace CORE::GEO
 
         std::pair<bool, floatType> ConditionNumber()
         {
-          LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_inv;
+          CORE::LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType> A_inv;
           floatType det = A_.Determinant();
           if (KERNEL::closeToZero(det))
           {
@@ -3390,13 +3408,13 @@ namespace CORE::GEO
         }
 
         bool GetLocalToleranceEdge(const floatType& global_tolerance,
-            LINALG::Matrix<dimEdge, 1, floatType>& scaled_tolerance)
+            CORE::LINALG::Matrix<dimEdge, 1, floatType>& scaled_tolerance)
         {
-          LINALG::Matrix<probDim, 1, floatType> real_tolerance;
+          CORE::LINALG::Matrix<probDim, 1, floatType> real_tolerance;
           real_tolerance =
               global_tolerance;  // set all values of the vector to be equal to the global tolerance
           // extract part of the side from the Jacobian
-          LINALG::Matrix<probDim, dimEdge, floatType> A;
+          CORE::LINALG::Matrix<probDim, dimEdge, floatType> A;
           if (dimEdge + dimSide == probDim)
           {
             for (unsigned int row = 0; row < probDim; ++row)
@@ -3412,8 +3430,8 @@ namespace CORE::GEO
             }
           }
 
-          LINALG::Matrix<dimEdge, dimEdge, floatType> TN_inv;
-          LINALG::Matrix<dimEdge, probDim, floatType> aux;
+          CORE::LINALG::Matrix<dimEdge, dimEdge, floatType> TN_inv;
+          CORE::LINALG::Matrix<dimEdge, probDim, floatType> aux;
           TN_inv.MultiplyTN(A, A);
 
           floatType det = TN_inv.Determinant();
@@ -3428,10 +3446,10 @@ namespace CORE::GEO
         }
 
         bool GetLocalToleranceSide(const floatType& global_tolerance,
-            LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
+            CORE::LINALG::Matrix<dimSide, 1, floatType>& scaled_tolerance)
         {
           // extract part of the side from the Jacobian
-          LINALG::Matrix<probDim, dimSide, floatType> A;
+          CORE::LINALG::Matrix<probDim, dimSide, floatType> A;
           if (dimEdge + dimSide == probDim)
           {
             for (unsigned int row = 0; row < probDim; ++row)
@@ -3457,7 +3475,7 @@ namespace CORE::GEO
           return true;
         }
 
-        const LINALG::Matrix<dimEdge + dimSide, 1, floatType>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& LocalCoordinates() const
         {
           return xsi_;
         }
@@ -3475,8 +3493,8 @@ namespace CORE::GEO
           residual_ = 0.0;
 
           // evaluate initial rhs value
-          const LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
-          const LINALG::Matrix<dimEdge, 1, floatType> xsi_edge(xsi_.A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
+          const CORE::LINALG::Matrix<dimEdge, 1, floatType> xsi_edge(xsi_.A() + dimSide, true);
           IntersectionRHS(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
           tol_ = AdaptiveCombinedNewtonTolerance(*xyze_side_, *xyze_edge_, c_, xsi_(0, 0));
         }
@@ -3484,8 +3502,8 @@ namespace CORE::GEO
         void SetupStep(int iter)
         {
           // build linear system of equations
-          const LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
-          const LINALG::Matrix<dimEdge, 1, floatType> xsi_edge(xsi_.A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimSide, 1, floatType> xsi_side(xsi_.A(), true);
+          const CORE::LINALG::Matrix<dimEdge, 1, floatType> xsi_edge(xsi_.A() + dimSide, true);
           if (iter > 0)
           {
             IntersectionRHS(xsi_edge, xsi_side, *xyze_edge_, *xyze_side_, c_);
@@ -3494,11 +3512,11 @@ namespace CORE::GEO
         }
 
         /// compute the right-hand-side
-        void IntersectionRHS(const LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
-            const LINALG::Matrix<dimSide, 1, floatType>& xsi_side,
-            const LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge,
-            const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            LINALG::Matrix<probDim, 1, floatType>& c)
+        void IntersectionRHS(const CORE::LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
+            const CORE::LINALG::Matrix<dimSide, 1, floatType>& xsi_side,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge,
+            const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            CORE::LINALG::Matrix<probDim, 1, floatType>& c)
         {
           CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct_);
           CORE::DRT::UTILS::shape_function<edgeType>(xsi_edge, edgeFunct_);
@@ -3540,7 +3558,8 @@ namespace CORE::GEO
         bool LinearSolve(int iter)
         {
           dx_ = 0.0;
-          floatType det = LINALG::gaussElimination<true, dimSide + dimEdge, floatType>(A_, b_, dx_);
+          floatType det =
+              CORE::LINALG::gaussElimination<true, dimSide + dimEdge, floatType>(A_, b_, dx_);
 
           if (debug)
           {
@@ -3563,8 +3582,8 @@ namespace CORE::GEO
           if (debug)
           {
             std::cout << "--- Update\n";
-            const LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
-            const LINALG::Matrix<dimEdge, 1> xsi_edge(xsi_.A() + dimSide, true);
+            const CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
+            const CORE::LINALG::Matrix<dimEdge, 1> xsi_edge(xsi_.A() + dimSide, true);
             std::cout << "  off_count=" << off_count_ << "\n  Side within limits = "
                       << (WithinLimits<sideType>(xsi_side) ? "TRUE" : "FALSE")
                       << "\n  Edge within limits = "
@@ -3573,14 +3592,14 @@ namespace CORE::GEO
             std::cout << "  xsi_side = " << xsi_side;
             std::cout << "  xsi_edge = " << xsi_edge;
 
-            LINALG::Matrix<numNodesSide, 1> sideFunct;
-            LINALG::Matrix<numNodesEdge, 1> edgeFunct;
+            CORE::LINALG::Matrix<numNodesSide, 1> sideFunct;
+            CORE::LINALG::Matrix<numNodesEdge, 1> edgeFunct;
 
             CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct);
             CORE::DRT::UTILS::shape_function<edgeType>(xsi_edge, edgeFunct);
 
-            LINALG::Matrix<probDim, 1> x1;
-            LINALG::Matrix<probDim, 1> x2;
+            CORE::LINALG::Matrix<probDim, 1> x1;
+            CORE::LINALG::Matrix<probDim, 1> x2;
 
             x1.Multiply(*xyze_side_, sideFunct);
             x2.Multiply(*xyze_edge_, edgeFunct);
@@ -3700,14 +3719,14 @@ namespace CORE::GEO
 
 
           // calculate the points
-          LINALG::Matrix<numNodesSide, 1, floatType> surface;
-          LINALG::Matrix<numNodesEdge, 1, floatType> line;
+          CORE::LINALG::Matrix<numNodesSide, 1, floatType> surface;
+          CORE::LINALG::Matrix<numNodesEdge, 1, floatType> line;
 
           CORE::DRT::UTILS::shape_function_2D(surface, xsi_(0), xsi_(1), sideType);
           CORE::DRT::UTILS::shape_function_1D(line, xsi_(2), edgeType);
 
-          LINALG::Matrix<probDim, 1, floatType> x1;
-          LINALG::Matrix<probDim, 1, floatType> x2;
+          CORE::LINALG::Matrix<probDim, 1, floatType> x1;
+          CORE::LINALG::Matrix<probDim, 1, floatType> x2;
 
           x1.Multiply(*xyze_side_, surface);
           x2.Multiply(*xyze_edge_, line);
@@ -3754,14 +3773,14 @@ namespace CORE::GEO
          *
          *  \author hiermeier
          *  \date 08/16 */
-        void IntersectionSystem(const LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
-            const LINALG::Matrix<dimSide, 1, floatType>& xsi_side,
-            const LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge,
-            const LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
-            LINALG::Matrix<probDim, 1, floatType>& c,
-            LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType>& A,
-            LINALG::Matrix<probDim, dimEdge + dimSide, floatType>& B,
-            LINALG::Matrix<dimEdge + dimSide, 1, floatType>& b)
+        void IntersectionSystem(const CORE::LINALG::Matrix<dimEdge, 1, floatType>& xsi_edge,
+            const CORE::LINALG::Matrix<dimSide, 1, floatType>& xsi_side,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge, floatType>& xyze_edge,
+            const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>& xyze_side,
+            CORE::LINALG::Matrix<probDim, 1, floatType>& c,
+            CORE::LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType>& A,
+            CORE::LINALG::Matrix<probDim, dimEdge + dimSide, floatType>& B,
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& b)
         {
           // --- compute the linearization
           CORE::DRT::UTILS::shape_function_deriv1<sideType>(xsi_side, sideDeriv1_);
@@ -3808,11 +3827,11 @@ namespace CORE::GEO
 
        private:
         /// local coordinates (xi1_side, xi2_side, xi_line)
-        LINALG::Matrix<dimEdge + dimSide, 1, floatType>& xsi_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& xsi_;
 
-        const LINALG::Matrix<probDim, numNodesSide, floatType>* xyze_side_;
+        const CORE::LINALG::Matrix<probDim, numNodesSide, floatType>* xyze_side_;
 
-        const LINALG::Matrix<probDim, numNodesEdge, floatType>* xyze_edge_;
+        const CORE::LINALG::Matrix<probDim, numNodesEdge, floatType>* xyze_edge_;
 
         using MemberStoragePolicy<debug, probDim, edgeType, sideType, dimEdge, dimSide,
             numNodesEdge, numNodesSide, floatType>::sideFunct_;
@@ -3884,13 +3903,13 @@ namespace CORE::GEO
        public:
         //! constructor
         ComputeIntersectionAdaptivePrecision(
-            LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits)
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits)
             : Strategy(clnxsi_, checklimits), xsi_(xsi), clnxsi_(true), cond_infinity_(false)
         {
         }
 
-        bool operator()(const LINALG::Matrix<probDim, numNodesSide>& xyze_side,
-            const LINALG::Matrix<probDim, numNodesEdge>& xyze_edge)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesSide>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge>& xyze_edge)
         {
           if (!(((edgeType == ::DRT::Element::tet4) || (edgeType == ::DRT::Element::pyramid5) ||
                     (edgeType == ::DRT::Element::hex8) || (edgeType == ::DRT::Element::quad4) ||
@@ -4047,7 +4066,7 @@ namespace CORE::GEO
           return conv;
         }
 
-        const LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& LocalCoordinates() const
         {
           return Strategy::LocalCoordinates();
         }
@@ -4061,7 +4080,7 @@ namespace CORE::GEO
 
         bool LineWithinLimits(double tolerance = REFERENCETOL) const
         {
-          const LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
           return WithinLimits<edgeType>(xsi_line, tolerance);
         }
 
@@ -4085,10 +4104,10 @@ namespace CORE::GEO
         void GetTopologyInformation()
         {
           // tolerance of getting nearby edges
-          LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
+          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side_touched_edges;
           // tolerances of determining inside/outside surface limits
-          LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side;
-          LINALG::Matrix<dimEdge, 1, ClnWrapper> scaled_tolerance_edge;
+          CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> scaled_tolerance_side;
+          CORE::LINALG::Matrix<dimEdge, 1, ClnWrapper> scaled_tolerance_edge;
           // compute location
           this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side);
           this->GetLocalToleranceSide(
@@ -4099,7 +4118,8 @@ namespace CORE::GEO
             sideLocation_ = PointOnSurfaceLoc(true, true);
           else
             sideLocation_ = PointOnSurfaceLoc(false, true);
-          const LINALG::Matrix<dimEdge, 1, ClnWrapper> clnxsi_line(clnxsi_.A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimEdge, 1, ClnWrapper> clnxsi_line(
+              clnxsi_.A() + dimSide, true);
           if (WithinLimits<edgeType>(clnxsi_line, scaled_tolerance_edge))
             edgeLocation_ = PointOnSurfaceLoc(true, true);
           else
@@ -4116,34 +4136,34 @@ namespace CORE::GEO
         // Evaluate difference between global coordinates in the intersection when computed based on
         // side and based on edge using conversion to very high reference precision
         ClnWrapper ComputeError(
-            const LINALG::Matrix<probDim,
+            const CORE::LINALG::Matrix<probDim,
                 CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement>& refside_xyz,
-            const LINALG::Matrix<probDim,
+            const CORE::LINALG::Matrix<probDim,
                 CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement>& refedge_xyz,
-            const LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& loc_calc, int prec)
+            const CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper>& loc_calc, int prec)
         {
           unsigned int prev_prec = ClnWrapper::GetPrecision();
           ClnWrapper::SetPrecision(prec);
 
           // Converting input arrays  to higher precision floating points
-          LINALG::Matrix<probDim,
+          CORE::LINALG::Matrix<probDim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, ClnWrapper>
               cln_refside_xyz;
-          LINALG::Matrix<probDim,
+          CORE::LINALG::Matrix<probDim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<edgeType>::numNodePerElement, ClnWrapper>
               cln_refedge_xyz;
-          LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc;
 
           ConvDoubleCLN(refside_xyz, cln_refside_xyz, prec);
           ConvDoubleCLN(refedge_xyz, cln_refedge_xyz, prec);
           ConvDoubleCLN(loc_calc, cln_loc_calc, prec);
 
           // Calculating interpolation from the shapefunction of the side
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1,
-              ClnWrapper>
+          CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
               sideFunct;
-          LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_glob_calc_side;
-          LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc_side(
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_glob_calc_side;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> cln_loc_calc_side(
               cln_loc_calc.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(cln_loc_calc_side, sideFunct);
 
@@ -4158,11 +4178,11 @@ namespace CORE::GEO
           }
 
           // Calculating interpolation from the shapefunction of the edge
-          LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc_edge;
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1,
-              ClnWrapper>
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_glob_calc_edge;
+          CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<sideType>::numNodePerElement, 1, ClnWrapper>
               edgeFunct;
-          LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper> cln_loc_calc_edge(
               cln_loc_calc.A() + CORE::DRT::UTILS::DisTypeToDim<sideType>::dim, true);
 
           CORE::DRT::UTILS::shape_function<edgeType>(cln_loc_calc_edge, edgeFunct);
@@ -4177,7 +4197,7 @@ namespace CORE::GEO
           }
 
           // Evaluating error
-          LINALG::Matrix<probDim, 1, ClnWrapper>
+          CORE::LINALG::Matrix<probDim, 1, ClnWrapper>
               diff_vec;  // vector of difference between interpolation
           for (unsigned int i = 0; i < (dimEdge + dimSide); ++i)
             diff_vec(i) = cln_glob_calc_edge(i) - cln_glob_calc_side(i);
@@ -4197,31 +4217,31 @@ namespace CORE::GEO
           {
             if (sideLocation_.WithinSide())
             {
-              LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
+              CORE::LINALG::Matrix<dimSide, 1, ClnWrapper> zero_tolerance_side;
               // this means we are on the outer boundary of the tolerance
               if (not WithinLimits<sideType>(clnxsi_, zero_tolerance_side))
               {
                 // we transform our point to global tolerance and check if it is close enough to the
                 // nodal point of the side, that is common point of the touching edges
-                LINALG::Matrix<numNodesSide, 1, ClnWrapper> sideFunct;
-                LINALG::Matrix<probDim, 1, ClnWrapper> xsi_global;
+                CORE::LINALG::Matrix<numNodesSide, 1, ClnWrapper> sideFunct;
+                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> xsi_global;
                 xsi_global = 0.0;
-                const LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
+                const CORE::LINALG::Matrix<dimSide, 1> xsi_side(xsi_.A(), true);
                 CORE::DRT::UTILS::shape_function<sideType>(xsi_side, sideFunct);
                 // taking latest cln based coordinate
-                const LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
+                const CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper>& clnxyze_side_latest =
                     clnxyze_side_;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                   for (unsigned int isd = 0; isd < probDim; ++isd)
                     xsi_global(isd) += clnxyze_side_latest(isd, inode) * sideFunct(inode);
 
                 // lame method for now. find minimum distance and check if it is closer than 1e-14
-                LINALG::Matrix<probDim, 1, ClnWrapper> dist;
+                CORE::LINALG::Matrix<probDim, 1, ClnWrapper> dist;
                 ClnWrapper min_dist;
                 for (unsigned int inode = 0; inode < numNodesSide; ++inode)
                 {
                   // acess raw responsible for that node
-                  LINALG::Matrix<probDim, 1, ClnWrapper> coord(
+                  CORE::LINALG::Matrix<probDim, 1, ClnWrapper> coord(
                       clnxyze_side_latest.A() + inode * probDim, true);
                   dist.Update(1.0, coord, -1.0, xsi_global);
                   ClnWrapper tmp_dist = dist.Norm2();
@@ -4294,14 +4314,14 @@ namespace CORE::GEO
 
         static std::vector<int> touched_edges_ids_;
 
-        LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
+        CORE::LINALG::Matrix<probDim, numNodesSide, ClnWrapper> clnxyze_side_;
 
-        LINALG::Matrix<probDim, numNodesEdge, ClnWrapper> clnxyze_edge_;
+        CORE::LINALG::Matrix<probDim, numNodesEdge, ClnWrapper> clnxyze_edge_;
 
         // holds reference to original value
-        LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
 
-        LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> clnxsi_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1, ClnWrapper> clnxsi_;
 
         static bool first_run_;
 
@@ -4340,7 +4360,8 @@ namespace CORE::GEO
       {
        public:
         //! constructor
-        GenericComputeIntersection(LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits)
+        GenericComputeIntersection(
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits)
             : Strategy(xsi, checklimits),
               cond_infinity_(false),
               distance_between_(0.0),
@@ -4352,8 +4373,8 @@ namespace CORE::GEO
         {
         }
 
-        bool operator()(const LINALG::Matrix<probDim, numNodesSide>& xyze_side,
-            const LINALG::Matrix<probDim, numNodesEdge>& xyze_edge)
+        bool operator()(const CORE::LINALG::Matrix<probDim, numNodesSide>& xyze_side,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge>& xyze_edge)
         {
           bool conv;
           this->Setup(xyze_side, xyze_edge);
@@ -4408,7 +4429,7 @@ namespace CORE::GEO
           return conv;
         }
 
-        const LINALG::Matrix<dimEdge + dimSide, 1>& LocalCoordinates() const
+        const CORE::LINALG::Matrix<dimEdge + dimSide, 1>& LocalCoordinates() const
         {
           return Strategy::LocalCoordinates();
         }
@@ -4422,7 +4443,7 @@ namespace CORE::GEO
 
         bool LineWithinLimits(double tolerance = REFERENCETOL) const
         {
-          const LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(LocalCoordinates().A() + dimSide, true);
           return WithinLimits<edgeType>(xsi_line, tolerance);
         }
 
@@ -4456,11 +4477,11 @@ namespace CORE::GEO
 
           double distance_tolerance = TOPOLOGICAL_TOLERANCE;
           // get tolerance with 1e-14 around the triangle, but in local coordinates
-          LINALG::Matrix<dimSide, 1> scaled_tolerance;
+          CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance;
           this->GetLocalToleranceSide(distance_tolerance, scaled_tolerance);
           // Diagonal one, corresponds to the middle one for both triangles, tolerance there should
           // be 1e-14
-          LINALG::Matrix<3, 1> real_tolerance;
+          CORE::LINALG::Matrix<3, 1> real_tolerance;
           real_tolerance(0) = scaled_tolerance(0);
           real_tolerance(1) = 0.0;
           real_tolerance(2) = 0.0;
@@ -4485,12 +4506,12 @@ namespace CORE::GEO
         // as well as touched edges
         bool GetTopologyInformation()
         {
-          LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::LocalCoordinates();
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1> xsi = Strategy::LocalCoordinates();
           // tolerance of getting nearby edges
-          LINALG::Matrix<dimSide, 1> scaled_tolerance_side_touched_edges;
+          CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance_side_touched_edges;
           // tolerances of determining inside/outside surface limits
-          LINALG::Matrix<dimEdge, 1> scaled_tolerance_edge;
-          LINALG::Matrix<dimSide, 1> scaled_tolerance_side;
+          CORE::LINALG::Matrix<dimEdge, 1> scaled_tolerance_edge;
+          CORE::LINALG::Matrix<dimSide, 1> scaled_tolerance_side;
           // compute location finally
           if ((not this->GetLocalToleranceEdge(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_edge)) or
               (not this->GetLocalToleranceSide(INSIDE_OUTSIDE_TOLERANCE, scaled_tolerance_side)) or
@@ -4504,7 +4525,7 @@ namespace CORE::GEO
             sideLocation_ = PointOnSurfaceLoc(true, true);
           else
             sideLocation_ = PointOnSurfaceLoc(false, true);
-          const LINALG::Matrix<dimEdge, 1> xsi_line(xsi.A() + dimSide, true);
+          const CORE::LINALG::Matrix<dimEdge, 1> xsi_line(xsi.A() + dimSide, true);
           if (WithinLimits<edgeType>(xsi_line, scaled_tolerance_edge))
             edgeLocation_ = PointOnSurfaceLoc(true, true);
           else
@@ -4522,14 +4543,14 @@ namespace CORE::GEO
 
         // Evaluate difference between global coordinates in the intersection when computed based on
         // side and based on edge
-        double ComputeError(const LINALG::Matrix<probDim, numNodesSide>& side_xyz,
-            const LINALG::Matrix<probDim, numNodesEdge>& edge_xyz,
-            const LINALG::Matrix<dimEdge + dimSide, 1>& locxyz)
+        double ComputeError(const CORE::LINALG::Matrix<probDim, numNodesSide>& side_xyz,
+            const CORE::LINALG::Matrix<probDim, numNodesEdge>& edge_xyz,
+            const CORE::LINALG::Matrix<dimEdge + dimSide, 1>& locxyz)
         {
           // Calculating interpolation from the shapefunction of the side
-          LINALG::Matrix<numNodesSide, 1> sideFunct;
-          LINALG::Matrix<dimEdge + dimSide, 1> globxyz_side;
-          LINALG::Matrix<dimEdge + dimSide, 1> locxyz_side(locxyz.A(), true);
+          CORE::LINALG::Matrix<numNodesSide, 1> sideFunct;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1> globxyz_side;
+          CORE::LINALG::Matrix<dimEdge + dimSide, 1> locxyz_side(locxyz.A(), true);
           CORE::DRT::UTILS::shape_function<sideType>(locxyz_side, sideFunct);
           for (unsigned int inode = 0; inode < numNodesSide; ++inode)
           {
@@ -4541,10 +4562,10 @@ namespace CORE::GEO
 
           // Calculating interpolation from the shapefunction of the edge
 
-          LINALG::Matrix<probDim, 1> globxyz_edge;
+          CORE::LINALG::Matrix<probDim, 1> globxyz_edge;
           ;
-          LINALG::Matrix<numNodesEdge, 1> edgeFunct;
-          LINALG::Matrix<probDim, 1> locxyz_edge(locxyz.A() + dimSide, true);
+          CORE::LINALG::Matrix<numNodesEdge, 1> edgeFunct;
+          CORE::LINALG::Matrix<probDim, 1> locxyz_edge(locxyz.A() + dimSide, true);
 
           CORE::DRT::UTILS::shape_function<edgeType>(locxyz_edge, edgeFunct);
           for (unsigned int inode = 0; inode < numNodesEdge; ++inode)
@@ -4556,7 +4577,7 @@ namespace CORE::GEO
           }
 
           // Evaluating error
-          LINALG::Matrix<probDim, 1> diffVec;
+          CORE::LINALG::Matrix<probDim, 1> diffVec;
           for (unsigned int i = 0; i < (dimEdge + dimSide); ++i)
             diffVec(i) = globxyz_edge(i) - globxyz_side(i);
           double error = diffVec.Norm2();
@@ -4588,7 +4609,7 @@ namespace CORE::GEO
         double distance_between_;
 
         // holds reference to original value passed
-        LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
+        CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi_;
 
 #ifdef CLN_CALC
         bool checklimits_;
@@ -4620,7 +4641,8 @@ namespace CORE::GEO
       {
        public:
         //! constructor
-        ComputeIntersection(LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits = true)
+        ComputeIntersection(
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits = true)
             : GenericComputeIntersection<
                   NewtonSolve<ComputeIntersectionStrategy<false, probDim, edgeType, sideType>,
                       dimEdge + dimSide>,
@@ -4650,7 +4672,8 @@ namespace CORE::GEO
       {
        public:
         //! constructor
-        DebugComputeIntersection(LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits = true)
+        DebugComputeIntersection(
+            CORE::LINALG::Matrix<dimEdge + dimSide, 1>& xsi, bool checklimits = true)
             : GenericComputeIntersection<
                   NewtonSolve<DebugNewtonStrategy<
                                   ComputeIntersectionStrategy<true, probDim, edgeType, sideType>,
@@ -4671,124 +4694,129 @@ namespace CORE::GEO
 // in compute position strategy
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType elementType,
     unsigned numNodesElement, unsigned dim, typename floatType>
-LINALG::Matrix<numNodesElement, 1, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<
-    debug, probDim, elementType, numNodesElement, dim, floatType>::funct_;
+CORE::LINALG::Matrix<numNodesElement, 1, floatType>
+    CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<debug, probDim, elementType,
+        numNodesElement, dim, floatType>::funct_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType elementType,
     unsigned numNodesElement, unsigned dim, typename floatType>
-LINALG::Matrix<probDim, numNodesElement, floatType>
+CORE::LINALG::Matrix<probDim, numNodesElement, floatType>
     CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<debug, probDim, elementType,
         numNodesElement, dim, floatType>::deriv1_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType elementType,
     unsigned numNodesElement, unsigned dim, typename floatType>
-LINALG::Matrix<probDim, probDim, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<
-    debug, probDim, elementType, numNodesElement, dim, floatType>::A_;
+CORE::LINALG::Matrix<probDim, probDim, floatType>
+    CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<debug, probDim, elementType,
+        numNodesElement, dim, floatType>::A_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType elementType,
     unsigned numNodesElement, unsigned dim, typename floatType>
-LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<debug,
-    probDim, elementType, numNodesElement, dim, floatType>::b_;
+CORE::LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<
+    debug, probDim, elementType, numNodesElement, dim, floatType>::b_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType elementType,
     unsigned numNodesElement, unsigned dim, typename floatType>
-LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<debug,
-    probDim, elementType, numNodesElement, dim, floatType>::dx_;
+CORE::LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputePositionStaticMembers<
+    debug, probDim, elementType, numNodesElement, dim, floatType>::dx_;
 
 // in compute distance strategy
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<numNodesSide, 1, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
-    debug, probDim, sideType, dimSide, numNodesSide, floatType>::sideFunct_;
+CORE::LINALG::Matrix<numNodesSide, 1, floatType>
+    CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
+        numNodesSide, floatType>::sideFunct_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, numNodesSide, floatType>
+CORE::LINALG::Matrix<probDim, numNodesSide, floatType>
     CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
         numNodesSide, floatType>::sideDeriv1_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType>
+CORE::LINALG::Matrix<2 * dimSide - 1, numNodesSide, floatType>
     CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
         numNodesSide, floatType>::sideDeriv2_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, probDim, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
-    debug, probDim, sideType, dimSide, numNodesSide, floatType>::A_;
+CORE::LINALG::Matrix<probDim, probDim, floatType>
+    CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
+        numNodesSide, floatType>::A_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, probDim, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
-    debug, probDim, sideType, dimSide, numNodesSide, floatType>::B_;
+CORE::LINALG::Matrix<probDim, probDim, floatType>
+    CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
+        numNodesSide, floatType>::B_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 2 * dimSide - 1, floatType>
+CORE::LINALG::Matrix<probDim, 2 * dimSide - 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug, probDim, sideType, dimSide,
         numNodesSide, floatType>::C_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug,
-    probDim, sideType, dimSide, numNodesSide, floatType>::b_;
+CORE::LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
+    debug, probDim, sideType, dimSide, numNodesSide, floatType>::b_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug,
-    probDim, sideType, dimSide, numNodesSide, floatType>::dx_;
+CORE::LINALG::Matrix<probDim, 1, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
+    debug, probDim, sideType, dimSide, numNodesSide, floatType>::dx_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 2, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug,
-    probDim, sideType, dimSide, numNodesSide, floatType>::N_;
+CORE::LINALG::Matrix<probDim, 2, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
+    debug, probDim, sideType, dimSide, numNodesSide, floatType>::N_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 2, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<debug,
-    probDim, sideType, dimSide, numNodesSide, floatType>::nvec_;
+CORE::LINALG::Matrix<probDim, 2, floatType> CORE::GEO::CUT::KERNEL::ComputeDistanceStaticMembers<
+    debug, probDim, sideType, dimSide, numNodesSide, floatType>::nvec_;
 
 // in compute intersection strategy
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<numNodesSide, 1, floatType>
+CORE::LINALG::Matrix<numNodesSide, 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::sideFunct_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<numNodesEdge, 1, floatType>
+CORE::LINALG::Matrix<numNodesEdge, 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::edgeFunct_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<dimSide, numNodesSide, floatType>
+CORE::LINALG::Matrix<dimSide, numNodesSide, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::sideDeriv1_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<dimEdge, numNodesEdge, floatType>
+CORE::LINALG::Matrix<dimEdge, numNodesEdge, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::edgeDeriv1_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType>
+CORE::LINALG::Matrix<dimEdge + dimSide, dimEdge + dimSide, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::A_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, dimEdge + dimSide, floatType>
+CORE::LINALG::Matrix<probDim, dimEdge + dimSide, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::B_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<dimEdge + dimSide, 1, floatType>
+CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::b_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<probDim, 1, floatType>
+CORE::LINALG::Matrix<probDim, 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::c_;
 template <bool debug, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,
     unsigned numNodesEdge, unsigned numNodesSide, typename floatType>
-LINALG::Matrix<dimEdge + dimSide, 1, floatType>
+CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>
     CORE::GEO::CUT::KERNEL::ComputeIntersectionStaticMembers<debug, probDim, edgeType, sideType,
         dimEdge, dimSide, numNodesEdge, numNodesSide, floatType>::dx_;
 

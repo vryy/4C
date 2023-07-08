@@ -39,7 +39,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
       myknots_(nsd_ele_),
       mypknots_(nsd_),
       normalfac_(1.0),
-      ephinp_(numdofpernode_, LINALG::Matrix<nen_, 1>(true)),
+      ephinp_(numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true)),
       edispnp_(true),
       diffus_(numscal_, 0),
       shcacp_(0.0),
@@ -62,7 +62,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::SetupCalc(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Now do the nurbs specific stuff (for isogeometric elements)
   if (DRT::NURBS::IsNurbs(distype))
@@ -135,7 +135,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
         lmdisp[inode * nsd_ + idim] = la[ndsdisp].lm_[inode * numdispdofpernode + idim];
 
     // extract local values of displacement field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*dispnp, edispnp_, lmdisp);
 
     // add nodal displacements to point coordinates
     UpdateNodeCoordinates();
@@ -208,8 +208,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from global vector
-      std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+          numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get condition
       Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -299,8 +300,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
-      std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+          numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
       // get number of dofset associated with velocity related dofs
       const int ndsvel = scatraparams_->NdsVel();
@@ -320,10 +322,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
           lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // we deal with a nsd_-dimensional flow field
-      LINALG::Matrix<nsd_, nen_> econvel(true);
+      CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -429,7 +431,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNeumann(DRT:
     double functfac = 1.0;
 
     // determine global coordinates of current Gauss point
-    LINALG::Matrix<nsd_, 1> coordgp;  // coordinate has always to be given in 3D!
+    CORE::LINALG::Matrix<nsd_, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.MultiplyNN(xyze_, funct_);
 
     int functnum = -1;
@@ -481,7 +483,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
     // get first 3 nodes in parent element
     auto* p_ele = ele->ParentElement();
     dsassert(p_ele->NumNode() >= 3, "Parent element must at least have 3 nodes.");
-    LINALG::Matrix<nsd_, 3> xyz_parent_ele;
+    CORE::LINALG::Matrix<nsd_, 3> xyz_parent_ele;
 
     for (int i_node = 0; i_node < 3; ++i_node)
     {
@@ -543,8 +545,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   // get number of dofset associated with velocity related dofs
   const int ndsvel = scatraparams_->NdsVel();
@@ -564,10 +567,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // we deal with a nsd_-dimensional flow field
-  LINALG::Matrix<nsd_, nen_> econvel(true);
+  CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
   // extract local values of convective velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -642,8 +645,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::NeumannInflow(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-    const int k)
+    Teuchos::RCP<const MAT::Material> material,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k)
 {
   // initialization
   double density(0.);
@@ -691,8 +694,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetDensity(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcConvectiveFlux(
-    const DRT::FaceElement* ele, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
+    const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -739,7 +742,7 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Calc
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ConvectiveHeatTransfer(
     const DRT::FaceElement* ele, Teuchos::RCP<const MAT::Material> material,
-    const std::vector<LINALG::Matrix<nen_, 1>>& ephinp, Epetra_SerialDenseMatrix& emat,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, Epetra_SerialDenseMatrix& emat,
     Epetra_SerialDenseVector& erhs, const double heatranscoeff, const double surtemp)
 {
   // integration points and weights
@@ -819,7 +822,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateSpatialDerivativeOfAreaIntegrationFactor(
         const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-        LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd)
+        CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd)
 {
   // safety check
   if (nsd_ele_ != 2)
@@ -828,7 +831,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
   // compute derivatives of spatial coordinates w.r.t. reference coordinates
-  static LINALG::Matrix<nsd_ele_, nsd_> dxyz_drs;
+  static CORE::LINALG::Matrix<nsd_ele_, nsd_> dxyz_drs;
   dxyz_drs.MultiplyNT(deriv_, xyze_);
 
   // compute basic components of shape derivatives
@@ -862,7 +865,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvalShapeFuncAndIntFac(
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-    LINALG::Matrix<nsd_, 1>* normalvec)
+    CORE::LINALG::Matrix<nsd_, 1>* normalvec)
 {
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
@@ -915,13 +918,13 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
     EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
         const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-        const LINALG::Matrix<nsd_, nen_>& XYZe)
+        const CORE::LINALG::Matrix<nsd_, nen_>& XYZe)
 {
   EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
 
   double detg(0.0);
-  LINALG::Matrix<nsd_, 1>* normalvec(nullptr);
-  LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
+  CORE::LINALG::Matrix<nsd_, 1>* normalvec(nullptr);
+  CORE::LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
   CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
       XYZe, deriv_, metrictensor, detg, normalvec);
 
@@ -931,12 +934,12 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
-    const LINALG::Matrix<3, nen_>& xyze)
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const CORE::LINALG::Matrix<3, nen_>& xyze)
 {
   if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-  LINALG::Matrix<3, 1> normal(true), dist1(true), dist2(true);
+  CORE::LINALG::Matrix<3, 1> normal(true), dist1(true), dist2(true);
   for (int i = 0; i < 3; i++)
   {
     dist1(i) = xyze(i, 1) - xyze(i, 0);
@@ -956,12 +959,12 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
-    const LINALG::Matrix<2, nen_>& xyze)
+CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const CORE::LINALG::Matrix<2, nen_>& xyze)
 {
   if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-  LINALG::Matrix<2, 1> normal(true);
+  CORE::LINALG::Matrix<2, 1> normal(true);
 
   normal(0) = xyze(1, 1) - xyze(1, 0);
   normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
@@ -977,12 +980,13 @@ LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
-    const LINALG::Matrix<3, nen_>& xyze, const LINALG::Matrix<3, 3>& nodes_parent_ele)
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
+    const CORE::LINALG::Matrix<3, nen_>& xyze, const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele)
 {
   if (DRT::NURBS::IsNurbs(distype)) dserror("Element normal not implemented for NURBS");
 
-  LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true), parent_ele_v2(true);
+  CORE::LINALG::Matrix<3, 1> normal(true), boundary_ele(true), parent_ele_v1(true),
+      parent_ele_v2(true);
 
   for (int dim = 0; dim < 3; ++dim)
   {
@@ -996,7 +1000,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Get
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
   // Otherwise, change the sign of the normal vector
-  LINALG::Matrix<3, 1> distance(true), inward_vector(true);
+  CORE::LINALG::Matrix<3, 1> distance(true), inward_vector(true);
   // find node on parent element, that has non-zero distance to all boundary nodes
   for (int i_parent_node = 0; i_parent_node < 3; ++i_parent_node)
   {
@@ -1041,7 +1045,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 {
   // extract local nodal values on present and opposite sides of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(numscal_);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(numscal_);
   ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // dummy element matrix and vector
@@ -1052,11 +1056,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  LINALG::Matrix<nsd_, 1> normal;
+  CORE::LINALG::Matrix<nsd_, 1> normal;
 
   // element slave mechanical stress tensor
   const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
-  std::vector<LINALG::Matrix<nen_, 1>> eslavestress_vector(6, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
+      6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
     ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
         scatraparams_->NdsTwoTensorQuantity());
@@ -1088,16 +1093,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 template <DRT::Element::DiscretizationType distype, int probdim>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICouplingAtIntegrationPoint(
-    const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-    const std::vector<LINALG::Matrix<
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+    const std::vector<CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
         emasterphinp,
-    const double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-    const LINALG::Matrix<
+    const double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         funct_master,
-    const LINALG::Matrix<nen_, 1>& test_slave,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
         test_master,
     const int numscal,
@@ -1199,14 +1204,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoContactFactor(
-    const bool is_pseudo_contact, const std::vector<LINALG::Matrix<nen_, 1>>& eslavestress_vector,
-    const LINALG::Matrix<nsd_, 1>& gp_normal, const LINALG::Matrix<nen_, 1>& funct_slave)
+    const bool is_pseudo_contact,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavestress_vector,
+    const CORE::LINALG::Matrix<nsd_, 1>& gp_normal,
+    const CORE::LINALG::Matrix<nen_, 1>& funct_slave)
 {
   if (is_pseudo_contact)
   {
-    static LINALG::Matrix<1, 1> normal_stress_comp_gp;
-    static LINALG::Matrix<nsd_, nsd_> current_gp_stresses;
-    static LINALG::Matrix<nsd_, 1> tmp;
+    static CORE::LINALG::Matrix<1, 1> normal_stress_comp_gp;
+    static CORE::LINALG::Matrix<nsd_, nsd_> current_gp_stresses;
+    static CORE::LINALG::Matrix<nsd_, 1> tmp;
     current_gp_stresses(0, 0) = funct_slave.Dot(eslavestress_vector[0]);
     current_gp_stresses(1, 1) = funct_slave.Dot(eslavestress_vector[1]);
     current_gp_stresses(2, 2) = funct_slave.Dot(eslavestress_vector[2]);
@@ -1234,14 +1241,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
 {
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(numscal_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      numscal_, CORE::LINALG::Matrix<nen_, 1>(true));
   ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  LINALG::Matrix<nsd_, 1> normal;
+  CORE::LINALG::Matrix<nsd_, 1> normal;
 
   // element slave mechanical stress tensor
   const bool is_pseudo_contact = scatraparamsboundary_->IsPseudoContact();
-  std::vector<LINALG::Matrix<nen_, 1>> eslavestress_vector(6, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> eslavestress_vector(
+      6, CORE::LINALG::Matrix<nen_, 1>(true));
   if (is_pseudo_contact)
     ExtractNodeValues(eslavestress_vector, discretization, la, "mechanicalStressState",
         scatraparams_->NdsTwoTensorQuantity());
@@ -1269,7 +1278,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
         CalculatePseudoContactFactor(is_pseudo_contact, eslavestress_vector, normal, funct_);
 
     // evaluate shape derivatives
-    static LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
+    static CORE::LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
       EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
 
@@ -1363,11 +1372,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
-    LINALG::Matrix<nen_, 1>& estate, const DRT::Discretization& discretization,
+    CORE::LINALG::Matrix<nen_, 1>& estate, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // initialize matrix vector
-  std::vector<LINALG::Matrix<nen_, 1>> estate_temp(1, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> estate_temp(1, CORE::LINALG::Matrix<nen_, 1>(true));
 
   // call more general routine
   ExtractNodeValues(estate_temp, discretization, la, statename, nds);
@@ -1380,7 +1389,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
-    std::vector<LINALG::Matrix<nen_, 1>>& estate, const DRT::Discretization& discretization,
+    std::vector<CORE::LINALG::Matrix<nen_, 1>>& estate, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
@@ -1389,7 +1398,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractNodeValues(
     dserror("Cannot extract state vector \"" + statename + "\" from discretization!");
 
   // extract nodal state variables associated with boundary element
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1499,8 +1508,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcRobinBoundary(
   if (phinp == Teuchos::null) dserror("Cannot read state vector \"phinp\" from discretization!");
 
   // extract local nodal state variables from global state vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   //////////////////////////////////////////////////////////////////////
   //                  build RHS and StiffMat
@@ -1591,16 +1601,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
   // extract local values from global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
   //------------get membrane concentration at the interface (i.e. within the
   // membrane)------------------
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
   if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephibar(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
 
   // ------------get values of wall shear stress-----------------------
   // get number of dofset associated with pressure related dofs
@@ -1617,8 +1629,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
     for (int idim = 0; idim < nsd_; ++idim)
       lmwss[inode * nsd_ + idim] = la[ndswss].lm_[inode * numwssdofpernode + idim];
 
-  LINALG::Matrix<nsd_, nen_> ewss(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
+  CORE::LINALG::Matrix<nsd_, nen_> ewss(true);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
@@ -1649,7 +1661,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateSurfacePerm
         SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
     // define vector for wss concentration values at nodes
-    //  LINALG::Matrix<nen_,1> fwssnod(true);
+    //  CORE::LINALG::Matrix<nen_,1> fwssnod(true);
 
     // loop over all scalars
     for (int k = 0; k < numdofpernode_; ++k)
@@ -1723,8 +1735,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
   // extract local values from global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephinp(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, lm);
 
 
   //------------get membrane concentration at the interface (i.e. within the
@@ -1732,8 +1745,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   Teuchos::RCP<const Epetra_Vector> phibar = discretization.GetState("MembraneConcentration");
   if (phibar == Teuchos::null) dserror("Cannot get state vector 'MembraneConcentration'");
   // extract local values from global vector
-  std::vector<LINALG::Matrix<nen_, 1>> ephibar(numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> ephibar(
+      numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phibar, ephibar, lm);
 
 
   //--------get values of pressure at the interface ----------------------
@@ -1750,8 +1764,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
   for (int inode = 0; inode < nen_; ++inode)
     lmpres[inode] = la[ndspres].lm_[inode * numveldofpernode + nsd_];  // only pressure dofs
 
-  LINALG::Matrix<nen_, 1> epressure(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*pressure, epressure, lmpres);
+  CORE::LINALG::Matrix<nen_, 1> epressure(true);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*pressure, epressure, lmpres);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   // rotsymmpbc_->RotateMyValuesIfNecessary(epressure);
@@ -1772,8 +1786,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
     for (int idim = 0; idim < nsd_; ++idim)
       lmwss[inode * nsd_ + idim] = la[ndswss].lm_[inode * numwssdofpernode + idim];
 
-  LINALG::Matrix<nsd_, nen_> ewss(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
+  CORE::LINALG::Matrix<nsd_, nen_> ewss(true);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*wss, ewss, lmwss);
 
   // ------------get current condition----------------------------------
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -1877,14 +1891,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateKedemKatcha
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WSSinfluence(
-    const LINALG::Matrix<nsd_, nen_>& ewss, const bool wss_onoff, const std::vector<double>* coeffs)
+    const CORE::LINALG::Matrix<nsd_, nen_>& ewss, const bool wss_onoff,
+    const std::vector<double>* coeffs)
 {
   // permeabilty scaling factor at integration point
   double facWSS = 1.0;
 
   if (wss_onoff)
   {
-    LINALG::Matrix<nsd_, 1> wss(true);
+    CORE::LINALG::Matrix<nsd_, 1> wss(true);
     for (int ii = 0; ii < nsd_; ii++)
       for (int jj = 0; jj < nen_; jj++) wss(ii) += ewss(ii, jj) * funct_(jj);
 
@@ -2000,10 +2015,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
       plmvel[inode * pnsd + idim] = pla[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // we deal with a nsd_-dimensional flow field
-  LINALG::Matrix<pnsd, pnen> econvel(true);
+  CORE::LINALG::Matrix<pnsd, pnen> econvel(true);
 
   // extract local values of convective velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnsd, pnen>>(*convel, econvel, plmvel);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnsd, pnen>>(*convel, econvel, plmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->template RotateMyValuesIfNecessary<pnsd, pnen>(econvel);
@@ -2013,8 +2028,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
-  std::vector<LINALG::Matrix<pnen, 1>> ephinp(numscal_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen, 1>>(*phinp, ephinp, pla[0].lm_);
+  std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, pla[0].lm_);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop
@@ -2022,65 +2037,66 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // reshape element matrices and vectors and init to zero, construct views
   elemat_epetra.Shape(pnen, pnen);
   elevec_epetra.Size(pnen);
-  LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
-  LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
+  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
+  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
 
   // (boundary) element local node coordinates
-  LINALG::Matrix<pnsd, bnen> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::LINALG::Matrix<pnsd, bnen> bxyze(true);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, CORE::LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
-  LINALG::Matrix<pnsd, pnen> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::LINALG::Matrix<pnsd, pnen> pxyze(true);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, CORE::LINALG::Matrix<pnsd, pnen>>(
+      pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
-  LINALG::Matrix<bnsd, 1> bxsi(true);
-  LINALG::Matrix<pnsd, 1> pxsi(true);
+  CORE::LINALG::Matrix<bnsd, 1> bxsi(true);
+  CORE::LINALG::Matrix<pnsd, 1> pxsi(true);
 
   // transposed jacobian "dx/ds" and inverse of transposed jacobian "ds/dx"
   // for parent element
-  LINALG::Matrix<pnsd, pnsd> pxjm(true);
-  LINALG::Matrix<pnsd, pnsd> pxji(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> pxjm(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> pxji(true);
 
   // metric tensor for (boundary) element
-  LINALG::Matrix<bnsd, bnsd> bmetrictensor(true);
+  CORE::LINALG::Matrix<bnsd, bnsd> bmetrictensor(true);
 
   // (outward-pointing) unit normal vector to (boundary) element
-  LINALG::Matrix<pnsd, 1> bnormal(true);
+  CORE::LINALG::Matrix<pnsd, 1> bnormal(true);
 
   // velocity vector at integration point
-  LINALG::Matrix<pnsd, 1> velint;
+  CORE::LINALG::Matrix<pnsd, 1> velint;
 
   // gradient of scalar value at integration point
-  LINALG::Matrix<pnsd, 1> gradphi;
+  CORE::LINALG::Matrix<pnsd, 1> gradphi;
 
   // (boundary) element shape functions, local and global derivatives
-  LINALG::Matrix<bnen, 1> bfunct(true);
-  LINALG::Matrix<bnsd, bnen> bderiv(true);
-  LINALG::Matrix<bnsd, bnen> bderxy(true);
+  CORE::LINALG::Matrix<bnen, 1> bfunct(true);
+  CORE::LINALG::Matrix<bnsd, bnen> bderiv(true);
+  CORE::LINALG::Matrix<bnsd, bnen> bderxy(true);
 
   // parent element shape functions, local and global derivatives
-  LINALG::Matrix<pnen, 1> pfunct(true);
-  LINALG::Matrix<pnsd, pnen> pderiv(true);
-  LINALG::Matrix<pnsd, pnen> pderxy(true);
+  CORE::LINALG::Matrix<pnen, 1> pfunct(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pderiv(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pderxy(true);
 
   //------------------------------------------------------------------------
   // additional matrices and vectors for mixed-hybrid formulation
   //------------------------------------------------------------------------
   // for volume integrals
-  LINALG::Matrix<pnsd * pnen, pnsd * pnen> mat_s_q(true);
-  LINALG::Matrix<pnsd * pnen, pnen> mat_s_gradphi(true);
+  CORE::LINALG::Matrix<pnsd * pnen, pnsd * pnen> mat_s_q(true);
+  CORE::LINALG::Matrix<pnsd * pnen, pnen> mat_s_gradphi(true);
 
-  LINALG::Matrix<pnsd * pnen, 1> vec_s_gradphi(true);
+  CORE::LINALG::Matrix<pnsd * pnen, 1> vec_s_gradphi(true);
 
   // for boundary integrals
-  LINALG::Matrix<pnen, pnsd * pnen> mat_w_q_o_n(true);
-  LINALG::Matrix<pnsd * pnen, pnen> mat_s_o_n_phi(true);
+  CORE::LINALG::Matrix<pnen, pnsd * pnen> mat_w_q_o_n(true);
+  CORE::LINALG::Matrix<pnsd * pnen, pnen> mat_s_o_n_phi(true);
 
-  LINALG::Matrix<pnsd * pnen, 1> vec_s_o_n_phi_minus_g(true);
+  CORE::LINALG::Matrix<pnsd * pnen, 1> vec_s_o_n_phi_minus_g(true);
 
   // inverse matrix
-  LINALG::Matrix<pnsd * pnen, pnsd * pnen> inv_s_q(true);
+  CORE::LINALG::Matrix<pnsd * pnen, pnsd * pnen> inv_s_q(true);
 
   //------------------------------------------------------------------------
   // check whether Nitsche (default) or mixed-hybrid formulation as well as
@@ -2311,7 +2327,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
 
     // global coordinates of current integration point from (boundary) element
-    LINALG::Matrix<pnsd, 1> coordgp(true);
+    CORE::LINALG::Matrix<pnsd, 1> coordgp(true);
     for (int A = 0; A < bnen; ++A)
     {
       for (int j = 0; j < pnsd; ++j)
@@ -2354,8 +2370,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     // check whether integration-point coordinates evaluated from
     // (boundary) and parent element match
     //--------------------------------------------------------------------
-    LINALG::Matrix<pnsd, 1> check(true);
-    LINALG::Matrix<pnsd, 1> diff(true);
+    CORE::LINALG::Matrix<pnsd, 1> check(true);
+    CORE::LINALG::Matrix<pnsd, 1> diff(true);
 
     for (int A = 0; A < pnen; ++A)
     {
@@ -2610,7 +2626,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
     // matrix inversion of flux-flux block
     inv_s_q = mat_s_q;
 
-    LINALG::FixedSizeSerialDenseSolver<pnsd * pnen, pnsd * pnen> solver;
+    CORE::LINALG::FixedSizeSerialDenseSolver<pnsd * pnen, pnsd * pnen> solver;
 
     solver.SetMatrix(inv_s_q);
     solver.Invert();
@@ -2691,10 +2707,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   if (phinp == Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
-  std::vector<LINALG::Matrix<pnen, 1>> ephinp(numscal_);
-  std::vector<LINALG::Matrix<pnen, 1>> ephin(numscal_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen, 1>>(*phinp, ephinp, plm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<pnen, 1>>(*phin, ephin, plm);
+  std::vector<CORE::LINALG::Matrix<pnen, 1>> ephinp(numscal_);
+  std::vector<CORE::LINALG::Matrix<pnen, 1>> ephin(numscal_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phinp, ephinp, plm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<pnen, 1>>(*phin, ephin, plm);
 
   //------------------------------------------------------------------------
   // preliminary definitions for integration loop
@@ -2702,47 +2718,48 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   // reshape element matrices and vectors and init to zero, construct views
   elemat_epetra.Shape(pnen, pnen);
   elevec_epetra.Size(pnen);
-  LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
-  LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
+  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
+  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
 
   // (boundary) element local node coordinates
-  LINALG::Matrix<pnsd, bnen> bxyze(true);
-  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
+  CORE::LINALG::Matrix<pnsd, bnen> bxyze(true);
+  CORE::GEO::fillInitialPositionArray<bdistype, pnsd, CORE::LINALG::Matrix<pnsd, bnen>>(ele, bxyze);
 
   // parent element local node coordinates
-  LINALG::Matrix<pnsd, pnen> pxyze(true);
-  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, LINALG::Matrix<pnsd, pnen>>(pele, pxyze);
+  CORE::LINALG::Matrix<pnsd, pnen> pxyze(true);
+  CORE::GEO::fillInitialPositionArray<pdistype, pnsd, CORE::LINALG::Matrix<pnsd, pnen>>(
+      pele, pxyze);
 
   // coordinates of integration points for (boundary) and parent element
-  LINALG::Matrix<bnsd, 1> bxsi(true);
-  LINALG::Matrix<pnsd, 1> pxsi(true);
+  CORE::LINALG::Matrix<bnsd, 1> bxsi(true);
+  CORE::LINALG::Matrix<pnsd, 1> pxsi(true);
 
   // transposed jacobian "dx/ds" and inverse of transposed jacobian "ds/dx"
   // for parent element
-  LINALG::Matrix<pnsd, pnsd> pxjm(true);
-  LINALG::Matrix<pnsd, pnsd> pxji(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> pxjm(true);
+  CORE::LINALG::Matrix<pnsd, pnsd> pxji(true);
 
   // metric tensor for (boundary) element
-  LINALG::Matrix<bnsd, bnsd> bmetrictensor(true);
+  CORE::LINALG::Matrix<bnsd, bnsd> bmetrictensor(true);
 
   // (outward-pointing) unit normal vector to (boundary) element
-  LINALG::Matrix<pnsd, 1> bnormal(true);
+  CORE::LINALG::Matrix<pnsd, 1> bnormal(true);
 
   // velocity vector at integration point
-  LINALG::Matrix<pnsd, 1> velint;
+  CORE::LINALG::Matrix<pnsd, 1> velint;
 
   // gradient of scalar value at integration point
-  LINALG::Matrix<pnsd, 1> gradphi;
+  CORE::LINALG::Matrix<pnsd, 1> gradphi;
 
   // (boundary) element shape functions, local and global derivatives
-  LINALG::Matrix<bnen, 1> bfunct(true);
-  LINALG::Matrix<bnsd, bnen> bderiv(true);
-  LINALG::Matrix<bnsd, bnen> bderxy(true);
+  CORE::LINALG::Matrix<bnen, 1> bfunct(true);
+  CORE::LINALG::Matrix<bnsd, bnen> bderiv(true);
+  CORE::LINALG::Matrix<bnsd, bnen> bderxy(true);
 
   // parent element shape functions, local and global derivatives
-  LINALG::Matrix<pnen, 1> pfunct(true);
-  LINALG::Matrix<pnsd, pnen> pderiv(true);
-  LINALG::Matrix<pnsd, pnen> pderxy(true);
+  CORE::LINALG::Matrix<pnen, 1> pfunct(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pderiv(true);
+  CORE::LINALG::Matrix<pnsd, pnen> pderxy(true);
 
 
   // use one-point Gauss rule to do calculations at element center
@@ -2821,7 +2838,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
     CORE::DRT::UTILS::shape_function_deriv1<bdistype>(bxsi, bderiv);
 
     // global coordinates of current integration point from (boundary) element
-    LINALG::Matrix<pnsd, 1> coordgp(true);
+    CORE::LINALG::Matrix<pnsd, 1> coordgp(true);
     for (int A = 0; A < bnen; ++A)
     {
       for (int j = 0; j < pnsd; ++j)
@@ -2869,7 +2886,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
       //  mat              -1/4* dtau^2 | w, n*grad(D(psi) ) |
       //--------------------------      |                    |
 
-      LINALG::Matrix<1, pnen> derxy_normal;
+      CORE::LINALG::Matrix<1, pnen> derxy_normal;
       derxy_normal.Clear();
       derxy_normal.MultiplyTN(bnormal, pderxy);
 
@@ -2892,10 +2909,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
       //--------------------------      |                    |
 
       // update grad_dist_n
-      LINALG::Matrix<pnsd, 1> grad_dist_n(true);
+      CORE::LINALG::Matrix<pnsd, 1> grad_dist_n(true);
       grad_dist_n.Multiply(pderxy, ephin[dofindex]);
 
-      LINALG::Matrix<1, 1> grad_dist_n_normal(true);
+      CORE::LINALG::Matrix<1, 1> grad_dist_n_normal(true);
       grad_dist_n_normal.MultiplyTN(bnormal, grad_dist_n);
 
       for (int vi = 0; vi < pnen; ++vi)
@@ -2911,10 +2928,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
       //    1/4*delta_tau^2 | w, n*grad(psi   - psi ) |
       //                    |              i          |
       // update grad_dist_n
-      LINALG::Matrix<pnsd, 1> grad_dist_npi(true);
+      CORE::LINALG::Matrix<pnsd, 1> grad_dist_npi(true);
       grad_dist_npi.Multiply(pderxy, ephinp[dofindex]);
 
-      LINALG::Matrix<1, 1> grad_dist_npi_normal;
+      CORE::LINALG::Matrix<1, 1> grad_dist_npi_normal;
       grad_dist_npi_normal.Clear();
       grad_dist_npi_normal.MultiplyTN(bnormal, grad_dist_npi);
 
@@ -2964,56 +2981,56 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
 // explicit instantiation of template methods
 template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<
-    DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
-    const std::vector<LINALG::Matrix<
+    DRT::Element::tri3>(const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-    const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
-    const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<
-    DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
-    const std::vector<LINALG::Matrix<
+    DRT::Element::quad4>(const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-    const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
-    const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<
-    DRT::Element::tri3>(const std::vector<LINALG::Matrix<nen_, 1>>&,
-    const std::vector<LINALG::Matrix<
+    DRT::Element::tri3>(const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
-    const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
-    const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&);
 template void
 DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::EvaluateS2ICouplingAtIntegrationPoint<
-    DRT::Element::quad4>(const std::vector<LINALG::Matrix<nen_, 1>>&,
-    const std::vector<LINALG::Matrix<
+    DRT::Element::quad4>(const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
+    const std::vector<CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
-    const double, const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const double, const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
-    const LINALG::Matrix<nen_, 1>&,
-    const LINALG::Matrix<
+    const CORE::LINALG::Matrix<nen_, 1>&,
+    const CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
     const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double, const double,
     Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&, Epetra_SerialDenseMatrix&,

@@ -277,14 +277,14 @@ namespace CORE::GEO
       template <class T>
       void FixShapeAndGetCoordinates(T& xyze) const
       {
-        LINALG::SerialDenseMatrix xyze_corrected(ProbDim(), NumNodes());
+        CORE::LINALG::SerialDenseMatrix xyze_corrected(ProbDim(), NumNodes());
 
         Coordinates(xyze_corrected.A());
 
         // copy the result back into the given matrix
         for (unsigned c = 0; c < NumNodes(); ++c)
         {
-          LINALG::SerialDenseMatrix xyz(View, &xyze_corrected(0, c), ProbDim(), ProbDim(), 1);
+          CORE::LINALG::SerialDenseMatrix xyz(View, &xyze_corrected(0, c), ProbDim(), ProbDim(), 1);
           std::copy(xyz.A(), xyz.A() + ProbDim(), &xyze(0, c));
           // fill the rows out of range with zeros
           std::fill(&xyze(0, c) + ProbDim(), &xyze(0, c) + xyze.M(), 0.0);
@@ -723,11 +723,11 @@ namespace CORE::GEO
        *
        *  check based on ray-tracing technique set is_closer and return
        *  \TRUE if check was successful */
-      bool IsCloserSide(const LINALG::Matrix<probdim, 1>& startpoint_xyz,
+      bool IsCloserSide(const CORE::LINALG::Matrix<probdim, 1>& startpoint_xyz,
           CORE::GEO::CUT::Side* other, bool& is_closer);
 
       /// get all edges adjacent to given local coordinates
-      void EdgeAt(const LINALG::Matrix<dim, 1>& rs, std::vector<Edge*>& edges)
+      void EdgeAt(const CORE::LINALG::Matrix<dim, 1>& rs, std::vector<Edge*>& edges)
       {
         switch (sidetype)
         {
@@ -763,7 +763,7 @@ namespace CORE::GEO
        *
        *  \param rs  (in)  : parameter space coordinates
        *  \param xyz (out) : corresponding spatial coordinates */
-      void PointAt(const LINALG::Matrix<dim, 1>& rs, LINALG::Matrix<probdim, 1>& xyz)
+      void PointAt(const CORE::LINALG::Matrix<dim, 1>& rs, CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
         ConcreteElement<probdim, sidetype>::PointAt(rs, xyz);
       }
@@ -771,25 +771,26 @@ namespace CORE::GEO
       /** \brief get global coordinates of the center of the side
        *
        *  \param midpoint (out) : mid-point spatial coordinates */
-      void SideCenter(LINALG::Matrix<probdim, 1>& midpoint)
+      void SideCenter(CORE::LINALG::Matrix<probdim, 1>& midpoint)
       {
         ConcreteElement<probdim, sidetype>::ElementCenter(midpoint);
       }
 
       ///  lies point with given coordinates within this side?
-      bool WithinSide(
-          const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rs, double& dist);
+      bool WithinSide(const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rs,
+          double& dist);
 
       /// compute the cut of a ray through two points with the 2D space defined by the side
-      bool RayCut(const LINALG::Matrix<probdim, 1>& p1_xyz,
-          const LINALG::Matrix<probdim, 1>& p2_xyz, LINALG::Matrix<dim, 1>& rs, double& line_xi);
+      bool RayCut(const CORE::LINALG::Matrix<probdim, 1>& p1_xyz,
+          const CORE::LINALG::Matrix<probdim, 1>& p2_xyz, CORE::LINALG::Matrix<dim, 1>& rs,
+          double& line_xi);
 
       /** \brief Calculates the local coordinates (rst) with respect to the element shape from its
        *  global coordinates (xyz), return TRUE if successful
        *
        *  \remark The last coordinate of the variable rsd holds the distance to the side. */
-      bool LocalCoordinates(const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<probdim, 1>& rsd,
-          bool allow_dist = false, double tol = POSITIONTOL);
+      bool LocalCoordinates(const CORE::LINALG::Matrix<probdim, 1>& xyz,
+          CORE::LINALG::Matrix<probdim, 1>& rsd, bool allow_dist = false, double tol = POSITIONTOL);
 
       /// get local coordinates (rst) with respect to the element shape for all the corner points
       virtual void LocalCornerCoordinates(double* rst_corners)
@@ -823,15 +824,15 @@ namespace CORE::GEO
       }
 
       /// Calculates the normal vector with respect to the element shape at local coordinates xsi
-      void Normal(const LINALG::Matrix<dim, 1>& xsi, LINALG::Matrix<probdim, 1>& normal,
+      void Normal(const CORE::LINALG::Matrix<dim, 1>& xsi, CORE::LINALG::Matrix<probdim, 1>& normal,
           bool unitnormal = true)
       {
         // get derivatives at pos
-        LINALG::Matrix<probdim, numNodesSide> side_xyze(true);
+        CORE::LINALG::Matrix<probdim, numNodesSide> side_xyze(true);
         this->Coordinates(side_xyze);
 
-        LINALG::Matrix<dim, numNodesSide> deriv(true);
-        LINALG::Matrix<dim, probdim> A(true);
+        CORE::LINALG::Matrix<dim, numNodesSide> deriv(true);
+        CORE::LINALG::Matrix<dim, probdim> A(true);
 
         CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
@@ -876,25 +877,26 @@ namespace CORE::GEO
       /** Calculates a Basis of two tangential vectors (non-orthogonal!) and
        *  the normal vector with respect to the element shape at center of the side.
        *  All basis vectors are of unit length */
-      void BasisAtCenter(LINALG::Matrix<probdim, 1>& t1, LINALG::Matrix<probdim, 1>& t2,
-          LINALG::Matrix<probdim, 1>& n)
+      void BasisAtCenter(CORE::LINALG::Matrix<probdim, 1>& t1, CORE::LINALG::Matrix<probdim, 1>& t2,
+          CORE::LINALG::Matrix<probdim, 1>& n)
       {
-        LINALG::Matrix<dim, 1> center_rs(CORE::DRT::UTILS::getLocalCenterPosition<dim>(sidetype));
+        CORE::LINALG::Matrix<dim, 1> center_rs(
+            CORE::DRT::UTILS::getLocalCenterPosition<dim>(sidetype));
         Basis(center_rs, t1, t2, n);
       }
 
       /** Calculates a Basis of two tangential vectors (non-orthogonal!) and
        * the normal vector with respect to the element shape at local coordinates xsi.
        * All basis vectors are of unit length. */
-      void Basis(const LINALG::Matrix<dim, 1>& xsi, LINALG::Matrix<probdim, 1>& t1,
-          LINALG::Matrix<probdim, 1>& t2, LINALG::Matrix<probdim, 1>& n)
+      void Basis(const CORE::LINALG::Matrix<dim, 1>& xsi, CORE::LINALG::Matrix<probdim, 1>& t1,
+          CORE::LINALG::Matrix<probdim, 1>& t2, CORE::LINALG::Matrix<probdim, 1>& n)
       {
         // get derivatives at pos
-        LINALG::Matrix<probdim, numNodesSide> side_xyze(true);
+        CORE::LINALG::Matrix<probdim, numNodesSide> side_xyze(true);
         this->Coordinates(side_xyze);
 
-        LINALG::Matrix<dim, numNodesSide> deriv(true);
-        LINALG::Matrix<dim, probdim> A(true);
+        CORE::LINALG::Matrix<dim, numNodesSide> deriv(true);
+        CORE::LINALG::Matrix<dim, probdim> A(true);
 
         CORE::DRT::UTILS::shape_function_deriv1<sidetype>(xsi, deriv);
         A.MultiplyNT(deriv, side_xyze);
@@ -931,7 +933,7 @@ namespace CORE::GEO
       }
 
       /// get coordinates of side
-      void Coordinates(LINALG::Matrix<probdim, numNodesSide>& xyze_surfaceElement) const
+      void Coordinates(CORE::LINALG::Matrix<probdim, numNodesSide>& xyze_surfaceElement) const
       {
         Coordinates(xyze_surfaceElement.A());
       }
@@ -947,29 +949,29 @@ namespace CORE::GEO
       virtual bool IsCloserSide(
           const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
       {
-        const LINALG::Matrix<probdim, 1> startpoint_xyz_mat(startpoint_xyz, true);
+        const CORE::LINALG::Matrix<probdim, 1> startpoint_xyz_mat(startpoint_xyz, true);
         return IsCloserSide(startpoint_xyz_mat, other, is_closer);
       }
 
       /// derived
       virtual void EdgeAt(const double* rs, std::vector<Edge*>& edges)
       {
-        const LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         EdgeAt(rs_mat, edges);
       }
 
       /// derived
       virtual void PointAt(const double* rs, double* xyz)
       {
-        const LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
-        LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         PointAt(rs_mat, xyz_mat);
       }
 
       /// derived
       virtual void SideCenter(double* midpoint)
       {
-        LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         SideCenter(midpoint_mat);
       }
 
@@ -977,52 +979,52 @@ namespace CORE::GEO
       virtual bool LocalCoordinates(
           const double* xyz, double* rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        LINALG::Matrix<probdim, 1> rsd_mat(rsd, true);        // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> rsd_mat(rsd, true);        // create view
         return LocalCoordinates(xyz_mat, rsd_mat, allow_dist, tol);
       }
 
       /// derived
       virtual bool WithinSide(const double* xyz, double* rs, double& dist)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        LINALG::Matrix<dim, 1> rs_mat(rs, true);              // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);              // create view
         return WithinSide(xyz_mat, rs_mat, dist);
       }
 
       /// derived
       virtual bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi)
       {
-        const LINALG::Matrix<probdim, 1> p1_xyz_mat(p1_xyz, true);  // create view
-        const LINALG::Matrix<probdim, 1> p2_xyz_mat(p2_xyz, true);  // create view
-        LINALG::Matrix<dim, 1> rs_mat(rs, true);                    // create view
+        const CORE::LINALG::Matrix<probdim, 1> p1_xyz_mat(p1_xyz, true);  // create view
+        const CORE::LINALG::Matrix<probdim, 1> p2_xyz_mat(p2_xyz, true);  // create view
+        CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);                    // create view
         return RayCut(p1_xyz_mat, p2_xyz_mat, rs_mat, line_xi);
       }
 
       /// derived
       virtual void Normal(const double* rs, double* normal, bool unitnormal = true)
       {
-        const LINALG::Matrix<dim, 1> rs_mat(rs, true);        // create view
-        LINALG::Matrix<probdim, 1> normal_mat(normal, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);        // create view
+        CORE::LINALG::Matrix<probdim, 1> normal_mat(normal, true);  // create view
         Normal(rs_mat, normal_mat, unitnormal);
       }
 
       /// derived
       virtual void Basis(const double* rs, double* t1, double* t2, double* n)
       {
-        const LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
-        LINALG::Matrix<probdim, 1> t1_mat(t1, true);    // create view
-        LINALG::Matrix<probdim, 1> t2_mat(t2, true);    // create view
-        LINALG::Matrix<probdim, 1> n_mat(n, true);      // create view
+        const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);    // create view
+        CORE::LINALG::Matrix<probdim, 1> t2_mat(t2, true);    // create view
+        CORE::LINALG::Matrix<probdim, 1> n_mat(n, true);      // create view
         Basis(rs_mat, t1_mat, t2_mat, n_mat);
       }
 
       /// derived
       virtual void BasisAtCenter(double* t1, double* t2, double* n)
       {
-        LINALG::Matrix<probdim, 1> t1_mat(t1, true);  // create view
-        LINALG::Matrix<probdim, 1> t2_mat(t2, true);  // create view
-        LINALG::Matrix<probdim, 1> n_mat(n, true);    // create view
+        CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> t2_mat(t2, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> n_mat(n, true);    // create view
         BasisAtCenter(t1_mat, t2_mat, n_mat);
       }
     };  // class ConcreteSide

@@ -61,10 +61,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const { return ale_->DofRowMap(); }
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return ale_->SystemMatrix(); }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() { return ale_->SystemMatrix(); }
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
       return ale_->BlockSystemMatrix();
     }
@@ -88,13 +88,13 @@ namespace ADAPTER
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return ale_->GetDBCMapExtractor(ALE::UTILS::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
     )
     {
@@ -211,10 +211,10 @@ namespace ADAPTER
     virtual int Solve() { return ale_->Solve(); }
 
     //! Access to linear solver of ALE field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return ale_->LinearSolver(); }
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return ale_->LinearSolver(); }
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner()
+    virtual Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner()
     {
       return ale_->ConstPreconditioner();
     }
@@ -237,7 +237,7 @@ namespace ADAPTER
 
     /*! \brief Create Systemmatrix
      *
-     * We allocate the LINALG object just once, the result is an empty LINALG object.
+     * We allocate the CORE::LINALG object just once, the result is an empty CORE::LINALG object.
      * Evaluate has to be called separately.
      *
      */

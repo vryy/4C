@@ -16,7 +16,7 @@
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
@@ -29,7 +29,8 @@ ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix)
+void ADAPTER::FluidFBI::SetCouplingContributions(
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
       ->SetCouplingContributions(matrix);

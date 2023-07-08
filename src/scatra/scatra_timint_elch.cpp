@@ -44,7 +44,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
@@ -140,9 +140,10 @@ void SCATRA::ScaTraTimIntElch::Setup()
   // initialize dirichlet toggle:
   // for certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries for the standard element call
-  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
+  Teuchos::RCP<Epetra_Vector> dirichones =
+      CORE::LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
   dirichones->PutScalar(1.0);
-  dctoggle_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  dctoggle_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
   dbcmaps_->InsertCondVector(dirichones, dctoggle_);
 
   // screen output (has to come after SetInitialField)
@@ -360,7 +361,8 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
       -1, static_cast<int>(pot_dofs.size()), pot_dofs.data(), 0, discret_->Comm()));
 
   // set up concentration-potential splitter
-  splitter_ = Teuchos::rcp(new LINALG::MapExtractor(*discret_->DofRowMap(), potdofmap, concdofmap));
+  splitter_ =
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*discret_->DofRowMap(), potdofmap, concdofmap));
 }
 
 /*---------------------------------------------------------------------*
@@ -398,7 +400,7 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
       -1, static_cast<int>(pot_ed_dofs.size()), pot_ed_dofs.data(), 0, discret_->Comm()));
 
   // set up concentration-potential-potential splitter
-  splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
+  splitter_macro_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
 }
 
 /*----------------------------------------------------------------------*
@@ -1786,7 +1788,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
 
       if (DRT::INPUT::IntegralValue<int>(*elchparams_, "DIFFCOND_FORMULATION"))
       {
-        if (icond == 0) ektoggle_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+        if (icond == 0) ektoggle_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
         // 1.0 for electrode-kinetics toggle
         const double one = 1.0;
@@ -1915,11 +1917,12 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     if (projector_ != Teuchos::null) projector_->ApplyPT(*residual_);
 
     // apply actual Dirichlet boundary conditions to system of equations
-    LINALG::ApplyDirichlettoSystem(sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(
+        sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sysmat_, increment_, residual_, zeros_, *(splitter_->OtherMap()));
 
     // compute L2 norm of electric potential state vector
@@ -2569,7 +2572,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
     const std::string& condstring)
 {
   // time measurement
@@ -2602,7 +2605,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeKineticsConditions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
@@ -2691,7 +2694,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
       // assemble element matrix and right-hand side vector into global system of equations
       sysmat_->Assemble(element->Id(), la[0].stride_, elematrix, la[0].lm_, la[0].lmowner_);
-      LINALG::Assemble(*residual_, elevector, la[0].lm_, la[0].lmowner_);
+      CORE::LINALG::Assemble(*residual_, elevector, la[0].lm_, la[0].lmowner_);
     }
   }
 }
@@ -2704,7 +2707,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // Nernst-BC is a additional constraint coupled to the original system of equation
   if (!sysmat_->Filled()) sysmat_->Complete();
   sysmat_->ApplyDirichlet(ektoggle_, false);
-  LINALG::ApplyDirichlettoSystem(increment_, residual_, zeros_, ektoggle_);
+  CORE::LINALG::ApplyDirichlettoSystem(increment_, residual_, zeros_, ektoggle_);
 
   // create an parameter list
   Teuchos::ParameterList condparams;
@@ -2728,7 +2731,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::EvaluateSolutionDependingConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // evaluate domain conditions for electrode kinetics
   if (discret_->GetCondition("ElchDomainKinetics") != nullptr)
@@ -2957,7 +2960,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
               iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);
 
               // assemble element-based vector of Neumann loads into global vector of Neumann loads
-              LINALG::Assemble(*neumann_loads, elevector, lm, lmowner);
+              CORE::LINALG::Assemble(*neumann_loads, elevector, lm, lmowner);
             }  // loop over all conditioned elements
           }
           else
@@ -3176,7 +3179,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
     std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
 {
-  if (MatrixType() == LINALG::MatrixType::block_condition_dof)
+  if (MatrixType() == CORE::LINALG::MatrixType::block_condition_dof)
   {
     // safety check
     if (DRT::INPUT::IntegralValue<int>(
@@ -3248,18 +3251,18 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(
-    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
+    Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const
 {
   SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver, init_block_number);
 
-  if (MatrixType() == LINALG::MatrixType::block_condition_dof)
+  if (MatrixType() == CORE::LINALG::MatrixType::block_condition_dof)
     ReduceDimensionNullSpaceBlocks(solver, init_block_number);
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
-    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
+    Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
   for (int iblock = 0; iblock < BlockMaps()->NumMaps(); ++iblock)
@@ -3277,7 +3280,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
 
     const int dimns = mueluparams.get<int>("null space: dimension");
     std::vector<double> nullspace(nspVector->MyLength() * nspVector->NumVectors());
-    LINALG::EpetraMultiVectorToStdVector(nspVector, nullspace, dimns);
+    CORE::LINALG::EpetraMultiVectorToStdVector(nspVector, nullspace, dimns);
 
     // null space associated with concentration dofs
     if (iblock % 2 == 0)
@@ -3305,7 +3308,7 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
     Teuchos::RCP<Epetra_MultiVector> nspVectornew =
         Teuchos::rcp(new Epetra_MultiVector(*(BlockMaps()->Map(iblock)), dimnsnew, true));
-    LINALG::StdVectorToEpetraMultiVector(nullspace, nspVectornew, dimnsnew);
+    CORE::LINALG::StdVectorToEpetraMultiVector(nullspace, nspVectornew, dimnsnew);
 
     mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
   }

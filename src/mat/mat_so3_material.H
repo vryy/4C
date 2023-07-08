@@ -46,31 +46,35 @@ namespace MAT
      * @param[in]  gp        current gauss point
      * @param[in]  eleGID    Element ID
      */
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID) = 0;
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrad,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) = 0;
 
     /// Evaluate material law
-    virtual void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, int gp, int eleGID)
+    virtual void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel, int gp,
+        int eleGID)
     {
       dserror("Material does not support evaluation of nonlinear mass matrix");
     };
 
     /// Evaluate strain energy function (for hyperelastic materials only)
-    virtual void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
+    virtual void StrainEnergy(
+        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
       dserror("Material does not support calculation of strain energy");
     };
 
     /// Evaluate material law for GEMM
-    virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+    virtual void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        CORE::LINALG::Matrix<3, 3>* rcg_new, CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp,
+        const int eleGID)
     {
       dserror("Material does not support evaluation for GEMM");
     };
@@ -125,13 +129,15 @@ namespace MAT
      * \mathbf{v}}
      *                                 {\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
-    virtual void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
-        int gp, int eleGID, const double* concentration, const double* temp,
-        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
+    virtual void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+        double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+        CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+        CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+        CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+        const double* concentration, const double* temp, double* d_cauchyndir_dT,
+        CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
       dserror("EvaluateCauchyNDirAndDerivatives not implemented for this material");
     }
@@ -143,8 +149,8 @@ namespace MAT
      * @param[in] concentration  concentration at gauss point
      * @param[out] d_F_dx        derivative of deformation gradient w.r.t. degree of freedom x
      */
-    virtual void EvaluateLinearizationOD(
-        const LINALG::Matrix<3, 3>& defgrd, double concentration, LINALG::Matrix<9, 1>* d_F_dx)
+    virtual void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        double concentration, CORE::LINALG::Matrix<9, 1>* d_F_dx)
     {
       dserror("EvaluateLinearizationOD not implemented for this material");
     }
@@ -197,11 +203,11 @@ namespace MAT
     //! \param gp Gauss point
     //! \param params Container for additional information
     //! \param eleGID Element id
-    virtual void Update(LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    virtual void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params,
         int const eleGID){/* Do nothing for simple material models*/};
 
-    virtual void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, int const gp,
+    virtual void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID){
         // only have to be implemented by those materials that have their own prestressing
         // implementation

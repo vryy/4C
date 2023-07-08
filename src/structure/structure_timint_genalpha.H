@@ -55,8 +55,8 @@ namespace STR
         const Teuchos::ParameterList& sdynparams,             //!< input parameters
         const Teuchos::ParameterList& xparams,                //!< extra flags
         Teuchos::RCP<DRT::Discretization> actdis,             //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,                  //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,           //!< the solver for contact meshtying
+        Teuchos::RCP<CORE::LINALG::Solver> solver,            //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,     //!< the solver for contact meshtying
         Teuchos::RCP<IO::DiscretizationWriter> output         //!< the output
     );
 
@@ -86,7 +86,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -292,8 +292,8 @@ namespace STR
     //! matrix in case of nonlinear, rotational inertia effects
     void BuildResStiffNLMassRot(Teuchos::RCP<Epetra_Vector> fres_,
         Teuchos::RCP<Epetra_Vector> fextn_, Teuchos::RCP<Epetra_Vector> fintn_,
-        Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<LINALG::SparseOperator> stiff_,
-        Teuchos::RCP<LINALG::SparseOperator> mass_);
+        Teuchos::RCP<Epetra_Vector> finertn_, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> mass_);
 
     //! Check, if there are solely beam elements in the whole discretization
     bool SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> actdis);

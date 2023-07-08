@@ -253,9 +253,9 @@ namespace FLD
 
     // allocate some (toggle) vectors
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    toggleu_ = LINALG::CreateVector(*dofrowmap, true);
-    togglev_ = LINALG::CreateVector(*dofrowmap, true);
-    togglew_ = LINALG::CreateVector(*dofrowmap, true);
+    toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
     // set number of samples to zero
     numsamp_ = 0;
@@ -402,7 +402,7 @@ namespace FLD
       DRT::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      LINALG::Matrix<3, 1> xyz(true);
+      CORE::LINALG::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -662,7 +662,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -764,7 +764,7 @@ namespace FLD
       DRT::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      LINALG::Matrix<3, 1> xyz(true);
+      CORE::LINALG::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -814,7 +814,7 @@ namespace FLD
       DRT::Node* node = scatradiscret_->lRowNode(inode);
 
       // get coordinates
-      LINALG::Matrix<3, 1> xyz(true);
+      CORE::LINALG::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node
@@ -1084,7 +1084,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -1900,7 +1900,7 @@ namespace FLD
       for (int i = 0; i < 5 * 5 * 5; ++i)
       {
         // get coordinates
-        LINALG::Matrix<3, 1> xyz(true);
+        CORE::LINALG::Matrix<3, 1> xyz(true);
         for (int d = 0; d < 3; ++d) xyz(d) = interpolVec(i * 6 + d + 3);
         // determine position
         std::vector<int> loc(3);
@@ -2154,7 +2154,7 @@ namespace FLD
     //
     //  // compute squared values of velocity
     //  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    //  Teuchos::RCP<Epetra_Vector> squaredvelnp = LINALG::CreateVector(*dofrowmap,true);
+    //  Teuchos::RCP<Epetra_Vector> squaredvelnp = CORE::LINALG::CreateVector(*dofrowmap,true);
     //  squaredvelnp->Multiply(1.0,*velnp,*velnp,0.0);
     //
     //  //----------------------------------

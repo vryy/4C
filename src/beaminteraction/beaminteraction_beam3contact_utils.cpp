@@ -184,9 +184,9 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
 /*----------------------------------------------------------------------*
  |  Test intersection of two parallel cylinders              meier 10/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::IntersectParallelCylinders(LINALG::Matrix<3, 1, double>& r1_a,
-    LINALG::Matrix<3, 1, double>& r1_b, LINALG::Matrix<3, 1, double>& r2_a,
-    LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit)
+bool BEAMCONTACT::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
+    CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
+    CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit)
 {
   double parallellinedist = 0.0;
   double etapoint = 0.0;
@@ -217,18 +217,18 @@ bool BEAMCONTACT::IntersectParallelCylinders(LINALG::Matrix<3, 1, double>& r1_a,
 /*-----------------------------------------------------------------------------------*
  |  Test intersection of two non-parallel, arbitrary oriented cylinders   meier 10/14|
  *-----------------------------------------------------------------------------------*/
-bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a,
-    LINALG::Matrix<3, 1, double>& r1_b, LINALG::Matrix<3, 1, double>& r2_a,
-    LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
+bool BEAMCONTACT::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
+    CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
+    CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
     std::pair<double, double>& closestpoints, bool etaset)
 {
-  LINALG::Matrix<3, 1, double> t1(true);
-  LINALG::Matrix<3, 1, double> t2(true);
+  CORE::LINALG::Matrix<3, 1, double> t1(true);
+  CORE::LINALG::Matrix<3, 1, double> t2(true);
   double closestnodetolinedist(0.0);
   double closestlinedist(0.0);
   double closestnodaldist(0.0);
-  LINALG::Matrix<3, 1, double> vec1(true);
-  LINALG::Matrix<3, 1, double> vec2(true);
+  CORE::LINALG::Matrix<3, 1, double> vec1(true);
+  CORE::LINALG::Matrix<3, 1, double> vec2(true);
 
   t1 = CORE::FADUTILS::DiffVector(r1_b, r1_a);
   t2 = CORE::FADUTILS::DiffVector(r2_b, r2_a);
@@ -251,8 +251,8 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a
     // Calculate values eta1_seg and eta2_seg of closest point coordinates. The definitions of b_1,
     // b_2, t_1 and t_2 are according to the paper "ON CONTACT BETWEEN THREE-DIMENSIONAL BEAMS
     // UNDERGOING LARGE DEFLECTIONS" of Wriggers and Zavarise (1997)
-    LINALG::Matrix<3, 1, double> b_1(r1_a);
-    LINALG::Matrix<3, 1, double> b_2(r2_a);
+    CORE::LINALG::Matrix<3, 1, double> b_1(r1_a);
+    CORE::LINALG::Matrix<3, 1, double> b_2(r2_a);
     b_1.Update(1.0, r1_b, 1.0);
     b_2.Update(1.0, r2_b, 1.0);
     double eta1_seg(0.0);
@@ -327,15 +327,15 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a
 /*----------------------------------------------------------------------*
  |  Calculate closest distance of a point and a line         meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcPointLineDist(LINALG::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
-    LINALG::Matrix<3, 1, double>& rline_b,                                    // at eta=1.0
-    LINALG::Matrix<3, 1, double>& rp, double& eta)
+double BEAMCONTACT::CalcPointLineDist(CORE::LINALG::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
+    CORE::LINALG::Matrix<3, 1, double>& rline_b,                                    // at eta=1.0
+    CORE::LINALG::Matrix<3, 1, double>& rp, double& eta)
 {
   double closestpointlinedist = 0.0;
 
-  LINALG::Matrix<3, 1, double> tline(true);
+  CORE::LINALG::Matrix<3, 1, double> tline(true);
   tline = CORE::FADUTILS::DiffVector(rline_b, rline_a);
-  LINALG::Matrix<3, 1, double> vec1(true);
+  CORE::LINALG::Matrix<3, 1, double> vec1(true);
   vec1 = CORE::FADUTILS::DiffVector(rline_a, rp);
   closestpointlinedist =
       fabs(CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::VectorProduct(vec1, tline)) /
@@ -354,7 +354,8 @@ double BEAMCONTACT::CalcPointLineDist(LINALG::Matrix<3, 1, double>& rline_a,  //
 /*----------------------------------------------------------------------*
  |  Calculate angle enclosed by two vectors a and b          meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcAngle(LINALG::Matrix<3, 1, double> a, LINALG::Matrix<3, 1, double> b)
+double BEAMCONTACT::CalcAngle(
+    CORE::LINALG::Matrix<3, 1, double> a, CORE::LINALG::Matrix<3, 1, double> b)
 {
   if (CORE::FADUTILS::VectorNorm<3>(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm<3>(b) < 1.0e-12)
     dserror("Can not determine angle for zero vector!");
@@ -382,9 +383,9 @@ double BEAMCONTACT::CalcAngle(LINALG::Matrix<3, 1, double> a, LINALG::Matrix<3, 
  |  Get closest distance between the endpoints of two lines   meier 10/14|
  *----------------------------------------------------------------------*/
 template <typename type>
-type BEAMCONTACT::GetClosestEndpointDist(LINALG::Matrix<3, 1, type> r1_a,
-    LINALG::Matrix<3, 1, type> r1_b, LINALG::Matrix<3, 1, type> r2_a,
-    LINALG::Matrix<3, 1, type> r2_b)
+type BEAMCONTACT::GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
+    CORE::LINALG::Matrix<3, 1, type> r1_b, CORE::LINALG::Matrix<3, 1, type> r2_a,
+    CORE::LINALG::Matrix<3, 1, type> r2_b)
 {
   type minnodaldist = 0.0;
   type nodaldist = 0.0;

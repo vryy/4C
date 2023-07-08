@@ -47,7 +47,7 @@ namespace
     static const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
     DRT::Node** nodes = ele->Nodes();
     // get airway length
-    LINALG::Matrix<3, numnode> xyze;
+    CORE::LINALG::Matrix<3, numnode> xyze;
     for (int inode = 0; inode < numnode; inode++)
     {
       const double* x = nodes[inode]->X();
@@ -1784,7 +1784,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
   double vel1 = q_in / areanp;
   double vel2 = q_out / areanp;
 
-  LINALG::Matrix<2, 1> velv;
+  CORE::LINALG::Matrix<2, 1> velv;
   velv(0, 0) = vel1;
   velv(1, 0) = vel2;
 
@@ -2045,7 +2045,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
   double vel1 = q_in / areanp;
   double vel2 = q_out / areanp;
 
-  LINALG::Matrix<2, 1> velv;
+  CORE::LINALG::Matrix<2, 1> velv;
   velv(0, 0) = vel1;
   velv(1, 0) = vel2;
 

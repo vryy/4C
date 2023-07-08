@@ -95,7 +95,7 @@ MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
-    const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result)
+    const CORE::LINALG::Matrix<3, 1>& M, CORE::LINALG::Matrix<6, 1>& result)
 {
   for (int i = 0; i < 3; ++i) result(i) = M(i) * M(i);
 
@@ -105,29 +105,31 @@ void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
-    const LINALG::Matrix<3, 1>& M, LINALG::Matrix<3, 3>& result)
+    const CORE::LINALG::Matrix<3, 1>& M, CORE::LINALG::Matrix<3, 3>& result)
 {
   result.MultiplyNT(M, M);
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+    CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   DyadicProduct(fiber_vector, structural_tensor_stress);
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
   DyadicProduct(fiber_vector, structural_tensor);
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+    CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   const CORE::DRT::UTILS::IntegrationPoints1D gausspoints(
       CORE::DRT::UTILS::GaussRule1D::line_50point);
-  LINALG::Matrix<numbgp, twice> rho;
+  CORE::LINALG::Matrix<numbgp, twice> rho;
 
   // constants for distribution around fiber_vector
   double c1 = params_->c1_;
@@ -136,13 +138,13 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   double c4 = params_->c4_;
 
   // current direction for pair (i,j)
-  LINALG::Matrix<3, 1> x;
+  CORE::LINALG::Matrix<3, 1> x;
 
   // aux mean direction of fiber
   // we evaluate the structural tensor with this mean direction.
   // note: used only in case of von mises-fisher distribution
   double theta_aux = acos(gausspoints.qxg[numbgp - 1][0]);
-  LINALG::Matrix<3, 1> aux_fiber_vector;
+  CORE::LINALG::Matrix<3, 1> aux_fiber_vector;
   aux_fiber_vector(0) = sin(theta_aux);
   aux_fiber_vector(1) = 0.0;
   aux_fiber_vector(2) = gausspoints.qxg[numbgp - 1][0];  // = cos(theta_aux)
@@ -202,15 +204,15 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   if (params_->distribution_type_ == MAT::ELASTIC::PAR::distr_type_vonmisesfisher)
   {
     // base vectors
-    LINALG::Matrix<3, 1> e1(true);
+    CORE::LINALG::Matrix<3, 1> e1(true);
     e1(0) = 1.0;
-    LINALG::Matrix<3, 1> e2(true);
+    CORE::LINALG::Matrix<3, 1> e2(true);
     e2(1) = 1.0;
-    LINALG::Matrix<3, 1> e3(true);
+    CORE::LINALG::Matrix<3, 1> e3(true);
     e3(2) = 1.0;
 
     // x1-x2 plane projection of fiber_vector
-    LINALG::Matrix<3, 1> fiber_vector_proj(fiber_vector);
+    CORE::LINALG::Matrix<3, 1> fiber_vector_proj(fiber_vector);
     fiber_vector_proj(2) = 0.0;
     double norm = fiber_vector_proj.Norm2();
     if (norm > 1e-12) fiber_vector_proj.Scale(1.0 / norm);
@@ -227,24 +229,24 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
     double alpha = -(theta_0 - theta_aux);  //< rotation around x1-axis
     double beta = -phi_0;                   //< rotation around x3-axis
 
-    LINALG::Matrix<3, 3> rotation1(true);
+    CORE::LINALG::Matrix<3, 3> rotation1(true);
     rotation1(0, 0) = cos(alpha);
     rotation1(1, 1) = 1.0;
     rotation1(2, 2) = cos(alpha);
     rotation1(0, 2) = -sin(alpha);
     rotation1(2, 0) = sin(alpha);
 
-    LINALG::Matrix<3, 3> rotation2(true);
+    CORE::LINALG::Matrix<3, 3> rotation2(true);
     rotation2(0, 0) = cos(beta);
     rotation2(1, 1) = cos(beta);
     rotation2(2, 2) = 1.0;
     rotation2(0, 1) = sin(beta);
     rotation2(1, 0) = -sin(beta);
 
-    LINALG::Matrix<3, 3> rotation(true);
+    CORE::LINALG::Matrix<3, 3> rotation(true);
     rotation.Multiply(rotation2, rotation1);
 
-    LINALG::Matrix<3, 3> tensor3x3;
+    CORE::LINALG::Matrix<3, 3> tensor3x3;
     tensor3x3(0, 0) = structural_tensor_stress(0);
     tensor3x3(1, 1) = structural_tensor_stress(1);
     tensor3x3(2, 2) = structural_tensor_stress(2);
@@ -255,7 +257,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
     tensor3x3(2, 0) = tensor3x3(0, 2);
     tensor3x3(2, 1) = tensor3x3(1, 2);
 
-    LINALG::Matrix<3, 3> temp(true);
+    CORE::LINALG::Matrix<3, 3> temp(true);
     temp.MultiplyNN(rotation, tensor3x3);
     tensor3x3.Clear();
     tensor3x3.MultiplyNT(temp, rotation);
@@ -282,22 +284,23 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
-  LINALG::Matrix<6, 1> structural_tensor_stress;
+  CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
   SetupStructuralTensor(fiber_vector, structural_tensor_stress);
   UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector,
+    CORE::LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   // constant for dispersion around fiber_vector
   double c1 = params_->c1_;
 
   DyadicProduct(fiber_vector, structural_tensor_stress);
 
-  LINALG::Matrix<6, 1> Identity(true);
+  CORE::LINALG::Matrix<6, 1> Identity(true);
   Identity(0) = 1.0;
   Identity(1) = 1.0;
   Identity(2) = 1.0;
@@ -306,9 +309,9 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
 }
 
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
-    const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
+    const CORE::LINALG::Matrix<3, 1>& fiber_vector, CORE::LINALG::Matrix<3, 3>& structural_tensor)
 {
-  LINALG::Matrix<6, 1> structural_tensor_stress;
+  CORE::LINALG::Matrix<6, 1> structural_tensor_stress;
   SetupStructuralTensor(fiber_vector, structural_tensor_stress);
   UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }

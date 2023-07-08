@@ -32,14 +32,14 @@
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class EquilibrationSparse;
   enum class EquilibrationMethod;
   class MapExtractor;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
@@ -71,7 +71,7 @@ namespace ELEMAG
    public:
     /// Constructor.
     ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG>& actdis,
-        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
@@ -244,7 +244,8 @@ namespace ELEMAG
     */
     Epetra_CrsMatrix SystemMatrix()
     {
-      return (*Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix());
+      return (
+          *Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix());
     };
 
     /*!
@@ -293,7 +294,7 @@ namespace ELEMAG
    protected:
     /// discretization, solver, parameter list and output
     Teuchos::RCP<DRT::DiscretizationHDG> discret_;
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
@@ -326,19 +327,19 @@ namespace ELEMAG
 
     int sourcefuncno_;  /// Source function number
 
-    LINALG::EquilibrationMethod equilibration_method_;  /// equilibration method
+    CORE::LINALG::EquilibrationMethod equilibration_method_;  /// equilibration method
 
     /// system matrix
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     /// residual vector
     Teuchos::RCP<Epetra_Vector> residual_;
 
     /// all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::EquilibrationSparse> equilibration_;
+    Teuchos::RCP<CORE::LINALG::EquilibrationSparse> equilibration_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;

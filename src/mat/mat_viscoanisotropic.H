@@ -151,16 +151,16 @@ namespace MAT
     /// Update internal stress variables
     virtual void Update();
 
-    void UpdateFiberDirs(const int numgp, LINALG::Matrix<3, 3>* defgrd);
+    void UpdateFiberDirs(const int numgp, CORE::LINALG::Matrix<3, 3>* defgrd);
 
     /// Evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,      ///< green lagrange strain
-        Teuchos::ParameterList& params,                        ///< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,              ///< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,    ///< material stiffness matrix
-        int gp,                                                ///< Gauss point
-        int eleGID                                             ///< element GID
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,      ///< green lagrange strain
+        Teuchos::ParameterList& params,                  ///< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  ///< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+        int gp,                                                    ///< Gauss point
+        int eleGID                                                 ///< element GID
     );
 
     /// Return density
@@ -202,13 +202,13 @@ namespace MAT
         ca2_;  ///< second fiber vector per gp (spatial config)
 
     // visco history stresses for every gausspoint and every stress type
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         artstresscurr_;  ///< current artificial stress
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         artstresslast_;  ///< artificial stress in last converged state
 
     bool isinit_;  ///< indicates if material is initialized

@@ -24,7 +24,8 @@
  |  Constructor (public)                                  laspina 08/19 |
  *----------------------------------------------------------------------*/
 FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
@@ -327,7 +328,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
   Epetra_SerialDenseVector elemintinc;
 
   // initialize increments of local variables
-  Teuchos::RCP<Epetra_Vector> intvelincnp = LINALG::CreateVector(*intdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> intvelincnp = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
   // set state
   SetStateTimInt();
@@ -623,14 +624,14 @@ void FLD::TimIntHDGWeakComp::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  intvelnp_ = LINALG::CreateVector(*intdofrowmap, true);
-  intvelaf_ = LINALG::CreateVector(*intdofrowmap, true);
-  intvelnm_ = LINALG::CreateVector(*intdofrowmap, true);
-  intveln_ = LINALG::CreateVector(*intdofrowmap, true);
-  intaccnp_ = LINALG::CreateVector(*intdofrowmap, true);
-  intaccam_ = LINALG::CreateVector(*intdofrowmap, true);
-  intaccnm_ = LINALG::CreateVector(*intdofrowmap, true);
-  intaccn_ = LINALG::CreateVector(*intdofrowmap, true);
+  intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intvelaf_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intvelnm_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intveln_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intaccnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intaccam_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intaccnm_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intaccn_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;

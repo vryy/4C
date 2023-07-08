@@ -48,7 +48,8 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* o
   const double newtol = 1.0e-11;
   p.set("AZTOL", newtol);
 
-  Teuchos::RCP<LINALG::Solver> lssolver = Teuchos::rcp(new LINALG::Solver(p, dis.Comm(), outfile));
+  Teuchos::RCP<CORE::LINALG::Solver> lssolver =
+      Teuchos::rcp(new CORE::LINALG::Solver(p, dis.Comm(), outfile));
   dis.ComputeNullSpaceIfNecessary(lssolver->Params());
 
   // get the processor ID from the communicator
@@ -70,7 +71,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* o
 */
 /*----------------------------------------------------------------------*/
 void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
-    LINALG::Solver& solver, const int startfuncno, Teuchos::RCP<Epetra_Vector> initialvals)
+    CORE::LINALG::Solver& solver, const int startfuncno, Teuchos::RCP<Epetra_Vector> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed
   // with setting initial conditions. Otherwise return.
@@ -104,13 +105,13 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
   // -------------------------------------------------------------------
   // create empty mass matrix
   // -------------------------------------------------------------------
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
 
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // call elements to calculate massmatrix and righthandside
@@ -510,7 +511,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
 
       int eid = actele->Id();
       if (assemblemat) massmatrix->Assemble(eid, elemass, lm, lmowner);
-      if (assemblevec) LINALG::Assemble(*rhs, elerhs, lm, lmowner);
+      if (assemblevec) CORE::LINALG::Assemble(*rhs, elerhs, lm, lmowner);
     }  // for (int i=0; i<numcolele; ++i)
   }
 

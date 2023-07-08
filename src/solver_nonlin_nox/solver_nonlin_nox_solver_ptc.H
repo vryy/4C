@@ -20,11 +20,11 @@
 
 #include <NOX_Abstract_Vector.H>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace NOX
 {
   namespace Epetra
@@ -310,7 +310,7 @@ namespace NOX
         //! Pointer to the scaling Operator (Identity scaling)
         Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
         //! Pointer to the scaling Operator (Element based scaling)
-        Teuchos::RCP<LINALG::SparseMatrix> scalingMatrixOpPtr_;
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> scalingMatrixOpPtr_;
 
         //! @name Special pseudo transient continuation parameters
         //@{
@@ -394,23 +394,24 @@ namespace NOX
          public:
           //! constructor
           PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
-              Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
+              Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
           //! destructor
           virtual ~PseudoTransient(){};
 
           //! derived
-          virtual void runPostComputeJacobian(LINALG::SparseOperator& jac, const Epetra_Vector& x,
-              const NOX::NLN::LinearSystem& linsys);
+          virtual void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac,
+              const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys);
 
           //! derived
-          virtual void runPostComputeFandJacobian(Epetra_Vector& rhs, LINALG::SparseOperator& jac,
-              const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys);
+          virtual void runPostComputeFandJacobian(Epetra_Vector& rhs,
+              CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
+              const NOX::NLN::LinearSystem& linsys);
 
          protected:
           //! modify the jacobian as defined by the scaling operator type
-          virtual void modifyJacobian(LINALG::SparseMatrix& jac);
+          virtual void modifyJacobian(CORE::LINALG::SparseMatrix& jac);
 
          private:
           //! read-only access
@@ -420,7 +421,7 @@ namespace NOX
           Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr_;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr_;
 
         };  // class PseudoTransient
       }     // namespace PrePostOp
@@ -439,7 +440,7 @@ namespace NOX
          public:
           //! constructor
           PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
-              Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr,
+              Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
           //! destructor
@@ -462,7 +463,7 @@ namespace NOX
           Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
 
           //! reference to the scaling diagonal operator matrix
-          Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr_;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr_;
 
           //! reference to the flag which indicates, if the current right-hand-side is the transient
           //! right-hand-side

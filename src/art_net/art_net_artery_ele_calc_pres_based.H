@@ -82,7 +82,7 @@ namespace DRT
         \param material[in]       artery material
         */
       void Sysmat(Artery* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
+          CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
           Teuchos::RCP<const MAT::Material> material);
 
       /*!

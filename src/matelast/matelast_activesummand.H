@@ -32,11 +32,11 @@ namespace MAT
        * \param eleGID global element id
        */
       virtual void AddActiveStressCmatAniso(
-          const LINALG::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
-          LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
-          int gp,                          ///< Gauss point
-          int eleGID) const = 0;           ///< element GID
+          const CORE::LINALG::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
+          int gp,                                ///< Gauss point
+          int eleGID) const = 0;                 ///< element GID
 
       /*!
        * \brief Evaluates the first derivative of active fiber potential w.r.t. the active fiber

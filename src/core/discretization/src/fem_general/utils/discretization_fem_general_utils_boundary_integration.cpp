@@ -473,7 +473,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     Epetra_SerialDenseMatrix& derivtrafo,
     const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
@@ -489,7 +489,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     Epetra_SerialDenseMatrix& derivtrafo,
     const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
@@ -505,8 +505,9 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
-    LINALG::Matrix<3, 3>& derivtrafo, const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<3, 3>& derivtrafo,
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
@@ -520,8 +521,9 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
-    LINALG::Matrix<2, 2>& derivtrafo, const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<2, 2>& derivtrafo,
+    const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
@@ -536,7 +538,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
 //! specializations for GaussPoint quadrature rules
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
     Epetra_SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
@@ -551,7 +553,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
     Epetra_SerialDenseMatrix& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
@@ -566,8 +568,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 3D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
-    LINALG::Matrix<3, 3>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<3, 3>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
@@ -581,8 +583,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
 
 //! specialization for 2D
 template <>
-void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
-    LINALG::Matrix<2, 2>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
+void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+    CORE::LINALG::Matrix<2, 2>& derivtrafo, const CORE::DRT::UTILS::GaussPoints& intpoints,
     const ::DRT::Element::DiscretizationType pdistype,
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {

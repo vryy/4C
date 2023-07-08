@@ -208,16 +208,17 @@ double STR::IMPLICIT::GenAlphaLieGroup::GetIntParam() const
 void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
-  LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
   // inertia forces at t_{n+1}
-  LINALG::AssembleMyVector(1.0, f, 1.0, *finertianp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(LINALG::SparseOperator& jac) const
+void STR::IMPLICIT::GenAlphaLieGroup::AddViscoMassContributions(
+    CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // add inertial contributions to structural stiffness block
   stiff_ptr->Add(*GlobalState().GetMassMatrix(), false,

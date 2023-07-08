@@ -31,27 +31,30 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& eprescpgaf,
-    const LINALG::Matrix<nsd_, nen_>& ebofon, const LINALG::Matrix<nsd_, nen_>& eprescpgn,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& evelam,
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nsd_, nen_>& evelnp,
-    const LINALG::Matrix<nsd_, nen_>& fsevelaf, const LINALG::Matrix<nen_, 1>& fsescaaf,
-    const LINALG::Matrix<nsd_, nen_>& evel_hat,
-    const LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epream,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nsd_, nen_>& eaccam, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam,
-    const LINALG::Matrix<nen_, 1>& escabofoaf, const LINALG::Matrix<nen_, 1>& escabofon,
-    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nsd_, nen_>& edispnp,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const LINALG::Matrix<nen_, 1>& eporo,
-    const LINALG::Matrix<nsd_, 2 * nen_>& egradphi, const LINALG::Matrix<nen_, 2 * 1>& ecurvature,
-    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
-    const double thermpressdtam, Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq,
-    double& Ci_delta_sq, double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgn,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelam,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const CORE::LINALG::Matrix<nen_, 1>& fsescaaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evel_hat,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
+    const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
+    const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const CORE::LINALG::Matrix<nen_, 1>& escabofon,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv, const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const CORE::LINALG::Matrix<nen_, 1>& eporo,
+    const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
+    const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
+    const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
+    Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
@@ -114,7 +117,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
-  static LINALG::Matrix<nsd_, 1> B_mfs(true);
+  static CORE::LINALG::Matrix<nsd_, 1> B_mfs(true);
   B_mfs.Clear();
 
   // coefficient D of fine-scale scalar (loma only)
@@ -170,7 +173,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
       vderxy_.MultiplyNT(evelaf, derxy_);  // required for time-dependent subscales
 
       // compute velnp at integration point (required for time-dependent subscales)
-      static LINALG::Matrix<nsd_, 1> velintnp(true);
+      static CORE::LINALG::Matrix<nsd_, 1> velintnp(true);
       velintnp.Multiply(evelnp, funct_);
       vel_normnp_ = velintnp.Norm2();
     }
@@ -402,7 +405,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
       for (int idim = 0; idim < nsd_; ++idim)
       {
         // get vdiv at time n+1 for np_genalpha,
-        static LINALG::Matrix<nsd_, nsd_> vderxy(true);
+        static CORE::LINALG::Matrix<nsd_, nsd_> vderxy(true);
         vderxy.MultiplyNT(evelnp, derxy_);
         vdiv_ += vderxy(idim, idim);
       }
@@ -546,7 +549,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
     // 2) standard Galerkin viscous term
     //    (including viscous stress computation,
     //     excluding viscous part for low-Mach-number flow)
-    static LINALG::Matrix<nsd_, nsd_> viscstress(true);
+    static CORE::LINALG::Matrix<nsd_, nsd_> viscstress(true);
     viscstress.Clear();
 
     ViscousGalPart(estif_u_, velforce_, viscstress, timefacfac, rhsfac, rhsfacn);
@@ -790,7 +793,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SysmatOSTNew(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& eveln)
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
   /*   /                                                \
@@ -836,7 +839,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
 
     // global second derivatives of evalaf (projected velgrad)
     // not symmetric!
-    LINALG::Matrix<nsd_ * nsd_, nsd_> evelgradderxy;
+    CORE::LINALG::Matrix<nsd_ * nsd_, nsd_> evelgradderxy;
     evelgradderxy.MultiplyNT(evelafgrad_, derxy_);
     //*VELNP*
     if (nsd_ == 3)
@@ -901,7 +904,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
       dserror("Epsilon(N) is not implemented for the 1D case");
 
     //*VELN*
-    // LINALG::Matrix<nsd_*nsd_,nsd_> evelngradderxy;
+    // CORE::LINALG::Matrix<nsd_*nsd_,nsd_> evelngradderxy;
     evelgradderxy.Clear();
     evelgradderxy.MultiplyNT(evelngrad_, derxy_);
     if (nsd_ == 3)
@@ -1024,7 +1027,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivEps(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityOSTNew(
-    const LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
   //----------------------------------------------------------------------
@@ -1243,7 +1246,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
 
     */
 
-    static LINALG::Matrix<1, nsd_> sgvelintaf(true);
+    static CORE::LINALG::Matrix<1, nsd_> sgvelintaf(true);
     sgvelintaf.Clear();
     for (int rr = 0; rr < nsd_; ++rr)
     {
@@ -1290,7 +1293,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
       instationary                          cross-stress, part 1
@@ -1404,8 +1407,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinGalMomResUOSTNew(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InertiaConvectionReactionGalPart(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, LINALG::Matrix<nsd_, 1>& resM_Du,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce,
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, CORE::LINALG::Matrix<nsd_, 1>& resM_Du,
     const double& rhsfac, const double& rhsfacn)
 {
   /* inertia (contribution to mass matrix) if not is_stationary */
@@ -1554,9 +1558,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InertiaConvectionReactionGal
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    LINALG::Matrix<nsd_, nsd_>& viscstress, const double& timefacfac, const double& rhsfac,
-    const double& rhsfacn)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, CORE::LINALG::Matrix<nsd_, nsd_>& viscstress,
+    const double& timefacfac, const double& rhsfac, const double& rhsfacn)
 {
   const double visceff_timefacfac = visceff_ * timefacfac;
 
@@ -1585,7 +1589,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
     }
   }
 
-  static LINALG::Matrix<nen_, nen_> tmp_dyad;
+  static CORE::LINALG::Matrix<nen_, nen_> tmp_dyad;
   tmp_dyad.MultiplyTN(derxy_, derxy_);
   tmp_dyad.Scale(visceff_timefacfac);
 
@@ -1602,7 +1606,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
     }    // ui
   }      // vi
 
-  static LINALG::Matrix<nsd_, nsd_> viscstressn;
+  static CORE::LINALG::Matrix<nsd_, nsd_> viscstressn;
 
   const double v = visceff_ * rhsfac;
   const double vn = viscn_ * rhsfacn;
@@ -1617,12 +1621,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
   }
 
 
-  static LINALG::Matrix<nsd_, nen_> tmp;
+  static CORE::LINALG::Matrix<nsd_, nen_> tmp;
 
 
   if (fldparatimint_->IsNewOSTImplementation())
   {
-    static LINALG::Matrix<nsd_, nsd_> viscstress_added;
+    static CORE::LINALG::Matrix<nsd_, nsd_> viscstress_added;
 
     viscstress_added.Update(1.0, viscstress, 1.0, viscstressn, 0.0);
     tmp.Multiply(viscstress_added, derxy_);
@@ -1637,9 +1641,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ViscousGalPart(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    const double& timefac, const double& timefacfac, const double& timefacfacpre,
-    const double& rhsfac, const double& rhsfacn)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
+    const double& timefacfacpre, const double& rhsfac, const double& rhsfacn)
 {
   // In the case no continuity stabilization and no LOMA:
   // the factors 'conti_stab_and_vol_visc_fac' and 'conti_stab_and_vol_visc_rhs' are zero
@@ -1736,7 +1740,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContStab(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
-    LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, LINALG::Matrix<nsd_, nen_>& velforce,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn, const double& press, const double& pressn)
 {
@@ -1791,7 +1795,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PressureGalPart(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, 1>& preforce,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn)
 {
@@ -1846,7 +1850,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ContinuityGalPart(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
-    LINALG::Matrix<nsd_, nen_>& velforce, const double& rhsfac, const double rhsfacn)
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& rhsfac, const double rhsfacn)
 {
   for (int idim = 0; idim < nsd_; ++idim)
   {
@@ -1880,8 +1884,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForceRhsTerm(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
-    LINALG::Matrix<nen_, 1>& preforce, LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const int iquad)
 {
@@ -2031,10 +2035,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PSPGOSTNew(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
-    LINALG::Matrix<nsd_, nen_>& velforce, LINALG::Matrix<nen_, 1>& preforce,
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& fac3, const double& timefacfac,
-    const double& timefacfacpre, const double& rhsfac)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
+    CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
   /*
                     /                                \
@@ -2044,7 +2048,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
                     \                                /
    */
 
-  static LINALG::Matrix<nsd_, 1> temp;
+  static CORE::LINALG::Matrix<nsd_, 1> temp;
 
   double supgfac;
   if (fldpara_->Tds() == INPAR::FLUID::subscales_quasistatic)
@@ -2052,7 +2056,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
   else
     supgfac = densaf_ * fldparatimint_->AlphaF() * fac3;
 
-  static LINALG::Matrix<nen_, 1> supg_test;
+  static CORE::LINALG::Matrix<nen_, 1> supg_test;
   for (int vi = 0; vi < nen_; ++vi)
   {
     supg_test(vi) = supgfac * conv_c_(vi);
@@ -2308,8 +2312,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SUPGOSTNew(
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALEOSTNew(
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    LINALG::Matrix<nsd_, nen_>& edispnp, LINALG::Matrix<nsd_, nen_>& egridvnp,
-    LINALG::Matrix<nsd_, nen_>& egridvn)
+    CORE::LINALG::Matrix<nsd_, nen_>& edispnp, CORE::LINALG::Matrix<nsd_, nen_>& egridvnp,
+    CORE::LINALG::Matrix<nsd_, nen_>& egridvn)
 {
   switch (fldpara_->PhysicalType())
   {

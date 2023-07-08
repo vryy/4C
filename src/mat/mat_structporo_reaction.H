@@ -164,12 +164,12 @@ namespace MAT
     //! @name Evaluation methods
 
     /// evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< (i) green lagrange strain
-        Teuchos::ParameterList& params,                        ///< (i) parameter list
-        LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
-        LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
-        int gp,                        ///< (i) Gauss point
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< (i) green lagrange strain
+        Teuchos::ParameterList& params,                              ///< (i) parameter list
+        CORE::LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
+        CORE::LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
+        int gp,                              ///< (i) Gauss point
         int eleGID);
 
     //@}

@@ -52,7 +52,7 @@ double MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetScalarProduct(int
   return scalarProducts_[gp];
 }
 
-const LINALG::Matrix<3, 3>&
+const CORE::LINALG::Matrix<3, 3>&
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp) const
 {
   if (!isInitialized_)
@@ -68,7 +68,7 @@ MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor(int gp)
   return structuralTensors_[gp];
 }
 
-const LINALG::Matrix<6, 1>&
+const CORE::LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::GetStructuralTensor_stress(int gp) const
 {
   if (!isInitialized_)
@@ -119,7 +119,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalElementDataIni
                            ->GetElementFiber(fiber_ids_[0])
                            .Dot(GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
 
-  LINALG::Matrix<3, 3> fiber1fiber2T(false);
+  CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
   fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetElementFiber(fiber_ids_[0]),
       GetAnisotropy()->GetElementFiber(fiber_ids_[1]));
 
@@ -163,7 +163,7 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
                               ->GetGPFiber(gp, fiber_ids_[0])
                               .Dot(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
-    LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
     fiber1fiber2T.MultiplyNT(GetAnisotropy()->GetGPFiber(gp, fiber_ids_[0]),
         GetAnisotropy()->GetGPFiber(gp, fiber_ids_[1]));
 
@@ -207,13 +207,14 @@ void MAT::ELASTIC::CoupAnisoExpoShear::UnpackSummand(
   anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShear::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
+void MAT::ELASTIC::CoupAnisoExpoShear::GetFiberVecs(
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
 {
   // no fibers to export here
 }
 
-void MAT::ELASTIC::CoupAnisoExpoShear::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::CoupAnisoExpoShear::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   dserror("This function is not implemented for this summand!");
 }

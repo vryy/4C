@@ -33,7 +33,7 @@ namespace FSI
   }
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -135,11 +135,11 @@ namespace FSI
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return Extractor().FullMap(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     //! this extractor considere poro as one field
-    const LINALG::MultiMapExtractor& Extractor_MergedPoro() const
+    const CORE::LINALG::MultiMapExtractor& Extractor_MergedPoro() const
     {
       return blockrowdofmap_mergedporo_;
     }
@@ -258,10 +258,11 @@ namespace FSI
     void LinearSolve();
 
     //! apply infnorm scaling to linear block system
-    void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
-    void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+    void UnscaleSolution(
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //! create combined Dirichlet boundary condition map, map containing the dofs with Dirichlet BC
     Teuchos::RCP<Epetra_Map> CombinedDBCMap();
@@ -296,9 +297,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name General solver parameters
 
-    bool solveradapttol_;                  //!< adapt solver tolerance
-    double solveradaptolbetter_;           //!< tolerance to which is adapted
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                        //!< adapt solver tolerance
+    double solveradaptolbetter_;                 //!< tolerance to which is adapted
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -336,13 +337,13 @@ namespace FSI
     //! @name Global setup attributes
 
     //! dofrowmap split in (field) blocks with merged poro (to avoid splitting and merging vector)
-    LINALG::MultiMapExtractor blockrowdofmap_mergedporo_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_mergedporo_;
 
     //! dofrowmap split in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     //! block systemmatrix for structural and fluid dofs
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //--------------------------------------------------------------------------//
     //! @name vectors used within the Newton scheme

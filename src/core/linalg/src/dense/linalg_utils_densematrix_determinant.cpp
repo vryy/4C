@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
+double CORE::LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
 {
 #ifdef DEBUG
   if (A.M() != A.N()) dserror("Matrix is not square");

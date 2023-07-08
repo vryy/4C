@@ -339,13 +339,13 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 {
   // variables
   bool refconfig(false);
-  static LINALG::Matrix<2, 1> xicele1(true);
-  static LINALG::Matrix<3, 1> ele1coords(true);
-  static LINALG::Matrix<3, 1> ele1normal(true);
-  static LINALG::Matrix<2, 1> xicele2(true);
-  static LINALG::Matrix<3, 1> ele2coords(true);
-  static LINALG::Matrix<3, 1> ele1ele2vec(true);
-  static LINALG::Matrix<1, 1> scalarprod(true);
+  static CORE::LINALG::Matrix<2, 1> xicele1(true);
+  static CORE::LINALG::Matrix<3, 1> ele1coords(true);
+  static CORE::LINALG::Matrix<3, 1> ele1normal(true);
+  static CORE::LINALG::Matrix<2, 1> xicele2(true);
+  static CORE::LINALG::Matrix<3, 1> ele2coords(true);
+  static CORE::LINALG::Matrix<3, 1> ele1ele2vec(true);
+  static CORE::LINALG::Matrix<1, 1> scalarprod(true);
 
   // get center and normal of leaf1-element
   const DRT::Element* ele1 = Discret().gElement(ele1gid);
@@ -535,7 +535,7 @@ void CONTACT::UnbiasedSelfBinaryTree::CommunicateSearchElementsAllProcs()
     if (ContactPairs().find(elegid) != ContactPairs().end())
       searchelements = ContactPairs()[elegid];
 
-    LINALG::AllreduceVector(searchelements, searchelements_all, Discret().Comm());
+    CORE::LINALG::AllreduceVector(searchelements, searchelements_all, Discret().Comm());
 
     if (searchelements_all.size()) SetContactPairs()[elegid] = searchelements_all;
   }

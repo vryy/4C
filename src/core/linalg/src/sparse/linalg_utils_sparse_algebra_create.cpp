@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic creation methods for namespace LINALG
+\brief A collection of algebraic creation methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
+Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::CreateMatrix(const Epetra_Map& rowmap, const int npr)
 {
   if (!rowmap.UniqueGIDs()) dserror("Row map is not unique");
   return Teuchos::rcp(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
@@ -22,14 +22,15 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::CreateMatrix(const Epetra_Map& rowmap, co
 /*----------------------------------------------------------------------*
  |  create a Epetra_Vector                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> LINALG::CreateVector(const Epetra_BlockMap& rowmap, const bool init)
+Teuchos::RCP<Epetra_Vector> CORE::LINALG::CreateVector(
+    const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_Vector(rowmap, init));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_IntVector> LINALG::CreateIntVector(
+Teuchos::RCP<Epetra_IntVector> CORE::LINALG::CreateIntVector(
     const Epetra_BlockMap& rowmap, const bool init)
 {
   return Teuchos::rcp(new Epetra_IntVector(rowmap, init));
@@ -37,7 +38,7 @@ Teuchos::RCP<Epetra_IntVector> LINALG::CreateIntVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> LINALG::CreateMultiVector(
+Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::CreateMultiVector(
     const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
   return Teuchos::rcp(new Epetra_MultiVector(rowmap, numrows, init));
@@ -45,7 +46,7 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::CreateMultiVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::CreateMap(const std::set<int>& gids, const Epetra_Comm& comm)
 {
   std::vector<int> mapvec;
   mapvec.reserve(gids.size());
@@ -59,7 +60,8 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::set<int>& gids, const Epet
 /*----------------------------------------------------------------------*
  | create epetra_map with out-of-bound check                 farah 06/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int>& gids, const Epetra_Comm& comm)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::CreateMap(
+    const std::vector<int>& gids, const Epetra_Comm& comm)
 {
   Teuchos::RCP<Epetra_Map> map;
 
@@ -73,8 +75,8 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int>& gids, const E
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::CreateMapExtractorFromDiscretization(
-    const DRT::DiscretizationInterface& dis, int ndim, LINALG::MultiMapExtractor& extractor)
+void CORE::LINALG::CreateMapExtractorFromDiscretization(
+    const ::DRT::DiscretizationInterface& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -82,7 +84,7 @@ void LINALG::CreateMapExtractorFromDiscretization(
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    ::DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -123,8 +125,8 @@ void LINALG::CreateMapExtractorFromDiscretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis,
-    const DRT::DofSetInterface& dofset, int ndim, LINALG::MapExtractor& extractor)
+void CORE::LINALG::CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis,
+    const ::DRT::DofSetInterface& dofset, int ndim, CORE::LINALG::MapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;
@@ -132,7 +134,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    ::DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dofset.Dof(node);
     for (unsigned j = 0; j < dof.size(); ++j)
@@ -170,8 +172,8 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis, int ndim_field1,
-    int ndim_field2, LINALG::MultiMapExtractor& extractor)
+void CORE::LINALG::CreateMapExtractorFromDiscretization(const ::DRT::Discretization& dis,
+    int ndim_field1, int ndim_field2, CORE::LINALG::MultiMapExtractor& extractor)
 {
   unsigned fp_dim = static_cast<unsigned>(ndim_field1 + ndim_field2);
 
@@ -181,7 +183,7 @@ void LINALG::CreateMapExtractorFromDiscretization(const DRT::Discretization& dis
   int numrownodes = dis.NumMyRowNodes();
   for (int i = 0; i < numrownodes; ++i)
   {
-    DRT::Node* node = dis.lRowNode(i);
+    ::DRT::Node* node = dis.lRowNode(i);
 
     std::vector<int> dof = dis.Dof(0, node);
 

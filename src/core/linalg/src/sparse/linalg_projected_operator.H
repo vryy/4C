@@ -16,7 +16,7 @@
 // forward declarations
 class Epetra_MultiVector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class KrylovProjector;
 
@@ -84,7 +84,7 @@ namespace LINALG
 
     */
     LinalgProjectedOperator(Teuchos::RCP<Epetra_Operator> A, bool project,
-        Teuchos::RCP<LINALG::KrylovProjector> projector);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     /*!
     \brief Destructor
@@ -131,7 +131,7 @@ namespace LINALG
        }
 
        and the documentation to LinalgPrecondOperator as well as the source
-       to LINALG::Solver.
+       to CORE::LINALG::Solver.
 
     */
     //! @}
@@ -168,9 +168,9 @@ namespace LINALG
     Teuchos::RCP<Epetra_Operator> A_;
 
     //! Krylov space projector
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
   };
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_PROJECTED_OPERATOR_H

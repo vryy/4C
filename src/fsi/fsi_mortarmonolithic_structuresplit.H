@@ -24,11 +24,11 @@ namespace ADAPTER
   class CouplingMortar;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
   class MatrixColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FSI
 {
@@ -89,24 +89,24 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& b                                          ///< right hand side
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& b                                                ///< right hand side
     );
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
-        Epetra_Vector& x,                                             ///< solution vector
-        Epetra_Vector& b                                              ///< right hand side
+    virtual void UnscaleSolution(CORE::LINALG::BlockSparseMatrixBase& mat,  ///< Jacobian matrix
+        Epetra_Vector& x,                                                   ///< solution vector
+        Epetra_Vector& b                                                    ///< right hand side
     );
 
     //@}
@@ -267,7 +267,7 @@ namespace FSI
         const bool slave_vectors_contain_interface_dofs) final;
 
     /// block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP<::CORE::ADAPTER::Coupling> fscoupfa_;
@@ -281,13 +281,13 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<LINALG::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsmgitransform_;
 
     ///@}
 
@@ -327,16 +327,16 @@ namespace FSI
     Teuchos::RCP<const Epetra_Vector> velgprev_;
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sgicur_;
 
     //! block \f$S_{\Gamma I,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sgiprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sgiprev_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sggcur_;
 
     //! block \f$S_{\Gamma\Gamma,i}\f$ of structural matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sggprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sggprev_;
 
     //@}
 

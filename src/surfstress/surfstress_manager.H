@@ -31,7 +31,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -98,7 +98,7 @@ namespace UTILS
       \param stiff (out): stiffness matrix
     */
     void EvaluateSurfStress(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector> disn,
-        Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<LINALG::SparseOperator> stiff);
+        Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff);
 
     /*!
       \brief Update history variables

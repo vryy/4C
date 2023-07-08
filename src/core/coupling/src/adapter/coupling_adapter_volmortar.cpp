@@ -225,7 +225,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
   CheckSetup();
   CheckInit();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P12_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P12_->RowMap(), true);
   int err = P12_->Multiply(false, *vec, *mapvec);
   if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
 
@@ -242,7 +242,7 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
   CheckSetup();
   CheckInit();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P21_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> mapvec = CORE::LINALG::CreateVector(P21_->RowMap(), true);
   int err = P21_->Multiply(false, *vec, *mapvec);
   if (err != 0) dserror("ERROR: Matrix multiply returned error code %i", err);
 
@@ -252,27 +252,27 @@ Teuchos::RCP<const Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::ApplyVectorMapp
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_2 --> Omega_1                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping12(
-    Teuchos::RCP<const LINALG::SparseMatrix> mat) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping12(
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check
   CheckSetup();
   CheckInit();
 
-  return LINALG::MLMultiply(*mat, false, *P12_, false, false, false, true);
+  return CORE::LINALG::MLMultiply(*mat, false, *P12_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_1 --> Omega_2                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping21(
-    Teuchos::RCP<const LINALG::SparseMatrix> mat) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::MortarVolCoupl::ApplyMatrixMapping21(
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const
 {
   // safety check
   CheckSetup();
   CheckInit();
 
-  return LINALG::MLMultiply(*mat, false, *P21_, false, false, false, true);
+  return CORE::LINALG::MLMultiply(*mat, false, *P21_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -285,7 +285,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::MasterToSlave(
   CheckInit();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(P21_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> sv = CORE::LINALG::CreateVector(P21_->RowMap(), true);
   // project
   MasterToSlave(mv, sv);
 
@@ -353,7 +353,7 @@ Teuchos::RCP<Epetra_Vector> CORE::ADAPTER::MortarVolCoupl::SlaveToMaster(
   CheckInit();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(P12_->RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(P12_->RowMap(), true);
   // project
   SlaveToMaster(sv, mv);
 

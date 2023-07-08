@@ -136,7 +136,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
     }
   }
 
-  Xp_ = LINALG::CreateVector(*pdof_, true);
+  Xp_ = CORE::LINALG::CreateVector(*pdof_, true);
   *Xp_ = Xp_temp;
 
   // now create D and its transpose DT (following Miehe et al., 2002)

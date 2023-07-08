@@ -18,7 +18,7 @@
 #include "inv_analysis_matpar_manager.H"  //for ConnectivityData
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }

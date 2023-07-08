@@ -17,11 +17,11 @@ namespace CONTACT
   class CoNitscheStrategySsi;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   enum class MatrixType;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SSI
 {
@@ -46,15 +46,15 @@ namespace SSI
 
     //! apply contact contributions to scatra sub matrix
     virtual void ApplyContactToScatraScatra(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) = 0;
 
     //! apply contact contributions to scatra-structure sub matrix
     virtual void ApplyContactToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) = 0;
 
     //! apply contact contributions to structure-scatra sub matrix
     virtual void ApplyContactToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) = 0;
 
    protected:
     //! return contact nitsche strategy for ssi problems
@@ -84,13 +84,13 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
     void ApplyContactToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
     void ApplyContactToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
   //! SSI (sub) matrices are block matrices
@@ -103,18 +103,18 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
     void ApplyContactToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
     void ApplyContactToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
   //! build specific contact strategy
   Teuchos::RCP<SSI::ContactStrategyBase> BuildContactStrategy(
       Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
-      Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType matrixtype_scatra);
+      Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
 #endif  // SSI_MONOLITHIC_CONTACT_STRATEGY_H

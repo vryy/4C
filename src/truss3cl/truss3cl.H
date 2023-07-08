@@ -354,7 +354,7 @@ namespace DRT
       bool isinit_;
 
       //! reference node position
-      LINALG::Matrix<6, 1> X_;
+      CORE::LINALG::Matrix<6, 1> X_;
 
       //! material type
       int material_;
@@ -408,7 +408,7 @@ namespace DRT
 
 
       //! calculation of nonlinear stiffness and mass matrix
-      void t3_nlnstiffmass_totlag(LINALG::Matrix<6, 1>& fdisp,
+      void t3_nlnstiffmass_totlag(CORE::LINALG::Matrix<6, 1>& fdisp,
           Epetra_SerialDenseMatrix& fstiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& fforce);
 
@@ -420,7 +420,7 @@ namespace DRT
        * \f$\varepsilon=\Delta d / d\f$ as strain measure.
        *
        */
-      void t3_nlnstiffmass_engstr(const LINALG::Matrix<6, 1>& fdisp,
+      void t3_nlnstiffmass_engstr(const CORE::LINALG::Matrix<6, 1>& fdisp,
           Epetra_SerialDenseMatrix& fstiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& fforce);
 
@@ -437,25 +437,25 @@ namespace DRT
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
       void CalcBrownian(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<6, 1>& fvel,              //!< element velocity vector
+          const CORE::LINALG::Matrix<6, 1>& fvel,        //!< element velocity vector
           const std::vector<double>& disp,               //!< element real disp vector
-          const LINALG::Matrix<6, 1>& fdisp,             //!< element disp vector
+          const CORE::LINALG::Matrix<6, 1>& fdisp,       //!< element disp vector
           Epetra_SerialDenseMatrix& fstiffmatrix,        //!< element stiffness matrix
           Epetra_SerialDenseVector& fforce);             //!< element internal force vector
 
       //! computes damping coefficients for employed friction model
-      void MyDampingConstants(Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma);
+      void MyDampingConstants(Teuchos::ParameterList& params, CORE::LINALG::Matrix<3, 1>& gamma);
 
       //! computes translational damping forces and stiffness
       template <int fnnode, int ndim,
           int dof>  // number of nodes, number of dimensions of embedding space, number of degrees
                     // of freedom per node
       void MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<6, 1>& fvel,                        //!< element velocity vector
+          const CORE::LINALG::Matrix<6, 1>& fvel,                  //!< element velocity vector
           const std::vector<double>& disp,                         //!< element real disp vector
-          const LINALG::Matrix<6, 1>& fdisp,       //!< element fictitious disp vector
-          Epetra_SerialDenseMatrix& fstiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector& fforce);       //!< element internal force vector
+          const CORE::LINALG::Matrix<6, 1>& fdisp,  //!< element fictitious disp vector
+          Epetra_SerialDenseMatrix& fstiffmatrix,   //!< element stiffness matrix
+          Epetra_SerialDenseVector& fforce);        //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <int fnnode, int ndim, int dof,
@@ -463,7 +463,7 @@ namespace DRT
                                // of degrees of freedom per node, number of random numbers required
                                // per Gauss point
       void MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<6, 1>& fdisp,                   //!< element disp vector
+          const CORE::LINALG::Matrix<6, 1>& fdisp,             //!< element disp vector
           Epetra_SerialDenseMatrix& fstiffmatrix,              //!< element stiffness matrix
           Epetra_SerialDenseVector& fforce);                   //!< element internal force vector
 
@@ -472,10 +472,11 @@ namespace DRT
       //! damping matrix
       template <int ndim>  // number of dimensions of embedding space
       void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
-                                                           //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
-          LINALG::Matrix<ndim, ndim>&
+          const CORE::LINALG::Matrix<ndim, 1>&
+              evaluationpoint,                           //!< point at which background velocity
+                                                         //!< and its gradient has to be computed
+          CORE::LINALG::Matrix<ndim, 1>& velbackground,  //!< velocity of background fluid
+          CORE::LINALG::Matrix<ndim, ndim>&
               velbackgroundgrad);  //!< gradient of velocity of background fluid
 
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
@@ -485,7 +486,7 @@ namespace DRT
           std::vector<double>& disp);                 //!< element disp vector
 
       // computes reference DOFs for TRUSS3CL at t=0, i.e. before first time step (public)
-      void ComputeRefDOFs(LINALG::Matrix<6, 1>& Xstart);
+      void ComputeRefDOFs(CORE::LINALG::Matrix<6, 1>& Xstart);
 
       //@}
 

@@ -122,30 +122,32 @@ namespace MAT
 
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
-      void EvaluateFirstDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
-          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+      void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
 
-      void EvaluateSecondDerivativesAniso(LINALG::Matrix<3, 1>& dPI_aniso,
-          const LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& dPI_aniso,
+          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
       /// ATTENTION: this is only the passive contribution of the fiber!
       template <typename T>
-      void GetDerivativesAniso(
-          LINALG::Matrix<2, 1, T>& dPI_aniso,      ///< first derivative with respect to invariants
-          LINALG::Matrix<3, 1, T>& ddPII_aniso,    ///< second derivative with respect to invariants
-          LINALG::Matrix<4, 1, T>& dddPIII_aniso,  ///< third derivative with respect to invariants
-          LINALG::Matrix<3, 3, T> const& rcg,      ///< right Cauchy-Green tensor
-          int gp,                                  ///< Gauss point
-          int eleGID) const;                       ///< element GID
+      void GetDerivativesAniso(CORE::LINALG::Matrix<2, 1, T>&
+                                   dPI_aniso,  ///< first derivative with respect to invariants
+          CORE::LINALG::Matrix<3, 1, T>&
+              ddPII_aniso,  ///< second derivative with respect to invariants
+          CORE::LINALG::Matrix<4, 1, T>&
+              dddPIII_aniso,  ///< third derivative with respect to invariants
+          CORE::LINALG::Matrix<3, 3, T> const& rcg,  ///< right Cauchy-Green tensor
+          int gp,                                    ///< Gauss point
+          int eleGID) const;                         ///< element GID
 
       /// Add anisotropic principal stresses
       /// ATTENTION: this is only the passive contribution of the fiber!
-      void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green in "strain-like" Voigt notation
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>&
+                                       rcg,  ///< right Cauchy Green in "strain-like" Voigt notation
+          CORE::LINALG::Matrix<6, 6>& cmat,  ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,  ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -154,35 +156,38 @@ namespace MAT
 
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
-      void EvaluateFunc(T& psi,                ///< strain energy functions
-          LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
-          int gp,                              ///< Gauss point
-          int eleGID) const;                   ///< element GID
+      void EvaluateFunc(T& psi,                      ///< strain energy functions
+          CORE::LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
+          int gp,                                    ///< Gauss point
+          int eleGID) const;                         ///< element GID
 
       /// evaluate stress and cmat
       /// ATTENTION: this is only the active contribution of the fiber!
-      void AddActiveStressCmatAniso(LINALG::Matrix<3, 3> const& CM,  ///< rigtht Cauchy Green tensor
-          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
-          int gp,                                                    ///< Gauss point
-          int eleGID) const override;                                ///< element GID
+      void AddActiveStressCmatAniso(
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< rigtht Cauchy Green tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
+          int gp,                                ///< Gauss point
+          int eleGID) const override;            ///< element GID
 
 
       /// evaluate stress and cmat
       /// ATTENTION: this is only the active contribution of the fiber!
       template <typename T>
       void EvaluateActiveStressCmatAniso(
-          LINALG::Matrix<3, 3, T> const& CM,  ///< rigtht Cauchy Green tensor
-          LINALG::Matrix<6, 6, T>& cmat,      ///< material stiffness matrix
-          LINALG::Matrix<6, 1, T>& stress,    ///< 2nd PK-stress
-          int gp,                             ///< Gauss point
-          int eleGID) const;                  ///< element GID
+          CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< rigtht Cauchy Green tensor
+          CORE::LINALG::Matrix<6, 6, T>& cmat,      ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1, T>& stress,    ///< 2nd PK-stress
+          int gp,                                   ///< Gauss point
+          int eleGID) const;                        ///< element GID
 
       // add strain energy
-      void AddStrainEnergy(double& psi,       ///< strain energy functions
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<6, 1>&
+      void AddStrainEnergy(double& psi,  ///< strain energy functions
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<6, 1>&
               glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
           int gp,        ///< Gauss point
           int eleGID     ///< element GID
@@ -201,14 +206,14 @@ namespace MAT
       //@}
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,       ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+      void SetFiberVecs(double newgamma,             ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation

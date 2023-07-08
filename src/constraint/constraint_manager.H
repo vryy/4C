@@ -31,11 +31,11 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace UTILS
 {
@@ -95,7 +95,7 @@ namespace UTILS
         Teuchos::RCP<const Epetra_Vector> displast,  ///< displacement at beginning of time step
         Teuchos::RCP<const Epetra_Vector> disp,      ///< displacement at end of time step
         Teuchos::RCP<Epetra_Vector> fint,            ///< vector of internal forces
-        Teuchos::RCP<LINALG::SparseOperator> stiff,  ///< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  ///< stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -168,7 +168,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Map> GetConstraintMap() const { return constrmap_; };
 
     //! Return the additional rectangular matrix, constructed for lagrange multiplier evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetConstrMatrix()  // const
+    Teuchos::RCP<CORE::LINALG::SparseOperator> GetConstrMatrix()  // const
     {
       return constrMatrix_;
     };
@@ -261,8 +261,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> GetRefBaseValues() const { return refbasevalues_; }
 
     //! switch constraint matrix to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
 
 
    private:
@@ -301,8 +301,8 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> fact_;              ///< vector with current time curve values
     Teuchos::RCP<Epetra_Vector> lagrMultVec_;       ///< lagrange multipliers
     Teuchos::RCP<Epetra_Vector> lagrMultVecOld_;    ///< lagrange multipliers
-    Teuchos::RCP<LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
-    bool haveconstraint_;                                ///< are there constraints at all?
+    Teuchos::RCP<CORE::LINALG::SparseOperator> constrMatrix_;  ///< additional rectangular matrix
+    bool haveconstraint_;                                      ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?
     bool havepenaconstr_;  ///< are there constraints controlled by Penalty approach?
     bool havemonitor_;     ///< are there monitor conditions?

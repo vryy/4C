@@ -378,12 +378,12 @@ namespace CORE::GEO
             cutfound = true;
             double z = blsv / (blsv - elsv);
 
-            LINALG::Matrix<probDim, 1> x1;
-            LINALG::Matrix<probDim, 1> x2;
+            CORE::LINALG::Matrix<probDim, 1> x1;
+            CORE::LINALG::Matrix<probDim, 1> x2;
             BeginNode()->Coordinates(x1.A());
             EndNode()->Coordinates(x2.A());
 
-            LINALG::Matrix<probDim, 1> x;
+            CORE::LINALG::Matrix<probDim, 1> x;
             x.Update(-1., x1, 1., x2, 0.);
             x.Update(1., x1, z);
             Point* p = Point::NewPoint(mesh, x.A(), 2. * z - 1., this, &side, 0.0);

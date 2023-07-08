@@ -146,7 +146,7 @@ namespace CORE::GEO
    * \author a.ger
    * \date 02/08
    */
-  LINALG::SerialDenseMatrix InitialPositionArray(const ::DRT::Element* const
+  CORE::LINALG::SerialDenseMatrix InitialPositionArray(const ::DRT::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
   );
 
@@ -162,9 +162,9 @@ namespace CORE::GEO
    * \author a.ger
    * \date 02/08
    */
-  LINALG::SerialDenseMatrix getCurrentNodalPositions(
+  CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
       const ::DRT::Element* const ele,  ///< element with nodal pointers
-      const std::map<int, LINALG::Matrix<3, 1>>&
+      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentcutterpositions  ///< current positions of all cutter nodes
   );
 
@@ -180,9 +180,9 @@ namespace CORE::GEO
    * \author u.may
    * \date 09/09
    */
-  LINALG::SerialDenseMatrix getCurrentNodalPositions(
+  CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
       const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
-      const std::map<int, LINALG::Matrix<3, 1>>&
+      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );
 
@@ -197,7 +197,7 @@ namespace CORE::GEO
    */
   template <class M>
   void fillCurrentNodalPositions(const ::DRT::Element* const ele,  ///< element with nodal pointers
-      const std::map<int, LINALG::Matrix<3, 1>>&
+      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentpositions,  ///< current positions of all cutter nodes
       M& xyze                ///< position array (3,numnode) to be filled
   )
@@ -206,7 +206,7 @@ namespace CORE::GEO
     const int* nodeids = ele->NodeIds();
     for (int inode = 0; inode < numnode; ++inode)
     {
-      const LINALG::Matrix<3, 1>& x = currentpositions.find(nodeids[inode])->second;
+      const CORE::LINALG::Matrix<3, 1>& x = currentpositions.find(nodeids[inode])->second;
       xyze(0, inode) = x(0);
       xyze(1, inode) = x(1);
       xyze(2, inode) = x(2);

@@ -213,9 +213,9 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_
 
   // std::cout<<*finterface->FullMap()<<std::endl;
   // std::cout<<*disp_fluid<<std::endl;
-  deltadisp_ = LINALG::CreateVector(*finterface->FSICondMap(), true);
+  deltadisp_ = CORE::LINALG::CreateVector(*finterface->FSICondMap(), true);
 
-  LINALG::Export(*disp_fluid, *deltadisp_);
+  CORE::LINALG::Export(*disp_fluid, *deltadisp_);
   // deltadisp_ = finterface->ExtractFSICondVector(disp_fluid);
 
   // dserror("stop");
@@ -224,7 +224,7 @@ void FSI::InterfaceCorrector::CorrectInterfaceDisplacements(Teuchos::RCP<Epetra_
 
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
-  LINALG::Export(*idisp_fluid_corrected, *disp_fluid);
+  CORE::LINALG::Export(*idisp_fluid_corrected, *disp_fluid);
   // finterface->InsertFSICondVector(idisp_fluid_corrected,disp_fluid);
 
   volcorrector_->CorrectVolDisplacements(fluidale_, deltadisp_, disp_fluid, finterface);
@@ -272,7 +272,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy =
       Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(), true));
-  LINALG::Export(*deltadisp, *DofColMapDummy);
+  CORE::LINALG::Export(*deltadisp, *DofColMapDummy);
 
   const double tol = 1e-5;
 
@@ -371,7 +371,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
         lmowner[idof] = fluidnode->Owner();
       }
 
-      LINALG::Assemble(*correction, gnode, dofs, lmowner);
+      CORE::LINALG::Assemble(*correction, gnode, dofs, lmowner);
     }  // end fluid volume node loop
   }    // end ale fsi element loop
 
@@ -398,9 +398,9 @@ void FSI::VolCorrector::CorrectVolDisplacementsPhysSpace(Teuchos::RCP<ADAPTER::F
   Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
   Teuchos::RCP<Epetra_Vector> DofColMapDummy =
       Teuchos::rcp(new Epetra_Vector(*fluidale->FluidField()->Discretization()->DofColMap(), true));
-  LINALG::Export(*deltadisp, *DofColMapDummy);
+  CORE::LINALG::Export(*deltadisp, *DofColMapDummy);
 
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPs =
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
   Teuchos::RCP<std::set<int>> FSIaleeles =
@@ -443,7 +443,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   InitDopNormals();
 
   // init current positions
-  std::map<int, LINALG::Matrix<3, 1>> currentpositions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currentpositions;
 
   for (int lid = 0; lid < fluidale->FluidField()->Discretization()->NumMyColElements(); ++lid)
   {
@@ -453,7 +453,7 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
     for (int k = 0; k < sele->NumNode(); k++)
     {
       DRT::Node* node = sele->Nodes()[k];
-      LINALG::Matrix<3, 1> currpos;
+      CORE::LINALG::Matrix<3, 1> currpos;
 
       currpos(0) = node->X()[0];
       currpos(1) = node->X()[1];
@@ -467,13 +467,13 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
   searchTree_ = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox =
+  const CORE::LINALG::Matrix<3, 2> rootBox =
       CORE::GEO::getXAABBofDis(*fluidale->FluidField()->Discretization(), currentpositions);
   searchTree_->initializeTree(
       rootBox, *fluidale->FluidField()->Discretization(), CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
 
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPs =
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPs =
       CalcBackgroundDops(fluidale->FluidField()->Discretization());
 
   Teuchos::RCP<std::set<int>> FSIaleeles =
@@ -602,10 +602,10 @@ void FSI::VolCorrector::InitDopNormals()
 /*----------------------------------------------------------------------*
  |  Calculate Dops for background mesh                       farah 05/16|
  *----------------------------------------------------------------------*/
-std::map<int, LINALG::Matrix<9, 2>> FSI::VolCorrector::CalcBackgroundDops(
+std::map<int, CORE::LINALG::Matrix<9, 2>> FSI::VolCorrector::CalcBackgroundDops(
     Teuchos::RCP<DRT::Discretization> searchdis)
 {
-  std::map<int, LINALG::Matrix<9, 2>> currentKDOPs;
+  std::map<int, CORE::LINALG::Matrix<9, 2>> currentKDOPs;
 
   for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
   {
@@ -620,9 +620,9 @@ std::map<int, LINALG::Matrix<9, 2>> FSI::VolCorrector::CalcBackgroundDops(
 /*----------------------------------------------------------------------*
  |  Calculate Dop for one Element                            farah 05/16|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
+CORE::LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
 {
-  LINALG::Matrix<9, 2> dop;
+  CORE::LINALG::Matrix<9, 2> dop;
 
   // calculate slabs
   for (int j = 0; j < 9; j++)
@@ -665,7 +665,7 @@ LINALG::Matrix<9, 2> FSI::VolCorrector::CalcDop(DRT::Element& ele)
  |  Perform searching procedure                              farah 05/16|
  *----------------------------------------------------------------------*/
 std::vector<int> FSI::VolCorrector::Search(
-    DRT::Element& ele, std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
+    DRT::Element& ele, std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
   std::vector<int> gids;
@@ -673,7 +673,7 @@ std::vector<int> FSI::VolCorrector::Search(
   std::set<int> gid;
   gid.clear();
 
-  LINALG::Matrix<9, 2> queryKDOP;
+  CORE::LINALG::Matrix<9, 2> queryKDOP;
 
   // calc dop for considered element
   queryKDOP = CalcDop(ele);

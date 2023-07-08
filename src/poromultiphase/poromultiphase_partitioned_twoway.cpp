@@ -58,16 +58,17 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::Init(
   artery_coupling_active_ = DRT::INPUT::IntegralValue<int>(fluidparams, "ARTERY_COUPLING");
 
   // initialize increment vectors
-  phiincnp_ = LINALG::CreateVector(*FluidField()->DofRowMap(0), true);
+  phiincnp_ = CORE::LINALG::CreateVector(*FluidField()->DofRowMap(0), true);
   if (artery_coupling_active_)
-    arterypressincnp_ = LINALG::CreateVector(*FluidField()->ArteryDofRowMap(), true);
-  dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
+    arterypressincnp_ = CORE::LINALG::CreateVector(*FluidField()->ArteryDofRowMap(), true);
+  dispincnp_ = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
 
   // initialize fluid vectors
-  fluidphinp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
-  fluidphioldnp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
-  fluidphiincnp_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
-  fluidphiincnpold_ = LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
+  fluidphinp_ = CORE::LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
+  fluidphioldnp_ = CORE::LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
+  fluidphiincnp_ = CORE::LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
+  fluidphiincnpold_ =
+      CORE::LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
 
   // Get the parameters for the ConvergenceCheck
   itmax_ = algoparams.get<int>("ITEMAX");
@@ -377,7 +378,7 @@ void POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay::AitkenRelaxation(
 {
   // fluidphiincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> fluidphiincnpdiff =
-      LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*FluidField()->Discretization()->DofRowMap(), true);
   fluidphiincnpdiff->Update(1.0, *fluidphiincnp_, (-1.0), *fluidphiincnpold_, 0.0);
 
   double fluidphiincnpdiffnorm = 0.0;

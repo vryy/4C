@@ -90,7 +90,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   discret_ptr_ = Teuchos::rcp_dynamic_cast<::DRT::Discretization>(DiscretPtr(), true);
   // stiff
   stiff_beaminteraction_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
   // force and displacement at last redistribution
   force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
   dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
@@ -137,7 +137,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   // (with distinct parallel distribution)
   // -------------------------------------------------------------------------
   coupsia_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
-  siatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
 
   // -------------------------------------------------------------------------
   // initialize and setup binning strategy and beam crosslinker handler
@@ -147,7 +147,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
@@ -383,7 +383,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
       1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap())));
-  LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *mutabledisnp[0]);
+  CORE::LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *mutabledisnp[0]);
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
       1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
@@ -426,7 +426,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *iadiscolnp);
+  CORE::LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *iadiscolnp);
 
   binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
       ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp);
@@ -541,14 +541,15 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
   // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->GetRestartCouplingFlag())
   {
     ia_state_ptr_->GetMutableDisRestartCol() =
         Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+    CORE::LINALG::Export(
+        *ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
   }
 
   // submodel loop
@@ -656,7 +657,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleForce(
 {
   CheckInitSetup();
 
-  LINALG::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *force_beaminteraction_);
 
   return true;
 }
@@ -664,11 +665,11 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleForce(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteraction::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckInitSetup();
 
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_beaminteraction_, false, timefac_np, 1.0);
 
   // no need to keep it
@@ -1048,7 +1049,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateCouplingAdapterAndMatrixTransfo
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
-  siatransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
+  siatransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform);
   coupsia_->SetupCoupling(*ia_discret_, *discret_ptr_);
 }
 
@@ -1098,14 +1099,15 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
 
   // update column vector
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->GetRestartCouplingFlag())
   {
     ia_state_ptr_->GetMutableDisRestartCol() =
         Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+    CORE::LINALG::Export(
+        *ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
   }
 
   // force
@@ -1114,8 +1116,8 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
       Teuchos::rcp(new Epetra_FEVector(*ia_discret_->DofRowMap(), true));
 
   // stiff
-  ia_state_ptr_->GetMutableStiff() = Teuchos::rcp(new LINALG::SparseMatrix(
-      *ia_discret_->DofRowMap(), 81, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  ia_state_ptr_->GetMutableStiff() = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *ia_discret_->DofRowMap(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
 }
@@ -1166,7 +1168,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
   double bin_size_lower_bound =
       binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
           discret_vec, disnp_vec);
-  LINALG::Matrix<3, 2> XAABB(true);
+  CORE::LINALG::Matrix<3, 2> XAABB(true);
   binstrategy_->ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
       discret_vec, disnp_vec, XAABB, false);
   if (GState().GetMyRank() == 0)

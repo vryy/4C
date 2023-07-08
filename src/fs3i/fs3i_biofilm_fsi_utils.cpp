@@ -25,7 +25,7 @@ void FS3I::BIOFILM::UTILS::ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> 
   Teuchos::RCP<Epetra_Vector> coldisp = Teuchos::rcp(new Epetra_Vector(*(dis->DofColMap())));
 
   // Export row-displacments to col-displacements
-  LINALG::Export(*disp, *coldisp);
+  CORE::LINALG::Export(*disp, *coldisp);
 
 
   const Epetra_Vector& gvector = *coldisp;

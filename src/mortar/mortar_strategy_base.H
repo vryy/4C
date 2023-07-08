@@ -34,13 +34,13 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class Solver;
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -252,8 +252,8 @@ namespace MORTAR
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() const = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-        const int iter, bool predictor = false) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int step, const int iter, bool predictor = false) = 0;
     virtual void AssembleMortar() = 0;
     virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap,
         Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap,
@@ -263,16 +263,17 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorForce() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanForce() = 0;
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(
         IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
         bool forcedrestart = false) const = 0;
-    virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    virtual void Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    virtual void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(
+        Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateReferenceState() = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;
@@ -281,7 +282,7 @@ namespace MORTAR
     virtual void InitMortar() = 0;
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void InterfaceForces(bool output = false) = 0;
     virtual double Inttime() = 0;
@@ -292,7 +293,7 @@ namespace MORTAR
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
     virtual Teuchos::RCP<const Epetra_Vector> MeshInitialization() = 0;
-    virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) = 0;
     virtual int NumberOfActiveNodes() const = 0;
     virtual int NumberOfSlipNodes() const = 0;
@@ -318,16 +319,16 @@ namespace MORTAR
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
-    virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    virtual void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
     virtual void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) = 0;
     virtual void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) = 0;
     virtual const Teuchos::RCP<Epetra_Map> SlipRowNodes() = 0;
-    virtual void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps) = 0;
+    virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(Teuchos::RCP<const Epetra_Vector> dis) = 0;
     virtual void UpdateActiveSet() = 0;

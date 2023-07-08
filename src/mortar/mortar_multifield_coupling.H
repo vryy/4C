@@ -16,11 +16,11 @@
 #include <Epetra_Vector.h>
 
 // forward declaration
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
@@ -44,7 +44,7 @@ namespace MORTAR
     );
 
     /// Perform condensation in all blocks of the matrix
-    void CondenseMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat);
+    void CondenseMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
     void CondenseRhs(Teuchos::RCP<Epetra_Vector>& mat);
@@ -53,7 +53,7 @@ namespace MORTAR
     void RecoverIncr(Teuchos::RCP<Epetra_Vector>& incr);
 
    private:
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> p_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> p_;
   };
 }  // namespace MORTAR
 

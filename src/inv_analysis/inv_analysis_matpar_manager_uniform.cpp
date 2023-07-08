@@ -97,9 +97,9 @@ void INVANA::MatParManagerUniform::ApplyParametrization(
   // todo: this is not ok! loop over the single columns of matrix
   // and extract only the diagonal component.
   // matrix * projector_
-  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix, false, projector_, false);
+  Teuchos::RCP<Epetra_CrsMatrix> mr = CORE::LINALG::Multiply(fullmatrix, false, projector_, false);
   // projector'*matrix*projector
-  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(projector_, true, mr, false);
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = CORE::LINALG::Multiply(projector_, true, mr, false);
 
   Epetra_Vector diagonal(pmr->RowMap(), true);
   pmr->ExtractDiagonalCopy(diagonal);
@@ -188,7 +188,7 @@ void INVANA::MatParManagerUniform::CreateProjection()
   int numeleperproc = 0;
   if (Comm().MyPID() == 0) numeleperproc = NumParams();
   paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1, numeleperproc, 0, Comm()));
-  paramlayoutmap_ = LINALG::AllreduceEMap(*paramlayoutmapunique_);
+  paramlayoutmap_ = CORE::LINALG::AllreduceEMap(*paramlayoutmapunique_);
 
   // build correspondence elewiseoptparam <-> patch
   for (int i = 0; i < paramapextractor_->NumMaps(); i++)
@@ -210,7 +210,7 @@ void INVANA::MatParManagerUniform::CreateProjection()
     if (current > maxbw) maxbw = current;
   }
 
-  Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(*paramapextractor_->FullMap(), 0);
+  Teuchos::RCP<Epetra_Map> colmap = CORE::LINALG::AllreduceEMap(*paramapextractor_->FullMap(), 0);
   projector_ =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *paramlayoutmapunique_, *colmap, maxbw, false));
 
@@ -219,7 +219,7 @@ void INVANA::MatParManagerUniform::CreateProjection()
   // -> reduce them before inserting into projection
   std::vector<Teuchos::RCP<Epetra_Map>> maps;
   for (int i = 0; i < paramapextractor_->NumMaps(); i++)
-    maps.push_back(LINALG::AllreduceEMap(*paramapextractor_->Map(i), 0));
+    maps.push_back(CORE::LINALG::AllreduceEMap(*paramapextractor_->Map(i), 0));
 
   for (int i = 0; i < projector_->NumMyRows(); i++)
   {

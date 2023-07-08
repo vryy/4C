@@ -175,10 +175,10 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
     }
     case INPAR::MAT::m_linelast1D_growth:
     {
-      LINALG::Matrix<6, 1> curr_nodal_coords;
-      LINALG::Matrix<6, 6> dtruss_disp_du;
-      LINALG::Matrix<6, 1> dN_dx;
-      LINALG::Matrix<2, 1> nodal_concentration;
+      CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
+      CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
+      CORE::LINALG::Matrix<6, 1> dN_dx;
+      CORE::LINALG::Matrix<2, 1> nodal_concentration;
       const int ndof = 6;
 
       PrepCalcInternalForceStiffTotLagScaTra(
@@ -271,10 +271,10 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
       Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-      LINALG::Matrix<6, 1> curr_nodal_coords;
-      LINALG::Matrix<6, 6> dtruss_disp_du;
-      LINALG::Matrix<6, 1> dN_dx;
-      LINALG::Matrix<2, 1> nodal_concentration;
+      CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
+      CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
+      CORE::LINALG::Matrix<6, 1> dN_dx;
+      CORE::LINALG::Matrix<2, 1> nodal_concentration;
 
       PrepCalcInternalForceStiffTotLagScaTra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);
@@ -329,7 +329,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Truss3Scatra::ProjectScalarToGaussPoint(
-    const double xi, const LINALG::Matrix<2, 1>& c) const
+    const double xi, const CORE::LINALG::Matrix<2, 1>& c) const
 {
   return (c(1) - c(0)) / 2.0 * xi + (c(1) + c(0)) / 2.0;
 }
@@ -376,8 +376,9 @@ void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
     const std::map<std::string, std::vector<double>>& ele_state,
-    LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
-    LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration)
+    CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
+    CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx,
+    CORE::LINALG::Matrix<2, 1>& nodal_concentration)
 {
   PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dcurr_nodal_coords_du, dN_dx);
 
@@ -421,10 +422,10 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     }
     case INPAR::MAT::m_linelast1D_growth:
     {
-      LINALG::Matrix<6, 1> curr_nodal_coords;
-      LINALG::Matrix<6, 6> dtruss_disp_du;
-      LINALG::Matrix<6, 1> dN_dx;
-      LINALG::Matrix<2, 1> nodal_concentration;
+      CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
+      CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
+      CORE::LINALG::Matrix<6, 1> dN_dx;
+      CORE::LINALG::Matrix<2, 1> nodal_concentration;
 
       PrepCalcInternalForceStiffTotLagScaTra(
           ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx, nodal_concentration);

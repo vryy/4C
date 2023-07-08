@@ -52,10 +52,10 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   // Extract the forces and add them to the discretization.
   Teuchos::RCP<Epetra_Vector> force_beam =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-  LINALG::Export(*force, *force_beam);
+  CORE::LINALG::Export(*force, *force_beam);
   Teuchos::RCP<Epetra_Vector> force_solid =
       Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(solid_dof_map, true));
-  LINALG::Export(*force, *force_solid);
+  CORE::LINALG::Export(*force, *force_solid);
   visualization->AddDiscretizationNodalData("force_beam", force_beam);
   visualization->AddDiscretizationNodalData("force_solid", force_solid);
 
@@ -100,11 +100,11 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     if (face_element_iterator.second->IsPartOfPair())
     {
       // Setup variables.
-      LINALG::Matrix<3, 1, double> X, u, r, n, n_averaged;
+      CORE::LINALG::Matrix<3, 1, double> X, u, r, n, n_averaged;
 
       // Set the element parameter coordinates.
-      LINALG::Matrix<2, 1, double> xi(true);
-      LINALG::SerialDenseMatrix nodal_coordinates =
+      CORE::LINALG::Matrix<2, 1, double> xi(true);
+      CORE::LINALG::SerialDenseMatrix nodal_coordinates =
           CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
               face_element_iterator.second->GetDrtFaceElement()->Shape());
 
@@ -143,7 +143,8 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
  */
 void BEAMINTERACTION::GetGlobalCouplingForceResultants(const ::DRT::Discretization& discret,
     const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
-    LINALG::Matrix<3, 2, double>& beam_resultant, LINALG::Matrix<3, 2, double>& solid_resultant)
+    CORE::LINALG::Matrix<3, 2, double>& beam_resultant,
+    CORE::LINALG::Matrix<3, 2, double>& solid_resultant)
 {
   beam_resultant.Clear();
   solid_resultant.Clear();
@@ -182,11 +183,11 @@ void BEAMINTERACTION::GetGlobalCouplingForceResultants(const ::DRT::Discretizati
  *
  */
 void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& local_force,
-    const std::vector<double>& local_position, LINALG::Matrix<3, 2, double>& resultant)
+    const std::vector<double>& local_position, CORE::LINALG::Matrix<3, 2, double>& resultant)
 {
-  LINALG::Matrix<3, 1, double> node_pos(true);
-  LINALG::Matrix<3, 1, double> node_force(true);
-  LINALG::Matrix<3, 1, double> node_moment(true);
+  CORE::LINALG::Matrix<3, 1, double> node_pos(true);
+  CORE::LINALG::Matrix<3, 1, double> node_force(true);
+  CORE::LINALG::Matrix<3, 1, double> node_moment(true);
 
   // Add the force values for this node to the resultants and get the local node position.
   for (unsigned int dim = 0; dim < 3; ++dim)

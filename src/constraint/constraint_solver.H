@@ -21,13 +21,13 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
   class Solver;
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace UTILS
 {
@@ -41,9 +41,9 @@ namespace UTILS
     \brief Constructor
     */
     ConstraintSolver(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization
-        LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
-        Teuchos::ParameterList param                 ///< parameterlist containing solver parameters
+        CORE::LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,  ///< Map extractor for Dirichlet DOFs
+        Teuchos::ParameterList param  ///< parameterlist containing solver parameters
     );
 
     /*!
@@ -54,15 +54,16 @@ namespace UTILS
     /*!
       \brief Set it up
      */
-    void Setup(Teuchos::RCP<DRT::Discretization> discr, LINALG::Solver& solver,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::ParameterList params);
+    void Setup(Teuchos::RCP<DRT::Discretization> discr, CORE::LINALG::Solver& solver,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::ParameterList params);
 
     /*!
       \brief Solve constraint linear system
     */
-    void Solve(Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<LINALG::SparseMatrix> constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<LINALG::SparseMatrix>
+    void Solve(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+            constr,  ///< constraint matrix with Dirichlet zeros
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
         Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
@@ -86,7 +87,7 @@ namespace UTILS
       return;
     }
 
-    void SetSTCProp(INPAR::STR::STC_Scale stcalgo, Teuchos::RCP<LINALG::SparseMatrix> stcmat)
+    void SetSTCProp(INPAR::STR::STC_Scale stcalgo, Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;
@@ -100,9 +101,10 @@ namespace UTILS
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void SolveUzawa(Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<LINALG::SparseMatrix> constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<LINALG::SparseMatrix>
+    void SolveUzawa(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+            constr,  ///< constraint matrix with Dirichlet zeros
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
         Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
@@ -113,9 +115,10 @@ namespace UTILS
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void SolveSimple(Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<LINALG::SparseMatrix> constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<LINALG::SparseMatrix>
+    void SolveSimple(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+            constr,  ///< constraint matrix with Dirichlet zeros
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
         Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
@@ -126,9 +129,10 @@ namespace UTILS
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */
-    void SolveDirect(Teuchos::RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<LINALG::SparseMatrix> constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<LINALG::SparseMatrix>
+    void SolveDirect(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,  ///< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
+            constr,  ///< constraint matrix with Dirichlet zeros
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Epetra_Vector> dispinc,   ///< displacement increment to compute
         Teuchos::RCP<Epetra_Vector> displagr,  ///< lagrange multiplier increment to compute
@@ -145,18 +149,18 @@ namespace UTILS
     double tolconstr_;                           ///< tolerance for constraint
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;   ///< \b only for compatability: dirichlet toggle --
                                                  ///< monitor its target change!
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector>
         firstdispinc_;  ///< history variable holding displacement increment for first NRI
     Teuchos::RCP<Epetra_Vector>
         firstlagrinc_;    ///< history variable holding multiplier increment for first NRI
     bool isadapttol_;     ///< adaptive tolerance for solver?
     bool adaptolbetter_;  ///< adaptive tolerance for solver useful?
-    Teuchos::RCP<LINALG::Solver> solver_;  ///< solver for linear standard linear system
-    int counter_;                          ///< counts how often #Solve is called
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  ///< solver for linear standard linear system
+    int counter_;                                ///< counts how often #Solve is called
     INPAR::STR::ConSolveAlgo algochoice_;
     INPAR::STR::STC_Scale stcalgo_;
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;
 
   };  // class
 }  // namespace UTILS

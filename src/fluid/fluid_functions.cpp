@@ -731,7 +731,7 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
                      ((225311.0 - 614515.0 + 1492755.0 - 1324785.0 + 394350.0) / (3118500.0)) *
                          std::pow(B, 8.0));
 
-    LINALG::Matrix<2, 1> u;
+    CORE::LINALG::Matrix<2, 1> u;
     double p;
 
     u(0) = -(3.0 * std::log(p_0_hat)) / (std::pow(B, 2.0) * lambda) +
@@ -788,9 +788,9 @@ double FLD::ChannelWeaklyCompressibleFunction::Evaluate(
         (3.0 * (1.0 / reference_bulk_modulus) * viscosity * length * mean_velocity_channel_exit) /
         std::pow(radius, 2.0);
 
-    LINALG::Matrix<2, 1> u;
+    CORE::LINALG::Matrix<2, 1> u;
     double p;
-    LINALG::Matrix<2, 2> dervel;
+    CORE::LINALG::Matrix<2, 2> dervel;
 
     u(0) = 3.0 / 2.0 * (1.0 - std::pow(y / radius, 2.0)) *
            (1.0 + linear_coefficient_density * (x / length - 1.0));
@@ -1056,11 +1056,11 @@ double FLD::WeaklyCompressiblePoiseuilleFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  LINALG::Matrix<3, 1> L_ex;
+  CORE::LINALG::Matrix<3, 1> L_ex;
   double p_ex;
-  LINALG::Matrix<2, 1> v_ex;
+  CORE::LINALG::Matrix<2, 1> v_ex;
   double r_ex;
-  LINALG::Matrix<2, 1> w_ex;
+  CORE::LINALG::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = -sqrt(2. * mu) / 2. *
@@ -1163,7 +1163,7 @@ double FLD::WeaklyCompressiblePoiseuilleForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  LINALG::Matrix<2, 1> f_w_ex;
+  CORE::LINALG::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex =
@@ -1248,11 +1248,11 @@ double FLD::WeaklyCompressibleManufacturedFlowFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  LINALG::Matrix<3, 1> L_ex;
+  CORE::LINALG::Matrix<3, 1> L_ex;
   double p_ex;
-  LINALG::Matrix<2, 1> v_ex;
+  CORE::LINALG::Matrix<2, 1> v_ex;
   double r_ex;
-  LINALG::Matrix<2, 1> w_ex;
+  CORE::LINALG::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) =
@@ -1399,7 +1399,7 @@ double FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  LINALG::Matrix<2, 1> f_w_ex;
+  CORE::LINALG::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = (std::pow(M_PI, 2.)) * epsilon * cos(M_PI * t) * cos(M_PI * x) * sin(M_PI * y) -
@@ -1675,11 +1675,11 @@ double FLD::WeaklyCompressibleEtienneCFDFunction::Evaluate(
   double epsilon = comprcoeff_;
 
   // initialize variables
-  LINALG::Matrix<3, 1> L_ex;
+  CORE::LINALG::Matrix<3, 1> L_ex;
   double p_ex;
-  LINALG::Matrix<2, 1> v_ex;
+  CORE::LINALG::Matrix<2, 1> v_ex;
   double r_ex;
-  LINALG::Matrix<2, 1> w_ex;
+  CORE::LINALG::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = +10. * x * (std::pow(y, 3.)) *
@@ -1828,7 +1828,7 @@ double FLD::WeaklyCompressibleEtienneCFDForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  LINALG::Matrix<2, 1> f_w_ex;
+  CORE::LINALG::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = 0;
@@ -2326,11 +2326,11 @@ double FLD::WeaklyCompressibleEtienneFSIFluidFunction::Evaluate(
   double v = poissonratio_;
 
   // initialize variables
-  LINALG::Matrix<3, 1> L_ex;
+  CORE::LINALG::Matrix<3, 1> L_ex;
   double p_ex;
-  LINALG::Matrix<2, 1> v_ex;
+  CORE::LINALG::Matrix<2, 1> v_ex;
   double r_ex;
-  LINALG::Matrix<2, 1> w_ex;
+  CORE::LINALG::Matrix<2, 1> w_ex;
 
   // evaluate variables
   L_ex(0) = (M_PI * sin(2. * M_PI * (t + 1. / 4.)) * ((7. * cos(4. * M_PI * t)) / 2. - 9. / 2.) *
@@ -2679,7 +2679,7 @@ double FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluate(
 
   // initialize variables
   double f_r_ex;
-  LINALG::Matrix<2, 1> f_w_ex;
+  CORE::LINALG::Matrix<2, 1> f_w_ex;
 
   // evaluate variables
   f_r_ex = 0.;

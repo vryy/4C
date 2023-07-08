@@ -40,8 +40,9 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid,
  */
 template <typename beam, typename fluid, typename mortar>
 bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluateDM(
-    LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint_offset)
+    CORE::LINALG::SerialDenseMatrix& local_D, CORE::LINALG::SerialDenseMatrix& local_M,
+    CORE::LINALG::SerialDenseVector& local_kappa,
+    CORE::LINALG::SerialDenseVector& local_constraint_offset)
 {
   if (!this->meshtying_is_evaluated_)
   {
@@ -60,12 +61,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 
 
   // Initialize variables for shape function values.
-  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  CORE::LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Initialize variable for beam position derivative.
-  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref(true);
 
   // Initialize scalar variables.Clear
   double segment_jacobian, beam_segmentation_factor;
@@ -161,12 +162,12 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
-    LINALG::Matrix<3, 1, scalar_type> current_beamposition;
-    LINALG::Matrix<3, 1, scalar_type> ref_beamposition;
-    LINALG::Matrix<3, 1, scalar_type> beamdisplacement;
-    LINALG::Matrix<3, 1, double> lambda_discret;
-    LINALG::Matrix<3, 1, double> xi_mortar_node;
+    CORE::LINALG::Matrix<mortar::n_dof_, 1, double> q_lambda;
+    CORE::LINALG::Matrix<3, 1, scalar_type> current_beamposition;
+    CORE::LINALG::Matrix<3, 1, scalar_type> ref_beamposition;
+    CORE::LINALG::Matrix<3, 1, scalar_type> beamdisplacement;
+    CORE::LINALG::Matrix<3, 1, double> lambda_discret;
+    CORE::LINALG::Matrix<3, 1, double> xi_mortar_node;
 
     // Get the mortar manager and the global lambda vector, those objects will be used to get the
     // discrete Lagrange multiplier values for this pair.
@@ -276,9 +277,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
 
 template <typename beam, typename fluid, typename mortar>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluatePenaltyForce(
-    LINALG::Matrix<3, 1, scalar_type>& force,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-    LINALG::Matrix<3, 1, scalar_type> v_beam) const
+    CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const
 {
   force.PutScalar(0.);
 }

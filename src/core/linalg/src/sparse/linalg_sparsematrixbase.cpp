@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::SetUseTranspose(bool UseTranspose)
+int CORE::LINALG::SparseMatrixBase::SetUseTranspose(bool UseTranspose)
 {
   return sysmat_->SetUseTranspose(UseTranspose);
 }
@@ -21,7 +21,7 @@ int LINALG::SparseMatrixBase::SetUseTranspose(bool UseTranspose)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int CORE::LINALG::SparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return sysmat_->Apply(X, Y);
 }
@@ -29,7 +29,8 @@ int LINALG::SparseMatrixBase::Apply(const Epetra_MultiVector& X, Epetra_MultiVec
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int CORE::LINALG::SparseMatrixBase::ApplyInverse(
+    const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return sysmat_->ApplyInverse(X, Y);
 }
@@ -37,22 +38,22 @@ int LINALG::SparseMatrixBase::ApplyInverse(const Epetra_MultiVector& X, Epetra_M
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrixBase::UseTranspose() const { return sysmat_->UseTranspose(); }
+bool CORE::LINALG::SparseMatrixBase::UseTranspose() const { return sysmat_->UseTranspose(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrixBase::HasNormInf() const { return sysmat_->HasNormInf(); }
+bool CORE::LINALG::SparseMatrixBase::HasNormInf() const { return sysmat_->HasNormInf(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Comm& LINALG::SparseMatrixBase::Comm() const { return sysmat_->Comm(); }
+const Epetra_Comm& CORE::LINALG::SparseMatrixBase::Comm() const { return sysmat_->Comm(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::SparseMatrixBase::OperatorDomainMap() const
+const Epetra_Map& CORE::LINALG::SparseMatrixBase::OperatorDomainMap() const
 {
   return sysmat_->OperatorDomainMap();
 }
@@ -60,7 +61,7 @@ const Epetra_Map& LINALG::SparseMatrixBase::OperatorDomainMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& LINALG::SparseMatrixBase::OperatorRangeMap() const
+const Epetra_Map& CORE::LINALG::SparseMatrixBase::OperatorRangeMap() const
 {
   return sysmat_->OperatorRangeMap();
 }
@@ -68,27 +69,28 @@ const Epetra_Map& LINALG::SparseMatrixBase::OperatorRangeMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::MaxNumEntries() const { return sysmat_->MaxNumEntries(); }
+int CORE::LINALG::SparseMatrixBase::MaxNumEntries() const { return sysmat_->MaxNumEntries(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::SparseMatrixBase::NormInf() const { return sysmat_->NormInf(); }
+double CORE::LINALG::SparseMatrixBase::NormInf() const { return sysmat_->NormInf(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::SparseMatrixBase::NormOne() const { return sysmat_->NormOne(); }
+double CORE::LINALG::SparseMatrixBase::NormOne() const { return sysmat_->NormOne(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double LINALG::SparseMatrixBase::NormFrobenius() const { return sysmat_->NormFrobenius(); }
+double CORE::LINALG::SparseMatrixBase::NormFrobenius() const { return sysmat_->NormFrobenius(); }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::Multiply(bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const
+int CORE::LINALG::SparseMatrixBase::Multiply(
+    bool TransA, const Epetra_Vector& x, Epetra_Vector& y) const
 {
   return sysmat_->Multiply(TransA, x, y);
 }
@@ -96,7 +98,7 @@ int LINALG::SparseMatrixBase::Multiply(bool TransA, const Epetra_Vector& x, Epet
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::Multiply(
+int CORE::LINALG::SparseMatrixBase::Multiply(
     bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
   return sysmat_->Multiply(TransA, X, Y);
@@ -105,17 +107,23 @@ int LINALG::SparseMatrixBase::Multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::LeftScale(const Epetra_Vector& x) { return sysmat_->LeftScale(x); }
+int CORE::LINALG::SparseMatrixBase::LeftScale(const Epetra_Vector& x)
+{
+  return sysmat_->LeftScale(x);
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::RightScale(const Epetra_Vector& x) { return sysmat_->RightScale(x); }
+int CORE::LINALG::SparseMatrixBase::RightScale(const Epetra_Vector& x)
+{
+  return sysmat_->RightScale(x);
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::PutScalar(double ScalarConstant)
+int CORE::LINALG::SparseMatrixBase::PutScalar(double ScalarConstant)
 {
   return sysmat_->PutScalar(ScalarConstant);
 }
@@ -123,7 +131,7 @@ int LINALG::SparseMatrixBase::PutScalar(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::Scale(double ScalarConstant)
+int CORE::LINALG::SparseMatrixBase::Scale(double ScalarConstant)
 {
   return sysmat_->Scale(ScalarConstant);
 }
@@ -131,14 +139,14 @@ int LINALG::SparseMatrixBase::Scale(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::ReplaceDiagonalValues(const Epetra_Vector& Diagonal)
+int CORE::LINALG::SparseMatrixBase::ReplaceDiagonalValues(const Epetra_Vector& Diagonal)
 {
   return sysmat_->ReplaceDiagonalValues(Diagonal);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
+int CORE::LINALG::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
 {
   const int err = sysmat_->ReplaceRowMap(newmap);
   if (err) return err;
@@ -151,7 +159,7 @@ int LINALG::SparseMatrixBase::ReplaceRowMap(const Epetra_BlockMap& newmap)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int LINALG::SparseMatrixBase::ExtractDiagonalCopy(Epetra_Vector& Diagonal) const
+int CORE::LINALG::SparseMatrixBase::ExtractDiagonalCopy(Epetra_Vector& Diagonal) const
 {
   return sysmat_->ExtractDiagonalCopy(Diagonal);
 }
@@ -159,8 +167,8 @@ int LINALG::SparseMatrixBase::ExtractDiagonalCopy(Epetra_Vector& Diagonal) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrixBase::Add(const LINALG::SparseOperator& A, const bool transposeA,
-    const double scalarA, const double scalarB)
+void CORE::LINALG::SparseMatrixBase::Add(const CORE::LINALG::SparseOperator& A,
+    const bool transposeA, const double scalarA, const double scalarB)
 {
   A.AddOther(*this, transposeA, scalarA, scalarB);
 }
@@ -168,26 +176,26 @@ void LINALG::SparseMatrixBase::Add(const LINALG::SparseOperator& A, const bool t
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrixBase::AddOther(LINALG::SparseMatrixBase& B, const bool transposeA,
-    const double scalarA, const double scalarB) const
+void CORE::LINALG::SparseMatrixBase::AddOther(CORE::LINALG::SparseMatrixBase& B,
+    const bool transposeA, const double scalarA, const double scalarB) const
 {
   // B.Add(*this, transposeA, scalarA, scalarB);
-  LINALG::Add(*sysmat_, transposeA, scalarA, B, scalarB);
+  CORE::LINALG::Add(*sysmat_, transposeA, scalarA, B, scalarB);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& B, const bool transposeA,
-    const double scalarA, const double scalarB) const
+void CORE::LINALG::SparseMatrixBase::AddOther(CORE::LINALG::BlockSparseMatrixBase& B,
+    const bool transposeA, const double scalarA, const double scalarB) const
 {
   dserror("BlockSparseMatrix and SparseMatrix cannot be added");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::SparseMatrixBase::IsDbcApplied(
-    const Epetra_Map& dbcmap, bool diagonalblock, const LINALG::SparseMatrix* trafo) const
+bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
+    const Epetra_Map& dbcmap, bool diagonalblock, const CORE::LINALG::SparseMatrix* trafo) const
 {
   if (not Filled()) dserror("The matrix must be filled!");
 

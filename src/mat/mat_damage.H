@@ -182,52 +182,55 @@ namespace MAT
     virtual void Update();
 
     //! evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,     //!< linear total strains
-        Teuchos::ParameterList& params,                        //!< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,              //!< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,    //!< material stiffness matrix
-        int gp,                                                ///< Gauss point
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,     //!< linear total strains
+        Teuchos::ParameterList& params,                  //!< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        int gp,                                                    ///< Gauss point
         int eleGID);
 
     //! evaluate material using Lemaitre material model
-    virtual void EvaluateFullLemaitre(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,                 //!< linear total strains
-        Teuchos::ParameterList& params,                      //!< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        int gp,                                              //!< Gauss point
-        int eleGID);                                         //!< element GID
+    virtual void EvaluateFullLemaitre(
+        const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
+        Teuchos::ParameterList& params,                  //!< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        int gp,                                                    //!< Gauss point
+        int eleGID);                                               //!< element GID
 
     //! evaluate material using the simplified Lemaitre model
     virtual void EvaluateSimplifiedLemaitre(
-        const LINALG::Matrix<3, 3>* defgrd,                  //!< deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,   //!< linear total strains
-        Teuchos::ParameterList& params,                      //!< parameter list for communication
-        LINALG::Matrix<NUM_STRESS_3D, 1>* stress,            //!< 2nd PK-stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
-        int gp,                                              //!< Gauss point
-        int eleGID);                                         //!< element GID
+        const CORE::LINALG::Matrix<3, 3>* defgrd,                 //!< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
+        Teuchos::ParameterList& params,                  //!< parameter list for communication
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
+        int gp,                                                    //!< Gauss point
+        int eleGID);                                               //!< element GID
 
     //! computes stress
-    void Stress(const double p,                             //!< volumetric stress tensor
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
+    void Stress(const double p,                                   //!< volumetric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress            //!< 2nd PK-stress
     );
 
     //! calculate relative/over stress
-    void RelStress(const LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& beta,                  //!< back stress tensor
-        LINALG::Matrix<NUM_STRESS_3D, 1>& eta                          //!< relative stress
+    void RelStress(
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
+    void SetupCmat(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat  //!< elastic material tangent
     );
 
     //! computes isotropic elastoplastic tensor in matrix notion for 3d
-    void SetupCmatElastoPlastic(
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
+    void SetupCmatElastoPlastic(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                    cmat,  //!< elasto-plastic material tangent
         int eleID,
         double Dgamma,         //!< plastic multiplier
         double G,              //!< shear modulus
@@ -236,7 +239,7 @@ namespace MAT
         double q_tilde,        // undamaged trial von Mises equivalent stress
         double energyrelrate,  // damage energy release rate
         double Ytan,           // derivative of engergy release rate Ytan w.r.t. Dgamma
-        double sigma_y, double Hiso, LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,
+        double sigma_y, double Hiso, CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Nbar,
         int gp,             //!< current Gauss point
         bool damevolution,  //!< flag indicating if damage threshold is passed, i.e. if damage
                             //!< evolves
@@ -244,12 +247,12 @@ namespace MAT
     );
 
     //! computes isotropic elastoplastic damage tensor in matrix nation for 3d
-    void SetupCmatElastoPlasticFullLemaitre(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
-                                                cmat,  //!< elasto-plastic tangent modulus (out)
-        LINALG::Matrix<NUM_STRESS_3D, 1> N_tilde,      //!< flow vector
-        LINALG::Matrix<NUM_STRESS_3D, 1>& stress,      //!< total stress
-        double heaviside,                              //!< heaviside-function
-        double Dgamma,                                 //!< plastic multiplier
+    void SetupCmatElastoPlasticFullLemaitre(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>&
+                                                cmat,    //!< elasto-plastic tangent modulus (out)
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> N_tilde,  //!< flow vector
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& stress,  //!< total stress
+        double heaviside,                                //!< heaviside-function
+        double Dgamma,                                   //!< plastic multiplier
         double s_N,  //!< s_N = 2 * G * (Dgamma / omega_{n+1})^2 * s / r * (Y_{n+1} / r)^(s-1) * (1
                      //!< + nu) / E * s^tilde_{n+1} : N^tilde_{n+1}
         double
@@ -264,8 +267,9 @@ namespace MAT
         int gp,             // current Gauss point
         double qbar_tilde,  // effective relative eta^{~}
         double y,           // (-Y / r)^s
-        LINALG::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,  // dy/dsigma_tilde
-        LINALG::Matrix<NUM_STRESS_3D, 1> b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,  // dy/dsigma_tilde
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>
+            b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde
     );
 
     //! calculates the derivative of GetSigmaYAtStrainbarnp() w.r.t. astrain_{n+1}
@@ -337,16 +341,16 @@ namespace MAT
 
     //! plastic history vector
     //! old plastic strain at t_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     //! current plastic strain at t_n+1
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
     //! old back stress at t_n
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresslast_;  //!< \f${\beta}_{n}\f$
     //! current back stress at t_n+1
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         backstresscurr_;  //!< \f${\beta}_{n+1}\f$
     //! old accumulated plastic strain at t_n
     Teuchos::RCP<std::vector<double>> strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$

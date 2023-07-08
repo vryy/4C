@@ -29,7 +29,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -87,8 +87,8 @@ namespace CORE::ADAPTER
     \brief Get coupling matrices for field 1 and 2
 
     */
-    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrix12() const { return P12_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> GetPMatrix21() const { return P21_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix12() const { return P12_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetPMatrix21() const { return P21_; };
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
@@ -103,10 +103,10 @@ namespace CORE::ADAPTER
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
-    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMapping12(
-        Teuchos::RCP<const LINALG::SparseMatrix> mat) const;
-    Teuchos::RCP<LINALG::SparseMatrix> ApplyMatrixMapping21(
-        Teuchos::RCP<const LINALG::SparseMatrix> mat) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ApplyMatrixMapping12(
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ApplyMatrixMapping21(
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> mat) const;
 
     //@}
 
@@ -214,9 +214,9 @@ namespace CORE::ADAPTER
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         P12_;  ///< global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         P21_;  ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
     Teuchos::RCP<::DRT::Discretization> masterdis_;

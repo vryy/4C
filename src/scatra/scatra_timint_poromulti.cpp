@@ -16,7 +16,7 @@
  | constructor                                             vuong  08/16 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntPoroMulti::ScaTraTimIntPoroMulti(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output), L2_projection_(false)
@@ -56,7 +56,7 @@ void SCATRA::ScaTraTimIntPoroMulti::SetL2FluxOfMultiFluid(
   {
     // initialize velocity vectors
     Teuchos::RCP<Epetra_Vector> phaseflux =
-        LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+        CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
 
     std::stringstream statename;
     statename << stateprefix << curphase;
@@ -255,7 +255,7 @@ void SCATRA::ScaTraTimIntPoroMulti::OutputOxygenPartialPressure()
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntPoroMultiOST::ScaTraTimIntPoroMultiOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
@@ -301,7 +301,7 @@ void SCATRA::ScaTraTimIntPoroMultiOST::Update(const int num)
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntPoroMultiBDF2::ScaTraTimIntPoroMultiBDF2(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -349,7 +349,7 @@ void SCATRA::ScaTraTimIntPoroMultiBDF2::Update(const int num)
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntPoroMultiGenAlpha::ScaTraTimIntPoroMultiGenAlpha(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -396,7 +396,7 @@ void SCATRA::ScaTraTimIntPoroMultiGenAlpha::Update(const int num)
  |  Constructor (public)                                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntPoroMultiStationary::ScaTraTimIntPoroMultiStationary(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)

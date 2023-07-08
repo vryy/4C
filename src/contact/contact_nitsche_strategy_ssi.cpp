@@ -106,7 +106,7 @@ void CONTACT::CoNitscheStrategySsi::SetParentState(
       if (scatra_dis == Teuchos::null) dserror("didn't get scatra discretization");
 
       auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->DofColMap(), true));
-      LINALG::Export(vec, *scatra_dofcolmap);
+      CORE::LINALG::Export(vec, *scatra_dofcolmap);
 
       // set state on interfaces
       for (const auto& interface : interface_)
@@ -186,25 +186,25 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt)
 {
   switch (bt)
   {
     case DRT::UTILS::MatBlockType::displ_elch:
     case DRT::UTILS::MatBlockType::displ_scatra:
-      return Teuchos::rcp(
-          new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
-                                       *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
-              100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+      return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *Teuchos::rcpFromRef<const Epetra_Map>(
+              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+          100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     case DRT::UTILS::MatBlockType::elch_displ:
     case DRT::UTILS::MatBlockType::elch_elch:
     case DRT::UTILS::MatBlockType::scatra_displ:
     case DRT::UTILS::MatBlockType::scatra_scatra:
-      return Teuchos::rcp(
-          new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
-                                       *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()),
-              100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+      return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *Teuchos::rcpFromRef<const Epetra_Map>(
+              *DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()),
+          100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       return CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(bt);
   }
@@ -213,7 +213,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlo
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
 void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc)
+    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
@@ -247,7 +247,7 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bp) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");

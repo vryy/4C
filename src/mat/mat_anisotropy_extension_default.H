@@ -93,15 +93,15 @@ namespace MAT
      * \param locsys local coordinate system
      * \param defgrd deformation gradient
      */
-    void SetFiberVecs(
-        double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd);
+    void SetFiberVecs(double newgamma, const CORE::LINALG::Matrix<3, 3>& locsys,
+        const CORE::LINALG::Matrix<3, 3>& defgrd);
 
     /*!
      * \brief Set the new element fibers directly
      *
      * \param fibervec unit vector pointing in fiber direction
      */
-    void SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec);
+    void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec);
 
     /*!
      * \brief Status of fiber initialization

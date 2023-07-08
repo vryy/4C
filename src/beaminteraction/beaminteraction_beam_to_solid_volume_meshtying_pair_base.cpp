@@ -83,8 +83,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::PreEvalua
   // Call PreEvaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
-    LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> beam_coupling_ref;
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double> solid_coupling_ref;
     this->GetCouplingReferencePosition(beam_coupling_ref, solid_coupling_ref);
     CastGeometryPair()->PreEvaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -161,9 +161,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   if (visualization_segmentation != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, scalar_type> X;
-    LINALG::Matrix<3, 1, scalar_type> u;
-    LINALG::Matrix<3, 1, scalar_type> r;
+    CORE::LINALG::Matrix<3, 1, scalar_type> X;
+    CORE::LINALG::Matrix<3, 1, scalar_type> u;
+    CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates =
@@ -211,11 +211,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
-    LINALG::Matrix<3, 1, double> X;
-    LINALG::Matrix<3, 1, double> u;
-    LINALG::Matrix<3, 1, double> r;
-    LINALG::Matrix<3, 1, double> r_solid;
-    LINALG::Matrix<3, 1, double> force_integration_point;
+    CORE::LINALG::Matrix<3, 1, double> X;
+    CORE::LINALG::Matrix<3, 1, double> u;
+    CORE::LINALG::Matrix<3, 1, double> r;
+    CORE::LINALG::Matrix<3, 1, double> r_solid;
+    CORE::LINALG::Matrix<3, 1, double> force_integration_point;
 
     // Get the visualization vectors.
     std::vector<double>& point_coordinates =
@@ -270,8 +270,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluatePenaltyForceDouble(
-    const LINALG::Matrix<3, 1, double>& r_beam, const LINALG::Matrix<3, 1, double>& r_solid,
-    LINALG::Matrix<3, 1, double>& force) const
+    const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+    const CORE::LINALG::Matrix<3, 1, double>& r_solid,
+    CORE::LINALG::Matrix<3, 1, double>& force) const
 {
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;
@@ -284,8 +285,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::EvaluateP
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetCouplingReferencePosition(
-    LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
-    LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double>& beam_coupling_ref,
+    CORE::LINALG::Matrix<solid::n_dof_, 1, double>& solid_coupling_ref) const
 {
   // Add the offset to the reference position.
   beam_coupling_ref = this->ele1posref_;

@@ -28,10 +28,10 @@ namespace IO
   class DiscretizationReader;
 }  // namespace IO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace MORTAR
 {
@@ -148,7 +148,7 @@ namespace CONTACT
     \brief store dirichlet status
 
     */
-    void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+    void StoreDirichletStatus(Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief update

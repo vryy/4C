@@ -589,7 +589,7 @@ Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> NOX::NLN::Group::GetContributionsFromElementLevel()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> NOX::NLN::Group::GetContributionsFromElementLevel()
 {
   return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(userInterfacePtr)
       ->CalcJacobianContributionsFromElementLevelForPTC();
@@ -789,7 +789,7 @@ bool NOX::NLN::Group::isEigenvalues() const { return ev_.isvalid_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianRealEigenvalues() const
+const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianRealEigenvalues() const
 {
   if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
   return ev_.realpart_;
@@ -797,7 +797,7 @@ const LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianRealEigenvalues() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianImaginaryEigenvalues() const
+const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianImaginaryEigenvalues() const
 {
   if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
   return ev_.imaginarypart_;

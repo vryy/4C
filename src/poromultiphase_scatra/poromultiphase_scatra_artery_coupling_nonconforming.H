@@ -19,7 +19,7 @@ namespace DRT
 {
   class Element;
 }  // namespace DRT
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
 }
@@ -40,15 +40,15 @@ namespace POROMULTIPHASESCATRA
 
    protected:
     //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+    void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! set-up of linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-        Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
+    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Epetra_Map> dbcmap_art,
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
 
@@ -62,9 +62,9 @@ namespace POROMULTIPHASESCATRA
     //! FE-assemble into global force and stiffness matrix
     virtual void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid,
         const int& ele2gid, const double& integrated_diam,
-        std::vector<LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! set flag if varying diameter has to be calculated
     virtual void SetVaryingDiamFlag();
@@ -111,7 +111,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Vector> phinp_art_;
 
     //! coupling matrix (FE)
-    Teuchos::RCP<LINALG::SparseMatrix> FEmat_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> FEmat_;
 
    private:
     //! check if initial fields on coupled DOFs are equal
@@ -162,16 +162,16 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate the pairs
     void EvaluateCouplingPairs(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! FE-assemble into global D, M and kappa (MP case)
     void FEAssembleDMKappa(const int& ele1gid, const int& ele2gid,
-        const LINALG::SerialDenseMatrix& D_ele, const LINALG::SerialDenseMatrix& M_ele,
-        const LINALG::SerialDenseVector& Kappa_ele);
+        const CORE::LINALG::SerialDenseMatrix& D_ele, const CORE::LINALG::SerialDenseMatrix& M_ele,
+        const CORE::LINALG::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
     void SumDMIntoGlobalForceStiff(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! invert kappa vector
     void InvertKappa();
@@ -221,8 +221,8 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> funct_vec_;
 
     //! mortar coupling matrices
-    Teuchos::RCP<LINALG::SparseMatrix> D_;
-    Teuchos::RCP<LINALG::SparseMatrix> M_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M_;
     Teuchos::RCP<Epetra_FEVector> kappaInv_;
 
     //! penalty parameter

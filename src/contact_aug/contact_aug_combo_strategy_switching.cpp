@@ -329,28 +329,28 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetActiveSlMaForces(
   slforce.PutScalar(0.0);
   maforce.PutScalar(0.0);
 
-  LINALG::ExtractMyVector(*combo_.data_.SlForceLmPtr(), slforce);
-  LINALG::ExtractMyVector(*combo_.data_.MaForceLmPtr(), maforce);
+  CORE::LINALG::ExtractMyVector(*combo_.data_.SlForceLmPtr(), slforce);
+  CORE::LINALG::ExtractMyVector(*combo_.data_.MaForceLmPtr(), maforce);
 
   Teuchos::RCP<Epetra_Map> gSlActiveForceMap = Teuchos::null;
   Teuchos::RCP<Epetra_Map> gMaActiveForceMap = Teuchos::null;
   GetGlobalSlMaActiveForceMaps(slforce, maforce, gSlActiveForceMap, gMaActiveForceMap);
   Teuchos::RCP<Epetra_Map> gSlMaActiveForceMap =
-      LINALG::MergeMap(*gSlActiveForceMap, *gMaActiveForceMap);
+      CORE::LINALG::MergeMap(*gSlActiveForceMap, *gMaActiveForceMap);
 
   Epetra_Vector& slmaforce = *combo_.no_dbc_.slMaForce_;
   slmaforce.PutScalar(0.0);
 
-  LINALG::AssembleMyVector(1.0, slmaforce, 1.0, slforce);
-  LINALG::AssembleMyVector(1.0, slmaforce, 1.0, maforce);
+  CORE::LINALG::AssembleMyVector(1.0, slmaforce, 1.0, slforce);
+  CORE::LINALG::AssembleMyVector(1.0, slmaforce, 1.0, maforce);
 
-  constr_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
-  LINALG::ExtractMyVector(slmaforce, *constr_slmaforce);
+  constr_slmaforce = CORE::LINALG::CreateVector(*gSlMaActiveForceMap, true);
+  CORE::LINALG::ExtractMyVector(slmaforce, *constr_slmaforce);
   // consider time integration factor
   constr_slmaforce->Scale(1.0 - combo_.data_.GetDynParameterN());
 
-  str_slmaforce = LINALG::CreateVector(*gSlMaActiveForceMap, true);
-  LINALG::ExtractMyVector(str_force, *str_slmaforce);
+  str_slmaforce = CORE::LINALG::CreateVector(*gSlMaActiveForceMap, true);
+  CORE::LINALG::ExtractMyVector(str_force, *str_slmaforce);
 }
 
 /*----------------------------------------------------------------------------*
@@ -371,11 +371,11 @@ void CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetGlobalSlMaActiveFor
 
     imap = Teuchos::null;
     imap = interface.BuildActiveForceMap(slforce);
-    if (not imap.is_null()) gSlActiveForceMap = LINALG::MergeMap(*gSlActiveForceMap, *imap);
+    if (not imap.is_null()) gSlActiveForceMap = CORE::LINALG::MergeMap(*gSlActiveForceMap, *imap);
 
     imap = Teuchos::null;
     imap = interface.BuildActiveForceMap(maforce);
-    if (not imap.is_null()) gMaActiveForceMap = LINALG::MergeMap(*gMaActiveForceMap, *imap);
+    if (not imap.is_null()) gMaActiveForceMap = CORE::LINALG::MergeMap(*gMaActiveForceMap, *imap);
   }
 }
 
@@ -394,7 +394,7 @@ CONTACT::AUG::ComboStrategy::PreAsymptoticSwitching::GetStructuralForceWithoutDb
   const std::vector<INPAR::STR::ModelType> without_contact_model(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.AssembleForceOfModels(&without_contact_model);
 
-  LINALG::Export(*force_ptr, *force_no_dbc_ptr);
+  CORE::LINALG::Export(*force_ptr, *force_no_dbc_ptr);
 
   return force_no_dbc_ptr;
 }

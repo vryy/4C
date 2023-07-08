@@ -216,11 +216,13 @@ namespace XFEM
     virtual ~LevelSetCouplingWeakDirichlet() { return; }
 
    public:
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
    protected:
     //! Initializes configurationmap
@@ -231,18 +233,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
   };
 
@@ -275,15 +277,18 @@ namespace XFEM
 
    public:
     //! Evaluate Neumann traction 3 components
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     //! Evaluate Neumann traction 6 components
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<6, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
    protected:
     //! Do condition specific setup
@@ -297,18 +302,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:
@@ -339,14 +344,16 @@ namespace XFEM
     virtual ~LevelSetCouplingNavierSlip() { return; }
 
    public:
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     void GetSlipCoefficient(
-        double& slipcoeff, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
 
 
     /*!
@@ -402,7 +409,7 @@ namespace XFEM
       if (forcetangvel_)
       {
         // We project in the normal direction
-        LINALG::Matrix<3, 1> tmp_ivel(true);
+        CORE::LINALG::Matrix<3, 1> tmp_ivel(true);
         tmp_ivel.MultiplyTN(
             projection_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
         ivel.Update(1.0, tmp_ivel, 0.0);
@@ -438,7 +445,7 @@ namespace XFEM
       DRT::Element* actele = cutter_dis_->gElement(eid);
 
       //   Non-smoothed projection matrix
-      LINALG::Matrix<nsd, 1> gradphi;
+      CORE::LINALG::Matrix<nsd, 1> gradphi;
       if (projtosurf_ == INPAR::XFEM::Proj_normal)
       {
         gradphi = normal;
@@ -447,7 +454,7 @@ namespace XFEM
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
-        LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
+        CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
@@ -457,7 +464,7 @@ namespace XFEM
       else if (projtosurf_ == INPAR::XFEM::Proj_normal_phi)
       {
         Epetra_SerialDenseMatrix ephi_test(nen, 1);
-        LINALG::Matrix<nen, 1> ephi(ephi_test, View);
+        CORE::LINALG::Matrix<nen, 1> ephi(ephi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(
             ephi_test, actele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_, 1);
 
@@ -468,7 +475,7 @@ namespace XFEM
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
-        LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
+        CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
@@ -482,7 +489,7 @@ namespace XFEM
           gradphi.Scale(0.0);  // This to catch the cases when gradphi \approx 0
 
         // normal_comb = alpha_n * normal + (1-alpha)*gradphi
-        LINALG::Matrix<nsd, 1> normal_comb(true);
+        CORE::LINALG::Matrix<nsd, 1> normal_comb(true);
         double alpha_n = 0.3;
         normal_comb.Update(alpha_n, normal, -(1.0 - alpha_n), gradphi);
 
@@ -524,18 +531,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:
@@ -625,8 +632,8 @@ namespace XFEM
       Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
       Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
 
-      LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
-      LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
+      CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
+      CORE::LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
 
 
       GetSmoothedQuantitiesAtElement(esmoothedgradphi, esmoothedcurvature, cutter_ele,
@@ -658,7 +665,7 @@ namespace XFEM
 
       // smoothed normal at cutter element nodes, the Gaussian point lies in
       Epetra_SerialDenseMatrix ephinp(nen, 1);
-      LINALG::Matrix<nen, 1> ephinp_T(ephinp, View);
+      CORE::LINALG::Matrix<nen, 1> ephinp_T(ephinp, View);
 
       // Get phi-values at node
       GetPhiAtElement(ephinp, cutter_ele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_);
@@ -682,10 +689,10 @@ namespace XFEM
 
       if (surftensapprox_ == INPAR::TWOPHASE::surface_tension_approx_divgrad_normal)
       {
-        LINALG::Matrix<nsd, 1> grad_phi(false);
+        CORE::LINALG::Matrix<nsd, 1> grad_phi(false);
         grad_phi.Multiply(esmoothedgradphi_T, funct);
 
-        LINALG::Matrix<nsd * nsd, 1> grad_phi2(true);
+        CORE::LINALG::Matrix<nsd * nsd, 1> grad_phi2(true);
 
         // compute 2nd phi derivatives based on smoothed first derivatives
         DeriveSmoothedGradPhi(grad_phi2, derxy, esmoothedgradphi_T, numnode);
@@ -779,8 +786,8 @@ namespace XFEM
       // Should this be provided as well by the input?
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
 
-      LINALG::Matrix<nsd, nsd> p_matrix(false);
-      LINALG::Matrix<nsd, nsd> p_smoothed_matrix(false);
+      CORE::LINALG::Matrix<nsd, nsd> p_matrix(false);
+      CORE::LINALG::Matrix<nsd, nsd> p_smoothed_matrix(false);
 
       //----------------------------------------------------
       // Non-smoothed projection matrix
@@ -793,12 +800,12 @@ namespace XFEM
       {
         CheckForValidVectors();
 
-        LINALG::Matrix<nsd, 1> gradphi(true);
+        CORE::LINALG::Matrix<nsd, 1> gradphi(true);
         double curvature = 0.0;
 
         GetSmoothedQuantitiesAtPoint<DISTYPE>(gradphi, curvature, cutter_ele, funct);
 
-        LINALG::Matrix<nsd, 1> normal_smoothed(true);
+        CORE::LINALG::Matrix<nsd, 1> normal_smoothed(true);
         GetNormalFromLevelsetGradient(normal_smoothed, gradphi);
 
         SetupProjectionMatrix(p_smoothed_matrix, normal_smoothed);
@@ -990,8 +997,8 @@ namespace XFEM
       Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
       Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
 
-      LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
-      LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
+      CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
+      CORE::LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
 
       GetSmoothedQuantitiesAtElement(esmoothedgradphi, esmoothedcurvature, cutter_ele,
           gradphinp_smoothed_node_col_, curvaturenp_node_col_, cutter_dis_, cutter_nds_phi_);
@@ -1010,18 +1017,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     //! do normalization or a manipulation of the smoothed normal vector
@@ -1112,13 +1119,13 @@ namespace XFEM
       DRT::Element* cutter_ele = cutter_dis_->gElement(cutter_eid);
       if (cutter_ele == NULL) dserror("element not available");
 
-      LINALG::Matrix<nsd, 1> gradphi(true);
+      CORE::LINALG::Matrix<nsd, 1> gradphi(true);
       double curvature = 0.0;
 
       GetSmoothedQuantitiesAtPoint<DISTYPE>(gradphi, curvature, cutter_ele, funct);
 
       // smoothed normal interpolated at Gaussian point
-      LINALG::Matrix<nsd, 1> normal_smoothed(true);
+      CORE::LINALG::Matrix<nsd, 1> normal_smoothed(true);
       GetNormalFromLevelsetGradient(normal_smoothed, gradphi);
 
       if (transport_curvature_) dserror("how to account for curvature here?");

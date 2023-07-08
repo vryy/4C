@@ -27,11 +27,11 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
@@ -71,8 +71,8 @@ namespace BEAMINTERACTION
 
     //! Initialization
     virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<LINALG::Matrix<3, 3>>& inittriad,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
@@ -129,10 +129,10 @@ namespace BEAMINTERACTION
     }
 
     //! return position of first connection site
-    inline const LINALG::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
+    inline const CORE::LINALG::Matrix<3, 1, double>& GetBindSpotPos1() const { return bspotpos1_; }
 
     //! return position of second connection site
-    inline const LINALG::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
+    inline const CORE::LINALG::Matrix<3, 1, double>& GetBindSpotPos2() const { return bspotpos2_; }
 
     inline INPAR::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; }
 
@@ -143,7 +143,8 @@ namespace BEAMINTERACTION
     inline double GetReferenceLength() const { return reflength_; }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, LINALG::SerialDenseVector& bspotforce) const = 0;
+    virtual void GetBindingSpotForce(
+        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const = 0;
 
     //! get internal linker energy
     virtual double GetInternalEnergy() const = 0;
@@ -161,29 +162,29 @@ namespace BEAMINTERACTION
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    virtual void ResetState(
-        std::vector<LINALG::Matrix<3, 1>>& bspotpos, std::vector<LINALG::Matrix<3, 3>>& bspottriad);
+    virtual void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
+        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad);
 
     /*!
     \brief Evaluate forces
     */
     virtual bool EvaluateForce(
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2) = 0;
+        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2) = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    virtual bool EvaluateStiff(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    virtual bool EvaluateForceStiff(LINALG::SerialDenseVector& forcevec1,
-        LINALG::SerialDenseVector& forcevec2, LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
 
     void Print(std::ostream& out) const;
@@ -229,8 +230,8 @@ namespace BEAMINTERACTION
     std::vector<std::pair<int, int>> bspotIds_;
 
     //! current position of the two connection sites (a.k.a. binding spots)
-    LINALG::Matrix<3, 1> bspotpos1_;
-    LINALG::Matrix<3, 1> bspotpos2_;
+    CORE::LINALG::Matrix<3, 1> bspotpos1_;
+    CORE::LINALG::Matrix<3, 1> bspotpos2_;
 
     //! type of filament element belongs to
     INPAR::BEAMINTERACTION::CrosslinkerType linkertype_;

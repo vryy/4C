@@ -20,10 +20,10 @@
 
 // forward declaration
 class Epetra_Vector;
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace NOX
 {
   namespace Abstract
@@ -130,7 +130,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
-            LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
+            CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys)
         {
           return;
         };
@@ -144,7 +144,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void runPostApplyJacobianInverse(NOX::Abstract::Vector& result,
-            NOX::Abstract::Vector& rhs, LINALG::SparseOperator& jac,
+            NOX::Abstract::Vector& rhs, CORE::LINALG::SparseOperator& jac,
             const NOX::NLN::LinearSystem& linsys)
         {
           return;
@@ -157,8 +157,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeJacobian(LINALG::SparseOperator& jac, const Epetra_Vector& x,
-            const NOX::NLN::LinearSystem& linsys)
+        virtual void runPreComputeJacobian(CORE::LINALG::SparseOperator& jac,
+            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
         {
           return;
         };
@@ -170,8 +170,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeJacobian(LINALG::SparseOperator& jac, const Epetra_Vector& x,
-            const NOX::NLN::LinearSystem& linsys)
+        virtual void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac,
+            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
         {
           return;
         };
@@ -184,8 +184,9 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPreComputeFandJacobian(Epetra_Vector& rhs, LINALG::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+        virtual void runPreComputeFandJacobian(Epetra_Vector& rhs,
+            CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
+            const NOX::NLN::LinearSystem& linsys)
         {
           return;
         };
@@ -198,8 +199,9 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void runPostComputeFandJacobian(Epetra_Vector& rhs, LINALG::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys)
+        virtual void runPostComputeFandJacobian(Epetra_Vector& rhs,
+            CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
+            const NOX::NLN::LinearSystem& linsys)
         {
           return;
         };

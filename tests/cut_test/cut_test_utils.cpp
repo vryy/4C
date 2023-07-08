@@ -476,7 +476,7 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       coord[1] = x * sqrt2 + y * sqrt2 + 0.5;
       coord[2] = 0.5;
 
-      GetId(LINALG::Matrix<3, 1>(coord, true), side_points_);
+      GetId(CORE::LINALG::Matrix<3, 1>(coord, true), side_points_);
     }
   }
 
@@ -494,7 +494,7 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       Epetra_SerialDenseMatrix xyze(3, 4);
       for (int l = 0; l < 4; ++l)
       {
-        LINALG::Matrix<3, 1>& x = side_points_[nids[l]];
+        CORE::LINALG::Matrix<3, 1>& x = side_points_[nids[l]];
         std::copy(x.A(), x.A() + 3, &xyze(0, l));
       }
       CreateQuad4(xyze);
@@ -531,7 +531,7 @@ void SimpleWrapper::CreateElement(
   nids.reserve(xyze.N());
   for (int i = 0; i < xyze.N(); ++i)
   {
-    LINALG::Matrix<3, 1> x(&xyze(0, i));
+    CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, element_points_));
   }
 
@@ -638,19 +638,20 @@ void SimpleWrapper::CreateSide(
   nids.reserve(xyze.N());
   for (int i = 0; i < xyze.N(); ++i)
   {
-    LINALG::Matrix<3, 1> x(&xyze(0, i));
+    CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, side_points_));
   }
 
   mesh_->AddCutSide(id, nids, xyze, distype);
 }
 
-int SimpleWrapper::GetId(const LINALG::Matrix<3, 1>& x, std::vector<LINALG::Matrix<3, 1>>& points)
+int SimpleWrapper::GetId(
+    const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points)
 {
   unsigned size = points.size();
   for (unsigned i = 0; i < size; ++i)
   {
-    LINALG::Matrix<3, 1> p = points[i];
+    CORE::LINALG::Matrix<3, 1> p = points[i];
     p.Update(-1, x, 1);
     if (p.Norm2() < 1e-13)
     {

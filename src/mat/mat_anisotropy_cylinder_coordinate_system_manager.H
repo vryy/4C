@@ -74,7 +74,7 @@ namespace MAT
      */
     bool IsDefined() const { return isDefined_; }
 
-    const LINALG::Matrix<3, 1>& GetRad() const override
+    const CORE::LINALG::Matrix<3, 1>& GetRad() const override
     {
       if (!isDefined_)
       {
@@ -83,7 +83,7 @@ namespace MAT
       return radial_;
     };
 
-    const LINALG::Matrix<3, 1>& GetAxi() const override
+    const CORE::LINALG::Matrix<3, 1>& GetAxi() const override
     {
       if (!isDefined_)
       {
@@ -92,7 +92,7 @@ namespace MAT
       return axial_;
     }
 
-    const LINALG::Matrix<3, 1>& GetCir() const override
+    const CORE::LINALG::Matrix<3, 1>& GetCir() const override
     {
       if (!isDefined_)
       {
@@ -106,7 +106,7 @@ namespace MAT
      *
      * \param cosy
      */
-    void EvaluateLocalCoordinateSystem(LINALG::Matrix<3, 3>& cosy) const;
+    void EvaluateLocalCoordinateSystem(CORE::LINALG::Matrix<3, 3>& cosy) const;
 
    private:
     /// Flag whether coordinate system is already set
@@ -115,18 +115,18 @@ namespace MAT
     /*!
      * \brief Unit vector in radial direction
      */
-    LINALG::Matrix<3, 1> radial_;
+    CORE::LINALG::Matrix<3, 1> radial_;
 
     /*!
      * \brief unit vector in axial direction
      */
-    LINALG::Matrix<3, 1> axial_;
+    CORE::LINALG::Matrix<3, 1> axial_;
 
 
     /*!
      * \brief unit vector in circumferential direction
      */
-    LINALG::Matrix<3, 1> circumferential_;
+    CORE::LINALG::Matrix<3, 1> circumferential_;
   };
 }  // namespace MAT
 

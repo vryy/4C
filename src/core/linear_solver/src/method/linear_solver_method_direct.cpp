@@ -43,7 +43,7 @@ CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::DirectSolver(std::str
 template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    const bool refactor, const bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   // Assume the input matrix to be a single block matrix
   bool bIsCrsMatrix = true;
@@ -70,18 +70,18 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     // P^T A P x_tilda = P^T b
     //
 
-    // cast system matrix to LINALG::SparseMatrix
+    // cast system matrix to CORE::LINALG::SparseMatrix
     // check whether cast was successfull
     if (crsA == Teuchos::null)
     {
       dserror("Could not cast system matrix to Epetra_CrsMatrix.");
     }
-    // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
-    LINALG::SparseMatrix A_view(crsA, LINALG::View);
+    // get view on systemmatrix as CORE::LINALG::SparseMatrix - this is no copy!
+    CORE::LINALG::SparseMatrix A_view(crsA, CORE::LINALG::View);
 
     // apply projection to A without computing projection matrix thus avoiding
     // matrix-matrix multiplication
-    Teuchos::RCP<LINALG::SparseMatrix> A2 = projector_->Project(A_view);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> A2 = projector_->Project(A_view);
 
     // hand matrix over to A_
     A_ = A2->EpetraMatrix();
@@ -99,8 +99,8 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
     }
     else
     {
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> Ablock =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(matrix);
+      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> Ablock =
+          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(matrix);
 
       int matrixDim = Ablock->FullRangeMap().NumGlobalElements();
       if (matrixDim > 50000)
@@ -116,7 +116,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
         *fos << "---------------------------- ATTENTION -----------------------" << std::endl;
       }
 
-      Teuchos::RCP<LINALG::SparseMatrix> Ablock_merged = Ablock->Merge();
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ablock_merged = Ablock->Merge();
       A_ = Ablock_merged->EpetraMatrix();
     }
     x_ = x;

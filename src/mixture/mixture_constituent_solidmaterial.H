@@ -63,15 +63,15 @@ namespace MIXTURE
 
     void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
-    void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
-        const int eleGID) override;
-
-    void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID) override;
 
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+        const int gp, const int eleGID) override;
+
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;

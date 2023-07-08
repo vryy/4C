@@ -182,10 +182,10 @@ namespace IMMERSED
         structure_SearchTree_;  //!< search tree for structure domain
     std::map<int, std::set<int>>
         curr_subset_of_fluiddis_;  //!< fluid elements to evaluate the dirichlet interpolation
-    std::map<int, LINALG::Matrix<3, 1>>
+    std::map<int, CORE::LINALG::Matrix<3, 1>>
         currpositions_struct_;  //!< map of vectors for search tree containing current structural
                                 //!< positions
-    std::map<int, LINALG::Matrix<3, 1>>
+    std::map<int, CORE::LINALG::Matrix<3, 1>>
         currpositions_fluid_;  //!< map of vectors for search tree containing current fluid
                                //!< positions
     //@}

@@ -128,13 +128,13 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual const std::vector<LINALG::Matrix<3, 1>> GetX1() = 0;
+    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1() = 0;
 
-    virtual const std::vector<LINALG::Matrix<3, 1>> GetX2() = 0;
+    virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
 
     virtual const Epetra_SerialDenseVector GetNormal() = 0;
 
-    virtual LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
+    virtual CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
@@ -176,7 +176,8 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
+    virtual bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+        const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) = 0;
 
@@ -208,7 +209,8 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    virtual void UpdateEleSmoothTangents(std::map<int, LINALG::Matrix<3, 1>>& currentpositions) = 0;
+    virtual void UpdateEleSmoothTangents(
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) = 0;
 
   };  // class Beam3contactinterface
 }  // namespace CONTACT

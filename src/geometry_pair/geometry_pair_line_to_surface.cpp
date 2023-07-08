@@ -45,10 +45,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Init(
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
-    const LINALG::Matrix<3, 1, scalar_type>& point,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
-    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+    const CORE::LINALG::Matrix<3, 1, scalar_type>& point,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
     const bool min_one_iteration) const
 {
   // Initialize data structures
@@ -58,14 +58,14 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
   const double beam_radius = GetLineRadius();
 
   // Vectors in 3D.
-  LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> delta_xi;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
   delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
-  LINALG::Matrix<3, 1, scalar_type> residuum;
+  CORE::LINALG::Matrix<3, 1, scalar_type> residuum;
 
   // Jacobian / inverse.
-  LINALG::Matrix<3, 3, scalar_type> J_J_inv;
+  CORE::LINALG::Matrix<3, 3, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -101,7 +101,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
       if (CORE::FADUTILS::VectorNorm(residuum) > CONSTANTS::local_newton_res_max) break;
 
       // Solve the linearized system.
-      if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
               J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
@@ -122,11 +122,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::IntersectLineWithOther(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const LINALG::Matrix<3, 1, scalar_type>& xi_start,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const scalar_type& eta_start, const CORE::LINALG::Matrix<3, 1, scalar_type>& xi_start,
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
@@ -139,7 +139,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
 
   // Create variables.
   scalar_type eta;
-  LINALG::Matrix<3, 1, scalar_type> xi;
+  CORE::LINALG::Matrix<3, 1, scalar_type> xi;
   ProjectionResult intersection_found;
 
   // Try to intersect the beam with each face.
@@ -167,19 +167,19 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Inters
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::EvaluateSurfacePositionAndDerivative(const LINALG::Matrix<surface::n_dof_, 1,
+    surface>::EvaluateSurfacePositionAndDerivative(const CORE::LINALG::Matrix<surface::n_dof_, 1,
                                                        scalar_type>& q_surface,
-    const LINALG::Matrix<3, 1, scalar_type>& xi, LINALG::Matrix<3, 1, scalar_type>& r,
-    LINALG::Matrix<3, 3, scalar_type>& dr,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const CORE::LINALG::Matrix<3, 1, scalar_type>& xi, CORE::LINALG::Matrix<3, 1, scalar_type>& r,
+    CORE::LINALG::Matrix<3, 3, scalar_type>& dr,
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   // Create a nested FAD type.
   using FAD_outer = Sacado::ELRFad::SLFad<scalar_type, 3>;
 
   // Setup the AD variables.
-  LINALG::Matrix<3, 1, FAD_outer> xi_AD;
+  CORE::LINALG::Matrix<3, 1, FAD_outer> xi_AD;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++) xi_AD(i_dim) = FAD_outer(3, i_dim, xi(i_dim));
-  LINALG::Matrix<3, 1, FAD_outer> r_AD;
+  CORE::LINALG::Matrix<3, 1, FAD_outer> r_AD;
 
   // Evaluate the position.
   EvaluateSurfacePosition<surface>(xi_AD, q_surface, r_AD, Element2(), nodal_normals);
@@ -197,12 +197,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::IntersectLineWithSurfaceEdge(const LINALG::Matrix<line::n_dof_, 1, scalar_type>&
+    surface>::IntersectLineWithSurfaceEdge(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>&
                                                q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-    LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals,
     const bool min_one_iteration) const
 {
   // Check the input parameters.
@@ -223,21 +223,21 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
   // Initialize data structures.
   // Point on line.
-  LINALG::Matrix<3, 1, scalar_type> r_line;
-  LINALG::Matrix<3, 1, scalar_type> dr_line;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_line;
+  CORE::LINALG::Matrix<3, 1, scalar_type> dr_line;
 
   // Point on surface.
-  LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 3, scalar_type> dr_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 3, scalar_type> dr_surface;
 
   // Residuum.
-  LINALG::Matrix<4, 1, scalar_type> residuum;
-  LINALG::Matrix<4, 1, scalar_type> delta_xi;
+  CORE::LINALG::Matrix<4, 1, scalar_type> residuum;
+  CORE::LINALG::Matrix<4, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
   delta_xi.PutScalar(10 * CONSTANTS::projection_xi_eta_tol);
 
   // Jacobian / inverse.
-  LINALG::Matrix<4, 4, scalar_type> J_J_inv;
+  CORE::LINALG::Matrix<4, 4, scalar_type> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -305,7 +305,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       }
 
       // Solve the linearized system.
-      if (LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+      if (CORE::LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
               J_J_inv, residuum, delta_xi, CONSTANTS::local_newton_det_tol))
       {
         // Set the new parameter coordinates.
@@ -326,7 +326,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
  */
 template <typename scalar_type, typename line, typename surface>
 bool GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ValidParameterSurface(
-    LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
+    CORE::LINALG::Matrix<3, 1, scalar_type>& xi, const scalar_type& surface_size,
     const double beam_radius) const
 {
   // We only need to theck the normal distance if the coordinates are within the surface.
@@ -357,12 +357,12 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetL
  */
 template <typename scalar_type, typename line, typename surface>
 scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetSurfaceSize(
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface) const
 {
   // Get the position of the first 3 nodes of the surface.
-  LINALG::Matrix<2, 1, double> xi_corner_node;
-  LINALG::Matrix<3, 1, LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
-  LINALG::SerialDenseMatrix nodal_coordinates =
+  CORE::LINALG::Matrix<2, 1, double> xi_corner_node;
+  CORE::LINALG::Matrix<3, 1, CORE::LINALG::Matrix<3, 1, scalar_type>> corner_nodes;
+  CORE::LINALG::SerialDenseMatrix nodal_coordinates =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
@@ -374,7 +374,7 @@ scalar_type GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>:
   // Calculate the maximum distance between the three points.
   scalar_type max_distance = 0.0;
   scalar_type distance = 0.0;
-  LINALG::Matrix<3, 1, scalar_type> diff;
+  CORE::LINALG::Matrix<3, 1, scalar_type> diff;
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int j_node = 0; j_node < 3; j_node++)
@@ -423,14 +423,14 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GetFac
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::PreEvaluate(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     std::vector<LineSegment<scalar_type>>& segments,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   // Call PreEvaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
-  LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
+  CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
   geometry_pair_double_->PreEvaluate(CORE::FADUTILS::CastToDouble(q_line),
       CORE::FADUTILS::CastToDouble(q_surface), segments_double,
       VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
@@ -450,10 +450,10 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
  */
 template <typename scalar_type, typename line, typename surface>
 void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::Evaluate(
-    const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
+    const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
     std::vector<LineSegment<scalar_type>>& segments,
-    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
+    const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals) const
 {
   // Convert the input segments to a segment of scalar type double.
   std::vector<LineSegment<double>> segments_double;
@@ -465,7 +465,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   }
 
   // Call Evaluate on the double pair.
-  LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
+  CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> nodal_normals_double(false);
   geometry_pair_double_->Evaluate(CORE::FADUTILS::CastToDouble(q_line),
       CORE::FADUTILS::CastToDouble(q_surface), segments_double,
       VectorPointerToVectorDouble(nodal_normals, nodal_normals_double));
@@ -478,7 +478,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
   // Initialize variables for the projections.
   ProjectionResult projection_result = ProjectionResult::none;
-  LINALG::Matrix<3, 1, scalar_type> point_in_space;
+  CORE::LINALG::Matrix<3, 1, scalar_type> point_in_space;
 
   // If segments are found, convert them to FAD segments.
   segments.clear();

@@ -57,7 +57,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
 {
   subsides_.reserve(4);
 
-  LINALG::Matrix<3, 4> xyze;
+  CORE::LINALG::Matrix<3, 4> xyze;
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
@@ -70,10 +70,10 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
 
   // create middle node
 
-  LINALG::Matrix<4, 1> funct;
+  CORE::LINALG::Matrix<4, 1> funct;
   CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad4);
 
-  LINALG::Matrix<3, 1> xyz;
+  CORE::LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
 
   plain_int_set node_nids;
@@ -154,7 +154,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
   {
     subsides_.reserve(4);
 
-    LINALG::Matrix<3, 8> xyze;
+    CORE::LINALG::Matrix<3, 8> xyze;
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
@@ -167,10 +167,10 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
 
     // create middle node
 
-    LINALG::Matrix<8, 1> funct;
+    CORE::LINALG::Matrix<8, 1> funct;
     CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad8);
 
-    LINALG::Matrix<3, 1> xyz;
+    CORE::LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
 
     plain_int_set node_nids;
@@ -299,9 +299,9 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
-  LINALG::Matrix<3, 6> xyze;
+  CORE::LINALG::Matrix<3, 6> xyze;
 
   for (int i = 0; i < 6; ++i)
   {
@@ -320,9 +320,9 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
-  LINALG::Matrix<3, 4> xyze;
+  CORE::LINALG::Matrix<3, 4> xyze;
 
   for (int i = 0; i < 4; ++i)
   {
@@ -341,9 +341,9 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
-  LINALG::Matrix<3, 8> xyze;
+  CORE::LINALG::Matrix<3, 8> xyze;
 
   for (int i = 0; i < 8; ++i)
   {
@@ -362,9 +362,9 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst)
 {
-  LINALG::Matrix<3, 9> xyze;
+  CORE::LINALG::Matrix<3, 9> xyze;
 
   for (int i = 0; i < 9; ++i)
   {

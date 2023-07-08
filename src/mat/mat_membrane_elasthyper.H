@@ -159,33 +159,34 @@ namespace MAT
     /// setup
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    void UpdateMembrane(const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
     {
       // nothing to do
     }
 
-    void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress,
-        LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
+    void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
+        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
-        double& psi,                                              ///< Strain energy function
-        int gp,                                                   ///< Gauss point
-        int eleGID                                                ///< Element GID
+    virtual void StrainEnergy(
+        CORE::LINALG::Matrix<3, 3>& cauchygreen,  ///< right Cauchy-Green tensor
+        double& psi,                              ///< Strain energy function
+        int gp,                                   ///< Gauss point
+        int eleGID                                ///< Element GID
     );
 
    protected:
     /// calculate anisotropic stress and elasticity tensor
-    virtual void EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1>& stress_aniso,
-        LINALG::Matrix<3, 3>& cmat_aniso, const LINALG::Matrix<3, 3>& Q_trafo,
-        const LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
+    virtual void EvaluateAnisotropicStressCmat(CORE::LINALG::Matrix<3, 1>& stress_aniso,
+        CORE::LINALG::Matrix<3, 3>& cmat_aniso, const CORE::LINALG::Matrix<3, 3>& Q_trafo,
+        const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
         int gp, int eleGID);
 
     /// vector of fiber vectors
-    std::vector<LINALG::Matrix<3, 1>> fibervecs_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs_;
   };
 
 }  // namespace MAT

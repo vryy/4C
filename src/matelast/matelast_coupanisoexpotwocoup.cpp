@@ -49,13 +49,14 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
   anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
-    LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-    const int gp, const int eleGID)
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(
+    const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
-  LINALG::Matrix<6, 1> A1 = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
-  LINALG::Matrix<6, 1> A2 = anisotropyExtension_.GetStructuralTensor_stress(gp, 1);
-  LINALG::Matrix<6, 1> A1A2 = anisotropyExtension_.GetCoupledStructuralTensor_stress(gp);
+  CORE::LINALG::Matrix<6, 1> A1 = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
+  CORE::LINALG::Matrix<6, 1> A2 = anisotropyExtension_.GetStructuralTensor_stress(gp, 1);
+  CORE::LINALG::Matrix<6, 1> A1A2 = anisotropyExtension_.GetCoupledStructuralTensor_stress(gp);
 
   double a1a2 = anisotropyExtension_.GetCoupledScalarProduct(gp);
 
@@ -100,7 +101,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
 }
 
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   if (params_->init_ == DefaultAnisotropyExtension<2>::INIT_MODE_NODAL_FIBERS)
@@ -117,8 +118,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
   fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 1));
 }
 
-void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
@@ -162,8 +163,8 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
 
   for (int gp = 0; gp < fibersperele; ++gp)
   {
-    LINALG::Matrix<3, 1> a1 = GetFiber(gp, 0);
-    LINALG::Matrix<3, 1> a2 = GetFiber(gp, 1);
+    CORE::LINALG::Matrix<3, 1> a1 = GetFiber(gp, 0);
+    CORE::LINALG::Matrix<3, 1> a2 = GetFiber(gp, 1);
     A1A2_[gp](0) = a1(0) * a2(0);
     A1A2_[gp](1) = a1(1) * a2(1);
     A1A2_[gp](2) = a1(2) * a2(2);
@@ -179,7 +180,7 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::OnFibersInitialized()
   }
 }
 
-const LINALG::Matrix<6, 1>&
+const CORE::LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoTwoCoupAnisoExtension::GetCoupledStructuralTensor_stress(int gp) const
 {
   switch (this->GetFiberLocation())

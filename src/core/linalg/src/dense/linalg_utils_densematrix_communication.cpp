@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of communication methods for namespace LINALG
+\brief A collection of communication methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -15,7 +15,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
+int CORE::LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 {
   const int myrank = comm.MyPID();
   const int numproc = comm.NumProc();
@@ -31,7 +31,7 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceVector(
+void CORE::LINALG::AllreduceVector(
     const std::vector<int>& src, std::vector<int>& dest, const Epetra_Comm& comm)
 {
   // communicate size
@@ -54,7 +54,7 @@ void LINALG::AllreduceVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
+void CORE::LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
 {
   const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
@@ -69,7 +69,7 @@ void LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
+void CORE::LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 {
 #ifdef DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
@@ -89,7 +89,7 @@ void LINALG::AllreduceEMap(std::map<int, int>& idxmap, const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
  |  create an allreduced map on a distinct processor (public)  gjb 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
 {
 #ifdef DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
@@ -118,7 +118,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int
 /*----------------------------------------------------------------------*
  |  create an allreduced map on EVERY processor (public)        tk 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap)
 {
 #ifdef DEBUG
   if (not emap.UniqueGIDs()) dserror("works only for unique Epetra_Maps");
@@ -135,7 +135,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
 |  create an allreduced map on EVERY processor (public)                 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
 {
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -150,7 +150,8 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
 /*----------------------------------------------------------------------*
 | create an allreduced map on a distinct processor (public)  ghamm 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap, const int pid)
+Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceOverlappingEMap(
+    const Epetra_Map& emap, const int pid)
 {
   std::vector<int> rv;
   AllreduceEMap(rv, emap);
@@ -180,7 +181,7 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
-void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
+void CORE::LINALG::AllToAllCommunication(const Epetra_Comm& comm,
     const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
   if (comm.NumProc() == 1)
@@ -254,7 +255,7 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.                                     |
  *----------------------------------------------------------------------*/
-void LINALG::AllToAllCommunication(
+void CORE::LINALG::AllToAllCommunication(
     const Epetra_Comm& comm, const std::vector<std::vector<int>>& send, std::vector<int>& recv)
 {
   if (comm.NumProc() == 1)

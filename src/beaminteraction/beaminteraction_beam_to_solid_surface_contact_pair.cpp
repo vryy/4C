@@ -43,7 +43,7 @@ template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
     surface>::EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
@@ -59,15 +59,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   const double beam_cross_section_radius = beam_ptr->GetCircularCrossSectionRadiusForInteractions();
 
   // Initialize variables for contact kinematics.
-  LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> surface_normal;
-  LINALG::Matrix<3, 1, scalar_type> r_beam;
-  LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> r_rel;
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, scalar_type> N_beam;
-  LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, scalar_type> N_surface;
-  LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> gap_variation_times_normal;
-  LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> pair_force_vector;
+  CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> surface_normal;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_rel;
+  CORE::LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, scalar_type> N_beam;
+  CORE::LINALG::Matrix<1, surface::n_nodes_ * surface::n_val_, scalar_type> N_surface;
+  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> gap_variation_times_normal;
+  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> pair_force_vector;
   scalar_type gap = 0.0;
   scalar_type segment_jacobian = 0.0;
   scalar_type beam_segmentation_factor = 0.0;
@@ -186,7 +186,7 @@ template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
     surface>::EvaluateAndAssemble(const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
@@ -202,11 +202,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   const double beam_cross_section_radius = beam_ptr->GetCircularCrossSectionRadiusForInteractions();
 
   // Initialize variables for contact kinematics.
-  LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> surface_normal;
-  LINALG::Matrix<3, 1, scalar_type> r_beam;
-  LINALG::Matrix<3, 1, scalar_type> r_surface;
-  LINALG::Matrix<3, 1, scalar_type> r_rel;
+  CORE::LINALG::Matrix<3, 1, scalar_type> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> surface_normal;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type> r_rel;
   scalar_type potential = 0.0;
   scalar_type gap = 0.0;
   scalar_type segment_jacobian = 0.0;

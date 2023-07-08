@@ -17,7 +17,7 @@
 
 int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
 {
-  LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
+  CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
   {
     Node** nodes = Nodes();
@@ -38,9 +38,9 @@ int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
     detJ_[gp] = 0.;
 
     // in-plane shape functions and derivatives
-    LINALG::Matrix<9, 1> shapefunct_q9;
+    CORE::LINALG::Matrix<9, 1> shapefunct_q9;
     CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
-    LINALG::Matrix<2, 9> deriv_q9;
+    CORE::LINALG::Matrix<2, 9> deriv_q9;
     CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
 
     for (int dim = 0; dim < 3; ++dim)
@@ -66,14 +66,14 @@ int DRT::ELEMENTS::So_sh18::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location matrix
-    std::vector<double>& disp,                                    ///< current displacements
-    std::vector<double>& residual,                                ///< current residual displ
-    LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,      ///< element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,       ///< element mass matrix
-    LINALG::Matrix<NUMDOF_SOH18, 1>* force,                       ///< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,     ///< location matrix
+    std::vector<double>& disp,                                      ///< current displacements
+    std::vector<double>& residual,                                  ///< current residual displ
+    CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,   ///< element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+    CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
     Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  ///< stress output option
     const INPAR::STR::StrainType iostrain   ///< strain output option
@@ -83,8 +83,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
   SetParamsInterfacePtr(params);
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // reference coord. of element
-  LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;  // reference coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xcurr;  // current  coord. of element
 
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH18; ++i)
@@ -100,13 +100,13 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
   }
 
   // we need the (residual) displacement at the previous step
-  LINALG::Matrix<NUMDOF_SOH18, 1> res_d;
+  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> res_d;
   for (int i = 0; i < NUMDOF_SOH18; ++i) res_d(i) = residual[i];
 
   // EAS stuff
-  std::vector<LINALG::Matrix<6, num_eas>> M_gp(num_eas);
-  LINALG::Matrix<3, 1> G3_0_contra;
-  LINALG::Matrix<6, num_eas> M;
+  std::vector<CORE::LINALG::Matrix<6, num_eas>> M_gp(num_eas);
+  CORE::LINALG::Matrix<3, 1> G3_0_contra;
+  CORE::LINALG::Matrix<6, num_eas> M;
   if (eas_)
   {
     // recover EAS **************************************
@@ -133,9 +133,9 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // in-plane shape functions and derivatives
-    LINALG::Matrix<9, 1> shapefunct_q9;
+    CORE::LINALG::Matrix<9, 1> shapefunct_q9;
     CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shapefunct_q9);
-    LINALG::Matrix<2, 9> deriv_q9;
+    CORE::LINALG::Matrix<2, 9> deriv_q9;
     CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_q9);
 
     /* get the inverse of the Jacobian matrix which looks like:
@@ -144,7 +144,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     **         [ x_,t  y_,t  z_,t ]
     */
     // compute the Jacobian shell-style (G^T)
-    LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
+    CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
     for (int dim = 0; dim < 3; ++dim)
       for (int k = 0; k < 9; ++k)
       {
@@ -160,24 +160,24 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> TinvT;
     EvaluateT(jac, TinvT);
 
     // **********************************************************************
     // set up B-Operator in local(parameter) element space including ANS
     // **********************************************************************
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop_loc(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop_loc(true);
     CalculateBopLoc(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, bop_loc);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> bop;
     bop.Multiply(TinvT, bop_loc);
 
     // **************************************************************************
     // shell-like calculation of strains
     // see Diss. Koschnik page 41
     // **************************************************************************
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> lstrain(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> lstrain(true);
     CalculateLocStrain(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, lstrain);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
     glstrain.Multiply(TinvT, lstrain);
     // **************************************************************************
     // shell-like calculation of strains
@@ -196,13 +196,13 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
-    LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
+    CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
     if (Teuchos::rcp_static_cast<MAT::So3Material>(Material())->NeedsDefgrd() ||
         iostrain == INPAR::STR::strain_ea || iostress == INPAR::STR::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
       // deformation gradient with derivatives w.r.t. local basis
-      LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_loc(true);
+      CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_loc(true);
       for (int k = 0; k < 9; ++k)
         for (int dim = 0; dim < NUMDIM_SOH18; ++dim)
         {
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
         }
 
       // displacement-based deformation gradient
-      LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
+      CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
       defgrd_disp.MultiplyNT(defgrd_loc, invJ_[gp]);
       CalcConsistentDefgrd(defgrd_disp, glstrain, defgrd);
     }
@@ -226,8 +226,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     ** the stress vector, a C-matrix must be retrieved,
     ** all necessary data must be passed.
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
 
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
     so3mat->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
@@ -254,7 +254,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
         break;
         case INPAR::STR::strain_ea:
         {
-          LINALG::Matrix<3, 3> bi;
+          CORE::LINALG::Matrix<3, 3> bi;
           bi.MultiplyNT(defgrd, defgrd);
           bi.Invert();
           for (int i = 0; i < 3; i++) (*elestrain)(gp, i) = .5 * (1. - bi(i, i));
@@ -290,7 +290,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
         case INPAR::STR::stress_cauchy:
         {
           if (elestress == nullptr) dserror("stress data not available");
-          LINALG::Matrix<3, 3> pkstress;
+          CORE::LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);
           pkstress(0, 1) = stress(3);
           pkstress(0, 2) = stress(5);
@@ -301,8 +301,8 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
           pkstress(2, 1) = pkstress(1, 2);
           pkstress(2, 2) = stress(2);
 
-          LINALG::Matrix<3, 3> cauchystress;
-          LINALG::Matrix<3, 3> temp;
+          CORE::LINALG::Matrix<3, 3> cauchystress;
+          CORE::LINALG::Matrix<3, 3> temp;
           temp.Multiply(1.0 / defgrd.Determinant(), defgrd, pkstress);
           cauchystress.MultiplyNT(temp, defgrd);
 
@@ -332,7 +332,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> cb;
+      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
       // intergrate `geometric' stiffness matrix and add to keu *****************
@@ -341,7 +341,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
       // EAS technology: integrate matrices --------------------------------- EAS
       if (eas_)
       {
-        LINALG::Matrix<6, num_eas> cM;
+        CORE::LINALG::Matrix<6, num_eas> cM;
         cM.Multiply(cmat, M);
         KaaInv_.MultiplyTN(detJ_w, M, cM, 1.);
         Kad_.MultiplyTN(detJ_w, M, cb, 1.);
@@ -353,7 +353,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
     if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       // shape function and derivatives
-      LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
+      CORE::LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
       CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
 
       double density = Material()->Density(gp);
@@ -380,13 +380,13 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 
   if (stiffmatrix && eas_)
   {
-    LINALG::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
+    CORE::LINALG::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
     solve_for_KaaInv.SetMatrix(KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
     int err = solve_for_KaaInv.Invert();
     if ((err != 0) || (err2 != 0)) dserror("Inversion of Kaa failed");
 
-    LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
+    CORE::LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     KdaKaa.MultiplyTN(Kad_, KaaInv_);
     stiffmatrix->Multiply(-1., KdaKaa, Kad_, 1.);
     force->Multiply(-1., KdaKaa, feas_, 1.);
@@ -399,7 +399,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::soh18_lumpmass(LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
+void DRT::ELEMENTS::So_sh18::soh18_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -477,8 +477,8 @@ void DRT::ELEMENTS::So_sh18::FlipT()
 }
 
 
-void DRT::ELEMENTS::So_sh18::EvaluateT(const LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
+void DRT::ELEMENTS::So_sh18::EvaluateT(const CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT)
 {
   // build T^T transformation matrix which maps
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -529,7 +529,8 @@ void DRT::ELEMENTS::So_sh18::EvaluateT(const LINALG::Matrix<NUMDIM_SOH18, NUMDIM
   TinvT(5, 5) = jac(0, 0) * jac(2, 2) + jac(2, 0) * jac(0, 2);
 
   // now evaluate T^{-T} with solver
-  LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1> solve_for_inverseT;
+  CORE::LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1>
+      solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
   int err = solve_for_inverseT.Invert();
@@ -538,10 +539,10 @@ void DRT::ELEMENTS::So_sh18::EvaluateT(const LINALG::Matrix<NUMDIM_SOH18, NUMDIM
 }
 
 void DRT::ELEMENTS::So_sh18::CalculateLocStrain(
-    const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-    const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe, const LINALG::Matrix<9, 1>& shape_q9,
-    const LINALG::Matrix<2, 9>& deriv_q9, const int gp,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain)
+    const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+    const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+    const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+    const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain)
 {
   for (int dim = 0; dim < 3; ++dim)
     for (int k = 0; k < 9; ++k)
@@ -680,10 +681,10 @@ void DRT::ELEMENTS::So_sh18::CalculateLocStrain(
 }
 
 void DRT::ELEMENTS::So_sh18::CalculateBopLoc(
-    const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-    const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe, const LINALG::Matrix<9, 1>& shape_q9,
-    const LINALG::Matrix<2, 9>& deriv_q9, const int gp,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc)
+    const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+    const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+    const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+    const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc)
 {
   for (int dim = 0; dim < NUMDIM_SOH18; ++dim)
     for (int k = 0; k < 9; ++k)
@@ -856,17 +857,17 @@ void DRT::ELEMENTS::So_sh18::CalculateBopLoc(
   return;
 }
 
-void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(const LINALG::Matrix<9, 1>& shape_q9,
-    const LINALG::Matrix<2, 9>& deriv_q9,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
-    const double detJ_w, const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
-    LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix)
+void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(const CORE::LINALG::Matrix<9, 1>& shape_q9,
+    const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
+    const double detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
+    CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix)
 {
   // intergrate `geometric' stiffness matrix and add to keu *****************
   for (int k = 0; k < 9; ++k)
     for (int l = 0; l < 9; ++l)
     {
-      LINALG::Matrix<6, 1> G_kl, G_klp, G_kpl, G_kplp, G_lk, G_lkp, G_lpk, G_lpkp;
+      CORE::LINALG::Matrix<6, 1> G_kl, G_klp, G_kpl, G_kplp, G_lk, G_lkp, G_lpk, G_lpkp;
 
       // Normalverzerrungen
       if (dsg_membrane_)
@@ -1036,28 +1037,28 @@ void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(const LINALG::Matrix<9, 1>& shape
         G_lpkp(2) += .125 * shape_q9(k) * shape_q9(l);
       }
 
-      LINALG::Matrix<6, 1> G_kl_g;
+      CORE::LINALG::Matrix<6, 1> G_kl_g;
       G_kl_g.Multiply(TinvT, G_kl);
       const double Gkl = detJ_w * stress.Dot(G_kl_g);
-      LINALG::Matrix<6, 1> G_klp_g;
+      CORE::LINALG::Matrix<6, 1> G_klp_g;
       G_klp_g.Multiply(TinvT, G_klp);
       const double Gklp = detJ_w * stress.Dot(G_klp_g);
-      LINALG::Matrix<6, 1> G_kpl_g;
+      CORE::LINALG::Matrix<6, 1> G_kpl_g;
       G_kpl_g.Multiply(TinvT, G_kpl);
       const double Gkpl = detJ_w * stress.Dot(G_kpl_g);
-      LINALG::Matrix<6, 1> G_kplp_g;
+      CORE::LINALG::Matrix<6, 1> G_kplp_g;
       G_kplp_g.Multiply(TinvT, G_kplp);
       const double Gkplp = detJ_w * stress.Dot(G_kplp_g);
-      LINALG::Matrix<6, 1> G_lk_g;
+      CORE::LINALG::Matrix<6, 1> G_lk_g;
       G_lk_g.Multiply(TinvT, G_lk);
       const double Glk = detJ_w * stress.Dot(G_lk_g);
-      LINALG::Matrix<6, 1> G_lkp_g;
+      CORE::LINALG::Matrix<6, 1> G_lkp_g;
       G_lkp_g.Multiply(TinvT, G_lkp);
       const double Glkp = detJ_w * stress.Dot(G_lkp_g);
-      LINALG::Matrix<6, 1> G_lpk_g;
+      CORE::LINALG::Matrix<6, 1> G_lpk_g;
       G_lpk_g.Multiply(TinvT, G_lpk);
       const double Glpk = detJ_w * stress.Dot(G_lpk_g);
-      LINALG::Matrix<6, 1> G_lpkp_g;
+      CORE::LINALG::Matrix<6, 1> G_lpkp_g;
       G_lpkp_g.Multiply(TinvT, G_lpkp);
       const double Glpkp = detJ_w * stress.Dot(G_lpkp_g);
       for (int dim = 0; dim < 3; ++dim)
@@ -1076,15 +1077,15 @@ void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(const LINALG::Matrix<9, 1>& shape
   // end of integrate `geometric' stiffness******************************
 }
 
-void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
-    LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod)
+void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+    CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod)
 {
-  LINALG::Matrix<3, 3> R;       // rotation tensor
-  LINALG::Matrix<3, 3> U_mod;   // modified right stretch tensor
-  LINALG::Matrix<3, 3> U_disp;  // displacement-based right stretch tensor
-  LINALG::Matrix<3, 3> EW;      // temporarily store eigenvalues
-  LINALG::Matrix<3, 3> tmp;     // temporary matrix for matrix matrix matrix products
-  LINALG::Matrix<3, 3> tmp2;    // temporary matrix for matrix matrix matrix products
+  CORE::LINALG::Matrix<3, 3> R;       // rotation tensor
+  CORE::LINALG::Matrix<3, 3> U_mod;   // modified right stretch tensor
+  CORE::LINALG::Matrix<3, 3> U_disp;  // displacement-based right stretch tensor
+  CORE::LINALG::Matrix<3, 3> EW;      // temporarily store eigenvalues
+  CORE::LINALG::Matrix<3, 3> tmp;     // temporary matrix for matrix matrix matrix products
+  CORE::LINALG::Matrix<3, 3> tmp2;    // temporary matrix for matrix matrix matrix products
 
   // ******************************************************************
   // calculate modified right stretch tensor
@@ -1097,7 +1098,7 @@ void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& de
   U_mod(0, 2) = glstrain_mod(5);
   U_mod(2, 0) = glstrain_mod(5);
 
-  LINALG::SYEV(U_mod, EW, U_mod);
+  CORE::LINALG::SYEV(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.Multiply(U_mod, EW);
   tmp2.MultiplyNT(tmp, U_mod);
@@ -1108,7 +1109,7 @@ void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& de
   // ******************************************************************
   U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
 
-  LINALG::SYEV(U_disp, EW, U_disp);
+  CORE::LINALG::SYEV(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
   tmp.Multiply(U_disp, EW);
   tmp2.MultiplyNT(tmp, U_disp);
@@ -1128,18 +1129,19 @@ void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& de
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<9, 9>& dsg_shear_r)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r)
 {
   dsg_shear_r.Clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
-  LINALG::Matrix<2, 9> deriv;
+  CORE::LINALG::Matrix<2, 9> deriv;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
   CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
-    const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
+    const CORE::LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
 
     // integrations with non-empty integration domain
     if (coord_i(0) != coord_refNode[0])
@@ -1149,15 +1151,15 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
         const double jac = .5 * (coord_i(0) - coord_refNode[0]);
 
         // gauss point coordinates in element parameter space
-        LINALG::Matrix<2, 1> xi_gp;
+        CORE::LINALG::Matrix<2, 1> xi_gp;
         xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.IP().qxg[gp][0];
         xi_gp(1) = coord_i(1);
 
         // shape function
-        LINALG::Matrix<9, 1> shape_gp;
+        CORE::LINALG::Matrix<9, 1> shape_gp;
         CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
         // derivative
-        LINALG::Matrix<2, 9> deriv_gp;
+        CORE::LINALG::Matrix<2, 9> deriv_gp;
         CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         for (int k = 0; k < 9; ++k)
@@ -1173,18 +1175,19 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_r(const int gp, LINALG::Matrix<
 /*----------------------------------------------------------------------*
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<9, 9>& dsg_shear_s)
+void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s)
 {
   dsg_shear_s.Clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
-  LINALG::Matrix<2, 9> deriv;
+  CORE::LINALG::Matrix<2, 9> deriv;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
   CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
-    const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
+    const CORE::LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
 
     // integrations with non-empty integration domain
     if (coord_i(1) != coord_refNode[1])
@@ -1195,15 +1198,15 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<
         const double jac = .5 * (coord_i(1) - coord_refNode[1]);
 
         // gauss point coordinates in element parameter space
-        LINALG::Matrix<2, 1> xi_gp;
+        CORE::LINALG::Matrix<2, 1> xi_gp;
         xi_gp(0) = coord_i(0);
         xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.IP().qxg[gp][0];
 
         // shape function
-        LINALG::Matrix<9, 1> shape_gp;
+        CORE::LINALG::Matrix<9, 1> shape_gp;
         CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xi_gp, shape_gp);
         // derivative
-        LINALG::Matrix<2, 9> deriv_gp;
+        CORE::LINALG::Matrix<2, 9> deriv_gp;
         CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         for (int k = 0; k < 9; ++k)
@@ -1220,15 +1223,15 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_shear_s(const int gp, LINALG::Matrix<
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
-    const int gp, LINALG::Matrix<9, 9>& dsg_membrane_rs)
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs)
 {
   dsg_membrane_rs.Clear();
 
   // integration
   const std::array<double, 2> coord_refNode = {0., 0.};
-  const LINALG::Matrix<18, 3> coords = NodeParamCoord();
+  const CORE::LINALG::Matrix<18, 3> coords = NodeParamCoord();
   CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
-  LINALG::Matrix<2, 9> deriv_xieta;
+  CORE::LINALG::Matrix<2, 9> deriv_xieta;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv_xieta);
 
   for (int k = 0; k < 9; ++k)
@@ -1247,15 +1250,15 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
               const double h_loc =
                   .5 * (coords(s, 1) + coord_refNode[1]) + jac_h * ip.IP().qxg[h][0];
 
-              LINALG::Matrix<2, 1> xsi_g_eta;
+              CORE::LINALG::Matrix<2, 1> xsi_g_eta;
               xsi_g_eta(0) = g_loc;
               xsi_g_eta(1) = xsi_[gp](1);
-              LINALG::Matrix<2, 1> xsi_g_h;
+              CORE::LINALG::Matrix<2, 1> xsi_g_h;
               xsi_g_h(0) = g_loc;
               xsi_g_h(1) = h_loc;
-              LINALG::Matrix<2, 9> deriv_g_eta;
+              CORE::LINALG::Matrix<2, 9> deriv_g_eta;
               CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_eta, deriv_g_eta);
-              LINALG::Matrix<2, 9> deriv_g_h;
+              CORE::LINALG::Matrix<2, 9> deriv_g_h;
               CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_g_h, deriv_g_h);
 
               if (coords(r, 0) != coord_refNode[0] && coords(s, 1) != coord_refNode[1])
@@ -1272,18 +1275,18 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_rs(
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
-    const int gp, LINALG::Matrix<9, 9>& dsg_membrane_r)
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r)
 {
   dsg_membrane_r.Clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
-  LINALG::Matrix<2, 9> deriv;
+  CORE::LINALG::Matrix<2, 9> deriv;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
   CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
-    const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
+    const CORE::LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
 
     // integrations with non-empty integration domain
     if (coord_i(0) != coord_refNode[0])
@@ -1294,12 +1297,12 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
         const double jac = .5 * (coord_i(0) - coord_refNode[0]);
 
         // gauss point coordinates in element parameter space
-        LINALG::Matrix<2, 1> xi_gp;
+        CORE::LINALG::Matrix<2, 1> xi_gp;
         xi_gp(0) = .5 * (coord_i(0) + coord_refNode[0]) + jac * ip.IP().qxg[gp][0];
         xi_gp(1) = coord_i(1);
 
         // derivative
-        LINALG::Matrix<2, 9> deriv_gp;
+        CORE::LINALG::Matrix<2, 9> deriv_gp;
         CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         // fill up array
@@ -1317,18 +1320,18 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_r(
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
-    const int gp, LINALG::Matrix<9, 9>& dsg_membrane_s)
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s)
 {
   dsg_membrane_s.Clear();
   const std::array<double, 2> coord_refNode = {0., 0.};
 
-  LINALG::Matrix<2, 9> deriv;
+  CORE::LINALG::Matrix<2, 9> deriv;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_[gp], deriv);
 
   CORE::DRT::UTILS::IntPointsAndWeights<1> ip(CORE::DRT::UTILS::GaussRule1D::line_2point);
   for (int i = 0; i < 9; ++i)
   {
-    const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
+    const CORE::LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
 
     // integrations with non-empty integration domain
     if (coord_i(1) != coord_refNode[1])
@@ -1339,12 +1342,12 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
         const double jac = .5 * (coord_i(1) - coord_refNode[1]);
 
         // gauss point coordinates in element parameter space
-        LINALG::Matrix<2, 1> xi_gp;
+        CORE::LINALG::Matrix<2, 1> xi_gp;
         xi_gp(0) = coord_i(0);
         xi_gp(1) = .5 * (coord_i(1) + coord_refNode[1]) + jac * ip.IP().qxg[gp][0];
 
         // derivative
-        LINALG::Matrix<2, 9> deriv_gp;
+        CORE::LINALG::Matrix<2, 9> deriv_gp;
         CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xi_gp, deriv_gp);
 
         // fill up array
@@ -1362,17 +1365,17 @@ void DRT::ELEMENTS::So_sh18::Integrate_dsg_membrane_s(
  |  integrate DSG integral                                  seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::Integrate_dsg_transverse_t(
-    const int gp, LINALG::Matrix<9, 9>& dsg_transverse_t)
+    const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t)
 {
   // reset
   dsg_transverse_t.Clear();
-  LINALG::Matrix<9, 1> shape;
+  CORE::LINALG::Matrix<9, 1> shape;
   CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_[gp], shape);
 
   for (int i = 0; i < 9; ++i)
   {
-    const LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
-    LINALG::Matrix<9, 1> shape_gp;
+    const CORE::LINALG::Matrix<3, 1> coord_i = NodeParamCoord(i);
+    CORE::LINALG::Matrix<9, 1> shape_gp;
     CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(coord_i, shape_gp);
     for (int k = 0; k < 9; ++k)
       for (int l = 0; l < 9; ++l) dsg_transverse_t(k, l) += shape(i) * shape_gp(k) * shape_gp(l);
@@ -1443,20 +1446,20 @@ void DRT::ELEMENTS::So_sh18::SetupDSG()
   return;
 }
 
-LINALG::Matrix<18, 3> DRT::ELEMENTS::So_sh18::NodeParamCoord()
+CORE::LINALG::Matrix<18, 3> DRT::ELEMENTS::So_sh18::NodeParamCoord()
 {
-  LINALG::Matrix<18, 3> coord;
+  CORE::LINALG::Matrix<18, 3> coord;
   for (int node = 0; node < NUMNOD_SOH18; ++node)
   {
-    LINALG::Matrix<3, 1> nodeCoord = NodeParamCoord(node);
+    CORE::LINALG::Matrix<3, 1> nodeCoord = NodeParamCoord(node);
     for (int i = 0; i < 3; ++i) coord(node, i) = nodeCoord(i);
   }
   return coord;
 }
 
-LINALG::Matrix<3, 1> DRT::ELEMENTS::So_sh18::NodeParamCoord(const int node)
+CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::So_sh18::NodeParamCoord(const int node)
 {
-  LINALG::Matrix<3, 1> coord;
+  CORE::LINALG::Matrix<3, 1> coord;
 
   switch (node % 9)
   {
@@ -1507,13 +1510,13 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::So_sh18::NodeParamCoord(const int node)
  |  setup EAS terms                                         seitz 11/14 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::EasSetup(
-    std::vector<LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
-    LINALG::Matrix<3, 1>& G3_contra,
-    const LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe)  // material element coords
+    std::vector<CORE::LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
+    CORE::LINALG::Matrix<3, 1>& G3_contra,
+    const CORE::LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe)  // material element coords
 {
   // build EAS interpolation matrix M, evaluated at the GPs
-  static std::vector<LINALG::Matrix<6, num_eas>> M(NUMGPT_SOH18);
-  static LINALG::Matrix<3, 1> G3_c;
+  static std::vector<CORE::LINALG::Matrix<6, num_eas>> M(NUMGPT_SOH18);
+  static CORE::LINALG::Matrix<3, 1> G3_c;
   static bool eval = false;
   if (!eval)
   {
@@ -1537,11 +1540,11 @@ void DRT::ELEMENTS::So_sh18::EasSetup(
     eval = true;
   }
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac0inv;
-  LINALG::Matrix<2, 1> xsi_center(true);
-  LINALG::Matrix<2, 9> deriv_q9;
+  CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac0inv;
+  CORE::LINALG::Matrix<2, 1> xsi_center(true);
+  CORE::LINALG::Matrix<2, 9> deriv_q9;
   CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::quad9>(xsi_center, deriv_q9);
-  LINALG::Matrix<9, 1> shapefunct_q9;
+  CORE::LINALG::Matrix<9, 1> shapefunct_q9;
   CORE::DRT::UTILS::shape_function<DRT::Element::quad9>(xsi_center, shapefunct_q9);
   for (int dim = 0; dim < 3; ++dim)
     for (int k = 0; k < 9; ++k)
@@ -1581,7 +1584,7 @@ void DRT::ELEMENTS::So_sh18::Recover(const std::vector<double>& residual)
   if (not eas_) return;
 
   const double step_length = StrParamsInterface().GetStepLength();
-  LINALG::Matrix<NUMDOF_SOH18, 1> res_d;
+  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> res_d;
   for (int i = 0; i < NUMDOF_SOH18; ++i) res_d(i) = residual[i];
 
   if (StrParamsInterface().IsDefaultStep())

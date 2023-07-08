@@ -1608,7 +1608,7 @@ void CONTACT::SelfBinaryTree::SearchContact()
   }
   Teuchos::RCP<Epetra_Map> mymap =
       Teuchos::rcp(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, Comm()));
-  Teuchos::RCP<Epetra_Map> redmap = LINALG::AllreduceEMap(*mymap);
+  Teuchos::RCP<Epetra_Map> redmap = CORE::LINALG::AllreduceEMap(*mymap);
   DRT::Exporter ex(*mymap, *redmap, Comm());
   ex.Export(contactpairs_);
 

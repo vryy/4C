@@ -66,8 +66,8 @@ namespace CONTACT
 
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-        const int iter, bool predictor) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int step, const int iter, bool predictor) override;
 
     //! Set Contact State and update search tree and normals
     void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
@@ -75,9 +75,9 @@ namespace CONTACT
     //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool CheckNitscheContactState(CONTACT::CoElement* cele,
-        const LINALG::Matrix<2, 1>& xsi,  ///< local coord on the ele element
-        const double& full_fsi_traction,  ///< stressfluid + penalty
-        double& gap                       ///< gap
+        const CORE::LINALG::Matrix<2, 1>& xsi,  ///< local coord on the ele element
+        const double& full_fsi_traction,        ///< stressfluid + penalty
+        double& gap                             ///< gap
     );
 
    protected:
@@ -99,7 +99,7 @@ namespace CONTACT
         const double& pen_n,                         ///< Nitsche normal penalty parameter
         INPAR::CONTACT::NitscheWeighting weighting,  ///< Nitsche interface stress weighting
         CONTACT::CoElement* cele,                    ///< the contact element
-        const LINALG::Matrix<2, 1>& xsi,             ///< local coord on the ele element
+        const CORE::LINALG::Matrix<2, 1>& xsi,       ///< local coord on the ele element
         const double& full_fsi_traction,             ///< stressfluid + penalty
         double& gap                                  ///< gap
     );

@@ -34,7 +34,7 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFSIAMG(const LINALG::MultiMapExtractor& maps,
+    OverlappingBlockMatrixFSIAMG(const CORE::LINALG::MultiMapExtractor& maps,
         ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
         bool structuresplit, int symmetric, std::vector<std::string>& blocksmoother,
         std::vector<double>& schuromega, std::vector<double>& omega, std::vector<int>& iterations,
@@ -225,9 +225,10 @@ namespace FSI
     //! a non-Trilinos preconditioner Richardson
     double RichardsonMixed(const std::string field, const int myrank, const int level,
         const int sweeps, const double damp, const MLAPI::Operator& A,
-        const LINALG::SparseMatrix& matrix, const Teuchos::RCP<LINALG::Preconditioner>& solver,
-        MLAPI::MultiVector& x, const MLAPI::MultiVector& f, int& run, bool initiguesszero = false,
-        bool analysis = false, bool silent = true) const;
+        const CORE::LINALG::SparseMatrix& matrix,
+        const Teuchos::RCP<CORE::LINALG::Preconditioner>& solver, MLAPI::MultiVector& x,
+        const MLAPI::MultiVector& f, int& run, bool initiguesszero = false, bool analysis = false,
+        bool silent = true) const;
 
 
     //! a single field V cycle analysis Richardson iteration

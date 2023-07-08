@@ -1360,7 +1360,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   }
 
   // new procmap
-  proc0map = LINALG::AllreduceEMap(*vispointmap_, 0);
+  proc0map = CORE::LINALG::AllreduceEMap(*vispointmap_, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *vispointmap_);

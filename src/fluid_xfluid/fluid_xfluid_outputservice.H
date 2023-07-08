@@ -29,7 +29,7 @@ namespace DRT
   class IndependentDofSet;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -114,7 +114,7 @@ namespace FLD
 
     /// Gmsh output of discretization
     virtual void GmshOutputDiscretization(
-        bool print_faces, int step, std::map<int, LINALG::Matrix<3, 1>>* curr_pos = NULL){};
+        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = NULL){};
 
     /// Main output routine for gmsh output
     virtual void GmshOutput(const std::string& filename_base,  ///< name for output file
@@ -147,7 +147,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
     //! vel-pres splitter for output purpose
-    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_out_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_out_;
 
     bool firstoutputofrun_;
 
@@ -200,7 +200,7 @@ namespace FLD
 
     /// Gmsh output of discretization
     void GmshOutputDiscretization(
-        bool print_faces, int step, std::map<int, LINALG::Matrix<3, 1>>* curr_pos = NULL);
+        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = NULL);
 
     /// Main output routine for gmsh output
     void GmshOutput(const std::string& filename_base,  ///< name for output file

@@ -18,7 +18,7 @@
 #include "utils_pairedvector.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
 }
@@ -51,9 +51,9 @@ namespace CONTACT
             i.e. mortar, augmented, gpts,...
      */
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -67,9 +67,9 @@ namespace CONTACT
             i.e. mortar, augmented, gpts,...
      */
     void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -83,9 +83,9 @@ namespace CONTACT
     template <int dim>
     void SoEleCauchy(MORTAR::MortarElement& moEle, double* boundary_gpcoord,
         std::vector<CORE::GEN::pairedvector<int, double>> boundary_gpcoord_lin, const double gp_wgt,
-        const LINALG::Matrix<dim, 1>& normal,
+        const CORE::LINALG::Matrix<dim, 1>& normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
-        const LINALG::Matrix<dim, 1>& direction,
+        const CORE::LINALG::Matrix<dim, 1>& direction,
         std::vector<CORE::GEN::pairedvector<int, double>>& direction_deriv, const double w,
         double& cauchy_nt, CORE::GEN::pairedvector<int, double>& deriv_sigma_nt,
         CORE::GEN::pairedvector<int, double>& deriv_sigma_nt_p);
@@ -96,9 +96,9 @@ namespace CONTACT
     */
     template <int dim>
     void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
+        const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
-        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
+        const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double gap, const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
@@ -107,24 +107,24 @@ namespace CONTACT
    protected:
     template <int dim>
     void IntegrateTest(const double fac, MORTAR::MortarElement& ele,
-        const LINALG::SerialDenseVector& shape, const LINALG::SerialDenseMatrix& deriv,
+        const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double test_val, const CORE::GEN::pairedvector<int, double>& test_deriv_d,
         const CORE::GEN::pairedvector<int, double>& test_deriv_p,
-        const LINALG::Matrix<dim, 1>& normal,
+        const CORE::LINALG::Matrix<dim, 1>& normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv);
 
     template <int dim>
     void IntegratePoroNoOutFlow(const double fac, MORTAR::MortarElement& ele, double* xi,
-        const LINALG::SerialDenseVector& shape, const LINALG::SerialDenseMatrix& deriv,
+        const CORE::LINALG::SerialDenseVector& shape, const CORE::LINALG::SerialDenseMatrix& deriv,
         const double jac, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
-        const double wgt, const LINALG::Matrix<dim, 1>& test_dir,
+        const double wgt, const CORE::LINALG::Matrix<dim, 1>& test_dir,
         const std::vector<CORE::GEN::pairedvector<int, double>>& test_dir_deriv,
-        MORTAR::MortarElement& otherele, const LINALG::SerialDenseVector& othershape);
+        MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape);
 
-    bool GetPoroPressure(MORTAR::MortarElement& ele, const LINALG::SerialDenseVector& shape,
-        MORTAR::MortarElement& otherele, const LINALG::SerialDenseVector& othershape,
+    bool GetPoroPressure(MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
+        MORTAR::MortarElement& otherele, const CORE::LINALG::SerialDenseVector& othershape,
         double& poropressure);
 
     void GetPoroQuantitiesatGP(MORTAR::MortarElement& ele, double* xi, double& savpresgp,  //(in)

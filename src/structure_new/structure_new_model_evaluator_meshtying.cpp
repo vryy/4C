@@ -169,7 +169,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) dserror("force not available");
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsCondensedSystem())
   {
@@ -178,7 +178,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsSaddlePointSystem())
   {
@@ -187,7 +187,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;
@@ -196,9 +196,9 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
   int err = 0;
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
@@ -209,7 +209,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
   {
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
     if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
-    Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
   }
   // ---------------------------------------------------------------------
@@ -221,7 +221,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -236,7 +236,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleJacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -375,7 +375,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::GetLastTimeSte
 void STR::MODELEVALUATOR::Meshtying::RunPreApplyJacobianInverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy())
       .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 }
@@ -390,7 +390,7 @@ void STR::MODELEVALUATOR::Meshtying::RunPostApplyJacobianInverse(const Epetra_Ve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
     const DRT::UTILS::MatBlockType bt) const
 {
   return GState().GetJacobianBlock(Type(), bt);
@@ -427,15 +427,15 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
 
   // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->SlaveRowNodes();
-  Teuchos::RCP<Epetra_Map> allreduceslavemap = LINALG::AllreduceEMap(*slavemap);
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = CORE::LINALG::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
   const Epetra_Map* dof_colmap =
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true)->DofColMap();
   const Epetra_Map* node_colmap =
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true)->NodeColMap();
-  Teuchos::RCP<Epetra_Vector> Xslavemodcol = LINALG::CreateVector(*dof_colmap, false);
-  LINALG::Export(*Xslavemod, *Xslavemodcol);
+  Teuchos::RCP<Epetra_Vector> Xslavemodcol = CORE::LINALG::CreateVector(*dof_colmap, false);
+  CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = DRT::Problem::Instance()->NDim();

@@ -23,7 +23,7 @@ namespace MEMBRANE
    * plane
    */
   inline void LocalPlaneStressToStressLikeVoigt(
-      const LINALG::Matrix<3, 3>& stress, LINALG::Matrix<3, 1>& planeStressStressLike)
+      const CORE::LINALG::Matrix<3, 3>& stress, CORE::LINALG::Matrix<3, 1>& planeStressStressLike)
   {
     planeStressStressLike(0) = stress(0, 0);
     planeStressStressLike(1) = stress(1, 1);
@@ -37,7 +37,7 @@ namespace MEMBRANE
    * @param cmatred (out) : Reduced linearization assuming plane stress in the x-y plane
    */
   inline void LocalFourthTensorPlaneStressToStressLikeVoigt(
-      const LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<3, 3>& cmatred)
+      const CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<3, 3>& cmatred)
   {
     cmatred(0, 0) = cmat(0, 0);
     cmatred(0, 1) = cmat(0, 1);

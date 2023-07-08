@@ -19,7 +19,7 @@ approach for Fluid-beam interaction.
 #include <Epetra_FEVector.h>
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
-    const Epetra_Map* fluid_map, Teuchos::RCP<LINALG::SparseOperator> fluidmatrix,
+    const Epetra_Map* fluid_map, Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix,
     bool fluidmeshtying)
 {
   // Initialize all necessary vectors and matrices

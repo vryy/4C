@@ -111,35 +111,38 @@ namespace MAT
       void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
       /// Add anisotropic modified stresses
-      void AddStressAnisoModified(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          const LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
-          double I3,                        ///< third principal invariant
-          int gp,                           ///< Gauss point
-          int eleGID,                       ///< element GID
-          Teuchos::ParameterList& params    ///< Container for additional information
+      void AddStressAnisoModified(
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          double I3,                              ///< third principal invariant
+          int gp,                                 ///< Gauss point
+          int eleGID,                             ///< element GID
+          Teuchos::ParameterList& params          ///< Container for additional information
       );
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants
       virtual void GetDerivativesAniso(
-          LINALG::Matrix<2, 1>& dPI_aniso,      ///< first derivative with respect to invariants
-          LINALG::Matrix<3, 1>& ddPII_aniso,    ///< second derivative with respect to invariants
-          LINALG::Matrix<4, 1>& dddPIII_aniso,  ///< third derivative with respect to invariants
-          double I4,                            ///< fourth invariant
-          int gp,                               ///< Gauss point
-          int eleGID);                          ///< element GID
+          CORE::LINALG::Matrix<2, 1>& dPI_aniso,  ///< first derivative with respect to invariants
+          CORE::LINALG::Matrix<3, 1>&
+              ddPII_aniso,  ///< second derivative with respect to invariants
+          CORE::LINALG::Matrix<4, 1>&
+              dddPIII_aniso,  ///< third derivative with respect to invariants
+          double I4,          ///< fourth invariant
+          int gp,             ///< Gauss point
+          int eleGID);        ///< element GID
 
       /// Set fiber directions
-      void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,   ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd    ///< deformation gradient
+      void SetFiberVecs(const double newgamma,       ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation
@@ -160,9 +163,9 @@ namespace MAT
       MAT::ELASTIC::PAR::IsoAnisoExpo* params_;
 
       /// fiber direction
-      LINALG::Matrix<3, 1> a_;
+      CORE::LINALG::Matrix<3, 1> a_;
       /// structural tensors in voigt notation for anisotropy
-      LINALG::Matrix<6, 1> A_;
+      CORE::LINALG::Matrix<6, 1> A_;
     };
 
   }  // namespace ELASTIC

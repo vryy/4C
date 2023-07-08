@@ -17,7 +17,7 @@ means are computed as time averages
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -63,11 +63,11 @@ namespace FLD
 
     */
     TurbulenceStatisticsGeneralMean(Teuchos::RCP<DRT::Discretization> discret, std::string homdir,
-        LINALG::MapExtractor& velpressplitter, const bool withscatra);
+        CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
 
     TurbulenceStatisticsGeneralMean(Teuchos::RCP<DRT::Discretization> discret,
         Teuchos::RCP<const DRT::DofSet> standarddofset, std::string homdir,
-        LINALG::MapExtractor& velpressplitter, const bool withscatra);
+        CORE::LINALG::MapExtractor& velpressplitter, const bool withscatra);
 
     /*!
     \brief Destructor (public)
@@ -191,7 +191,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> scatradis_;
 
     //! a splitter between velocities and pressure dofs
-    LINALG::MapExtractor& velpressplitter_;
+    CORE::LINALG::MapExtractor& velpressplitter_;
 
     //! vector containing homogeneous directions
     std::vector<int> homdir_;

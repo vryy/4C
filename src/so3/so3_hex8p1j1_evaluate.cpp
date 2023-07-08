@@ -35,11 +35,11 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
   // get parameter interface
   SetParamsInterfacePtr(params);
 
-  LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.A(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
@@ -125,7 +125,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
+      CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
       ForceStiffMass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
           params, INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -176,8 +176,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
-        LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
+        CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
+        CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
         auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
@@ -254,30 +254,30 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // location matrix
-    const std::vector<double>& disp,                             // current displacements
-    const std::vector<double>& residual,                         // current residual displ
-    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,       // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,        // element mass matrix
-    LINALG::Matrix<NUMDOF_SOH8, 1>* force,                       // element internal force vector
-    LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,                   // structure force
-    LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,                              // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,                       // stress output option
-    const INPAR::STR::StrainType iostrain                        // strain output option
+    const std::vector<double>& disp,                              // current displacements
+    const std::vector<double>& residual,                          // current residual displ
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,                  // element internal force vector
+    CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,              // structure force
+    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,  // stress output option
+    const INPAR::STR::StrainType iostrain   // strain output option
 )
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   const static std::vector<double> gpweights = soh8_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
@@ -294,7 +294,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
   size_t length = residual.size();
   if (length != 24) dserror("number of element displacement dofs not equal 24");
 
-  LINALG::Matrix<24, 1> disi(false);
+  CORE::LINALG::Matrix<24, 1> disi(false);
   for (int i = 0; i < NUMDOF_SOH8; ++i)
   {
     disi(i, 0) = residual[i];
@@ -355,11 +355,11 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
 
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> mod_defgrd(true);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(false);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> mod_defgrd(true);
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
@@ -397,13 +397,13 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     mod_defgrd.Update(scalar, defgrd);
 
     // Modified Right Cauchy-Green tensor = modF^T * modF
-    LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> mod_cauchygreen;
+    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> mod_cauchygreen;
     mod_cauchygreen.MultiplyTN(mod_defgrd, mod_defgrd);
 
     // Modified Green-Lagrange strains matrix mod_E = 0.5 * (modCauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector mod_glstrain_epetra(MAT::NUM_STRESS_3D);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> mod_glstrain(mod_glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> mod_glstrain(mod_glstrain_epetra.A(), true);
     mod_glstrain(0) = 0.5 * (mod_cauchygreen(0, 0) - 1.0);
     mod_glstrain(1) = 0.5 * (mod_cauchygreen(1, 1) - 1.0);
     mod_glstrain(2) = 0.5 * (mod_cauchygreen(2, 2) - 1.0);
@@ -416,8 +416,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
       Strain(elestrain, iostrain, gp, t_(0, 0), mod_defgrd, mod_glstrain);
 
     // Bestimmen der N_xyz
-    LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz(true);
-    LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> Inv_defgrd(true);
+    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz(true);
+    CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> Inv_defgrd(true);
     Inv_defgrd.Invert(defgrd);
 
     for (int i = 0; i < NUMNOD_SOH8; ++i)
@@ -434,7 +434,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     //==========================================================================
     // ***********************    modified B-matrix   **************************
     //==========================================================================
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bopn;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8> bopn;
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
       bopn(0, NODDOF_SOH8 * i + 0) = N_xyz(0, i);
@@ -463,17 +463,17 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     SolidMaterial()->Evaluate(&mod_defgrd, &mod_glstrain, params, &stress, &cmat, gp, Id());
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
-    LINALG::Matrix<6, 6> D_T_bar(false);
+    CORE::LINALG::Matrix<6, 6> D_T_bar(false);
     ConvertMat(cmat, mod_defgrd, D_T_bar, t_(0, 0));
 
     // (secondary) Cauchy stress dependent on displacements and primary Jacobian
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_bar(false);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_bar(false);
     {
       // Voigt indices
       std::vector<int> Index1(MAT::NUM_STRESS_3D);
@@ -516,14 +516,14 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
 
 
     // Cauchy stress dependent on displacements, primary Jacobian and primary pressure
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_hook(sigma_bar);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_hook(sigma_bar);
     for (int i = 0; i < 3; ++i)
     {
       sigma_hook(i, 0) += p_hook - p_bar;
     }
 
     // deviatoric content of Cauchy stress
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_bar_dev(sigma_bar);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sigma_bar_dev(sigma_bar);
     for (int i = 0; i < 3; ++i)
     {
       sigma_bar_dev(i, 0) -= p_bar;
@@ -552,17 +552,17 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
       R_p_(0, 0) += (J - t_(0, 0)) * detJ_w;
       R_t_(0, 0) += (p_bar - p_(0, 0)) * detJ_w;
 
-      LINALG::Matrix<1, 1> D_22(false);
+      CORE::LINALG::Matrix<1, 1> D_22(false);
       {
-        LINALG::Matrix<1, 6> temp(false);
+        CORE::LINALG::Matrix<1, 6> temp(false);
         temp.MultiplyTN(1.0 / 9.0, m_, D_T_bar);
         D_22.MultiplyNN(temp, m_);
         D_22(0, 0) -= 1.0 / 3.0 * p_bar;
       }
 
-      LINALG::Matrix<6, 6> D_11(false);
+      CORE::LINALG::Matrix<6, 6> D_11(false);
       {
-        LINALG::Matrix<6, 6> temp2(false);
+        CORE::LINALG::Matrix<6, 6> temp2(false);
         temp2.Multiply(I_d_, D_T_bar);
         D_11.Multiply(temp2, I_d_);
         D_11.MultiplyNT(-2.0 / 3.0, m_, sigma_bar_dev, 1.0);
@@ -573,9 +573,9 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
         D_11.Update(scalar, I_0_, 1.0);
       }
 
-      LINALG::Matrix<6, 1> D_12(sigma_bar_dev);
+      CORE::LINALG::Matrix<6, 1> D_12(sigma_bar_dev);
       {
-        LINALG::Matrix<6, 6> temp2(false);
+        CORE::LINALG::Matrix<6, 6> temp2(false);
         D_12.Scale(2.0 / 3.0);
         temp2.MultiplyNN(1.0 / 3.0, I_d_, D_T_bar);
         D_12.MultiplyNN(1.0, temp2, m_, 1.0);
@@ -583,7 +583,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
 
       // K_uu = (B^T . D_11 . B) *Theta *detJ * w(gp) + K_geo
       {
-        LINALG::Matrix<NUMDOF_SOH8, MAT::NUM_STRESS_3D> auxmat;
+        CORE::LINALG::Matrix<NUMDOF_SOH8, MAT::NUM_STRESS_3D> auxmat;
         auxmat.MultiplyTN(bopn, D_11);
         stiffmatrix->MultiplyNN(detJ_w_t, auxmat, bopn, 1.0);
       }
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
       // integrate 'geometric' stiffness matrix and add to first part of K_uu
       // K_G = N_xyz * sigma_hook * N_xyz^T * t_ * detJ * w(gp) * I
 
-      LINALG::Matrix<NUMNOD_SOH8, NUMNOD_SOH8> G_bar(false);
+      CORE::LINALG::Matrix<NUMNOD_SOH8, NUMNOD_SOH8> G_bar(false);
       for (int a = 0; a < NUMNOD_SOH8; ++a)
       {
         for (int b = 0; b < NUMNOD_SOH8; ++b)
@@ -687,18 +687,18 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
  |  convert constitutive tensor (material -> current configuration)   lw 02/09|
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8P1J1::ConvertMat(
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
-    const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t)
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
+    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t)
 {
   // relationship between cmat (material configuration) and D_T_bar (current configuration):
 
   // D_T_bar[i][j][k][l] = 1/t * F[i][I] * F[j][J] * F[k][K] * F[l][L] * cmat[I][J][K][L]
   // c^ijkl              = 1/t   F^i_I     F^j_J     F^k_K     F^l_L     C^IJKL
 
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> FxF(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> FxF(false);
   PushPullOperator(FxF, F, false, 1.0);
-  LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> CxFxF(false);
+  CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> CxFxF(false);
   CxFxF.MultiplyNT(cmat, FxF);
   D_T_bar.MultiplyNN(FxF, CxFxF);
   D_T_bar.Scale(1.0 / t);
@@ -708,10 +708,11 @@ void DRT::ELEMENTS::So_Hex8P1J1::ConvertMat(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Stress(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
+void DRT::ELEMENTS::So_Hex8P1J1::Stress(
+    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,
     const INPAR::STR::StressType iostress, const int gp, const double& detdefgrd,
-    const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress)
+    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress)
 {
   switch (iostress)
   {
@@ -720,15 +721,15 @@ void DRT::ELEMENTS::So_Hex8P1J1::Stress(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STR
       if (elestress == nullptr) dserror("stress data not available");
 
       // inverse deformation gradient
-      LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
+      CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
       invdefgrd.Invert();
 
       // pull back operator
-      LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradinvdefgradT;
+      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradinvdefgradT;
       PushPullOperator(invdefgradinvdefgradT, invdefgrd, false, detdefgrd);
 
       // (deviatoric) Cauchy stress vector
-      LINALG::Matrix<MAT::NUM_STRESS_3D, 1> pk2;
+      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> pk2;
       pk2.MultiplyNN(detdefgrd, invdefgradinvdefgradT, stress);
 
       // store stress
@@ -755,12 +756,12 @@ void DRT::ELEMENTS::So_Hex8P1J1::Stress(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STR
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8P1J1::Strain(
-    LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
+    CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,  ///< strain type to store for post-proc
     const int gp,                           ///< Gauss point index
     const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
-    const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
-    const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain    ///< Green-Lagrange strain vector
+    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain    ///< Green-Lagrange strain vector
 )
 {
   switch (iostrain)
@@ -779,15 +780,15 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
       if (elestrain == nullptr) dserror("strain data not available");
 
       // inverse deformation gradient
-      LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
+      CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
       invdefgrd.Invert();
 
       // create push forward 6x6 matrix
-      LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTinvdefgrad;
+      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTinvdefgrad;
       PushPullOperator(invdefgradTinvdefgrad, invdefgrd, true, 1.0);
 
       // push forward
-      LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eastrain;
+      CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> eastrain;
       eastrain.MultiplyNN(invdefgradTinvdefgrad, glstrain);
       // store
       for (int i = 0; i < NUMDIM_SOH8; ++i) (*elestrain)(gp, i) = eastrain(i);
@@ -808,10 +809,10 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8P1J1::PushPullOperator(
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& g,  // G_IJ^KL or G^IJ_KL
-    const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& f,          // [F^-1]=[F^B_b] or [F]=[F^b_B]
-    const bool& transpose,                                      // co-variant if true
-    const double& fac                                           //  a scaling factor
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& g,  // G_IJ^KL or G^IJ_KL
+    const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& f,  // [F^-1]=[F^B_b] or [F]=[F^b_B]
+    const bool& transpose,                                    // co-variant if true
+    const double& fac                                         //  a scaling factor
 )
 {
   // co-variant: strain-like
@@ -961,7 +962,7 @@ int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
 
 void DRT::ELEMENTS::So_Hex8P1J1::soh8P1J1_recover(const std::vector<double>& residual)
 {
-  LINALG::Matrix<24, 1> disi(false);
+  CORE::LINALG::Matrix<24, 1> disi(false);
   for (int i = 0; i < NUMDOF_SOH8; ++i) disi(i) = residual[i];
 
   // dt= K_tp_^-1*(-R_p_-K_pu_*du)

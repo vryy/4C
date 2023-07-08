@@ -50,8 +50,8 @@ BEAMINTERACTION::BeamLinkRigidJointed::BeamLinkRigidJointed(
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
     const std::vector<std::pair<int, int>>& eleids,
-    const std::vector<LINALG::Matrix<3, 1>>& initpos,
-    const std::vector<LINALG::Matrix<3, 3>>& inittriad,
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
+    const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
     INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
@@ -66,8 +66,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
    * - second and third base vector are arbitrarily constructed from cross-product
    *   of first base vector with either first or second base vector of global
    *   coordinate system; this avoids any singularities */
-  LINALG::Matrix<3, 3> linkeletriad(true);
-  LINALG::Matrix<3, 1> distvec(true);
+  CORE::LINALG::Matrix<3, 3> linkeletriad(true);
+  CORE::LINALG::Matrix<3, 1> distvec(true);
 
   distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
@@ -101,13 +101,13 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
   // check included angle of desired crosslinker axis (normalized distvec = first
   // base vector) and (1,0,0), i.e. scalar product which in this case simplifies to
   // first component of distvec
-  LINALG::Matrix<3, 1> unit_vector_global_x(true), unit_vector_global_y(true);
+  CORE::LINALG::Matrix<3, 1> unit_vector_global_x(true), unit_vector_global_y(true);
   unit_vector_global_x(0) = 1.0;
   unit_vector_global_y(1) = 1.0;
 
   const double scalarproduct = distvec(0);
 
-  LINALG::Matrix<3, 1> second_base_vecor_linkerele(true);
+  CORE::LINALG::Matrix<3, 1> second_base_vecor_linkerele(true);
 
   // is included angle smaller than 45 degrees ? then avoid singularity at angle=0 degrees ...
   if (std::abs(scalarproduct) > 0.5 * std::sqrt(2))
@@ -148,7 +148,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Init(const int id,
 
 
   // third base vector to complete orthonormal triad
-  LINALG::Matrix<3, 1> third_base_vecor_linkerele(true);
+  CORE::LINALG::Matrix<3, 1> third_base_vecor_linkerele(true);
   third_base_vecor_linkerele.CrossProduct(distvec, second_base_vecor_linkerele);
 
   // feasibility check
@@ -263,7 +263,8 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Unpack(const std::vector<char>& data
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
-    std::vector<LINALG::Matrix<3, 1>>& bspotpos, std::vector<LINALG::Matrix<3, 3>>& bspottriad)
+    std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
+    std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
   CheckInitSetup();
 
@@ -274,7 +275,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::ResetState(
    * parent elements.
    * Note: constant rotation in material frame, therefore multiplication from right
    *       side */
-  LINALG::Matrix<3, 3, double> currenttriad(true);
+  CORE::LINALG::Matrix<3, 3, double> currenttriad(true);
   currenttriad.Multiply(bspottriad[0], Lambdarel1_);
   CORE::LARGEROTATIONS::triadtoquaternion<double>(currenttriad, bspottriad1_);
 
@@ -300,7 +301,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::Print(std::ostream& out) const
   BeamLink::Print(out);
 
   out << "\nbspottriad1_ = ";
-  LINALG::Matrix<3, 3, double> triad;
+  CORE::LINALG::Matrix<3, 3, double> triad;
   CORE::LARGEROTATIONS::quaterniontotriad(bspottriad1_, triad);
   triad.Print(out);
   out << "\nbspottriad2_ = ";

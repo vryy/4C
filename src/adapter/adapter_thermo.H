@@ -48,14 +48,14 @@ namespace IO
 }
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -136,13 +136,13 @@ namespace ADAPTER
     virtual const Epetra_Map& DomainMap() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     //@}
 
@@ -238,7 +238,7 @@ namespace ADAPTER
     virtual INPAR::THR::ConvergenceStatus Solve() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     //@}
 

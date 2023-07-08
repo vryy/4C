@@ -318,7 +318,7 @@ void INVANA::InvanaAugLagr::EvaluateGradient(
   gradient->Scale(0.0);
 
   Teuchos::RCP<Epetra_Vector> zeros;
-  zeros = LINALG::CreateVector(*(Discret()->DofRowMap()), true);
+  zeros = CORE::LINALG::CreateVector(*(Discret()->DofRowMap()), true);
 
   // loop the time steps
   for (int j = 0; j < msteps_; j++)

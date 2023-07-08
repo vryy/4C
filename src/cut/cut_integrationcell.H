@@ -58,10 +58,10 @@ namespace CORE::GEO
 
       const Epetra_SerialDenseMatrix& Coordinates() const { return xyz_; }
 
-      bool Contains(LINALG::Matrix<3, 1>& x);
+      bool Contains(CORE::LINALG::Matrix<3, 1>& x);
 
       template <unsigned probdim, ::DRT::Element::DiscretizationType celltype>
-      bool Contains(LINALG::Matrix<probdim, 1>& x);
+      bool Contains(CORE::LINALG::Matrix<probdim, 1>& x);
 
 
       /** Print the integration cells

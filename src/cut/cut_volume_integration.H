@@ -70,7 +70,7 @@ namespace CORE::GEO
       boundary of this volumecell. The output std::string will be either "outside", "inside" or
       "onBoundary"
       */
-      std::string IsPointInside(LINALG::Matrix<3, 1>& rst);
+      std::string IsPointInside(CORE::LINALG::Matrix<3, 1>& rst);
 
      private:
       /*!
@@ -130,7 +130,7 @@ namespace CORE::GEO
       \brief Check whether the intersection point, which is in the plane containing the facet,
       actually lies with in the facet area
       */
-      int pnpoly(const std::vector<std::vector<double>>& xp, const LINALG::Matrix<3, 1>& pt,
+      int pnpoly(const std::vector<std::vector<double>>& xp, const CORE::LINALG::Matrix<3, 1>& pt,
           CORE::GEO::CUT::ProjectionDirection projType);
 
       /*!

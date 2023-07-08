@@ -32,7 +32,7 @@ STR::NLN::LinSystem::StcScaling::StcScaling(
       stcmat_(Teuchos::null)
 {
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
+  stcmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
   stcmat_->Zero();
 
   // create the parameters for the discretization
@@ -61,8 +61,8 @@ STR::NLN::LinSystem::StcScaling::StcScaling(
     pe.set<int>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
-    Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new LINALG::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState.DofRowMapView(), 81, true, true));
     tmpstcmat->Zero();
 
     discret->Evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -81,8 +81,8 @@ void STR::NLN::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& pr
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
   Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::rcp(stiffmat, false);
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_linalg =
-      Teuchos::rcp(new LINALG::SparseMatrix(stiff_epetra, LINALG::View));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_linalg =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_epetra, CORE::LINALG::View));
 
   // get rhs
   Epetra_Vector* rhs = dynamic_cast<Epetra_Vector*>(problem.GetRHS());
@@ -95,7 +95,8 @@ void STR::NLN::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& pr
   {
     stiff_scaled_ = MLMultiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
-    Teuchos::RCP<Epetra_Vector> rhs_scaled = LINALG::CreateVector(problem.GetRHS()->Map(), true);
+    Teuchos::RCP<Epetra_Vector> rhs_scaled =
+        CORE::LINALG::CreateVector(problem.GetRHS()->Map(), true);
     stcmat_->Multiply(true, *rhs, *rhs_scaled);
     rhs->Update(1.0, *rhs_scaled, 0.0);
   }
@@ -108,7 +109,8 @@ void STR::NLN::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& pr
  *----------------------------------------------------------------------*/
 void STR::NLN::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
 {
-  Teuchos::RCP<Epetra_MultiVector> disisdc = LINALG::CreateVector(problem.GetLHS()->Map(), true);
+  Teuchos::RCP<Epetra_MultiVector> disisdc =
+      CORE::LINALG::CreateVector(problem.GetLHS()->Map(), true);
   Epetra_MultiVector* disi = dynamic_cast<Epetra_Vector*>(problem.GetLHS());
 
   stcmat_->Multiply(false, *disi, *disisdc);

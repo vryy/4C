@@ -55,7 +55,7 @@ namespace DRT
 
       //! get density at integration point
       double GetDensity(Teuchos::RCP<const MAT::Material> material,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp, const int k);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k);
 
       //! integral of normal diffusive flux and velocity over boundary surface
       void NormDiffFluxAndVelIntegral(const DRT::Element* ele, Teuchos::ParameterList& params,

@@ -49,7 +49,7 @@ namespace CONTACT
          *
          *  \author hiermeier \date 03/17 */
         virtual void AssembleDGGLinMatrix(
-            LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
 
       };  // class Interface
     }     // namespace LAGRANGE

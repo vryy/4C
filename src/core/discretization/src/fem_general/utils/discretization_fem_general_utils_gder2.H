@@ -54,12 +54,13 @@ namespace CORE::DRT::UTILS
   // for enriched elements (e.g. xwall), NumNode may be larger than the number of element nodes
   // for all other elements, NumNode==numnode
   template <::DRT::Element::DiscretizationType DISTYPE, int NumNode, int ProbDim>
-  void gder2(const LINALG::Matrix<ProbDim, ProbDim>& xjm,
-      const LINALG::Matrix<ProbDim, NumNode>& derxy,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
-          deriv2,
-      const LINALG::Matrix<ProbDim, NumNode>& xyze,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& derxy2)
+  void gder2(const CORE::LINALG::Matrix<ProbDim, ProbDim>& xjm,
+      const CORE::LINALG::Matrix<ProbDim, NumNode>& derxy,
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
+          NumNode>& deriv2,
+      const CORE::LINALG::Matrix<ProbDim, NumNode>& xyze,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+          derxy2)
   {
     // some numbers already known during compilation
     const int numnode = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
@@ -69,11 +70,11 @@ namespace CORE::DRT::UTILS
 
     // compute d^2x/dr^2
     double xder2[numderiv2 * nsd];
-    LINALG::DENSEFUNCTIONS::multiplyNT<double, numderiv2, numnode, nsd>(
+    CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, numderiv2, numnode, nsd>(
         xder2, deriv2.A(), xyze.A());
 
     // compute -(dN/dx)*(d^2x/dr^2)
-    LINALG::DENSEFUNCTIONS::multiply<double, numderiv2, nsd, numnode>(
+    CORE::LINALG::DENSEFUNCTIONS::multiply<double, numderiv2, nsd, numnode>(
         derxy2.A(), -1.0, xder2, derxy.A());
 
     // compute -(dN/dx)*(d^2x/dr^2) + (d^2N/dr^2)
@@ -85,7 +86,7 @@ namespace CORE::DRT::UTILS
     double xjiData[9];
     double* xji[3];
     for (int i = 0; i < nsd; ++i) xji[i] = &xjiData[nsd * i];
-    LINALG::DENSEFUNCTIONS::invert<double, nsd, nsd>(xjiData, xjm.A());
+    CORE::LINALG::DENSEFUNCTIONS::invert<double, nsd, nsd>(xjiData, xjm.A());
     for (int node = 0; node < numnode; ++node)
     {
       double tmp[3][3];
@@ -132,13 +133,14 @@ namespace CORE::DRT::UTILS
   }  // CORE::DRT::UTILS::gder2
 
   template <::DRT::Element::DiscretizationType DISTYPE, int NumNode>
-  void gder2(const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+  void gder2(const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
                  ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& xjm,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& derxy,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
-          deriv2,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& xyze,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>& derxy2)
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& derxy,
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2,
+          NumNode>& deriv2,
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, NumNode>& xyze,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumDeriv2<DISTYPE>::numderiv2, NumNode>&
+          derxy2)
   {
     gder2<DISTYPE, NumNode, ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>(
         xjm, derxy, deriv2, xyze, derxy2);

@@ -84,13 +84,13 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
 
   // element geometry update - currently only material configuration
   const int numnode = NumNode();
-  LINALG::SerialDenseMatrix x(numnode, numdim);
+  CORE::LINALG::SerialDenseMatrix x(numnode, numdim);
   MaterialConfiguration(x);
 
   // integration parameters
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
-  LINALG::SerialDenseVector shapefcts(numnode);
-  LINALG::SerialDenseMatrix deriv(1, numnode);
+  CORE::LINALG::SerialDenseVector shapefcts(numnode);
+  CORE::LINALG::SerialDenseMatrix deriv(1, numnode);
   const DRT::Element::DiscretizationType shape = Shape();
 
   // integration
@@ -120,7 +120,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
             if (functnum > 0)
             {
               // calculate reference position of GP
-              LINALG::SerialDenseMatrix gp_coord(1, numdim);
+              CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
               gp_coord.Multiply('T', 'N', 1.0, shapefcts, x, 0.0);
 
               // write coordinates in another datatype
@@ -157,11 +157,11 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  *  (private)                                                  gee 04/08|
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::LineIntegration(
-    double& dL, const LINALG::SerialDenseMatrix& x, const LINALG::SerialDenseMatrix& deriv)
+void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
+    const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
-  LINALG::SerialDenseMatrix dxyzdrs(1, 3);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(1, 3);
   dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
   dL = 0.0;
   for (int i = 0; i < 3; ++i) dL += dxyzdrs(0, i) * dxyzdrs(0, i);

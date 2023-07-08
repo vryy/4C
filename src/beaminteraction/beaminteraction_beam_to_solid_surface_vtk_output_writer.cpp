@@ -273,7 +273,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
       if (nodal_force_visualization != Teuchos::null)
       {
         // This array will hold the global coupling moment around the origin.
-        auto global_coupling_moment_origin = Teuchos::rcp(new LINALG::Matrix<3, 1, double>(true));
+        auto global_coupling_moment_origin =
+            Teuchos::rcp(new CORE::LINALG::Matrix<3, 1, double>(true));
         visualization_params.set("global_coupling_moment_origin", global_coupling_moment_origin);
       }
 
@@ -301,8 +302,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
       {
         // Get the global force and moment resultants from the nodal forces. The first column
         // represents the forces, the second one the moments.
-        LINALG::Matrix<3, 2, double> beam_resultant(true);
-        LINALG::Matrix<3, 2, double> solid_resultant(true);
+        CORE::LINALG::Matrix<3, 2, double> beam_resultant(true);
+        CORE::LINALG::Matrix<3, 2, double> solid_resultant(true);
         GetGlobalCouplingForceResultants(beam_contact->Discret(),
             *(beam_contact->BeamInteractionDataState().GetForceNp()),
             *(beam_contact->BeamInteractionDataState().GetDisNp()), beam_resultant,
@@ -311,14 +312,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
         // The beam coupling moments are calculated in each pair and replace the ones evaluated in
         // the previous function.
         auto global_coupling_moment_origin =
-            visualization_params.get<Teuchos::RCP<LINALG::Matrix<3, 1, double>>>(
+            visualization_params.get<Teuchos::RCP<CORE::LINALG::Matrix<3, 1, double>>>(
                 "global_coupling_moment_origin");
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           beam_resultant(i_dim, 1) = (*global_coupling_moment_origin)(i_dim);
 
         // Sum the values over all ranks.
-        LINALG::Matrix<3, 2, double> beam_resultant_global(true);
-        LINALG::Matrix<3, 2, double> solid_resultant_global(true);
+        CORE::LINALG::Matrix<3, 2, double> beam_resultant_global(true);
+        CORE::LINALG::Matrix<3, 2, double> solid_resultant_global(true);
         MPI_Allreduce(beam_resultant.A(), beam_resultant_global.A(),
             beam_resultant.M() * beam_resultant.N(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());

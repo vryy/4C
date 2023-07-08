@@ -19,12 +19,12 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FSI
 {
@@ -73,11 +73,11 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     /// create merged map with Dirichlet-constrained DOF from all fields
     virtual Teuchos::RCP<Epetra_Map> CombinedDBCMap();
@@ -144,16 +144,16 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> sigtransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<LINALG::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fsmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsaigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fsmgitransform_;
 
     ///@}
 
@@ -195,10 +195,10 @@ namespace FSI
     Teuchos::RCP<const Epetra_Vector> solgpre_;
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> sggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> sggcur_;
     //@}
   };
 }  // namespace FSI

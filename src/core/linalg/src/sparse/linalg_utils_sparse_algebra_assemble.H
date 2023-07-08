@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of algebraic assemble methods for namespace LINALG
+\brief A collection of algebraic assemble methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -21,7 +21,7 @@
 #include "lib_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
@@ -65,9 +65,9 @@ namespace LINALG
       const std::vector<int>& lmowner);
 
   /*!
-   \brief Assemble a LINALG::Matrix<3,1> into an Epetra_Vector
+   \brief Assemble a CORE::LINALG::Matrix<3,1> into an Epetra_Vector
 
-   This is a wrapper that converts LINALG::Matrix<3,1> to
+   This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
    Epetra_SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
@@ -75,14 +75,14 @@ namespace LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
+  void Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
       const std::vector<int>& lmowner);
 
   /*!
-   \brief Assemble a LINALG::Matrix<3,1> into an Epetra_Vector in case the
+   \brief Assemble a CORE::LINALG::Matrix<3,1> into an Epetra_Vector in case the
    owner is always the same
 
-   This is a wrapper that converts LINALG::Matrix<3,1> to
+   This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
    Epetra_SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
@@ -90,8 +90,8 @@ namespace LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(
-      Epetra_Vector& V, LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm, const int& lmowner);
+  void Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele, const std::vector<int>& lm,
+      const int& lmowner);
 
   /*!
    \brief Assemble a double into an Epetra_Vector
@@ -203,7 +203,7 @@ namespace LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
       Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
       const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
 
@@ -230,9 +230,9 @@ namespace LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
       Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-      Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
       const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -257,8 +257,8 @@ namespace LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
-      Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
+      Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
       const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -330,9 +330,9 @@ namespace LINALG
    \author bborn
    \date 10/08
    */
-  Teuchos::RCP<LINALG::MapExtractor> ConvertDirichletToggleVectorToMaps(
+  Teuchos::RCP<CORE::LINALG::MapExtractor> ConvertDirichletToggleVectorToMaps(
       const Teuchos::RCP<const Epetra_Vector>& dbctoggle);
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H

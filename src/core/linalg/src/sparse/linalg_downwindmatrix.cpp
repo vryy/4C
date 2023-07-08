@@ -16,8 +16,8 @@
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|
  *----------------------------------------------------------------------*/
-LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const int nv, const int np,
-    const double tau, const int outlevel)
+CORE::LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const int nv,
+    const int np, const double tau, const int outlevel)
     : outlevel_(outlevel), nv_(nv), np_(np), bs_(nv + np), tau_(tau)
 {
   Setup(*A);
@@ -28,7 +28,7 @@ LINALG::DownwindMatrix::DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const i
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
+void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 {
   Teuchos::Time time("", true);
   if (!A.Filled()) dserror("Input matrix has to be FillComplete");
@@ -142,7 +142,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   Teuchos::RCP<Epetra_CrsMatrix> nnodegraph;
   {
     // create a transposed of the full graph
-    Teuchos::RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
+    Teuchos::RCP<Epetra_CrsMatrix> onodegrapht = CORE::LINALG::Transpose(onodegraph);
     // create a new graph that will store the directed graph
     Teuchos::RCP<SparseMatrix> tmp =
         Teuchos::rcp(new SparseMatrix(*onoderowmap, (int)(onodegraph->MaxNumEntries())));
@@ -267,7 +267,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::DownwindBeyWittum(
+void CORE::LINALG::DownwindMatrix::DownwindBeyWittum(
     const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index, const Epetra_IntVector& oninflow)
 {
   const int myrank = nnodegraph.Comm().MyPID();
@@ -308,7 +308,7 @@ void LINALG::DownwindMatrix::DownwindBeyWittum(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::DownwindHackbusch(
+void CORE::LINALG::DownwindMatrix::DownwindHackbusch(
     const Epetra_CrsMatrix& nnodegraph, Epetra_IntVector& index, const Epetra_IntVector& oninflow)
 {
   const int myrank = nnodegraph.Comm().MyPID();
@@ -351,7 +351,7 @@ void LINALG::DownwindMatrix::DownwindHackbusch(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::SetF(
+void CORE::LINALG::DownwindMatrix::SetF(
     const int i, int& nf, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec)
 {
   // std::cout << "SetF::Recursion " << rec << "\n"; fflush(stdout);
@@ -394,7 +394,7 @@ void LINALG::DownwindMatrix::SetF(
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::SetL(
+void CORE::LINALG::DownwindMatrix::SetL(
     const int i, int& nl, Epetra_IntVector& index, const Epetra_CrsMatrix& graph, int rec)
 {
   // std::cout << "SetL::Recursion " << rec << "\n"; fflush(stdout);

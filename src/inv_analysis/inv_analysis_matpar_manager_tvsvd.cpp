@@ -145,9 +145,9 @@ void INVANA::MatParManagerTVSVD::ApplyParametrization(
   // todo: this is not ok! loop over the single columns of matrix
   // and extract only the diagonal component.
   // matrix * projector_
-  Teuchos::RCP<Epetra_CrsMatrix> mr = LINALG::Multiply(fullmatrix, false, projector_, false);
+  Teuchos::RCP<Epetra_CrsMatrix> mr = CORE::LINALG::Multiply(fullmatrix, false, projector_, false);
   // projector_'*matrix*projector_
-  Teuchos::RCP<Epetra_CrsMatrix> pmr = LINALG::Multiply(projector_, true, mr, false);
+  Teuchos::RCP<Epetra_CrsMatrix> pmr = CORE::LINALG::Multiply(projector_, true, mr, false);
 
   Epetra_Vector diagonal(pmr->RowMap(), true);
   pmr->ExtractDiagonalCopy(diagonal);
@@ -282,7 +282,7 @@ void INVANA::MatParManagerTVSVD::CreateProjection()
   SetupTVOperator();
 
   // hack
-  // LINALG::PrintMatrixInMatlabFormat("lintvop",*lintvop_);
+  // CORE::LINALG::PrintMatrixInMatlabFormat("lintvop",*lintvop_);
 
   // Factorization of the linear operator
   Factorize();
@@ -301,16 +301,16 @@ void INVANA::MatParManagerTVSVD::SetupRandP(int numvecs)
 
   // build paramlayout maps anew
   paramlayoutmapunique_ = Teuchos::rcp(new Epetra_Map(-1, numvecspp, 0, Comm()));
-  paramlayoutmap_ = LINALG::AllreduceEMap(*paramlayoutmapunique_);
+  paramlayoutmap_ = CORE::LINALG::AllreduceEMap(*paramlayoutmapunique_);
 
-  Teuchos::RCP<Epetra_Map> colmap = LINALG::AllreduceEMap(graph_->RowMap(), 0);
+  Teuchos::RCP<Epetra_Map> colmap = CORE::LINALG::AllreduceEMap(graph_->RowMap(), 0);
   int maxbw = colmap->NumGlobalElements();
   projector_ =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *paramlayoutmapunique_, *colmap, maxbw, false));
 
   // get all the eigenvectors to proc 0
   Epetra_MultiVector evecs(*colmap, nev_, true);
-  LINALG::Export(*evecs_, evecs);
+  CORE::LINALG::Export(*evecs_, evecs);
 
   // make unique eigenvectors in all groups
   // BroadcastEigenvectors(evecs);
@@ -362,7 +362,7 @@ void INVANA::MatParManagerTVSVD::SetupTVOperator()
   // communicate theta data from other procs such that every proc can compute sums
   // over adjacent parameters
   Epetra_MultiVector thetacol(graph_->ColMap(), 1, false);
-  LINALG::Export(*optparams_elewise_, thetacol);
+  CORE::LINALG::Export(*optparams_elewise_, thetacol);
 
   for (int i = 0; i < (*optparams_elewise_)(0)->MyLength(); i++)
   {
@@ -417,7 +417,7 @@ void INVANA::MatParManagerTVSVD::SetupTVOperator()
 
 
   // Add up contributions
-  LINALG::Add(lintvop2, false, 1.0, lintvop_, -1.0);
+  CORE::LINALG::Add(lintvop2, false, 1.0, lintvop_, -1.0);
 
   // regularization helps anasazi
   Epetra_Vector newdiag(optparams_elewise_->Map(), false);
@@ -733,6 +733,6 @@ Teuchos::RCP<Epetra_CrsMatrix> INVANA::MatParManagerTVSVD::InitialCovariance()
   interm->FillComplete(projector_->ColMap(), projector_->RangeMap());
 
   // interm * projector'
-  Teuchos::RCP<Epetra_CrsMatrix> cov = LINALG::Multiply(*interm, false, *projector_, true);
+  Teuchos::RCP<Epetra_CrsMatrix> cov = CORE::LINALG::Multiply(*interm, false, *projector_, true);
   return cov;
 }

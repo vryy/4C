@@ -105,9 +105,10 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
 DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
     : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  invJ_.resize(NUMGPT_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
+  invJ_.resize(NUMGPT_SOTET10, CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
-  invJ_mass_.resize(NUMGPT_MASS_SOTET10, LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
+  invJ_mass_.resize(
+      NUMGPT_MASS_SOTET10, CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   detJ_mass_.resize(NUMGPT_MASS_SOTET10, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
@@ -242,12 +243,12 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   int size_mass = 0;
   ExtractfromPack(position, data, size_mass);
-  invJ_mass_.resize(size_mass, LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
+  invJ_mass_.resize(size_mass, CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   for (int i = 0; i < size_mass; ++i) ExtractfromPack(position, data, invJ_mass_[i]);
 
   // Unpack prestress
@@ -365,7 +366,7 @@ std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOTET10; ++i)
   {
     const double* x = nodes[i]->X();
@@ -374,10 +375,10 @@ std::vector<double> DRT::ELEMENTS::So_tet10::ElementCenterRefeCoords()
     xrefe(i, 2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::Matrix<NUMNOD_SOTET10, 1> funct;
+  CORE::LINALG::Matrix<NUMNOD_SOTET10, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   CORE::DRT::UTILS::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
-  LINALG::Matrix<1, NUMDIM_SOTET10> midpoint;
+  CORE::LINALG::Matrix<1, NUMDIM_SOTET10> midpoint;
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0, 0);
@@ -417,7 +418,7 @@ void DRT::ELEMENTS::So_tet10::MaterialPostSetup(Teuchos::ParameterList& params)
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    const static std::vector<LINALG::Matrix<NUMNOD_SOTET10, 1>> shapefcts_4gp =
+    const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> shapefcts_4gp =
         so_tet10_4gp_shapefcts();
 
     // add fibers to the ParameterList

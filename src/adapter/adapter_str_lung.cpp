@@ -106,8 +106,8 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru) : FSIStructu
 
   //----------------------------------------------------------------------
   // build mapextractor for fsi <-> full map
-  fsiinterface_ =
-      Teuchos::rcp(new LINALG::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
+  fsiinterface_ = Teuchos::rcp(
+      new CORE::LINALG::MapExtractor(*Interface()->FullMap(), Interface()->FSICondMap()));
 
   //----------------------------------------------------------------------
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
@@ -219,7 +219,7 @@ void ADAPTER::StructureLung::InitializeVolCon(
         std::vector<int> constrowner;
         constrlm.push_back(condID - offsetID);
         constrowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*initvol, elevector3, constrlm, constrowner);
+        CORE::LINALG::Assemble(*initvol, elevector3, constrlm, constrowner);
       }
     }
   }
@@ -260,9 +260,10 @@ void ADAPTER::StructureLung::InitializeVolCon(
 /*======================================================================*/
 /* evaluate structural part of fluid-structure volume constraint */
 void ADAPTER::StructureLung::EvaluateVolCon(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> StructMatrix, Teuchos::RCP<Epetra_Vector> StructRHS,
-    Teuchos::RCP<Epetra_Vector> CurrVols, Teuchos::RCP<Epetra_Vector> SignVols,
-    Teuchos::RCP<Epetra_Vector> lagrMultVecRed, const int offsetID)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> StructMatrix,
+    Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
+    Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
+    const int offsetID)
 {
   if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -364,7 +365,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
 
       // "Newton-ready" residual -> already scaled with -1.0
       elevector1.Scale(lagraval * sign);
-      LINALG::Assemble(*StructRHS, elevector1, lm, lmowner);
+      CORE::LINALG::Assemble(*StructRHS, elevector1, lm, lmowner);
 
       // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
       // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
@@ -373,7 +374,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->Owner());
       elevector3.Scale(sign);
-      LINALG::Assemble(*CurrVols, elevector3, constrlm, constrowner);
+      CORE::LINALG::Assemble(*CurrVols, elevector3, constrlm, constrowner);
     }
   }
 
@@ -385,11 +386,11 @@ void ADAPTER::StructureLung::EvaluateVolCon(
   // partition) and corresponding stiffness matrix contributions
   const Teuchos::RCP<const Epetra_Map>& condmap = GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map>& outflowmap = Interface()->Map(2);
-  Teuchos::RCP<Epetra_Map> finmap = LINALG::MergeMap(*condmap, *outflowmap, false);
+  Teuchos::RCP<Epetra_Map> finmap = CORE::LINALG::MergeMap(*condmap, *outflowmap, false);
   StructMatrix->ApplyDirichlet(*finmap, false);
 
   const Teuchos::RCP<const Epetra_Map>& dispmap = StructMatrix->RangeExtractor().Map(0);
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dispmap, true);
+  Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dispmap, true);
   GetDBCMapExtractor()->InsertCondVector(GetDBCMapExtractor()->ExtractCondVector(zeros), StructRHS);
   Interface()->InsertVector(Interface()->ExtractVector(zeros, 2), 2, StructRHS);
 }

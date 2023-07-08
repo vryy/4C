@@ -159,12 +159,12 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
   const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // ionic flux density
-  LINALG::Matrix<nsd_, 1> n = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> n = VarManager()->GradConc();
   n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of square of ionic flux density w.r.t. temperature
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
       2. * n.Dot(gradtemp) * diffcoeff * concentration * soret / pow(temperature, 2);
 
   // formal, symbolic derivative of square of ionic flux density w.r.t. temperature gradient
-  LINALG::Matrix<nsd_, 1> dn2_dgradT = n;
+  CORE::LINALG::Matrix<nsd_, 1> dn2_dgradT = n;
   dn2_dgradT.Scale(-2. * diffcoeff * concentration * soret / temperature);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -212,16 +212,16 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
   const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // ionic flux density
-  LINALG::Matrix<nsd_, 1> n = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> n = VarManager()->GradConc();
   n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. temperature
-  LINALG::Matrix<nsd_, 1> dn_dT = gradtemp;
+  CORE::LINALG::Matrix<nsd_, 1> dn_dT = gradtemp;
   dn_dT.Scale(diffcoeff * concentration * soret / pow(temperature, 2));
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
 )
 {
   // extract variables and parameters
-  const LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
   const double gradpot2 = gradpot.Dot(gradpot);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -397,17 +397,17 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
   const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
-  const LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // ionic flux density
-  LINALG::Matrix<nsd_, 1> n = gradconc;
+  CORE::LINALG::Matrix<nsd_, 1> n = gradconc;
   n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. concentration
-  LINALG::Matrix<nsd_, 1> dn_dc = gradconc;
+  CORE::LINALG::Matrix<nsd_, 1> dn_dc = gradconc;
   dn_dc.Update(
       -diffcoeffderiv * concentration * soret / temperature - diffcoeff * soret / temperature,
       gradtemp, -diffcoeffderiv);
@@ -419,7 +419,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
   double dn2_dc = 2. * n.Dot(dn_dc);
 
   // derivative of square of ionic flux density w.r.t. concentration gradient
-  LINALG::Matrix<nsd_, 1> dn2_dgradc = n;
+  CORE::LINALG::Matrix<nsd_, 1> dn2_dgradc = n;
   dn2_dgradc.Scale(-2. * diffcoeff);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -465,17 +465,17 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
   const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
   const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-  const LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // ionic flux density
-  LINALG::Matrix<nsd_, 1> n = gradconc;
+  CORE::LINALG::Matrix<nsd_, 1> n = gradconc;
   n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. concentration
-  LINALG::Matrix<nsd_, 1> dn_dc = gradconc;
+  CORE::LINALG::Matrix<nsd_, 1> dn_dc = gradconc;
   dn_dc.Update(
       -diffcoeffderiv * concentration * soret / temperature - diffcoeff * soret / temperature,
       gradtemp, -diffcoeffderiv);

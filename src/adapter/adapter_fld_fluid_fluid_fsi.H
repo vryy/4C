@@ -24,11 +24,11 @@ namespace DRT
   class Condition;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -52,7 +52,7 @@ namespace ADAPTER
    public:
     /// constructor
     FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         bool isale, bool dirichletcond);
 
     /// initialize and prepare maps
@@ -103,7 +103,7 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
     /// get block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     // access to embedded discretization
     const Teuchos::RCP<DRT::Discretization>& Discretization();
@@ -144,7 +144,7 @@ namespace ADAPTER
       return monolithic_approach_;
     }
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives();
 
    private:
     /// setup of map extractor to distinguish between FSI DOF-map and

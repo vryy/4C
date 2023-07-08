@@ -19,7 +19,8 @@
 #include "io.H"
 
 FLD::TimIntPoro::TimIntPoro(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid)
 {
@@ -150,7 +151,7 @@ void FLD::TimIntPoro::UpdateIterIncrementally(
   {
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
-    Teuchos::RCP<Epetra_Vector> aux = LINALG::CreateVector(*(discret_->DofRowMap(0)), true);
+    Teuchos::RCP<Epetra_Vector> aux = CORE::LINALG::CreateVector(*(discret_->DofRowMap(0)), true);
 
     // only one step theta
     // new end-point accelerations

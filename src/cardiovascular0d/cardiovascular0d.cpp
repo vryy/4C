@@ -233,8 +233,9 @@ void UTILS::Cardiovascular0D::Initialize(Teuchos::ParameterList& params,
 |Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat1, Teuchos::RCP<LINALG::SparseOperator> sysmat2,
-    Teuchos::RCP<LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
@@ -244,7 +245,7 @@ void UTILS::Cardiovascular0D::Evaluate(Teuchos::ParameterList& params,
 
 
 void UTILS::Cardiovascular0D::EvaluateDStructDp(
-    Teuchos::ParameterList& params, Teuchos::RCP<LINALG::SparseOperator> sysmat)
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat)
 {
   // get structural time-integrator dependent values
   double sc_strtimint = params.get("scale_timint", 1.0);
@@ -327,9 +328,9 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       int numnode = element->NumNode();
 
       // allocate vector for shape functions and matrix for derivatives
-      LINALG::SerialDenseVector funct(numnode);
-      LINALG::SerialDenseMatrix deriv(2, numnode);
-      LINALG::SerialDenseMatrix xc;
+      CORE::LINALG::SerialDenseVector funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
+      CORE::LINALG::SerialDenseMatrix xc;
 
       xc.LightShape(numnode, 3);
 
@@ -390,13 +391,13 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
         // stuff to get spatial Neumann
         const int numdim = 3;
-        LINALG::SerialDenseMatrix gp_coord(1, numdim);
+        CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
 
         std::vector<double> normal(3);
 
         // note that the length of this normal is the area dA
         // compute dXYZ / drs
-        LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+        CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
         dxyzdrs.Multiply('N', 'N', 1.0, deriv, xc, 0.0);
 
         normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);

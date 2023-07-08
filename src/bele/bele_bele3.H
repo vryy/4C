@@ -206,7 +206,7 @@ namespace DRT
         \param disp  (int)  : displacements
       */
       inline void SpatialConfiguration(
-          LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
+          CORE::LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -219,18 +219,19 @@ namespace DRT
       }
 
       //! Submethod to compute the enclosed volume for volume constraint boundary condition
-      double ComputeConstrVols(const LINALG::SerialDenseMatrix& xscurr,  ///< current configuration
-          const int numnode                                              ///< num nodes
+      double ComputeConstrVols(
+          const CORE::LINALG::SerialDenseMatrix& xscurr,  ///< current configuration
+          const int numnode                               ///< num nodes
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
       //! displacements
-      void ComputeVolDeriv(const LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                    ///< number of nodes
-          const int ndof,                                       ///< number of degrees of freedom
-          double& V,                                            ///< volume
-          Teuchos::RCP<Epetra_SerialDenseVector> Vdiff,         ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2,        ///< second derivative
+      void ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
+          const int numnode,                                          ///< number of nodes
+          const int ndof,                                 ///< number of degrees of freedom
+          double& V,                                      ///< volume
+          Teuchos::RCP<Epetra_SerialDenseVector> Vdiff,   ///< first derivative
+          Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );

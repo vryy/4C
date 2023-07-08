@@ -41,7 +41,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -49,7 +49,7 @@ namespace LINALG
   class MapExtractor;
   class MultiMapExtractor;
   class Preconditioner;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace TIMINT
 {
@@ -101,10 +101,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
@@ -116,7 +116,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 
@@ -217,10 +217,10 @@ namespace ADAPTER
     virtual int Solve() = 0;
 
     //! Access to linear solver
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() = 0;
 
     //@}
 
@@ -240,7 +240,7 @@ namespace ADAPTER
 
     /*! \brief Create System matrix
      *
-     * We allocate the LINALG object just once, the result is an empty LINALG
+     * We allocate the CORE::LINALG object just once, the result is an empty CORE::LINALG
      * object. Evaluate has to be called separately.
      */
     virtual void CreateSystemMatrix(

@@ -59,9 +59,9 @@ namespace SCATRA
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
 
-    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyFluid.");
       return Teuchos::null;
@@ -71,17 +71,17 @@ namespace SCATRA
     void SetupMeshtying() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
-        const int& iteration,  //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
+        const int& iteration,                      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
     ) const;
 
     //! return linear solver for global system of linear equations
-    const LINALG::Solver& Solver() const;
+    const CORE::LINALG::Solver& Solver() const;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check

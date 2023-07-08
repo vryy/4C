@@ -22,7 +22,7 @@
 // forward declarations
 /*==========================================================================*/
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -115,9 +115,9 @@ namespace ART
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     };
 
     //! right-hand side alias the dynamic force residual
@@ -157,7 +157,7 @@ namespace ART
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
     {
       return dbcmaps_;
     }
@@ -170,7 +170,7 @@ namespace ART
     //! arterial network discretization
     Teuchos::RCP<DRT::Discretization> discret_;
     //! linear solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     const Teuchos::ParameterList& params_;
     IO::DiscretizationWriter& output_;
     //! error file handle
@@ -179,16 +179,16 @@ namespace ART
     int myrank_;
 
     /// (standard) system matrix
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
     Teuchos::RCP<Epetra_Vector> rhs_;
 
     /// (scatra) system matrix
-    Teuchos::RCP<LINALG::SparseOperator> scatra_sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_sysmat_;
 
     /// rhs: right hand side vector of scatra
     Teuchos::RCP<Epetra_Vector> scatra_rhs_;

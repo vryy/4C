@@ -15,7 +15,7 @@
 #include "lib_globalproblem.H"
 #include "lib_utils.H"
 #include "lib_utils_parallel.H"
-#include "linalg_utils_sparse_algebra_manipulation.H"  // LINALG::Export
+#include "linalg_utils_sparse_algebra_manipulation.H"  // CORE::LINALG::Export
 #include "linalg_serialdensevector.H"
 #include "discretization_geometry_intersection_service.H"
 #include "discretization_geometry_position_array.H"
@@ -38,7 +38,7 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
-    LINALG::SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -88,7 +88,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
-    LINALG::SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -112,7 +112,7 @@ void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     DRT::UTILS::ExtractMyValues(*scalarfield, myscalarfield, la[nds].lm_);
 
     //    // Extract velocity from local velnp_
-    //    LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
+    //    CORE::LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
     //    for (int inode = 0; inode < numnode; ++inode)
     //    {
     //      for (int idim = 0; idim < nsd; ++idim)
@@ -162,7 +162,7 @@ void IO::GMSH::ScalarElementFieldToGmsh(const Teuchos::RCP<DRT::Discretization> 
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
-    LINALG::SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -210,7 +210,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
-    LINALG::SerialDenseMatrix xyze(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -226,7 +226,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, la[nds].lm_);
 
     // Extract velocity from local velnp_
-    LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
     for (int inode = 0; inode < numnode; ++inode)
     {
       for (int idim = 0; idim < nsd; ++idim)
@@ -265,7 +265,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->DofColMap(nds), 3, true));
-  LINALG::Export(*vectorfield_row, *vectorfield);
+  CORE::LINALG::Export(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -275,7 +275,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
-    LINALG::SerialDenseMatrix xyze(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -321,7 +321,7 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
-    std::map<int, LINALG::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
   // tranform solution vector from DofRowMap to DofColMap
@@ -335,7 +335,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
 
-    LINALG::SerialDenseMatrix xyze(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -361,7 +361,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
     DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
 
     // Extract velocity from local velnp_
-    LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
     for (int inode = 0; inode < numnode; ++inode)
       for (int idim = 0; idim < nsd; ++idim)
         myvectorfield(idim, inode) = extractmyvectorfield(idim + inode * numdofpernode);
@@ -396,7 +396,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     const int numnode = distypeToGmshNumNode(distype);
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
-    LINALG::SerialDenseMatrix xyze(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -414,7 +414,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     if (field == "pressure")
     {
       // Extract scalar from local velnp_
-      LINALG::SerialDenseVector myscalarfield(numnode);
+      CORE::LINALG::SerialDenseVector myscalarfield(numnode);
       for (int inode = 0; inode < numnode; ++inode)
         myscalarfield(inode) = extractmyvectorfield(nsd + inode * (nsd + 1));
 
@@ -436,7 +436,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     else if (field == "velocity")
     {
       // Extract velocity from local velnp_
-      LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
+      CORE::LINALG::SerialDenseMatrix myvectorfield(nsd, numnode);
       for (int inode = 0; inode < numnode; ++inode)
         for (int idim = 0; idim < nsd; ++idim)
           myvectorfield(idim, inode) = extractmyvectorfield(idim + inode * (nsd + 1));
@@ -477,7 +477,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 3, true));
-  LINALG::Export(*vectorfield_row, *vectorfield);
+  CORE::LINALG::Export(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -487,7 +487,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const int numnode = ele->NumNode();
     const int nsd = CORE::DRT::UTILS::getDimension(distype);
 
-    LINALG::SerialDenseMatrix xyze(nsd, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(nsd, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -525,7 +525,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   //         Epetra_MultiVectors
   const Teuchos::RCP<Epetra_Vector> scalarfield =
       Teuchos::rcp(new Epetra_Vector(*discret->NodeColMap(), true));
-  LINALG::Export(*scalarfield_row, *scalarfield);
+  CORE::LINALG::Export(*scalarfield_row, *scalarfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -534,7 +534,7 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = ele->NumNode();
 
-    LINALG::SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     const DRT::Node* const* nodes = ele->Nodes();
     for (int inode = 0; inode < numnode; ++inode)
@@ -561,9 +561,9 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   }
 }
 
-void IO::GMSH::ScalarToStream(const LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
-    const double scalarvalue,                                        ///< scalar value at this point
-    std::ostream& s                                                  ///< stream
+void IO::GMSH::ScalarToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+    const double scalarvalue,  ///< scalar value at this point
+    std::ostream& s            ///< stream
 )
 {
   s.setf(std::ios::scientific, std::ios::floatfield);
@@ -578,9 +578,9 @@ void IO::GMSH::ScalarToStream(const LINALG::Matrix<3, 1>& pointXYZ,  ///< coordi
   s << "\n";
 };
 
-void IO::GMSH::VectorToStream(const LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
-    const LINALG::Matrix<3, 1>& vectorvalue,                         ///< vector at this point
-    std::ostream& s                                                  ///< stream
+void IO::GMSH::VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+    const CORE::LINALG::Matrix<3, 1>& vectorvalue,                         ///< vector at this point
+    std::ostream& s                                                        ///< stream
 )
 {
   s.setf(std::ios::scientific, std::ios::floatfield);
@@ -639,7 +639,7 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
 
 
 void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::Element* ele,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions, std::ostream& s)
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentelepositions, std::ostream& s)
 {
   IO::GMSH::cellWithScalarToStream(
       ele->Shape(), scalar, CORE::GEO::getCurrentNodalPositions(ele, currentelepositions), s);
@@ -647,7 +647,7 @@ void IO::GMSH::elementAtCurrentPositionToStream(const double scalar, const DRT::
 
 
 std::string IO::GMSH::elementAtCurrentPositionToString(const double scalar, const DRT::Element* ele,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions)
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentelepositions)
 {
   std::ostringstream s;
   IO::GMSH::elementAtCurrentPositionToStream(scalar, ele, currentelepositions, s);
@@ -655,9 +655,10 @@ std::string IO::GMSH::elementAtCurrentPositionToString(const double scalar, cons
 }
 
 
-std::string IO::GMSH::text3dToString(const LINALG::Matrix<3, 1>& xyz,  ///< 3d Position of text
-    const std::string& text,                                           ///< text to be printed
-    const int fontsize                                                 ///< font size
+std::string IO::GMSH::text3dToString(
+    const CORE::LINALG::Matrix<3, 1>& xyz,  ///< 3d Position of text
+    const std::string& text,                ///< text to be printed
+    const int fontsize                      ///< font size
 )
 {
   std::ostringstream s;
@@ -696,7 +697,7 @@ std::string IO::GMSH::disToString(
 
 void IO::GMSH::disToStream(const std::string& text, const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, std::ostream& s)
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, std::ostream& s)
 {
   s << "View \" " << text << " Elements \" {\n";
 
@@ -711,7 +712,7 @@ void IO::GMSH::disToStream(const std::string& text, const double scalar,
 
 std::string IO::GMSH::disToString(const std::string& text, const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
   std::ostringstream s;
   disToStream(text, scalar, dis, currentpositions, s);

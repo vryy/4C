@@ -107,7 +107,7 @@ std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
-  Teuchos::RCP<Epetra_Vector> vweights = LINALG::CreateVector(*noderowmap, true);
+  Teuchos::RCP<Epetra_Vector> vweights = CORE::LINALG::CreateVector(*noderowmap, true);
 
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
@@ -130,8 +130,8 @@ std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE
     // evaluate elements to get their evaluation cost
     ele->NodalConnectivity(edgeweigths_ele, nodeweights_ele);
 
-    LINALG::Assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
-    LINALG::Assemble(*vweights, nodeweights_ele, lm, lmrowowner);
+    CORE::LINALG::Assemble(*crs_ge_weights, edgeweigths_ele, lm, lmrowowner, lm);
+    CORE::LINALG::Assemble(*vweights, nodeweights_ele, lm, lmrowowner);
   }
 
   return {vweights, crs_ge_weights};

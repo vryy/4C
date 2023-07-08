@@ -203,7 +203,8 @@ bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x, Epetra_Vect
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac)
+bool STR::IMPLICIT::OneStepTheta::ApplyStiff(
+    const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
 
@@ -224,7 +225,7 @@ bool STR::IMPLICIT::OneStepTheta::ApplyStiff(const Epetra_Vector& x, LINALG::Spa
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::ApplyForceStiff(
-    const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac)
+    const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
   // ---------------------------------------------------------------------------
@@ -254,21 +255,21 @@ bool STR::IMPLICIT::OneStepTheta::AssembleForce(
 void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
-  LINALG::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
   // viscous damping forces at t_{n+1}
-  LINALG::AssembleMyVector(1.0, f, theta_, *fvisconp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, theta_, *fvisconp_ptr_);
 
   // inertial forces at t_{n}
-  LINALG::AssembleMyVector(1.0, f, (1.0 - theta_), *finertian_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, (1.0 - theta_), *finertian_ptr_);
   // inertial forces at t_{n+1}
-  LINALG::AssembleMyVector(1.0, f, (theta_), *finertianp_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, (theta_), *finertianp_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(LINALG::SparseOperator& jac) const
+void STR::IMPLICIT::OneStepTheta::AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptr = GlobalState().ExtractDisplBlock(jac);
   const double& dt = (*GlobalState().GetDeltaTime())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*GlobalState().GetMassMatrix(), false, 1.0 / (theta_ * dt * dt), 1.0);

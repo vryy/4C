@@ -62,7 +62,7 @@ template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
     const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   EvaluateAndAssemblePositionalCoupling(
@@ -78,17 +78,17 @@ template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePositionalCoupling(
     const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
   const std::array<const DRT::Element*, 2> beam_ele = {this->Element1(), this->Element2()};
 
   // Initialize variables for evaluation of the positional coupling terms.
-  std::array<LINALG::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
-  std::array<LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> beam_pos;
-  std::array<LINALG::Matrix<3, 1, scalar_type_pos>, 2> r;
-  LINALG::Matrix<3, 1, scalar_type_pos> force;
-  std::array<LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
+  std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
+  std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> beam_pos;
+  std::array<CORE::LINALG::Matrix<3, 1, scalar_type_pos>, 2> r;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pos> force;
+  std::array<CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
 
   // Evaluate individual positions in the two beams.
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
@@ -166,20 +166,21 @@ template <typename beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRotationalCoupling(
     const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector) const
 {
   const std::array<const DRT::Element*, 2> beam_ele = {this->Element1(), this->Element2()};
 
   // Declare variables for evaluation of the rotational coupling terms.
-  std::array<LINALG::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;
-  std::array<LINALG::Matrix<4, 1, double>, 2> quaternion_ref;
-  std::array<LINALG::Matrix<4, 1, scalar_type_rot>, 2> quaternion;
+  std::array<CORE::LINALG::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;
+  std::array<CORE::LINALG::Matrix<4, 1, double>, 2> quaternion_ref;
+  std::array<CORE::LINALG::Matrix<4, 1, scalar_type_rot>, 2> quaternion;
   std::array<Epetra_SerialDenseVector, 2> L_i = {
       Epetra_SerialDenseVector(3), Epetra_SerialDenseVector(3)};
-  std::array<LINALG::Matrix<3, n_dof_rot_, double>, 2> T_times_I_tilde_full;
-  std::array<LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot>, 2> moment_nodal_load;
-  std::array<std::array<LINALG::Matrix<n_dof_rot_, 3, double>, 2>, 2> d_moment_nodal_load_d_psi;
+  std::array<CORE::LINALG::Matrix<3, n_dof_rot_, double>, 2> T_times_I_tilde_full;
+  std::array<CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot>, 2> moment_nodal_load;
+  std::array<std::array<CORE::LINALG::Matrix<n_dof_rot_, 3, double>, 2>, 2>
+      d_moment_nodal_load_d_psi;
 
   // Evaluate individual rotational fields in the two beams.
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
@@ -198,9 +199,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
         beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.
-    LINALG::Matrix<4, 1, double> quaternion_double;
-    LINALG::Matrix<3, 1, double> psi_double;
-    LINALG::Matrix<3, 1, scalar_type_rot> psi;
+    CORE::LINALG::Matrix<4, 1, double> quaternion_double;
+    CORE::LINALG::Matrix<3, 1, double> psi_double;
+    CORE::LINALG::Matrix<3, 1, scalar_type_rot> psi;
     triad_interpolation_scheme.GetInterpolatedQuaternionAtXi(
         quaternion_double, position_in_parameterspace_[i_beam]);
     CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, psi_double);
@@ -213,11 +214,11 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
         quaternion_ref[i_beam], position_in_parameterspace_[i_beam]);
 
     // Transformation matrix.
-    LINALG::Matrix<3, 3, double> T = CORE::LARGEROTATIONS::Tmatrix(psi_double);
+    CORE::LINALG::Matrix<3, 3, double> T = CORE::LARGEROTATIONS::Tmatrix(psi_double);
 
     // Interpolation matrices.
-    std::vector<LINALG::Matrix<3, 3, double>> I_tilde;
-    LINALG::Matrix<3, n_dof_rot_, double> I_tilde_full;
+    std::vector<CORE::LINALG::Matrix<3, 3, double>> I_tilde;
+    CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde_full;
     CORE::DRT::UTILS::shape_function_1D(
         L_i[i_beam], position_in_parameterspace_[i_beam], DRT::Element::line3);
     triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
@@ -230,11 +231,11 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
   }
 
   // Get the relative rotation vector between the two cross sections.
-  LINALG::Matrix<4, 1, scalar_type_rot> temp_quaternion_1, temp_quaternion_2, quaternion_rel;
-  LINALG::Matrix<3, 1, scalar_type_rot> psi_rel;
-  LINALG::Matrix<4, 1, scalar_type_rot> quaternion_0_inv =
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot> temp_quaternion_1, temp_quaternion_2, quaternion_rel;
+  CORE::LINALG::Matrix<3, 1, scalar_type_rot> psi_rel;
+  CORE::LINALG::Matrix<4, 1, scalar_type_rot> quaternion_0_inv =
       CORE::LARGEROTATIONS::inversequaternion(quaternion[0]);
-  LINALG::Matrix<4, 1, double> quaternion_1_ref_inv =
+  CORE::LINALG::Matrix<4, 1, double> quaternion_1_ref_inv =
       CORE::LARGEROTATIONS::inversequaternion(quaternion_ref[1]);
   CORE::LARGEROTATIONS::quaternionproduct(quaternion_0_inv, quaternion_ref[0], temp_quaternion_1);
   CORE::LARGEROTATIONS::quaternionproduct(
@@ -277,7 +278,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
 
       for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
       {
-        LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> moment_stiff_temp;
+        CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> moment_stiff_temp;
         moment_stiff_temp.Multiply(
             d_moment_nodal_load_d_psi[i_beam][j_beam], T_times_I_tilde_full[j_beam]);
 

@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(LINALG::MapExtractor& mapextractor)
+FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(CORE::LINALG::MapExtractor& mapextractor)
     : myrank_(mapextractor.Map(0)->Comm().MyPID()),
       velpressplitter_(mapextractor),
       leftscale_momentum_(true),
@@ -32,17 +32,17 @@ FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(LINALG::MapExtractor& mapex
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& b)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& b)
 {
   if (myrank_ == 0) std::cout << "Performing scaling of linear system" << std::endl;
 
   // The matrices are modified here. Do we have to revert the change later on?
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrcp =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(matrix);
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> matrcp =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(matrix);
 
   if (matrcp != Teuchos::null)  // yes, we have a block sparse matrix
   {
-    LINALG::BlockSparseMatrixBase& mat = *matrcp;
+    CORE::LINALG::BlockSparseMatrixBase& mat = *matrcp;
 
     Teuchos::RCP<Epetra_CrsMatrix> A00 = mat.Matrix(0, 0).EpetraMatrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A00->RowMap(), false));
@@ -126,8 +126,8 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
 
   else  // we have a normal SparseMatrix
   {
-    Teuchos::RCP<LINALG::SparseMatrix> smat =
-        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(matrix);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> smat =
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(matrix);
     if (smat == Teuchos::null) dserror("Something went wrong.");
 
     srowsum_ = Teuchos::rcp(new Epetra_Vector(smat->RowMap(), false));
@@ -189,14 +189,14 @@ void FLD::UTILS::FluidInfNormScaling::ScaleSystem(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::UTILS::FluidInfNormScaling::UnscaleSolution(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Epetra_Vector& x, Epetra_Vector& b)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> matrcp =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(matrix);
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> matrcp =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(matrix);
 
   if (matrcp != Teuchos::null)  // yes, we have a block sparse matrix
   {
-    LINALG::BlockSparseMatrixBase& mat = *matrcp;
+    CORE::LINALG::BlockSparseMatrixBase& mat = *matrcp;
 
     Teuchos::RCP<Epetra_Vector> sy = velpressplitter_.ExtractVector(x, 0);
 

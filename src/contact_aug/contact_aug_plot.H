@@ -108,8 +108,8 @@ namespace CONTACT
 
       const CONTACT::AUG::Strategy& Strategy() const;
 
-      void GetSupportPoints(
-          enum INPAR::CONTACT::PlotSupportType stype, LINALG::SerialDenseMatrix& support_mat_x);
+      void GetSupportPoints(enum INPAR::CONTACT::PlotSupportType stype,
+          CORE::LINALG::SerialDenseMatrix& support_mat_x);
 
       void ComputeAnglePosition();
 
@@ -271,11 +271,11 @@ namespace CONTACT
 
       std::map<double, int> position_node_id_map_;
 
-      std::vector<LINALG::Matrix<3, 1>> ref_points_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> ref_points_;
 
-      LINALG::SerialDenseMatrix X_;
-      LINALG::SerialDenseMatrix Y_;
-      std::vector<LINALG::SerialDenseMatrix> Z_;
+      CORE::LINALG::SerialDenseMatrix X_;
+      CORE::LINALG::SerialDenseMatrix Y_;
+      std::vector<CORE::LINALG::SerialDenseMatrix> Z_;
     };  // class Plot
 
     template <typename T>

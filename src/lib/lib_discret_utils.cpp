@@ -133,7 +133,7 @@ void DRT::Discretization::AddMultiVectorToParameterList(
     {
       Teuchos::RCP<Epetra_MultiVector> tmp =
           Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, numcol));
-      LINALG::Export(*vec, *tmp);
+      CORE::LINALG::Export(*vec, *tmp);
       p.set(name, tmp);
     }
   }

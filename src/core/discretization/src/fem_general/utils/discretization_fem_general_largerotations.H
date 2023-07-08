@@ -24,7 +24,7 @@ namespace CORE::LARGEROTATIONS
    * @param theta (in) rotation angle vector
    */
   template <typename T>
-  void computespin(LINALG::Matrix<3, 3, T>& S, const LINALG::Matrix<3, 1, T>& theta)
+  void computespin(CORE::LINALG::Matrix<3, 3, T>& S, const CORE::LINALG::Matrix<3, 1, T>& theta)
   {
     // function based on Crisfield Vol. 2, Section 16 (16.8)
     S(0, 0) = 0.0;
@@ -44,10 +44,10 @@ namespace CORE::LARGEROTATIONS
    * @param R (out) rotation matrix
    */
   template <typename T>
-  void quaterniontotriad(const LINALG::Matrix<4, 1, T>& q, LINALG::Matrix<3, 3, T>& R)
+  void quaterniontotriad(const CORE::LINALG::Matrix<4, 1, T>& q, CORE::LINALG::Matrix<3, 3, T>& R)
   {
     // separate storage of vector part of q
-    LINALG::Matrix<3, 1, T> qvec;
+    CORE::LINALG::Matrix<3, 1, T> qvec;
     for (int i = 0; i < 3; i++) qvec(i) = q(i);
 
     // setting R to third summand of equation (16.70)
@@ -72,7 +72,8 @@ namespace CORE::LARGEROTATIONS
    * @param q (out) quaternion
    */
   template <typename T>
-  void angletoquaternion(const LINALG::Matrix<3, 1, T>& theta, LINALG::Matrix<4, 1, T>& q)
+  void angletoquaternion(
+      const CORE::LINALG::Matrix<3, 1, T>& theta, CORE::LINALG::Matrix<4, 1, T>& q)
   {
     // absolute value of rotation angle theta
     const T abs_theta = CORE::FADUTILS::VectorNorm(theta);
@@ -106,10 +107,11 @@ namespace CORE::LARGEROTATIONS
    * @param triad (out) triad
    */
   template <typename T>
-  void angletotriad(const LINALG::Matrix<3, 1, T>& theta, LINALG::Matrix<3, 3, T>& triad)
+  void angletotriad(
+      const CORE::LINALG::Matrix<3, 1, T>& theta, CORE::LINALG::Matrix<3, 3, T>& triad)
   {
     triad.Clear();
-    LINALG::Matrix<4, 1, T> quaternion(true);
+    CORE::LINALG::Matrix<4, 1, T> quaternion(true);
     CORE::LARGEROTATIONS::angletoquaternion(theta, quaternion);
     CORE::LARGEROTATIONS::quaterniontotriad(quaternion, triad);
   }
@@ -127,7 +129,8 @@ namespace CORE::LARGEROTATIONS
    * @param theta (out) rotatin angle
    */
   template <typename T>
-  void quaterniontoangle(const LINALG::Matrix<4, 1, T>& q, LINALG::Matrix<3, 1, T>& theta)
+  void quaterniontoangle(
+      const CORE::LINALG::Matrix<4, 1, T>& q, CORE::LINALG::Matrix<3, 1, T>& theta)
   {
     // if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed
     // by
@@ -140,7 +143,7 @@ namespace CORE::LARGEROTATIONS
     else
     {
       // otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-      LINALG::Matrix<3, 1, T> omega;
+      CORE::LINALG::Matrix<3, 1, T> omega;
       for (int i = 0; i < 3; i++)
       {
         omega(i) = q(i) * 2 / q(3);
@@ -174,7 +177,8 @@ namespace CORE::LARGEROTATIONS
    * @param omega (out) rodrigures angles
    */
   template <typename T>
-  void quaterniontorodrigues(const LINALG::Matrix<4, 1, T>& q, LINALG::Matrix<3, 1, T>& omega)
+  void quaterniontorodrigues(
+      const CORE::LINALG::Matrix<4, 1, T>& q, CORE::LINALG::Matrix<3, 1, T>& omega)
   {
     /* the Rodrigues parameters are defined only for angles whose absolute valued is smaller than
      * PI, i.e. for which the fourth component of the quaternion is unequal zero; if this is not
@@ -197,7 +201,7 @@ namespace CORE::LARGEROTATIONS
    * @param q (out) quaternion
    */
   template <typename T>
-  void triadtoquaternion(const LINALG::Matrix<3, 3, T>& R, LINALG::Matrix<4, 1, T>& q)
+  void triadtoquaternion(const CORE::LINALG::Matrix<3, 3, T>& R, CORE::LINALG::Matrix<4, 1, T>& q)
   {
     T trace = R(0, 0) + R(1, 1) + R(2, 2);
 
@@ -266,13 +270,13 @@ namespace CORE::LARGEROTATIONS
    * @return inversed quaternion
    */
   template <typename T>
-  LINALG::Matrix<4, 1, T> inversequaternion(const LINALG::Matrix<4, 1, T>& q)
+  CORE::LINALG::Matrix<4, 1, T> inversequaternion(const CORE::LINALG::Matrix<4, 1, T>& q)
   {
     // square norm ||q||^2 of quaternion q
     const T qnormsq = CORE::FADUTILS::VectorNorm(q);
 
     // declaration of variable for inverse quaternion
-    LINALG::Matrix<4, 1, T> qinv;
+    CORE::LINALG::Matrix<4, 1, T> qinv;
 
     // inverse quaternion q^(-1) = [-q0, -q1, -q2, q3] / ||q||^2;
     for (int i = 0; i < 3; i++) qinv(i) = -q(i) / qnormsq;
@@ -289,9 +293,9 @@ namespace CORE::LARGEROTATIONS
    * @return transformation matrix
    */
   template <typename T>
-  LINALG::Matrix<3, 3, T> Tmatrix(LINALG::Matrix<3, 1, T> theta)
+  CORE::LINALG::Matrix<3, 3, T> Tmatrix(CORE::LINALG::Matrix<3, 1, T> theta)
   {
-    LINALG::Matrix<3, 3, T> result(true);
+    CORE::LINALG::Matrix<3, 3, T> result(true);
     const T theta_abs = CORE::FADUTILS::VectorNorm(theta);
 
     // in case of theta_abs == 0 the following computation has problems with singularities
@@ -326,9 +330,9 @@ namespace CORE::LARGEROTATIONS
    * @return inverse of transformation matrix
    */
   template <typename T>
-  LINALG::Matrix<3, 3, T> Tinvmatrix(LINALG::Matrix<3, 1, T> theta)
+  CORE::LINALG::Matrix<3, 3, T> Tinvmatrix(CORE::LINALG::Matrix<3, 1, T> theta)
   {
-    LINALG::Matrix<3, 3, T> result(true);
+    CORE::LINALG::Matrix<3, 3, T> result(true);
     T theta_abs =
         CORE::FADUTILS::sqrt<T>(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2));
 
@@ -367,11 +371,11 @@ namespace CORE::LARGEROTATIONS
    * page 152 of Jelenic 1999
    */
   template <typename T>
-  void computedTinvdx(const LINALG::Matrix<3, 1, T>& Psil, const LINALG::Matrix<3, 1, T>& Psilprime,
-      LINALG::Matrix<3, 3, T>& dTinvdx)
+  void computedTinvdx(const CORE::LINALG::Matrix<3, 1, T>& Psil,
+      const CORE::LINALG::Matrix<3, 1, T>& Psilprime, CORE::LINALG::Matrix<3, 3, T>& dTinvdx)
   {
     // auxiliary matrix for storing intermediate results
-    LINALG::Matrix<3, 3, T> auxmatrix;
+    CORE::LINALG::Matrix<3, 3, T> auxmatrix;
 
     // norm of \Psi^l:
     T normPsil = CORE::FADUTILS::sqrt<T>(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2));
@@ -390,8 +394,8 @@ namespace CORE::LARGEROTATIONS
       for (int i = 0; i < 3; i++) scalarproductPsilPsilprime += Psil(i) * Psilprime(i);
 
       // spin matrices of Psil and Psilprime
-      LINALG::Matrix<3, 3, T> spinPsil;
-      LINALG::Matrix<3, 3, T> spinPsilprime;
+      CORE::LINALG::Matrix<3, 3, T> spinPsil;
+      CORE::LINALG::Matrix<3, 3, T> spinPsilprime;
       computespin(spinPsil, Psil);
       computespin(spinPsilprime, Psilprime);
 
@@ -432,8 +436,8 @@ namespace CORE::LARGEROTATIONS
 
   //! Rotate an arbitrary triad around its first base vector (tangent)
   template <typename T>
-  void RotateTriad(
-      const LINALG::Matrix<3, 3, T>& triad, const T& alpha, LINALG::Matrix<3, 3, T>& triad_rot)
+  void RotateTriad(const CORE::LINALG::Matrix<3, 3, T>& triad, const T& alpha,
+      CORE::LINALG::Matrix<3, 3, T>& triad_rot)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -448,8 +452,8 @@ namespace CORE::LARGEROTATIONS
   //! Calculate the SR mapping for a given reference system triad_ref and a given tangent vector
   //! r_s
   template <typename T>
-  void CalculateSRTriads(const LINALG::Matrix<3, 1, T>& r_s,
-      const LINALG::Matrix<3, 3, T>& triad_ref, LINALG::Matrix<3, 3, T>& triad)
+  void CalculateSRTriads(const CORE::LINALG::Matrix<3, 1, T>& r_s,
+      const CORE::LINALG::Matrix<3, 3, T>& triad_ref, CORE::LINALG::Matrix<3, 3, T>& triad)
   {
     // In this calculation, r_s does not necessarily have to be a unit vector.
     T temp_scalar1 = 0.0;
@@ -493,11 +497,11 @@ namespace CORE::LARGEROTATIONS
   //! compute the relative angle theta between triad_ref and triad so that exp(theta) =
   //! triad_ref^T*triad -> inversion of the right translation triad=triad_ref*exp(theta)
   template <typename T>
-  void triadtoangleright(LINALG::Matrix<3, 1, T>& theta, const LINALG::Matrix<3, 3, T>& triad_ref,
-      const LINALG::Matrix<3, 3, T>& triad)
+  void triadtoangleright(CORE::LINALG::Matrix<3, 1, T>& theta,
+      const CORE::LINALG::Matrix<3, 3, T>& triad_ref, const CORE::LINALG::Matrix<3, 3, T>& triad)
   {
-    LINALG::Matrix<3, 3, T> rotation_matrix;
-    LINALG::Matrix<4, 1, T> quaternion;
+    CORE::LINALG::Matrix<3, 3, T> rotation_matrix;
+    CORE::LINALG::Matrix<4, 1, T> quaternion;
 
     rotation_matrix.Clear();
     quaternion.Clear();
@@ -510,11 +514,11 @@ namespace CORE::LARGEROTATIONS
   //! compute the relative angle theta between triad_ref and triad so that exp(theta) =
   //! triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
   template <typename T>
-  void triadtoangleleft(LINALG::Matrix<3, 1, T>& theta, const LINALG::Matrix<3, 3, T>& triad_ref,
-      const LINALG::Matrix<3, 3, T>& triad)
+  void triadtoangleleft(CORE::LINALG::Matrix<3, 1, T>& theta,
+      const CORE::LINALG::Matrix<3, 3, T>& triad_ref, const CORE::LINALG::Matrix<3, 3, T>& triad)
   {
-    LINALG::Matrix<3, 3, T> rotation_matrix;
-    LINALG::Matrix<4, 1, T> quaternion;
+    CORE::LINALG::Matrix<3, 3, T> rotation_matrix;
+    CORE::LINALG::Matrix<4, 1, T> quaternion;
 
     rotation_matrix.Clear();
     quaternion.Clear();

@@ -156,7 +156,7 @@ namespace STR
        *                                + \frac{\gamma}{\beta \Delta t} \boldsymbol{C}
        *                                + \boldsymbol{K}_{T}
        *  \f] */
-      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme for Lie group extensions:

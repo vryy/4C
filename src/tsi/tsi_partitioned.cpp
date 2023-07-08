@@ -451,7 +451,7 @@ void TSI::Partitioned::OuterIterationLoop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+          CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->Dispn()), 0.0);
@@ -621,7 +621,7 @@ void TSI::Partitioned::OuterIterationLoop()
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp =
-          LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+          CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
       if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->Dispn()), 0.0);
@@ -747,8 +747,8 @@ void TSI::Partitioned::OuterIterationLoop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-            delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            del_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }
@@ -974,8 +974,8 @@ void TSI::Partitioned::OuterIterationLoop()
           // difference of last two solutions
           if (del_ == Teuchos::null)  // first iteration, itnum==1
           {
-            del_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
-            delhist_ = LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            del_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
+            delhist_ = CORE::LINALG::CreateVector(*(ThermoField()->DofRowMap(0)), true);
             del_->PutScalar(1.0e20);
             delhist_->PutScalar(0.0);
           }

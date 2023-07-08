@@ -27,7 +27,7 @@ ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-    Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());

@@ -43,11 +43,11 @@ namespace MAT
   class MatList;
   class Cnst_1d_art;
 }  // namespace MAT
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace POROMULTIPHASESCATRA
 {
   class PoroMultiPhaseScatraArteryCouplingPairBase
@@ -83,17 +83,18 @@ namespace POROMULTIPHASESCATRA
      *
      * @returns integral of diameter of the segment
      */
-    virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22, LINALG::SerialDenseMatrix* D_ele,
-        LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele,
+    virtual double Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22, CORE::LINALG::SerialDenseMatrix* D_ele,
+        CORE::LINALG::SerialDenseMatrix* M_ele, CORE::LINALG::SerialDenseVector* Kappa_ele,
         const std::vector<double>& segmentlengths) = 0;
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
     virtual void EvaluateAdditionalLinearizationofIntegratedDiam(
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12) = 0;
+        CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12) = 0;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
@@ -201,16 +202,18 @@ namespace POROMULTIPHASESCATRA
      *
      * @returns integral of diameter of the segment
      */
-    double Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
-        LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
-        LINALG::SerialDenseVector* Kappa_ele, const std::vector<double>& segmentlengths) override;
+    double Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22, CORE::LINALG::SerialDenseMatrix* D_ele,
+        CORE::LINALG::SerialDenseMatrix* M_ele, CORE::LINALG::SerialDenseVector* Kappa_ele,
+        const std::vector<double>& segmentlengths) override;
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
     void EvaluateAdditionalLinearizationofIntegratedDiam(
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12) override;
+        CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12) override;
 
     //! beginning and end of integration segment
     double EtaA() const override { return eta_a_; }
@@ -284,7 +287,8 @@ namespace POROMULTIPHASESCATRA
 
     //! project a Gauss point on 1D element into 2D/3D element
     template <typename T>
-    void Projection(LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi, bool& projection_valid);
+    void Projection(
+        CORE::LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi, bool& projection_valid);
 
     //! Check for duplicate projections
     bool ProjectionNotYetFound(const std::vector<double>& intersections, const double& eta);
@@ -295,32 +299,34 @@ namespace POROMULTIPHASESCATRA
 
     //! get 1D shapefunctions at eta
     template <typename T>
-    void Get1DShapeFunctions(LINALG::Matrix<1, numnodesart_, T>& N1,
-        LINALG::Matrix<1, numnodesart_, T>& N1_eta, const T& eta);
+    void Get1DShapeFunctions(CORE::LINALG::Matrix<1, numnodesart_, T>& N1,
+        CORE::LINALG::Matrix<1, numnodesart_, T>& N1_eta, const T& eta);
 
     //! get 2D/3D shapefunctions at xi1, xi2 (, xi3)
     template <typename T>
-    void Get2D3DShapeFunctions(LINALG::Matrix<1, numnodescont_, T>& N2,
-        LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi);
+    void Get2D3DShapeFunctions(CORE::LINALG::Matrix<1, numnodescont_, T>& N2,
+        CORE::LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi, const std::vector<T>& xi);
 
     //! compute artery coordinates and derivatives in reference configuration
     template <typename T>
-    void ComputeArteryCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& r1,
-        LINALG::Matrix<numdim_, 1, T>& r1_eta, const LINALG::Matrix<1, numnodesart_, T>& N1,
-        const LINALG::Matrix<1, numnodesart_, T>& N1_eta);
+    void ComputeArteryCoordsAndDerivsRef(CORE::LINALG::Matrix<numdim_, 1, T>& r1,
+        CORE::LINALG::Matrix<numdim_, 1, T>& r1_eta,
+        const CORE::LINALG::Matrix<1, numnodesart_, T>& N1,
+        const CORE::LINALG::Matrix<1, numnodesart_, T>& N1_eta);
 
     //! compute 2D/3D coordinates and derivatives in reference configuration
     template <typename T>
-    void Compute2D3DCoordsAndDerivsRef(LINALG::Matrix<numdim_, 1, T>& x2,
-        LINALG::Matrix<numdim_, numdim_, T>& x2_xi, const LINALG::Matrix<1, numnodescont_, T>& N2,
-        const LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi);
+    void Compute2D3DCoordsAndDerivsRef(CORE::LINALG::Matrix<numdim_, 1, T>& x2,
+        CORE::LINALG::Matrix<numdim_, numdim_, T>& x2_xi,
+        const CORE::LINALG::Matrix<1, numnodescont_, T>& N2,
+        const CORE::LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi);
 
     //! evaluate the function coupling (return integral of diameter of the segment)
     void EvaluateFunctionCoupling(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-        LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
+        CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
+        CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+        CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22,
         double& integrated_diam);
 
     /**
@@ -334,77 +340,78 @@ namespace POROMULTIPHASESCATRA
      */
     void EvaluatedNdsSolidVel(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-        LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB);
+        CORE::LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB);
 
     //! evaluate stiffness for GPTS case
-    void EvaluateGPTSStiff(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
-        const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const double& pp);
+    void EvaluateGPTSStiff(const double& w_gp, const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const double& pp);
 
     //! evaluate stiffness for NTP case
-    void EvaluateNTPStiff(const LINALG::Matrix<1, numnodesart_>& N1,
-        const LINALG::Matrix<1, numnodescont_>& N2, const double& pp);
+    void EvaluateNTPStiff(const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& pp);
 
     //! evaluate mortar coupling matrices D and M
-    void EvaluateDMKappa(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
-        const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi);
+    void EvaluateDMKappa(const double& w_gp, const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi);
 
     //! evalute GPTS
     void EvaluateGPTS(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
-        const std::vector<double>& segmentlengths, LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22);
+        const std::vector<double>& segmentlengths, CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22);
 
     //! evalute NTP
     void EvaluateNTP(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
-        LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
+        CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
+        CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+        CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22);
 
     //! evaluate mortar coupling matrices D and M
     void EvaluateDMKappa(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
-        const std::vector<double>& segmentlengths, LINALG::SerialDenseMatrix* D_ele,
-        LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele);
+        const std::vector<double>& segmentlengths, CORE::LINALG::SerialDenseMatrix* D_ele,
+        CORE::LINALG::SerialDenseMatrix* M_ele, CORE::LINALG::SerialDenseVector* Kappa_ele);
 
     //! evaluate the function coupling
-    void EvaluateFunctionCoupling(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
-        const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi,
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2,
-        LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
-        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22,
+    void EvaluateFunctionCoupling(const double& w_gp,
+        const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi,
+        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
+        CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
+        CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22,
         double& integrated_diam);
 
     //! evaluate the diameter function and derivative (for couplingtype porofluid)
     void EvaluateDiamFunctionAndDeriv(const double artpressnpAtGP, const double& w_gp,
-        const LINALG::Matrix<1, numnodesart_>& N1, const LINALG::Matrix<1, numnodescont_>& N2,
-        const double& jacobi);
+        const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi);
 
     //! integrate in deformed configuration from eta_A to eta_s
     FAD IntegrateLengthToEtaS(const FAD& eta_s);
 
     //! get values of artery at GP
-    void GetArteryValuesAtGP(const LINALG::Matrix<1, numnodesart_>& N1, double& artpress,
+    void GetArteryValuesAtGP(const CORE::LINALG::Matrix<1, numnodesart_>& N1, double& artpress,
         std::vector<double>& artscalar);
 
     //! get scalar values of continuous discretization at GP
     void GetContScalarValuesAtGP(
-        const LINALG::Matrix<1, numnodescont_>& N2, std::vector<double>& contscalarnp);
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, std::vector<double>& contscalarnp);
 
     //! assemble the function coupling into stiffness matrix (artery-part)
     void AssembleFunctionCouplingIntoForceStiffArt(const int& i_art, const double& w_gp,
-        const LINALG::Matrix<1, numnodesart_>& N1, const LINALG::Matrix<1, numnodescont_>& N2,
-        const double& jacobi, const int& scale, const double& functval,
-        const std::vector<double>& artderivs, const std::vector<double>& contderivs,
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12);
+        const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const int& scale,
+        const double& functval, const std::vector<double>& artderivs,
+        const std::vector<double>& contderivs, CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12);
 
     //! assemble the function coupling into stiffness matrix (2D/3D-part)
     void AssembleFunctionCouplingIntoForceStiffCont(const std::vector<int>& assembleInto,
-        const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
-        const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const int& scale,
+        const double& w_gp, const CORE::LINALG::Matrix<1, numnodesart_>& N1,
+        const CORE::LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi, const int& scale,
         const double& timefacrhs_cont, const double& functval, const std::vector<double>& artderivs,
-        const std::vector<double>& contderivs, LINALG::SerialDenseVector& forcevec2,
-        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22);
+        const std::vector<double>& contderivs, CORE::LINALG::SerialDenseVector& forcevec2,
+        CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     //! evaluate function and its derivative
 
@@ -438,28 +445,30 @@ namespace POROMULTIPHASESCATRA
         const std::vector<double>& functderivs);
 
     //! evaluate force for GPTS  or NTP case
-    void EvaluateGPTSNTPForce(LINALG::SerialDenseVector& forcevec1,
-        LINALG::SerialDenseVector& forcevec2, const LINALG::SerialDenseMatrix& stiffmat11,
-        const LINALG::SerialDenseMatrix& stiffmat12, const LINALG::SerialDenseMatrix& stiffmat21,
-        const LINALG::SerialDenseMatrix& stiffmat22);
+    void EvaluateGPTSNTPForce(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2,
+        const CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        const CORE::LINALG::SerialDenseMatrix& stiffmat12,
+        const CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        const CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     //! update the stiffness for GPTS or NTP
-    void UpdateGPTSNTPStiff(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    void UpdateGPTSNTPStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     /**
      * \brief coupling to additional porous network is only possible if we also have an
      * element with a valid volume fraction pressure, i.e., if we also have a smeared representation
      * of the neovasculature at this point if not ---> corresponding matrices are set to zero
      */
-    void CheckValidVolumeFractionPressureCoupling(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22);
+    void CheckValidVolumeFractionPressureCoupling(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22);
 
     //! update the D, M and Kappa for MP
-    void UpdateDMKappa(LINALG::SerialDenseMatrix& D_ele, LINALG::SerialDenseMatrix& M_ele,
-        LINALG::SerialDenseVector& Kappa_ele);
+    void UpdateDMKappa(CORE::LINALG::SerialDenseMatrix& D_ele,
+        CORE::LINALG::SerialDenseMatrix& M_ele, CORE::LINALG::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
     void FillFunctionVector(std::vector<DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
@@ -515,14 +524,14 @@ namespace POROMULTIPHASESCATRA
     const DRT::Element* element2_;
 
     //! reference nodal positions element 1 (1D artery)
-    LINALG::Matrix<numdim_ * numnodesart_, 1> ele1posref_;
+    CORE::LINALG::Matrix<numdim_ * numnodesart_, 1> ele1posref_;
     //! reference nodal positions element 2 (2D/3D continuous element)
-    LINALG::Matrix<numdim_, numnodescont_> ele2posref_;
+    CORE::LINALG::Matrix<numdim_, numnodescont_> ele2posref_;
 
     //! current position of element 2
-    LINALG::Matrix<numdim_, numnodescont_> ele2pos_;
+    CORE::LINALG::Matrix<numdim_, numnodescont_> ele2pos_;
     //! current velocity of element 2
-    LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
+    CORE::LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
     //! reference diameter of the artery element (constant across element)
     double arterydiamref_;
@@ -577,7 +586,7 @@ namespace POROMULTIPHASESCATRA
     double arteryelelength_;
 
     //! stores initial direction of artery element
-    LINALG::Matrix<numdim_, 1> lambda0_;
+    CORE::LINALG::Matrix<numdim_, 1> lambda0_;
 
     //! Jacobian determinant for integration segment = L/2.0*(eta_a - eta_b)/2.0
     double jacobi_;
@@ -599,13 +608,13 @@ namespace POROMULTIPHASESCATRA
     std::vector<double> artelephinp_;
 
     //! nodal artery pressure values
-    LINALG::Matrix<numnodesart_, 1> earterypressurenp_;
+    CORE::LINALG::Matrix<numnodesart_, 1> earterypressurenp_;
 
     //! nodal artery-scalar values
-    std::vector<LINALG::Matrix<numnodesart_, 1>> eartscalarnp_;
+    std::vector<CORE::LINALG::Matrix<numnodesart_, 1>> eartscalarnp_;
 
     //! nodal continuous-scalar values for scatra coupling
-    std::vector<LINALG::Matrix<numnodescont_, 1>> econtscalarnp_;
+    std::vector<CORE::LINALG::Matrix<numnodescont_, 1>> econtscalarnp_;
 
     //! penalty parameter
     double pp_;
@@ -626,28 +635,28 @@ namespace POROMULTIPHASESCATRA
     std::string coupling_element_type_;
 
     //! GPTS/NTP stiffness matrix (artery-artery contribution)
-    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat11_;
+    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat11_;
     //! GPTS/NTP stiffness matrix (artery-cont contribution)
-    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat12_;
+    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat12_;
     //! GPTS/NTP stiffness matrix (cont-artery contribution)
-    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat21_;
+    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat21_;
     //! GPTS/NTP stiffness matrix (cont-cont contribution)
-    LINALG::SerialDenseMatrix GPTS_NTP_stiffmat22_;
+    CORE::LINALG::SerialDenseMatrix GPTS_NTP_stiffmat22_;
 
     //! (varying) diameter stiffness matrix (artery-artery contribution)
-    LINALG::SerialDenseMatrix diam_stiffmat11_;
+    CORE::LINALG::SerialDenseMatrix diam_stiffmat11_;
     //! (varying) diameter stiffness matrix (artery-cont contribution)
-    LINALG::SerialDenseMatrix diam_stiffmat12_;
+    CORE::LINALG::SerialDenseMatrix diam_stiffmat12_;
 
     //! mortar coupling matrix D
-    LINALG::SerialDenseMatrix D_;
+    CORE::LINALG::SerialDenseMatrix D_;
     //! mortar coupling matrix M
-    LINALG::SerialDenseMatrix M_;
+    CORE::LINALG::SerialDenseMatrix M_;
     //! mortar coupling vector kappa
-    LINALG::SerialDenseVector Kappa_;
+    CORE::LINALG::SerialDenseVector Kappa_;
 
     //! (dX/dxi)^-1
-    std::vector<LINALG::Matrix<numdim_, numdim_>> invJ_;
+    std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
 
     //! phase manager of the fluid
     Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface> phasemanager_;

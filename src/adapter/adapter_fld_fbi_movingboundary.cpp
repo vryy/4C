@@ -133,7 +133,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIFluidMB::SetCouplingContributions(
-    Teuchos::RCP<const LINALG::SparseOperator> matrix)
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)
       ->SetCouplingContributions(matrix);

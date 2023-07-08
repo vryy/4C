@@ -373,7 +373,7 @@ void SCATRA::LevelSetAlgorithm::CalcNodeBasedReinitVel()
   {
     // define vector for velocity component
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> velcomp = LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> velcomp = CORE::LINALG::CreateVector(*dofrowmap, true);
     velcomp->PutScalar(0.0);
 
     if (lsdim_ == INPAR::SCATRA::ls_3D or (lsdim_ == INPAR::SCATRA::ls_2Dx and idim != 0) or
@@ -701,7 +701,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     if (doflid < 0) dserror("Proc %d: Cannot find dof gid=%d in Epetra_Vector", myrank_, dofgid);
 
     // get physical coordinates of this node
-    LINALG::Matrix<3, 1> nodecoord(false);
+    CORE::LINALG::Matrix<3, 1> nodecoord(false);
     nodecoord(0) = lnode->X()[0];
     nodecoord(1) = lnode->X()[1];
     nodecoord(2) = lnode->X()[2];
@@ -724,7 +724,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         for (int inode = 0; inode < numnodesperele; ++inode)
         {
           const int nodecoordbase = coordbase + 3 * inode;
-          LINALG::Matrix<3, 1> delta(false);
+          CORE::LINALG::Matrix<3, 1> delta(false);
           delta(0) = allnodecoords[nodecoordbase + 0];
           delta(1) = allnodecoords[nodecoordbase + 1];
           delta(2) = allnodecoords[nodecoordbase + 2];
@@ -825,7 +825,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
         {
           double mindist = 1.0e19;
-          LINALG::Matrix<3, 1> tmpcoord(nodecoord);
+          CORE::LINALG::Matrix<3, 1> tmpcoord(nodecoord);
 
           // determine which pbcs have to be applied
           //
@@ -880,10 +880,10 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             }
 
             // get coordinates of vertices defining flame front patch
-            const LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
+            const CORE::LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
 
             // compute normal vector to flame front patch
-            LINALG::Matrix<3, 1> normal(true);
+            CORE::LINALG::Matrix<3, 1> normal(true);
             ComputeNormalVectorToInterface(patch, patchcoord, normal);
 
             //-----------------------------------------
@@ -1001,14 +1001,14 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
  | find a facing flame front patch by projection of node into boundary cell space        |
  |                                                                           henke 12/09 |
  *----------------------------------------------------------------------  -------------- */
-void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const LINALG::Matrix<3, 1>& node,
-    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
-    const LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist)
+void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG::Matrix<3, 1>& node,
+    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::LINALG::Matrix<3, 1>& normal, bool& facenode, double& patchdist)
 {
   // indicator
   facenode = false;
 
-  static LINALG::Matrix<2, 1> eta(true);
+  static CORE::LINALG::Matrix<2, 1> eta(true);
   double alpha = 0.0;
 
   //-------------------------------------------------------
@@ -1104,8 +1104,8 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const LINALG::Matri
 /*---------------------------------------------------------------------------------------*
  | compute distance to edge of patch                                         henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>& node,
-    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const CORE::LINALG::Matrix<3, 1>& node,
+    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     double& edgedist)
 {
   // set temporary edgedist to large value
@@ -1115,13 +1115,13 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>
   const size_t numvertices = patchcoord.N();
 
   // current vertex of the patch (first vertex)
-  static LINALG::Matrix<3, 1> vertex1(true);
+  static CORE::LINALG::Matrix<3, 1> vertex1(true);
   // current next vertex of the patch (second vertex)
-  static LINALG::Matrix<3, 1> vertex2(true);
+  static CORE::LINALG::Matrix<3, 1> vertex2(true);
   // distance vector from first vertex to node
-  static LINALG::Matrix<3, 1> vertex1tonode(true);
+  static CORE::LINALG::Matrix<3, 1> vertex1tonode(true);
   // distance vector from first vertex to second vertex
-  static LINALG::Matrix<3, 1> vertex1tovertex2(true);
+  static CORE::LINALG::Matrix<3, 1> vertex1tovertex2(true);
 
   // compute distance to all vertices of patch
   for (size_t ivert = 0; ivert < numvertices; ++ivert)
@@ -1158,9 +1158,9 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>
     if ((lotfusspointdist >= 0.0) and
         (lotfusspointdist <= normvertex1tovertex2))  // lotfusspoint on edge
     {
-      LINALG::Matrix<3, 1> lotfusspoint(true);
+      CORE::LINALG::Matrix<3, 1> lotfusspoint(true);
       lotfusspoint.Update(1.0, vertex1, lotfusspointdist, vertex1tovertex2);
-      LINALG::Matrix<3, 1> nodetolotfusspoint(true);
+      CORE::LINALG::Matrix<3, 1> nodetolotfusspoint(true);
       nodetolotfusspoint.Update(1.0, lotfusspoint, -1.0, node);
 
       // determine length of vector from node to lot fuss point
@@ -1176,8 +1176,8 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const LINALG::Matrix<3, 1>
 /*---------------------------------------------- ----------------------------------------*
  | compute distance to vertex of patch                                       henke 08/09 |
  *-------------------------------------------------------------------------------------- */
-void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const LINALG::Matrix<3, 1>& node,
-    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
+void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const CORE::LINALG::Matrix<3, 1>& node,
+    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
     double& vertexdist)
 {
   // set temporary vertexdist to large value
@@ -1187,9 +1187,9 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const LINALG::Matrix<3, 1
   const size_t numvertices = patchcoord.N();
 
   // current vertex of the patch
-  static LINALG::Matrix<3, 1> vertex(true);
+  static CORE::LINALG::Matrix<3, 1> vertex(true);
   // distance vector from patch to node
-  static LINALG::Matrix<3, 1> dist(true);
+  static CORE::LINALG::Matrix<3, 1> dist(true);
 
   // compute distance to all vertices of patch
   for (size_t ivert = 0; ivert < numvertices; ++ivert)
@@ -1215,23 +1215,23 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const LINALG::Matrix<3, 1
  | compute normal vector to interface patch                                henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
 void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
-    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
-    LINALG::Matrix<3, 1>& normal)
+    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
+    CORE::LINALG::Matrix<3, 1>& normal)
 {
   // first point of flame front patch
-  LINALG::Matrix<3, 1> point1;
+  CORE::LINALG::Matrix<3, 1> point1;
   point1(0) = patchcoord(0, 0);
   point1(1) = patchcoord(1, 0);
   point1(2) = patchcoord(2, 0);
 
   // second point of flame front patch
-  LINALG::Matrix<3, 1> point2;
+  CORE::LINALG::Matrix<3, 1> point2;
   point2(0) = patchcoord(0, 1);
   point2(1) = patchcoord(1, 1);
   point2(2) = patchcoord(2, 1);
 
   // first edge of flame front patch
-  LINALG::Matrix<3, 1> edge1;
+  CORE::LINALG::Matrix<3, 1> edge1;
   edge1.Update(1.0, point2, -1.0, point1);
 
   // third point of flame front patch
@@ -1240,7 +1240,7 @@ void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
   point2(2) = patchcoord(2, 2);
 
   // second edge of flame front patch (if patch is triangle; if not: edge 2 is secant of polygon)
-  LINALG::Matrix<3, 1> edge2;
+  CORE::LINALG::Matrix<3, 1> edge2;
   edge2.Update(1.0, point2, -1.0, point1);
 
   // compute normal vector of patch (cross product: edge1 x edge2)
@@ -1266,9 +1266,9 @@ void SCATRA::LevelSetAlgorithm::ComputeNormalVectorToInterface(
  | project node into the boundary cell space                               henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
 template <DRT::Element::DiscretizationType DISTYPE>
-bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& node,
-    const CORE::GEO::BoundaryIntCell& patch, const LINALG::SerialDenseMatrix& patchcoord,
-    const LINALG::Matrix<3, 1>& normal, LINALG::Matrix<2, 1>& eta, double& alpha)
+bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3, 1>& node,
+    const CORE::GEO::BoundaryIntCell& patch, const CORE::LINALG::SerialDenseMatrix& patchcoord,
+    const CORE::LINALG::Matrix<3, 1>& normal, CORE::LINALG::Matrix<2, 1>& eta, double& alpha)
 {
   // indicator for convergence of Newton-Raphson scheme
   bool converged = false;
@@ -1280,12 +1280,12 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by
   // CellNodalPosXYZ()
-  LINALG::Matrix<nsd, numvertices> patchcoordfix(patchcoord.A(), true);
+  CORE::LINALG::Matrix<nsd, numvertices> patchcoordfix(patchcoord.A(), true);
 
-  static LINALG::Matrix<numvertices, 1> funct(true);
-  static LINALG::Matrix<2, numvertices> deriv(true);
-  static LINALG::Matrix<nsd, 1> projX(true);
-  static LINALG::Matrix<nsd, 2> gradprojX(true);
+  static CORE::LINALG::Matrix<numvertices, 1> funct(true);
+  static CORE::LINALG::Matrix<2, numvertices> deriv(true);
+  static CORE::LINALG::Matrix<nsd, 1> projX(true);
+  static CORE::LINALG::Matrix<nsd, 2> gradprojX(true);
 
   //----------------------------------
   // start values for iterative scheme
@@ -1298,11 +1298,11 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
   alpha = 0.0;
 
   // function F (system of equations)
-  static LINALG::Matrix<nsd, 1> f(true);
+  static CORE::LINALG::Matrix<nsd, 1> f(true);
   // gradient of function F (dF/deta(0), dF/deta(1), dF/dalpha)
-  static LINALG::Matrix<nsd, nsd> gradf(true);
+  static CORE::LINALG::Matrix<nsd, nsd> gradf(true);
   // increment in Newton iteration (unknown to be solved for)
-  static LINALG::Matrix<nsd, 1> incr(true);
+  static CORE::LINALG::Matrix<nsd, 1> incr(true);
 
   // maximum number Newton iterations
   size_t maxiter = 3;
@@ -1361,7 +1361,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const LINALG::Matrix<3, 1>& n
     // F = F*-1.0
     f.Scale(-1.0);
     // solve A.X=B
-    LINALG::FixedSizeSerialDenseSolver<nsd, nsd, 1> solver;
+    CORE::LINALG::FixedSizeSerialDenseSolver<nsd, nsd, 1> solver;
     solver.SetMatrix(gradf);               // set A=gradF
     solver.SetVectors(incr, f);            // set X=incr, B=F
     solver.FactorWithEquilibration(true);  // "some easy type of preconditioning" (Michael)
@@ -1468,7 +1468,7 @@ void SCATRA::LevelSetAlgorithm::ReinitializeWithEllipticEquation()
   // this vector is only initialized: currently function CalcNodeBasedReinitVel() is also
   // used to compute nodal level-set gradients, and this function expects that initialphireinit_ has
   // been set although it is not used for the present purposes
-  initialphireinit_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  initialphireinit_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   //-------------------------------------------------
   // solve

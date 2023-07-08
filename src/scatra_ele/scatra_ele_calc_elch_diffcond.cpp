@@ -99,7 +99,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
     const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
+    const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
 {
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
@@ -380,7 +380,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatAndRhsOu
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invfval,
-    const LINALG::Matrix<nsd_, 1>& gradpot)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -430,7 +430,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double rtffcval,
     const double newman_const_a, const double newman_const_b,
-    const LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
 {
   // additional safety check in the beginning for Newman materials
   if (k != 0)
@@ -511,7 +511,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invfval,
-    const LINALG::Matrix<nsd_, 1>& curint)
+    const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -550,7 +550,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCond(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondDiff(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invfval,
-    const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi)
+    const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -603,7 +603,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDiviConc(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double rtffc,
     const double rtf, const double invf, const double newman_const_a, const double newman_const_b,
-    const LINALG::Matrix<nsd_, 1>& gradphi, const double conintinv)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double conintinv)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -745,7 +745,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCu
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOhm(
     Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf,
-    const LINALG::Matrix<nsd_, 1>& gradpot)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
   // (v, kappa grad phi)
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -781,7 +781,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquConc(
     Epetra_SerialDenseMatrix& emat, const double timefacfac, const double rtf, const double rtffc,
     const std::vector<double>& invfval, const double newman_const_a, const double newman_const_b,
-    const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi, const std::vector<double>& conintinv)
+    const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi, const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -864,7 +864,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondOhm(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double invfval,
-    const LINALG::Matrix<nsd_, 1>& gradpot)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -883,7 +883,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double rtffcval,
     const double newman_const_a, const double newman_const_b,
-    const LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -910,7 +910,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondConc
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double invfval,
-    const LINALG::Matrix<nsd_, 1>& curint)
+    const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -927,7 +927,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCond(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCondDiff(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
-    const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi)
+    const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -953,7 +953,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDiviConc(
     Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double rtf,
     const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
-    const double newman_const_b, const LINALG::Matrix<nsd_, 1>& gradphi, const double conintinv)
+    const double newman_const_b, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+    const double conintinv)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -999,7 +1000,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDivi(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
-    const LINALG::Matrix<nsd_, 1>& curint)
+    const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -1015,7 +1016,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsPotEquDi
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCur(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
-    const LINALG::Matrix<nsd_, 1>& curint)
+    const CORE::LINALG::Matrix<nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -1033,7 +1034,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquCu
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquOhm(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
-    const LINALG::Matrix<nsd_, 1>& gradpot)
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -1053,7 +1054,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcRhsCurEquConc(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const double rtf,
     const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
-    const double newman_const_b, const std::vector<LINALG::Matrix<nsd_, 1>>& gradphi,
+    const double newman_const_b, const std::vector<CORE::LINALG::Matrix<nsd_, 1>>& gradphi,
     const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)

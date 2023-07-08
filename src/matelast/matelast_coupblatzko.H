@@ -87,29 +87,33 @@ namespace MAT
       //@}
 
       // add strain energy
-      void AddStrainEnergy(double& psi,       ///< strain energy function
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-          int gp,                                ///< Gauss point
-          int eleGID                             ///< element GID
+      void AddStrainEnergy(double& psi,  ///< strain energy function
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+          int gp,                                      ///< Gauss point
+          int eleGID                                   ///< element GID
           ) override;
 
       // add first and second derivative w.r.t. principal invariants
       void AddDerivativesPrincipal(
-          LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
-          LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          int gp,                             ///< Gauss point
-          int eleGID                          ///< element GID
+          CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
+          CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          int gp,     ///< Gauss point
+          int eleGID  ///< element GID
           ) override;
 
       // add third derivative w.r.t. principal invariants
       void AddThirdDerivativesPrincipalIso(
-          LINALG::Matrix<10, 1>& dddPIII_iso,     ///< third derivative with respect to invariants
-          const LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
-          int gp,                                 ///< Gauss point
-          int eleGID) override;                   ///< element GID
+          CORE::LINALG::Matrix<10, 1>&
+              dddPIII_iso,  ///< third derivative with respect to invariants
+          const CORE::LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
+          int gp,                                       ///< Gauss point
+          int eleGID) override;                         ///< element GID
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation

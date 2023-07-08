@@ -41,12 +41,12 @@ namespace FBI
 {
   class FBIGeometryCoupler;
 }
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace ADAPTER
 {
   class ConstraintEnforcerFactory;
@@ -190,7 +190,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -204,7 +204,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the structure system matrix
      */
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> AssembleStructureCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -251,7 +251,7 @@ namespace ADAPTER
     Teuchos::RCP<ADAPTER::FBIConstraintBridge> Bridge() const { return bridge_; };
 
     /// Get map extractor to split fluid velocity and pressure values
-    Teuchos::RCP<const LINALG::MapExtractor> GetVelocityPressureSplitter() const
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetVelocityPressureSplitter() const
     {
       return velocity_pressure_splitter_;
     }
@@ -293,7 +293,7 @@ namespace ADAPTER
      * velocities  = OtherVector
      * pressure    = CondVector
      */
-    Teuchos::RCP<LINALG::MapExtractor> velocity_pressure_splitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> velocity_pressure_splitter_;
   };
 }  // namespace ADAPTER
 #endif

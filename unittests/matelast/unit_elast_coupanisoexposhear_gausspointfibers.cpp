@@ -21,10 +21,10 @@ namespace
 {
 
 
-  void SetupSingleStructuralTensor(const LINALG::Matrix<3, 1>& fiber1,
-      const LINALG::Matrix<3, 1>& fiber2, LINALG::Matrix<3, 3>& structuralTensor)
+  void SetupSingleStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber1,
+      const CORE::LINALG::Matrix<3, 1>& fiber2, CORE::LINALG::Matrix<3, 3>& structuralTensor)
   {
-    LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
 
     fiber1fiber2T.MultiplyNT(fiber1, fiber2);
 
@@ -38,7 +38,7 @@ namespace
    public:
     CoupAnisoExpoShearGaussPointFibersTest()
         : anisotropy_(),
-          gpFibers_(2, std::vector<LINALG::Matrix<3, 1>>(3)),
+          gpFibers_(2, std::vector<CORE::LINALG::Matrix<3, 1>>(3)),
           gpTensors_(2),
           gpTensors_stress_(2),
           gpScalarProducts_(2)
@@ -107,9 +107,9 @@ namespace
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<std::vector<LINALG::Matrix<3, 1>>> gpFibers_;
-    std::vector<LINALG::Matrix<3, 3>> gpTensors_;
-    std::vector<LINALG::Matrix<6, 1>> gpTensors_stress_;
+    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gpFibers_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> gpTensors_;
+    std::vector<CORE::LINALG::Matrix<6, 1>> gpTensors_stress_;
     std::vector<double> gpScalarProducts_;
   };
 

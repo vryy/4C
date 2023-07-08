@@ -13,7 +13,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_CrsMatrix.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   enum class MatrixType;
   class MultiMapExtractor;
@@ -71,8 +71,8 @@ namespace LINALG
      * @param[in,out] systemmatrix  system matrix
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    virtual void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const = 0;
+    virtual void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const = 0;
 
     /*!
      * @brief equilibrate right hand side
@@ -88,9 +88,9 @@ namespace LINALG
      * @param[in,out] residual      residual vector
      * @param[in]     blockmaps     (block) map(s) of system matrix
      */
-    void EquilibrateSystem(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void EquilibrateSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> residual,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const;
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const;
 
     /*!
      * @brief unequilibrate global increment vector if necessary
@@ -106,7 +106,7 @@ namespace LINALG
      * @param[in]  matrix      matrix
      * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
      */
-    void ComputeInvColSums(const LINALG::SparseMatrix& matrix,
+    void ComputeInvColSums(const CORE::LINALG::SparseMatrix& matrix,
         Teuchos::RCP<Epetra_Vector> invcolsums, const EquilibrationMethod method) const;
 
     /*!
@@ -115,7 +115,7 @@ namespace LINALG
      * @param[in]  matrix      matrix
      * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
      */
-    void ComputeInvRowSums(const LINALG::SparseMatrix& matrix,
+    void ComputeInvRowSums(const CORE::LINALG::SparseMatrix& matrix,
         Teuchos::RCP<Epetra_Vector> invrowsums, const EquilibrationMethod method) const;
 
     /*!
@@ -127,7 +127,7 @@ namespace LINALG
      * @param[out] invsymmetry scale vector to keep symmetry in matrix d
      */
     void ComputeInvSymmetry(
-        const LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const;
+        const CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const;
 
     /*!
      * @brief equilibrate matrix columns
@@ -136,7 +136,7 @@ namespace LINALG
      * @param[in]     invcolsums  sums of absolute values of column entries in matrix
      */
     void EquilibrateMatrixColumns(
-        LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const;
+        CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invcolsums) const;
 
     /*!
      * @brief equilibrate matrix rows
@@ -145,7 +145,7 @@ namespace LINALG
      * @param[in]     invrowsums  sums of absolute values of row entries in matrix
      */
     void EquilibrateMatrixRows(
-        LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const;
+        CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<const Epetra_Vector> invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invcolsums_;
@@ -185,15 +185,15 @@ namespace LINALG
 
     ~EquilibrationSparse() override = default;
 
-    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
     /*!
      * @brief equilibrate matrix if necessary
      *
      * @param[in,out] systemmatrix  system matrix
      */
-    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) const;
+    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix) const;
   };
 
   /*----------------------------------------------------------------------*
@@ -206,8 +206,8 @@ namespace LINALG
 
     ~EquilibrationBlock() override = default;
 
-    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
   };
 
   /*----------------------------------------------------------------------*
@@ -221,8 +221,8 @@ namespace LINALG
 
     ~EquilibrationBlockSpecific() override = default;
 
-    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override;
+    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override;
 
     void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector> residual) const override;
 
@@ -242,8 +242,8 @@ namespace LINALG
 
     ~EquilibrationNone() override = default;
 
-    void EquilibrateMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> blockmaps) const override
+    void EquilibrateMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmaps) const override
     {
     }
 
@@ -262,7 +262,7 @@ namespace LINALG
    *
    * @return equilibration method
    */
-  Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(MatrixType type,
+  Teuchos::RCP<CORE::LINALG::Equilibration> BuildEquilibration(MatrixType type,
       const std::vector<EquilibrationMethod>& method, Teuchos::RCP<const Epetra_Map> dofrowmap);
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 #endif

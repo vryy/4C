@@ -44,8 +44,8 @@ namespace DRT
      private:
       // calculate error compared to analytical solution
       void CalErrorComparedToAnalytSolution(const DRT::Element* ele,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephizero, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector& errors);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
+          Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors);
 
       // smoothed heaviside function
       void SmoothHeavisideFunction(const double charelelength, const double phi, double& smoothH);

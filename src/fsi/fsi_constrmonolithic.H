@@ -49,7 +49,7 @@ namespace FSI
     void GeneralSetup();
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
@@ -60,17 +60,17 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig) = 0;
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! @name Methods for infnorm-scaling of the system
     //!@{
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
     //!@}
 

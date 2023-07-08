@@ -800,7 +800,7 @@ void XFLUIDLEVELSET::Algorithm::GetOuterLoopIncFluid(
       FluidField()->StdVelnp();  // Contains Fluid and Pressure
 
   // Extract velocity and pressure components.
-  Teuchos::RCP<const LINALG::MapExtractor> velpresspliter =
+  Teuchos::RCP<const CORE::LINALG::MapExtractor> velpresspliter =
       Teuchos::rcp_dynamic_cast<FLD::XFluid>(FluidField())->VelPresSplitterStd();
 
   Teuchos::RCP<const Epetra_Vector> onlyvel = velpresspliter->ExtractOtherVector(velnpip);

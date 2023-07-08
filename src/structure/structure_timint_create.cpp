@@ -36,7 +36,7 @@
 Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization>& actdis,
-    Teuchos::RCP<LINALG::Solver>& solver, Teuchos::RCP<LINALG::Solver>& contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver>& solver, Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter>& output)
 {
   // set default output
@@ -59,7 +59,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate(const Teuchos::ParameterList& timepa
 Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization>& actdis,
-    Teuchos::RCP<LINALG::Solver>& solver, Teuchos::RCP<LINALG::Solver>& contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver>& solver, Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter>& output)
 {
   Teuchos::RCP<STR::TimIntImpl> sti = Teuchos::null;
@@ -126,7 +126,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate(const Teuchos::ParameterList
 Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization>& actdis,
-    Teuchos::RCP<LINALG::Solver>& solver, Teuchos::RCP<LINALG::Solver>& contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver>& solver, Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter>& output)
 {
   Teuchos::RCP<STR::TimIntExpl> sti = Teuchos::null;

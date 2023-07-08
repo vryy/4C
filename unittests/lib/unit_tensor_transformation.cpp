@@ -17,12 +17,12 @@ namespace
   class TensorTransformationTest : public testing::Test
   {
    public:
-    LINALG::Matrix<3, 3> tens1_;
-    LINALG::Matrix<3, 3> tens2_;
-    LINALG::Matrix<3, 3> rotatedTens1_;
-    LINALG::Matrix<3, 3> rotatedTens2_;
-    LINALG::Matrix<3, 3> rotationMatrix1_;
-    LINALG::Matrix<3, 3> rotationMatrix2_;
+    CORE::LINALG::Matrix<3, 3> tens1_;
+    CORE::LINALG::Matrix<3, 3> tens2_;
+    CORE::LINALG::Matrix<3, 3> rotatedTens1_;
+    CORE::LINALG::Matrix<3, 3> rotatedTens2_;
+    CORE::LINALG::Matrix<3, 3> rotationMatrix1_;
+    CORE::LINALG::Matrix<3, 3> rotationMatrix2_;
 
     TensorTransformationTest()
     {
@@ -90,7 +90,7 @@ namespace
 
   TEST_F(TensorTransformationTest, TensorRotation)
   {
-    LINALG::Matrix<3, 3> tmp;
+    CORE::LINALG::Matrix<3, 3> tmp;
     UTILS::TENSOR::TensorRotation(rotationMatrix1_, tens1_, tmp);
     BACI_EXPECT_NEAR(tmp, rotatedTens1_, 1e-9);
 
@@ -100,7 +100,7 @@ namespace
 
   TEST_F(TensorTransformationTest, InverseTensorRotation)
   {
-    LINALG::Matrix<3, 3> tmp;
+    CORE::LINALG::Matrix<3, 3> tmp;
     UTILS::TENSOR::InverseTensorRotation(rotationMatrix1_, rotatedTens1_, tmp);
     BACI_EXPECT_NEAR(tmp, tens1_, 1e-9);
 

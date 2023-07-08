@@ -23,7 +23,7 @@ class Epetra_MultiVector;
 class Epetra_Operator;
 class Epetra_BlockMap;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
   class SerialDenseVector;
@@ -69,10 +69,10 @@ namespace LINALG
     void FillComplete();
 
     //! give out projector matrix - build it if not yet built (thus not const)
-    const LINALG::SparseMatrix GetP();
+    const CORE::LINALG::SparseMatrix GetP();
 
     //! give out transposed projector matrix - build it if not yet built (thus not const)
-    const LINALG::SparseMatrix GetPT();
+    const CORE::LINALG::SparseMatrix GetPT();
 
     //! wrapper for applying projector to vector for iterative solver
     int ApplyP(Epetra_MultiVector& Y) const;
@@ -81,7 +81,7 @@ namespace LINALG
     int ApplyPT(Epetra_MultiVector& Y) const;
 
     //! give out projection P^T A P
-    Teuchos::RCP<LINALG::SparseMatrix> Project(const LINALG::SparseMatrix& A) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Project(const CORE::LINALG::SparseMatrix& A) const;
 
     //! return dimension of nullspace
     int Nsdim() const { return nsdim_; }
@@ -94,22 +94,22 @@ namespace LINALG
 
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver
-    void CreateProjector(Teuchos::RCP<LINALG::SparseMatrix>& P,
+    void CreateProjector(Teuchos::RCP<CORE::LINALG::SparseMatrix>& P,
         const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
-        const Teuchos::RCP<LINALG::SerialDenseMatrix>& inv_v1Tv2);
+        const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
     int ApplyProjector(Epetra_MultiVector& Y, const Teuchos::RCP<Epetra_MultiVector>& v1,
         const Teuchos::RCP<Epetra_MultiVector>& v2,
-        const Teuchos::RCP<LINALG::SerialDenseMatrix>& inv_v1Tv2) const;
+        const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const;
 
     //! multiplies Epetra_MultiVector times Epetra_SerialDenseMatrix
     Teuchos::RCP<Epetra_MultiVector> MultiplyMultiVecterDenseMatrix(
         const Teuchos::RCP<Epetra_MultiVector>& mv,
-        const Teuchos::RCP<LINALG::SerialDenseMatrix>& dm) const;
+        const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& dm) const;
 
     //! outer product of two Epetra_MultiVectors
-    Teuchos::RCP<LINALG::SparseMatrix> MultiplyMultiVecterMultiVector(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MultiplyMultiVecterMultiVector(
         const Teuchos::RCP<Epetra_MultiVector>& mv1,  //! first MultiVector
         const Teuchos::RCP<Epetra_MultiVector>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
@@ -219,10 +219,10 @@ namespace LINALG
     const std::string* weighttype_;
 
     //! projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<LINALG::SparseMatrix> P_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> P_;
 
     //! transposed projector matrix - only built if necessary (e.g. for direct solvers)
-    Teuchos::RCP<LINALG::SparseMatrix> PT_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> PT_;
 
     //! a set of vectors defining weighted (basis integral) vector for the projector
     Teuchos::RCP<Epetra_MultiVector> w_;
@@ -232,9 +232,9 @@ namespace LINALG
     Teuchos::RCP<Epetra_MultiVector> c_;
 
     //! inverse of product (c_^T * w_), computed once after setting c_ and w_
-    Teuchos::RCP<LINALG::SerialDenseMatrix> invwTc_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTc_;
   };
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_KRYLOV_PROJECTOR_H

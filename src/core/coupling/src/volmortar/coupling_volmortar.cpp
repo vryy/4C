@@ -310,7 +310,7 @@ Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
     Teuchos::RCP<::DRT::Discretization> searchdis)
 {
   // init current positions
-  std::map<int, LINALG::Matrix<3, 1>> currentpositions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currentpositions;
 
   for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
   {
@@ -320,7 +320,7 @@ Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
     for (int k = 0; k < sele->NumNode(); k++)
     {
       ::DRT::Node* node = sele->Nodes()[k];
-      LINALG::Matrix<3, 1> currpos;
+      CORE::LINALG::Matrix<3, 1> currpos;
 
       currpos(0) = node->X()[0];
       currpos(1) = node->X()[1];
@@ -334,7 +334,7 @@ Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
   Teuchos::RCP<CORE::GEO::SearchTree> searchTree = Teuchos::rcp(new CORE::GEO::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
-  const LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofDis(*searchdis, currentpositions);
+  const CORE::LINALG::Matrix<3, 2> rootBox = CORE::GEO::getXAABBofDis(*searchdis, currentpositions);
   searchTree->initializeTree(rootBox, *searchdis, CORE::GEO::TreeType(CORE::GEO::OCTTREE));
 
   return searchTree;
@@ -343,10 +343,10 @@ Teuchos::RCP<CORE::GEO::SearchTree> CORE::VOLMORTAR::VolMortarCoupl::InitSearch(
 /*----------------------------------------------------------------------*
  |  Calculate Dops for background mesh                       farah 05/14|
  *----------------------------------------------------------------------*/
-std::map<int, LINALG::Matrix<9, 2>> CORE::VOLMORTAR::VolMortarCoupl::CalcBackgroundDops(
+std::map<int, CORE::LINALG::Matrix<9, 2>> CORE::VOLMORTAR::VolMortarCoupl::CalcBackgroundDops(
     Teuchos::RCP<::DRT::Discretization> searchdis)
 {
-  std::map<int, LINALG::Matrix<9, 2>> currentKDOPs;
+  std::map<int, CORE::LINALG::Matrix<9, 2>> currentKDOPs;
 
   for (int lid = 0; lid < searchdis->NumMyColElements(); ++lid)
   {
@@ -361,9 +361,9 @@ std::map<int, LINALG::Matrix<9, 2>> CORE::VOLMORTAR::VolMortarCoupl::CalcBackgro
 /*----------------------------------------------------------------------*
  |  Calculate Dop for one Element                            farah 05/14|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::CalcDop(::DRT::Element& ele)
+CORE::LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::CalcDop(::DRT::Element& ele)
 {
-  LINALG::Matrix<9, 2> dop;
+  CORE::LINALG::Matrix<9, 2> dop;
 
   // calculate slabs
   for (int j = 0; j < 9; j++)
@@ -406,7 +406,7 @@ LINALG::Matrix<9, 2> CORE::VOLMORTAR::VolMortarCoupl::CalcDop(::DRT::Element& el
  *----------------------------------------------------------------------*/
 std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(::DRT::Element& ele,
     Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
-    std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs)
+    std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
   std::vector<int> gids;
@@ -414,7 +414,7 @@ std::vector<int> CORE::VOLMORTAR::VolMortarCoupl::Search(::DRT::Element& ele,
   std::set<int> gid;
   gid.clear();
 
-  LINALG::Matrix<9, 2> queryKDOP;
+  CORE::LINALG::Matrix<9, 2> queryKDOP;
 
   // calc dop for considered element
   queryKDOP = CalcDop(ele);
@@ -441,8 +441,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::AssignMaterials()
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
    * loop over all Adis elements                    *
@@ -726,16 +726,16 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   /***********************************************************
    * Init P-matrices                                         *
    ***********************************************************/
-  P12_ = Teuchos::rcp(new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
-  P21_ = Teuchos::rcp(new LINALG::SparseMatrix(*P21_dofrowmap_, 100));
+  P12_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P12_dofrowmap_, 10));
+  P21_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P21_dofrowmap_, 100));
 
   /***********************************************************
    * create search tree and current dops                     *
    ***********************************************************/
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeA = InitSearch(dis1_);
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /***********************************************************
    * Create P operators                                      *
@@ -791,8 +791,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateElements()
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
   // calculate DOPs for search algorithm
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
    * loop over all Adis elements                    *
@@ -851,7 +851,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments()
 {
   // create search tree and current dops
   Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
-  std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
+  std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
   /**************************************************
    * loop over all slave elements                   *
@@ -1070,12 +1070,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
 void CORE::VOLMORTAR::VolMortarCoupl::CheckInitialResiduum()
 {
   // create vectors of initial primary variables
-  Teuchos::RCP<Epetra_Vector> var_A = LINALG::CreateVector(*Discret1()->DofRowMap(0), true);
-  Teuchos::RCP<Epetra_Vector> var_B = LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
+  Teuchos::RCP<Epetra_Vector> var_A = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(0), true);
+  Teuchos::RCP<Epetra_Vector> var_B = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
 
   // solution
-  Teuchos::RCP<Epetra_Vector> result_A = LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
-  Teuchos::RCP<Epetra_Vector> result_B = LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
+  Teuchos::RCP<Epetra_Vector> result_A =
+      CORE::LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
+  Teuchos::RCP<Epetra_Vector> result_B =
+      CORE::LINALG::CreateVector(*Discret2()->DofRowMap(1), true);
 
   // node positions for Discr A
   for (int i = 0; i < Discret1()->NumMyRowElements(); ++i)
@@ -1156,8 +1158,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
   int maxiter = 1;
 
   // init zero residuum vector for old iteration
-  Teuchos::RCP<Epetra_Vector> ResoldA = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta), true);
-  Teuchos::RCP<Epetra_Vector> ResoldB = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb), true);
+  Teuchos::RCP<Epetra_Vector> ResoldA =
+      CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta), true);
+  Teuchos::RCP<Epetra_Vector> ResoldB =
+      CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb), true);
 
   // output
   if (myrank_ == 0)
@@ -1169,11 +1173,11 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
   for (int mi = 0; mi < maxiter; mi++)
   {
     // init
-    dmatrixXA_ = Teuchos::rcp(new LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 10));
-    mmatrixXA_ = Teuchos::rcp(new LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 100));
+    dmatrixXA_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 10));
+    mmatrixXA_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret1()->DofRowMap(dofseta), 100));
 
-    dmatrixXB_ = Teuchos::rcp(new LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 10));
-    mmatrixXB_ = Teuchos::rcp(new LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 100));
+    dmatrixXB_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 10));
+    mmatrixXB_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Discret2()->DofRowMap(dofsetb), 100));
 
     // output
     if (myrank_ == 0) std::cout << "*****       step " << mi << std::endl;
@@ -1183,8 +1187,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     Teuchos::RCP<CORE::GEO::SearchTree> SearchTreeB = InitSearch(dis2_);
 
     // calculate DOPs for search algorithm
-    std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
-    std::map<int, LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
+    std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsA = CalcBackgroundDops(dis1_);
+    std::map<int, CORE::LINALG::Matrix<9, 2>> CurrentDOPsB = CalcBackgroundDops(dis2_);
 
     /**************************************************
      * loop over all Adis elements                    *
@@ -1218,12 +1222,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     dmatrixXB_->Complete();
     mmatrixXB_->Complete(*Discret1()->DofRowMap(dofseta), *Discret2()->DofRowMap(dofsetb));
 
-    mergedmap_ =
-        LINALG::MergeMap(*Discret1()->DofRowMap(dofseta), *Discret2()->DofRowMap(dofsetb), false);
-    Teuchos::RCP<Epetra_Vector> mergedsol = LINALG::CreateVector(*mergedmap_);
-    Teuchos::RCP<Epetra_Vector> mergedX = LINALG::CreateVector(*mergedmap_);
-    Teuchos::RCP<Epetra_Vector> mergedXa = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
-    Teuchos::RCP<Epetra_Vector> mergedXb = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    mergedmap_ = CORE::LINALG::MergeMap(
+        *Discret1()->DofRowMap(dofseta), *Discret2()->DofRowMap(dofsetb), false);
+    Teuchos::RCP<Epetra_Vector> mergedsol = CORE::LINALG::CreateVector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedX = CORE::LINALG::CreateVector(*mergedmap_);
+    Teuchos::RCP<Epetra_Vector> mergedXa =
+        CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> mergedXb =
+        CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
@@ -1245,8 +1251,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       owner[1] = node->Owner();
       owner[2] = node->Owner();
 
-      LINALG::Assemble(*mergedX, pos, id, owner);
-      LINALG::Assemble(*mergedXa, pos, id, owner);
+      CORE::LINALG::Assemble(*mergedX, pos, id, owner);
+      CORE::LINALG::Assemble(*mergedXa, pos, id, owner);
     }
 
     for (int n = 0; n < dis2_->NodeRowMap()->NumMyElements(); ++n)
@@ -1269,15 +1275,15 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       owner[1] = node->Owner();
       owner[2] = node->Owner();
 
-      LINALG::Assemble(*mergedX, pos, id, owner);
-      LINALG::Assemble(*mergedXb, pos, id, owner);
+      CORE::LINALG::Assemble(*mergedX, pos, id, owner);
+      CORE::LINALG::Assemble(*mergedXb, pos, id, owner);
     }
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Epetra_Vector> solDA = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
-    Teuchos::RCP<Epetra_Vector> solMA = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> solDA = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> solMA = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
 
     int err = 0;
     err = dmatrixXA_->Multiply(false, *mergedXa, *solDA);
@@ -1286,8 +1292,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     err = mmatrixXA_->Multiply(false, *mergedXb, *solMA);
     if (err != 0) dserror("stop");
 
-    Teuchos::RCP<Epetra_Vector> solDB = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
-    Teuchos::RCP<Epetra_Vector> solMB = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> solDB = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> solMB = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     err = dmatrixXB_->Multiply(false, *mergedXb, *solDB);
     if (err != 0) dserror("stop");
@@ -1320,9 +1326,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     {
       double fac = 0.0;
       Teuchos::RCP<Epetra_Vector> DiffA =
-          LINALG::CreateVector(*Discret1()->DofRowMap(dofseta), true);
+          CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta), true);
       Teuchos::RCP<Epetra_Vector> DiffB =
-          LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb), true);
+          CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
       if (err != 0) dserror("stop");
       err = DiffA->Update(-1.0, *ResoldA, 1.0);
@@ -1364,8 +1370,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     //    omega = 1.0 - nu;
     omega = 1.0;
 
-    Teuchos::RCP<LINALG::SparseMatrix> k =
-        Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap_, 100, false, true));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*mergedmap_, 100, false, true));
     k->Add(*dmatrixXA_, false, -1.0 * omega, 1.0);
     k->Add(*mmatrixXA_, false, 1.0 * omega, 1.0);
     k->Add(*dmatrixXB_, false, -1.0 * omega, 1.0);
@@ -1373,19 +1379,20 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
 
     Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*mergedmap_));
     ones->PutScalar(1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> onesdiag =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ones));
     onesdiag->Complete();
     k->Add(*onesdiag, false, 1.0, 1.0);
     k->Complete();
 
     // solve with default solver
-    LINALG::Solver solver(*comm_);
+    CORE::LINALG::Solver solver(*comm_);
     solver.Solve(k->EpetraOperator(), mergedsol, mergedX, true);
 
-    Teuchos::RCP<Epetra_Vector> sola = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
-    Teuchos::RCP<Epetra_Vector> solb = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> sola = CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> solb = CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
-    LINALG::MapExtractor mapext(*mergedmap_,
+    CORE::LINALG::MapExtractor mapext(*mergedmap_,
         Teuchos::rcp(new Epetra_Map(*(Discret1()->DofRowMap(dofseta)))),
         Teuchos::rcp(new Epetra_Map(*(Discret2()->DofRowMap(dofsetb)))));
     mapext.ExtractCondVector(mergedsol, sola);
@@ -1436,8 +1443,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     dis2_->FillComplete(false, true, true);
 
     // last check:
-    Teuchos::RCP<Epetra_Vector> checka = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
-    Teuchos::RCP<Epetra_Vector> checkb = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> checka =
+        CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> checkb =
+        CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     for (int n = 0; n < dis1_->NodeRowMap()->NumMyElements(); ++n)
     {
@@ -1459,7 +1468,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       owner[1] = node->Owner();
       owner[2] = node->Owner();
 
-      LINALG::Assemble(*checka, pos, id, owner);
+      CORE::LINALG::Assemble(*checka, pos, id, owner);
     }
 
     for (int n = 0; n < dis2_->NodeRowMap()->NumMyElements(); ++n)
@@ -1482,14 +1491,16 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       owner[1] = node->Owner();
       owner[2] = node->Owner();
 
-      LINALG::Assemble(*checkb, pos, id, owner);
+      CORE::LINALG::Assemble(*checkb, pos, id, owner);
     }
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Epetra_Vector> finalDA = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
-    Teuchos::RCP<Epetra_Vector> finalMA = LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> finalDA =
+        CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
+    Teuchos::RCP<Epetra_Vector> finalMA =
+        CORE::LINALG::CreateVector(*Discret1()->DofRowMap(dofseta));
 
     err = dmatrixXA_->Multiply(false, *checka, *finalDA);
     if (err != 0) dserror("stop");
@@ -1497,8 +1508,10 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
     err = mmatrixXA_->Multiply(false, *checkb, *finalMA);
     if (err != 0) dserror("stop");
 
-    Teuchos::RCP<Epetra_Vector> finalDB = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
-    Teuchos::RCP<Epetra_Vector> finalMB = LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> finalDB =
+        CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
+    Teuchos::RCP<Epetra_Vector> finalMB =
+        CORE::LINALG::CreateVector(*Discret2()->DofRowMap(dofsetb));
 
     err = dmatrixXB_->Multiply(false, *checkb, *finalDB);
     if (err != 0) dserror("stop");
@@ -3595,23 +3608,23 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3D(
 void CORE::VOLMORTAR::VolMortarCoupl::Initialize()
 {
   /* ******************************************************************
-   * (re)setup global Mortar LINALG::SparseMatrices                   *
+   * (re)setup global Mortar CORE::LINALG::SparseMatrices                   *
    * unknowns which are going to be condensed are defined on the slave*
    * side. Therefore, the rows are the auxiliary variables on the     *
    * slave side!                                                      *
    * ******************************************************************/
 
-  D1_ = Teuchos::rcp(new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
-  M12_ = Teuchos::rcp(new LINALG::SparseMatrix(*P12_dofrowmap_, 100));
+  D1_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P12_dofrowmap_, 10));
+  M12_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P12_dofrowmap_, 100));
 
-  D2_ = Teuchos::rcp(new LINALG::SparseMatrix(*P21_dofrowmap_, 10));
-  M21_ = Teuchos::rcp(new LINALG::SparseMatrix(*P21_dofrowmap_, 100));
+  D2_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P21_dofrowmap_, 10));
+  M21_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P21_dofrowmap_, 100));
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
   {
-    T1_ = Teuchos::rcp(new LINALG::SparseMatrix(*P12_dofrowmap_, 10));
-    T2_ = Teuchos::rcp(new LINALG::SparseMatrix(*P21_dofrowmap_, 10));
+    T1_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P12_dofrowmap_, 10));
+    T2_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*P21_dofrowmap_, 10));
   }
 
   return;
@@ -3647,8 +3660,9 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invd1 = Teuchos::rcp(new LINALG::SparseMatrix(*D1_));
-  Teuchos::RCP<Epetra_Vector> diag1 = LINALG::CreateVector(*P12_dofrowmap_, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> invd1 =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D1_));
+  Teuchos::RCP<Epetra_Vector> diag1 = CORE::LINALG::CreateVector(*P12_dofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -3666,14 +3680,15 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   err = invd1->ReplaceDiagonalValues(*diag1);
 
   // do the multiplication P = inv(D) * M
-  Teuchos::RCP<LINALG::SparseMatrix> aux12 =
-      LINALG::MLMultiply(*invd1, false, *M12_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> aux12 =
+      CORE::LINALG::MLMultiply(*invd1, false, *M12_, false, false, false, true);
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
   /********************************************************************/
-  Teuchos::RCP<LINALG::SparseMatrix> invd2 = Teuchos::rcp(new LINALG::SparseMatrix(*D2_));
-  Teuchos::RCP<Epetra_Vector> diag2 = LINALG::CreateVector(*P21_dofrowmap_, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> invd2 =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D2_));
+  Teuchos::RCP<Epetra_Vector> diag2 = CORE::LINALG::CreateVector(*P21_dofrowmap_, true);
 
   // extract diagonal of invd into diag
   invd2->ExtractDiagonalCopy(*diag2);
@@ -3690,14 +3705,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::CreateProjectionOperator()
   err = invd2->ReplaceDiagonalValues(*diag2);
 
   // do the multiplication P = inv(D) * M
-  Teuchos::RCP<LINALG::SparseMatrix> aux21 =
-      LINALG::MLMultiply(*invd2, false, *M21_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> aux21 =
+      CORE::LINALG::MLMultiply(*invd2, false, *M21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)
   {
-    P12_ = LINALG::MLMultiply(*T1_, false, *aux12, false, false, false, true);
-    P21_ = LINALG::MLMultiply(*T2_, false, *aux21, false, false, false, true);
+    P12_ = CORE::LINALG::MLMultiply(*T1_, false, *aux12, false, false, false, true);
+    P21_ = CORE::LINALG::MLMultiply(*T2_, false, *aux21, false, false, false, true);
   }
   else
   {
@@ -4458,7 +4473,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
     }
 
     // trafo matrix
-    LINALG::Matrix<3, 3> trafo;
+    CORE::LINALG::Matrix<3, 3> trafo;
     for (int k = 0; k < 3; ++k)
     {
       trafo(0, k) = newxaxis[k];
@@ -4521,7 +4536,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
   if (clipsize == 3)
   {
     // IntCell vertices = clip polygon vertices
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].Coord()[k];
 
@@ -4629,7 +4644,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
   {
     // the first vertex is always the clip center
     // the second vertex is always the current clip vertex
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int k = 0; k < 3; ++k)
     {
       coords(k, 0) = clipcenter[k];
@@ -4678,7 +4693,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
   if (clipsize == 3)
   {
     // IntCell vertices = clip polygon vertices
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].Coord()[k];
 
@@ -5072,7 +5087,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
     int idx2 = triangles[t][2];
 
     // coordinates of current triangle
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int k = 0; k < 3; ++k)
     {
       coords(k, 0) = clip[idx0].Coord()[k];

@@ -131,7 +131,7 @@ void CORE::GEO::CUT::SelfCut::StatusInspection()
 void CORE::GEO::CUT::SelfCut::FindCuttingSides()
 {
   const std::map<plain_int_set, Teuchos::RCP<Side>>& cutsides = mesh_.Sides();
-  const std::map<int, LINALG::Matrix<3, 2>>& selfcutbvs = mesh_.SelfCutBvs();
+  const std::map<int, CORE::LINALG::Matrix<3, 2>>& selfcutbvs = mesh_.SelfCutBvs();
   const Teuchos::RCP<CORE::GEO::SearchTree>& selfcuttree = mesh_.SelfCutTree();
   const std::map<int, Side*>& shadowsides = mesh_.ShadowSides();
 
@@ -139,7 +139,7 @@ void CORE::GEO::CUT::SelfCut::FindCuttingSides()
        i != cutsides.end(); ++i)
   {
     Side* cutside = &*i->second;
-    LINALG::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
+    CORE::LINALG::Matrix<3, 2> cutsideBV = cutside->GetBoundingVolume().GetBoundingVolume();
     if (selfcutbvs.size() != 0)  // ******************************************************* possible
                                  // in case of parallel computing and using only relevant elements
     {
@@ -915,8 +915,8 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
         Side* anotherselfcutside = *i;
         if (anotherselfcutside->Id() != selfcutside->Id())
         {
-          LINALG::Matrix<3, 1> normal;
-          LINALG::Matrix<2, 1> center(true);
+          CORE::LINALG::Matrix<3, 1> normal;
+          CORE::LINALG::Matrix<2, 1> center(true);
           anotherselfcutside->Normal(center, normal, false);
           double norm = normal.Norm2();
           if (norm > 1e-8)
@@ -945,17 +945,17 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
         continue;
       }*/
 
-      LINALG::Matrix<3, 1> oncut_cord;
-      LINALG::Matrix<3, 1> oncut_cord_loc;
-      LINALG::Matrix<2, 1> oncut_cord_loc2;
-      LINALG::Matrix<3, 1> otherSideNormal;
+      CORE::LINALG::Matrix<3, 1> oncut_cord;
+      CORE::LINALG::Matrix<3, 1> oncut_cord_loc;
+      CORE::LINALG::Matrix<2, 1> oncut_cord_loc2;
+      CORE::LINALG::Matrix<3, 1> otherSideNormal;
       onselfcutedgenode->point()->Coordinates(oncut_cord.A());
       otherselfcutside->LocalCoordinates(oncut_cord, oncut_cord_loc, false);
       oncut_cord_loc2(0) = oncut_cord_loc(0);
       oncut_cord_loc2(1) = oncut_cord_loc(1);
       otherselfcutside->Normal(oncut_cord_loc2, otherSideNormal);
-      LINALG::Matrix<3, 1> undecidedpointcoordinates;
-      LINALG::Matrix<3, 1> differencebetweenpoints;
+      CORE::LINALG::Matrix<3, 1> undecidedpointcoordinates;
+      CORE::LINALG::Matrix<3, 1> differencebetweenpoints;
       undecidednode->point()->Coordinates(undecidedpointcoordinates.A());
       differencebetweenpoints.Update(1.0, oncut_cord, -1.0, undecidedpointcoordinates);
       double norm = differencebetweenpoints.Norm2();
@@ -967,7 +967,7 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
       }
       else
         differencebetweenpoints.Scale(1. / norm);
-      LINALG::Matrix<1, 1> innerproduct;
+      CORE::LINALG::Matrix<1, 1> innerproduct;
       innerproduct.MultiplyTN(differencebetweenpoints, otherSideNormal);
       if (innerproduct(0) > 0 and fabs(innerproduct(0)) > SELF_CUT_POS_TOL)
       {
@@ -1541,7 +1541,7 @@ void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1556,7 +1556,7 @@ void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1596,7 +1596,7 @@ void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
     Edge* cutsideedge = &*i->second;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     cutsideedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -1630,7 +1630,7 @@ void CORE::GEO::CUT::SelfCut::CuttedSideStatusGmsh(const std::string& name)
     Node* cutsidenode = &*i->second;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     cutsidenode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -1712,7 +1712,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1727,7 +1727,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1776,7 +1776,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     Edge* cutsideedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     cutsideedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -1820,7 +1820,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     Node* cutsidenode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     cutsidenode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -1853,7 +1853,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1868,7 +1868,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -1917,7 +1917,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     Node* selfcutnode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     selfcutnode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -1947,7 +1947,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     Edge* selfcutedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     selfcutedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2006,9 +2006,9 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
         elementfacetpoint2 = *(i + 1 - elementfacetpointssize);
       }
       file << "SL (";
-      LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
       elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
-      LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
       elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
@@ -2098,7 +2098,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2113,7 +2113,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2163,7 +2163,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     Edge* cutsideedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     cutsideedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2207,7 +2207,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     Node* cutsidenode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     cutsidenode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -2231,7 +2231,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     if (selfcutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> selfcutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> selfcutsidecoordinates;
       selfcutside->Coordinates(selfcutsidecoordinates.A());
       for (int i = 0; i < selfcutsidetype; ++i)
       {
@@ -2246,7 +2246,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     else if (selfcutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> selfcutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> selfcutsidecoordinates;
       selfcutside->Coordinates(selfcutsidecoordinates.A());
       for (int i = 0; i < selfcutsidetype; ++i)
       {
@@ -2285,7 +2285,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     Edge* selfcutedge = &*i->second;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> selfcutedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> selfcutedgecoordinates;
     selfcutedge->Coordinates(selfcutedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2318,7 +2318,7 @@ void CORE::GEO::CUT::SelfCut::SCObjectsGmsh(const std::string& name)
     Node* selfcutnode = &*i->second;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> selfcutnodecoordinates;
+    CORE::LINALG::Matrix<3, 1> selfcutnodecoordinates;
     selfcutnode->Coordinates(selfcutnodecoordinates.A());
     file << selfcutnodecoordinates(0, 0) << "," << selfcutnodecoordinates(1, 0) << ","
          << selfcutnodecoordinates(2, 0);
@@ -2402,7 +2402,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2417,7 +2417,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2466,7 +2466,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     Edge* cutsideedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     cutsideedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2509,7 +2509,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     Node* cutsidenode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     cutsidenode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -2541,7 +2541,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2556,7 +2556,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2605,7 +2605,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     Node* selfcutnode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     selfcutnode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -2634,7 +2634,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     Edge* selfcutedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     selfcutedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2692,9 +2692,9 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
         elementfacetpoint2 = *(i + 1 - elementfacetpointssize);
       }
       file << "SL (";
-      LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
       elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
-      LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
       elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
@@ -2812,7 +2812,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2827,7 +2827,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cutside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2876,7 +2876,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     Edge* cutsideedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     cutsideedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -2919,7 +2919,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     Node* cutsidenode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     cutsidenode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -2951,7 +2951,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     if (cutsidetype == 3)
     {
       file << "ST (";
-      LINALG::Matrix<3, 3> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 3> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -2966,7 +2966,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     else if (cutsidetype == 4)
     {
       file << "SQ (";
-      LINALG::Matrix<3, 4> cutsidecoordinates;
+      CORE::LINALG::Matrix<3, 4> cutsidecoordinates;
       cuttingside->Coordinates(cutsidecoordinates.A());
       for (int i = 0; i < cutsidetype; ++i)
       {
@@ -3015,7 +3015,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     Node* selfcutnode = *i;
     file.precision(16);
     file << "SP (";
-    LINALG::Matrix<3, 1> cutsidenodecoordinates;
+    CORE::LINALG::Matrix<3, 1> cutsidenodecoordinates;
     selfcutnode->Coordinates(cutsidenodecoordinates.A());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
@@ -3044,7 +3044,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     Edge* selfcutedge = *i;
     file.precision(16);
     file << "SL (";
-    LINALG::Matrix<3, 2> cutsideedgecoordinates;
+    CORE::LINALG::Matrix<3, 2> cutsideedgecoordinates;
     selfcutedge->Coordinates(cutsideedgecoordinates.A());
     for (int i = 0; i < 2; ++i)
     {
@@ -3102,9 +3102,9 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
         elementfacetpoint2 = *(i + 1 - elementfacetpointssize);
       }
       file << "SL (";
-      LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint1coordinates;
       elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
-      LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
+      CORE::LINALG::Matrix<3, 1> elementfacetpoint2coordinates;
       elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
@@ -3324,7 +3324,7 @@ void CORE::GEO::CUT::SelfCut::SidePlotHead()
 
 void CORE::GEO::CUT::SelfCut::PointPlot(Point& point)
 {
-  LINALG::Matrix<3, 1> pointcoordinates;
+  CORE::LINALG::Matrix<3, 1> pointcoordinates;
   point.Coordinates(pointcoordinates.A());
   std::cout << std::setprecision(16) << pointcoordinates(0) << "\t" << std::setprecision(16)
             << pointcoordinates(1) << "\t" << std::setprecision(16) << pointcoordinates(2) << "\t# "

@@ -31,12 +31,12 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace Teuchos
 {
@@ -78,7 +78,7 @@ namespace STR
      *
      *  \note Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
     void ApplyDirichletToLocalSystem(
-        Teuchos::RCP<LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
@@ -114,7 +114,7 @@ namespace STR
     //!@{
 
     //! Get the Dirichlet Boundary Condition map extractor
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
 
     //! Get a pointer to the local system manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocSysManagerPtr();
@@ -135,9 +135,9 @@ namespace STR
      *
      *  \pre #locsysman_ has to be defined.
      *
-     *  \note Works only for LINALG::SparseMatrices.
+     *  \note Works only for CORE::LINALG::SparseMatrices.
      **/
-    bool RotateGlobalToLocal(const Teuchos::RCP<LINALG::SparseOperator>& A) const;
+    bool RotateGlobalToLocal(const Teuchos::RCP<CORE::LINALG::SparseOperator>& A) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -194,7 +194,7 @@ namespace STR
     Epetra_Vector& Freact() const;
 
     //! Get the locsys transformation matrix
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Get the global state
     const STR::TIMINT::BaseDataGlobalState& GState() const;
@@ -218,7 +218,7 @@ namespace STR
      *
      *  \param[in/out] A Jacobian matrix
      */
-    void ApplyDirichletToLocalJacobian(Teuchos::RCP<LINALG::SparseOperator> A) const;
+    void ApplyDirichletToLocalJacobian(Teuchos::RCP<CORE::LINALG::SparseOperator> A) const;
 
    protected:
     //! Flag indicating the initialization status.
@@ -243,7 +243,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> zeros_ptr_;
 
     //! Dirichlet boundary condition map extractor.
-    Teuchos::RCP<LINALG::MapExtractor> dbcmap_ptr_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmap_ptr_;
 
    private:
     //! Reaction force
@@ -279,8 +279,8 @@ namespace NOX
           virtual ~Dbc(){};
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
-          void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs, LINALG::SparseOperator& jac,
-              const NOX::NLN::LinearSystem& linsys) override;
+          void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,
+              CORE::LINALG::SparseOperator& jac, const NOX::NLN::LinearSystem& linsys) override;
 
          private:
           //! pointer to the underlying class, which provides the whole functionality

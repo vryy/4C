@@ -57,9 +57,10 @@ namespace BEAMINTERACTION
      * @param stiffmat22 (out) Stiffness contributions on element 2 - element 2.
      * @return True if pair is in contact.
      */
-    bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override
     {
       return false;
     };
@@ -122,7 +123,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element1. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("GetAllActiveContactPointCoordsElement1 not yet implemented!");
     }
@@ -131,7 +132,7 @@ namespace BEAMINTERACTION
      * \brief Get coordinates of all active contact points on element2. Not yet implemented.
      */
     void GetAllActiveContactPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const override
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("GetAllActiveContactPointCoordsElement2 not yet implemented!");
     }
@@ -175,17 +176,17 @@ namespace BEAMINTERACTION
      */
     virtual void EvaluateBeamPositionDouble(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, double>& r_beam, bool reference) const;
+        CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const;
 
    protected:
     //! Vector with the segments of the line to 3D pair.
     std::vector<GEOMETRYPAIR::LineSegment<segments_scalar_type>> line_to_3D_segments_;
 
     //! Current nodal positions (and tangents) of the beam.
-    LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1pos_;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1pos_;
 
     //! Reference nodal positions (and tangents) of the beam.
-    LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1posref_;
   };
 }  // namespace BEAMINTERACTION
 

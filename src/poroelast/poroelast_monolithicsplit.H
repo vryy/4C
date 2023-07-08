@@ -24,7 +24,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit MonolithicSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system (depends on which field is splitted)
     void SetupSystem() override = 0;
@@ -33,7 +33,7 @@ namespace POROELAST
     void SetupRHS(bool firstcall = false) override = 0;
 
     //! setup composed system matrix from field solvers (depends on which field is splitted)
-    void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) override = 0;
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override = 0;
 
     //! start a new time step
     void PrepareTimeStep() override;
@@ -79,7 +79,7 @@ namespace POROELAST
     Teuchos::RCP<Epetra_Map> fsibcmap_;
 
     //! map extractor DOFs with both fsi- and DBC conditions
-    Teuchos::RCP<LINALG::MapExtractor> fsibcextractor_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> fsibcextractor_;
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 

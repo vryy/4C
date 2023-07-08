@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of singular value decomposition (SVD) methods for namespace LINALG
+\brief A collection of singular value decomposition (SVD) methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -12,8 +12,8 @@
 #include "linalg_utils_densematrix_svd.H"
 #include "utils_exceptions.H"
 
-void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q,
-    LINALG::SerialDenseMatrix& S, LINALG::SerialDenseMatrix& VT)
+void CORE::LINALG::SVD(const Epetra_SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& Q,
+    CORE::LINALG::SerialDenseMatrix& S, CORE::LINALG::SerialDenseMatrix& VT)
 {
   Epetra_SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
   const char jobu = 'A';            // compute and return all M columns of U

@@ -33,9 +33,9 @@ namespace MAT
    * @param potsum (in) : Vector of summands of the strain energy function
    * @param properties (in) : Properties of the summands of the strain energy function
    */
-  void MembraneElastHyperEvaluateIsotropicStressCmat(const LINALG::Matrix<3, 3>& cauchygreen,
-      Teuchos::ParameterList& params, const LINALG::Matrix<3, 3>& Q_trafo,
-      LINALG::Matrix<3, 1>& stress, LINALG::Matrix<3, 3>& cmat, int gp, int eleGID,
+  void MembraneElastHyperEvaluateIsotropicStressCmat(const CORE::LINALG::Matrix<3, 3>& cauchygreen,
+      Teuchos::ParameterList& params, const CORE::LINALG::Matrix<3, 3>& Q_trafo,
+      CORE::LINALG::Matrix<3, 1>& stress, CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
       const SummandProperties& properties);
 
@@ -50,9 +50,9 @@ namespace MAT
    * @param rcg33 (out) : principal stretch in thickness direction
    * @param icg (out) : inverse right Cauchy-Green in stress-like 3-Voigt notation
    */
-  void MembraneElastHyperEvaluateKinQuant(const LINALG::Matrix<3, 3>& cauchygreen,
-      LINALG::Matrix<3, 1>& id2, LINALG::Matrix<3, 3>& id4sharp, LINALG::Matrix<3, 1>& rcg,
-      double& rcg33, LINALG::Matrix<3, 1>& icg);
+  void MembraneElastHyperEvaluateKinQuant(const CORE::LINALG::Matrix<3, 3>& cauchygreen,
+      CORE::LINALG::Matrix<3, 1>& id2, CORE::LINALG::Matrix<3, 3>& id4sharp,
+      CORE::LINALG::Matrix<3, 1>& rcg, double& rcg33, CORE::LINALG::Matrix<3, 1>& icg);
 
   /*!
    * @brief Computes the isotropic stress response and the linearization
@@ -71,10 +71,10 @@ namespace MAT
    * @param potsum (in) : Vector of summands of the strain energy function
    * @param properties (in) : Properties of the summands of the strain energy function
    */
-  void MembraneElastHyperEvaluateIsotropicStressCmat(LINALG::Matrix<3, 1>& stress_iso,
-      LINALG::Matrix<3, 3>& cmat_iso, const LINALG::Matrix<3, 1>& id2,
-      const LINALG::Matrix<3, 3>& id4sharp, const LINALG::Matrix<3, 1>& rcg, const double& rcg33,
-      const LINALG::Matrix<3, 1>& icg, int gp, int eleGID,
+  void MembraneElastHyperEvaluateIsotropicStressCmat(CORE::LINALG::Matrix<3, 1>& stress_iso,
+      CORE::LINALG::Matrix<3, 3>& cmat_iso, const CORE::LINALG::Matrix<3, 1>& id2,
+      const CORE::LINALG::Matrix<3, 3>& id4sharp, const CORE::LINALG::Matrix<3, 1>& rcg,
+      const double& rcg33, const CORE::LINALG::Matrix<3, 1>& icg, int gp, int eleGID,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
       const SummandProperties& properties);
 
@@ -85,8 +85,8 @@ namespace MAT
    * @param rcg (in) : right cauchy-green in stress-like 3-Voigt notation
    * @param rcg33 (in) :principal stretch in thickness direction
    */
-  void MembraneElastHyperInvariantsPrincipal(
-      LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& rcg, const double& rcg33);
+  void MembraneElastHyperInvariantsPrincipal(CORE::LINALG::Matrix<3, 1>& prinv,
+      const CORE::LINALG::Matrix<3, 1>& rcg, const double& rcg33);
 
 }  // namespace MAT
 

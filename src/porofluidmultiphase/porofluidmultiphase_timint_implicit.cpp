@@ -171,45 +171,45 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1
-  phinp_ = LINALG::CreateVector(*dofrowmap, true);
+  phinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // solutions at time n
-  phin_ = LINALG::CreateVector(*dofrowmap, true);
+  phin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // time derivative of solutions at time n
-  phidtn_ = LINALG::CreateVector(*dofrowmap, true);
+  phidtn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // time derivative of solutions at time n+1
-  phidtnp_ = LINALG::CreateVector(*dofrowmap, true);
+  phidtnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // history vector
-  hist_ = LINALG::CreateVector(*dofrowmap, true);
+  hist_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // valid (physically meaningful) volume fraction dofs
-  valid_volfracpress_dofs_ = LINALG::CreateVector(*dofrowmap, true);
-  valid_volfracspec_dofs_ = LINALG::CreateVector(*dofrowmap, true);
+  valid_volfracpress_dofs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  valid_volfracspec_dofs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   if (output_satpress_)
   {
     // pressure at time n+1
-    pressure_ = LINALG::CreateVector(*dofrowmap, true);
+    pressure_ = CORE::LINALG::CreateVector(*dofrowmap, true);
     // saturation at time n+1
-    saturation_ = LINALG::CreateVector(*dofrowmap, true);
+    saturation_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   }
   // solid pressure at time n+1
   if (output_solidpress_)
-    solidpressure_ = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+    solidpressure_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
   // porosity at time n+1 (lives on same dofset as solid pressure)
   if (output_porosity_)
-    porosity_ = LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+    porosity_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   int stream;
   std::istringstream stream_dbc_onoff(
@@ -221,9 +221,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   while (stream_dbc_funct >> stream) starting_dbc_funct_.push_back(static_cast<int>(stream));
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-  dbcmaps_with_volfracpress_ = Teuchos::rcp(new LINALG::MapExtractor());
-  dbcmaps_starting_condition_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dbcmaps_with_volfracpress_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
+  dbcmaps_starting_condition_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -241,16 +241,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = LINALG::CreateVector(*dofrowmap, true);
+  neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = LINALG::CreateVector(*dofrowmap, true);
+  trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = LINALG::CreateVector(*dofrowmap, true);
+  increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set initial field
@@ -297,7 +297,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  solver_ = Teuchos::rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       DRT::Problem::Instance()->SolverParams(linsolvernumber_), discret_->Comm(), errfile_));
   strategy_->InitializeLinearSolver(solver_);
 
@@ -625,8 +625,8 @@ Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::TimIntImpl::ArteryDofRowMap(
 /*-----------------------------------------------------------------------*
  | access to block system matrix of artery poro problem kremheller 05/18 |
  *-----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROFLUIDMULTIPHASE::TimIntImpl::ArteryPorofluidSysmat()
-    const
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+POROFLUIDMULTIPHASE::TimIntImpl::ArteryPorofluidSysmat() const
 {
   return strategy_->ArteryPorofluidSysmat();
 }
@@ -873,8 +873,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyAdditionalDBCForVolFracPress()
   condmaps.push_back(dbcmaps_->CondMap());
 
   // combined map
-  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *dbcmaps_with_volfracpress_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_with_volfracpress_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
 
   return;
 }
@@ -930,15 +930,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
   condition_maps.emplace_back(additional_map);
   condition_maps.push_back(dbcmaps_with_volfracpress_->CondMap());
 
-  Teuchos::RCP<Epetra_Map> combined_map = LINALG::MultiMapExtractor::MergeMaps(condition_maps);
-  *dbcmaps_starting_condition_ = LINALG::MapExtractor(*(discret_->DofRowMap()), combined_map);
+  Teuchos::RCP<Epetra_Map> combined_map =
+      CORE::LINALG::MultiMapExtractor::MergeMaps(condition_maps);
+  *dbcmaps_starting_condition_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), combined_map);
 }
 
 /*----------------------------------------------------------------------*
  | assembly process for fluid-structure-coupling matrix kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidStructCouplingMat(
-    Teuchos::RCP<LINALG::SparseOperator> k_fs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs)
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + element calls");
@@ -982,7 +983,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidStructCouplingMat(
  | assembly process for fluid-scatra-coupling matrix   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::AssembleFluidScatraCouplingMat(
-    Teuchos::RCP<LINALG::SparseOperator> k_pfs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs)
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:       + element calls");
@@ -1271,7 +1272,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPressuresAndSaturations()
     AddTimeIntegrationSpecificVectors();
 
     // initialize counter vector (will store how many times the node has been evaluated)
-    Teuchos::RCP<Epetra_Vector> counter = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> counter = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     ;
 
     // call loop over elements
@@ -1316,7 +1317,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructSolidPressures()
 
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
-      LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
   ;
 
   // create strategy for assembly of solid pressure
@@ -1394,7 +1395,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ReconstructPorosity()
 
   // initialize counter vector (will store how many times the node has been evaluated)
   Teuchos::RCP<Epetra_Vector> counter =
-      LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(nds_solidpressure_), true);
   ;
 
   // create strategy for assembly of porosity
@@ -1821,12 +1822,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
 
     if (time_ <= starting_dbc_time_end_)
     {
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sysmat_, increment_, residual_, zeros_, *(dbcmaps_starting_condition_->CondMap()));
     }
     else
     {
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sysmat_, increment_, residual_, zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
     }
   }
@@ -2102,14 +2103,14 @@ void POROFLUIDMULTIPHASE::TimIntImpl::FDCheck()
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
-  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
+    sysmat_original = (new CORE::LINALG::SparseMatrix(
+                           *(Teuchos::rcp_static_cast<CORE::LINALG::SparseMatrix>(sysmat_))))
+                          ->EpetraMatrix();
+  else if (Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
     sysmat_original =
-        (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(sysmat_))))
-            ->EpetraMatrix();
-  else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
-    sysmat_original =
-        (new LINALG::SparseMatrix(
-             *(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
+        (new CORE::LINALG::SparseMatrix(
+             *(Teuchos::rcp_static_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
             ->EpetraMatrix();
   else
     dserror("Type of system matrix unknown!");

@@ -22,9 +22,9 @@ equations
  *      Compute normal vector for the line. if normal(0)==0, the line need not be integrated
  *(Divergence theorem)       *
  *----------------------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<2, 1> LineIntegration::compute_normal()
+CORE::LINALG::Matrix<2, 1> LineIntegration::compute_normal()
 {
-  LINALG::Matrix<2, 1> normal;
+  CORE::LINALG::Matrix<2, 1> normal;
   double dy = end_pts_(1, 1) - end_pts_(1, 0);
   double dx = -end_pts_(0, 1) + end_pts_(0, 0);
   double modd = sqrt(dx * dx + dy * dy);
@@ -40,7 +40,7 @@ LINALG::Matrix<2, 1> LineIntegration::compute_normal()
  *------------------------------------------------------------------------------*/
 double LineIntegration::integrate_line()
 {
-  LINALG::Matrix<2, 1> normal;
+  CORE::LINALG::Matrix<2, 1> normal;
   normal = compute_normal();
 
   if (fabs(normal(0, 0)) < TOL_LINE_NORMAL) return 0.0;
@@ -53,9 +53,9 @@ double LineIntegration::integrate_line()
 
   for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
   {
-    const LINALG::Matrix<1, 1> eta(iquad.Point());
+    const CORE::LINALG::Matrix<1, 1> eta(iquad.Point());
     double weight = iquad.Weight();
-    LINALG::Matrix<2, 1> normaltemp, actCoord;
+    CORE::LINALG::Matrix<2, 1> normaltemp, actCoord;
     double drs = 0.0;
     Transform(end_pts_, eta(0, 0), actCoord, normaltemp, drs);
 
@@ -87,14 +87,14 @@ double LineIntegration::integrate_line()
  *     Transform the Gaussian point coordinates and weight from (-1,1) interval to actual coordinate
  *of the lines       *
  *----------------------------------------------------------------------------------------------------------------------*/
-void LineIntegration::Transform(const LINALG::Matrix<2, 2> &xyze, const double &eta,
-    LINALG::Matrix<2, 1> &x_gp_lin, LINALG::Matrix<2, 1> &normal, double &drs)
+void LineIntegration::Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
+    CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs)
 {
   const int numnodes =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
-  LINALG::Matrix<numnodes, 1> funct;
-  LINALG::Matrix<1, numnodes> deriv;
-  LINALG::Matrix<1, 1> metrictensor;
+  CORE::LINALG::Matrix<numnodes, 1> funct;
+  CORE::LINALG::Matrix<1, numnodes> deriv;
+  CORE::LINALG::Matrix<1, 1> metrictensor;
 
   CORE::DRT::UTILS::shape_function_1D(funct, eta, ::DRT::Element::line2);
   CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta, ::DRT::Element::line2);

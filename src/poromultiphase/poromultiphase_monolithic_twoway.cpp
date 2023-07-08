@@ -47,7 +47,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroMultiPhaseMonolithicTwoWay(
       solveradapttol_(false),
       blockrowdofmap_(Teuchos::null),
       equilibration_(Teuchos::null),
-      equilibration_method_(LINALG::EquilibrationMethod::none),
+      equilibration_method_(CORE::LINALG::EquilibrationMethod::none),
       tolinc_(0.0),
       tolfres_(0.0),
       tolinc_struct_(0.0),
@@ -96,12 +96,12 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Init(
   ittolres_ = algoparams.sublist("MONOLITHIC").get<double>("TOLRES_GLOBAL");
   ittolinc_ = algoparams.sublist("MONOLITHIC").get<double>("TOLINC_GLOBAL");
 
-  blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   fdcheck_ = DRT::INPUT::IntegralValue<INPAR::POROMULTIPHASE::FDCheck>(
       algoparams.sublist("MONOLITHIC"), "FDCHECK");
 
-  equilibration_method_ = Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+  equilibration_method_ = Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
       algoparams.sublist("MONOLITHIC"), "EQUILIBRATION");
 
   solveradaptolbetter_ = algoparams.sublist("MONOLITHIC").get<double>("ADAPTCONV_BETTER");
@@ -126,19 +126,21 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   // -------------------------------------------------------------
 
   // initialize Poromultiphase-elasticity-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *Extractor(), *Extractor(), 81, false, true));
+  systemmatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *Extractor(), *Extractor(), 81, false, true));
 
   // Initialize rhs
   rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  k_sf_ = Teuchos::rcp(new LINALG::SparseMatrix(*(StructDofRowMap()), 81, true, true));
-  k_fs_ = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidDofRowMap()), 81, true, true));
+  k_sf_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(StructDofRowMap()), 81, true, true));
+  k_fs_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(FluidDofRowMap()), 81, true, true));
 
   // instantiate appropriate equilibration class
-  auto equilibration_method = std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_);
-  equilibration_ =
-      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method, fullmap_);
+  auto equilibration_method =
+      std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_);
+  equilibration_ = CORE::LINALG::BuildEquilibration(
+      CORE::LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC
@@ -167,7 +169,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupMaps()
   if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->Setup(*fullmap_, vecSpaces);
@@ -236,7 +238,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildCombinedDBCMap()
   const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
   // merge them
-  combinedDBCMap_ = LINALG::MergeMap(scondmap, fcondmap, false);
+  combinedDBCMap_ = CORE::LINALG::MergeMap(scondmap, fcondmap, false);
 
   return;
 }
@@ -320,7 +322,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate(Teuchos::RCP<const
  | setup system matrix of poromultiphase-elasticity   kremheller 03/17  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
-    LINALG::BlockSparseMatrixBase& mat)
+    CORE::LINALG::BlockSparseMatrixBase& mat)
 {
   // TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupSystemMatrix");
 
@@ -331,7 +333,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
   if (k_ss == Teuchos::null) dserror("structure system matrix null pointer!");
 
@@ -355,7 +357,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // build mechanical-fluid block
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
@@ -404,7 +406,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
   // NOTE: DBC's have already been applied within Evaluate (PrepareSystemForNewtonSolve())
-  Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
 
   if (k_ff == Teuchos::null) dserror("fluid system matrix null pointer!");
 
@@ -413,7 +415,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // build fluid-mechanical block
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_fs = FluidStructCouplingMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fs = FluidStructCouplingMatrix();
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);
@@ -431,13 +433,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   k_ff->UnComplete();
 
   // assign structure part to the Poroelasticity matrix
-  mat.Assign(0, 0, LINALG::View, *k_ss);
+  mat.Assign(0, 0, CORE::LINALG::View, *k_ss);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(0, 1, LINALG::View, *k_sf);
+  mat.Assign(0, 1, CORE::LINALG::View, *k_sf);
   // assign fluid part to the poroelasticity matrix
-  mat.Assign(1, 1, LINALG::View, *k_ff);
+  mat.Assign(1, 1, CORE::LINALG::View, *k_ff);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(1, 0, LINALG::View, *k_fs);
+  mat.Assign(1, 0, CORE::LINALG::View, *k_fs);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
@@ -448,12 +450,12 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
 /*----------------------------------------------------------------------*
  | get fluid structure-coupling sparse matrix           kremheller 03/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::FluidStructCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_fs_);
-  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_fs_);
+  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }  // FluidStructCouplingMatrix()
@@ -461,12 +463,12 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::FluidStructCouplingMatrix()
 /*----------------------------------------------------------------------*
  | get structure fluid-coupling sparse matrix           kremheller 03/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::StructFluidCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf_);
-  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sf_);
+  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }  // FluidStructCouplingMatrix()
@@ -475,7 +477,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::StructFluidCouplingMatrix()
  | evaluate fluid-structural system matrix at state    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyFluidCouplMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> k_fs  //!< off-diagonal tangent matrix term
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs  //!< off-diagonal tangent matrix term
 )
 {
   // reset
@@ -525,7 +527,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::UpdateFieldsAfterConvergenc
  | evaluate structural-fluid system matrix at state    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyStrCouplMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> k_sf  //!< off-diagonal tangent matrix term
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf  //!< off-diagonal tangent matrix term
 )
 {
   k_sf->Zero();
@@ -609,8 +611,8 @@ bool POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSolver()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
     const Teuchos::ParameterList& solverparams, const INPAR::SOLVER::SolverType solvertype)
 {
-  solver_ = Teuchos::rcp(
-      new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // no need to do the rest for direct solvers
   if (solvertype == INPAR::SOLVER::SolverType::umfpack or
       solvertype == INPAR::SOLVER::SolverType::superlu)
@@ -652,7 +654,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::CreateLinearSolver(
  | build null spaces associated with blocks of global system matrix kremheller 08/17 |
  *-----------------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::BuildBlockNullSpaces(
-    Teuchos::RCP<LINALG::Solver>& solver)
+    Teuchos::RCP<CORE::LINALG::Solver>& solver)
 {
   // equip smoother for structure matrix block with empty parameter sublists to trigger null space
   // computation
@@ -699,13 +701,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupNewton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+    iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+    zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -1027,8 +1029,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
-  iterinc = LINALG::CreateVector(*DofRowMap(), true);
-  abs_iterinc = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  abs_iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1041,15 +1043,15 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
   abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
+  stiff_approx = CORE::LINALG::CreateMatrix(*DofRowMap(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sparse->EpetraMatrix(), CORE::LINALG::Copy));
 
   if (false)
   {
@@ -1082,7 +1084,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
     Teuchos::RCP<Epetra_CrsMatrix> test_crs = sparse_copy->EpetraMatrix();
     int sparsenumentries;
@@ -1108,7 +1110,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
       std::cout << "( rhs_disturb - rhs_old )               "
                 << (*rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
       std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (*rhs_copy)[zeilennr] << std::endl;
-      // LINALG::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
+      // CORE::LINALG::PrintMatrixInMatlabFormat("../o/mymatrix.dat",*test_crs);
       // dserror("exit here");
       // std::cout << sparse_copy(4,35) << std::endl;
     }
@@ -1155,8 +1157,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
   stiff_approx->FillComplete();
 
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
+  stiff_approx_sparse =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 
@@ -1294,7 +1297,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseMonolithicTwoWay(comm, globaltimeparams)
 {
-  blockrowdofmap_artporo_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_artporo_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   return;
 }
@@ -1317,13 +1320,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupMaps()
   if (vecSpaces[2]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
 
   // full Poromultiphase-elasticity-map
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full Poromultiphase-elasticity-blockmap
   blockrowdofmap_->Setup(*fullmap_, vecSpaces);
 
   // full map of artery and poromulti DOFs
-  fullmap_artporo_ = LINALG::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
+  fullmap_artporo_ = CORE::LINALG::MultiMapExtractor::MergeMaps({vecSpaces[1], vecSpaces[2]});
 
   // full artery-poromulti-blockmap
   blockrowdofmap_artporo_->Setup(*fullmap_artporo_, {vecSpaces[1], vecSpaces[2]});
@@ -1384,16 +1387,16 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::ExtractFieldV
  | coupling                                           kremheller 05/18  |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMatrix(
-    LINALG::BlockSparseMatrixBase& mat)
+    CORE::LINALG::BlockSparseMatrixBase& mat)
 {
   PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(mat);
 
   // pure artery part
-  mat.Assign(2, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 1));
+  mat.Assign(2, 2, CORE::LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 1));
   // artery-porofluid part
-  mat.Assign(2, 1, LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 0));
+  mat.Assign(2, 1, CORE::LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 0));
   // porofluid-artery part
-  mat.Assign(1, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(0, 1));
+  mat.Assign(1, 2, CORE::LINALG::View, ArteryPorofluidSysmat()->Matrix(0, 1));
 
   return;
 }
@@ -1431,7 +1434,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildCombined
       FluidField()->ArtNetTimInt()->GetDBCMapExtractor()->CondMap();
 
   // merge them
-  combinedDBCMap_ = LINALG::MergeMap(combinedDBCMap_, artcondmap, false);
+  combinedDBCMap_ = CORE::LINALG::MergeMap(combinedDBCMap_, artcondmap, false);
 
   return;
 }
@@ -1439,7 +1442,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildCombined
  | build null space for artery block of global system matrix kremheller 05/18 |
  *--------------------------------------------------------------------------- */
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::BuildArteryBlockNullSpace(
-    Teuchos::RCP<LINALG::Solver>& solver, const int& arteryblocknum)
+    Teuchos::RCP<CORE::LINALG::Solver>& solver, const int& arteryblocknum)
 {
   // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
   // computation

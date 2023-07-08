@@ -132,8 +132,8 @@ void STR::Integrator::EquilibrateInitialState()
       Teuchos::rcp(new NOX::Epetra::Vector(rhs_ptr, NOX::Epetra::Vector::CreateView));
 
   // initialize a temporal structural stiffness matrix
-  Teuchos::RCP<LINALG::SparseOperator> stiff_ptr =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GlobalState().DofRowMapView(), 81, true, true));
+  Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_ptr =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GlobalState().DofRowMapView(), 81, true, true));
 
 
   // overwrite initial state vectors with Dirichlet BCs
@@ -189,7 +189,7 @@ void STR::Integrator::EquilibrateInitialState()
   // build a NOX::NLN::STR::LinearSystem
   // ---------------------------------------------------------------------------
   // get the structural linear solver
-  std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> str_linsolver;
+  std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> str_linsolver;
   str_linsolver[NOX::NLN::sol_structure] =
       TimInt().GetDataSDyn().GetLinSolvers().at(INPAR::STR::model_structure);
 

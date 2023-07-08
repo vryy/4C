@@ -113,11 +113,11 @@ namespace DRT
    own base class
    std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
    std::unordered_map<T,U>
-   packing its own base class std::pair<T,U> std::set<T> LINALG::Matrix<T,U>
-   std::vector<LINALG::Matrix<T,U> >
+   packing its own base class std::pair<T,U> std::set<T> CORE::LINALG::Matrix<T,U>
+   std::vector<CORE::LINALG::Matrix<T,U> >
    Epetra_SerialDenseMatrix
    Epetra_SerialDenseVector
-   LINALG::SerialDenseMatrix
+   CORE::LINALG::SerialDenseMatrix
 
    \endcode
 
@@ -448,12 +448,12 @@ namespace DRT
     /*!
      \brief Add stuff to the end of a char vector data
 
-     This method is an overload of the above template for LINALG::SerialDenseMatrix
+     This method is an overload of the above template for CORE::LINALG::SerialDenseMatrix
      \param data (in/out) : char string stuff shall be added to
-     \param stuff (in)    : LINALG::SerialDenseMatrix that get's added to stuff
+     \param stuff (in)    : CORE::LINALG::SerialDenseMatrix that get's added to stuff
 
      */
-    static void AddtoPack(PackBuffer& data, const LINALG::SerialDenseMatrix& stuff);
+    static void AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff);
 
     /*!
      \brief Add stuff to the end of a char vector data
@@ -464,7 +464,7 @@ namespace DRT
 
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const LINALG::Matrix<i, j>& stuff)
+    static void AddtoPack(PackBuffer& data, const CORE::LINALG::Matrix<i, j>& stuff)
     {
       AddtoPack(data, i);
       AddtoPack(data, j);
@@ -480,7 +480,7 @@ namespace DRT
 
      */
     template <unsigned i, unsigned j>
-    static void AddtoPack(PackBuffer& data, const std::vector<LINALG::Matrix<i, j>>& stuff)
+    static void AddtoPack(PackBuffer& data, const std::vector<CORE::LINALG::Matrix<i, j>>& stuff)
     {
       // add length of vector to be packed so that later the vector can be restored with correct
       // length when unpacked
@@ -900,16 +900,17 @@ namespace DRT
     /*!
      @brief Extract stuff from a char vector data and increment position
 
-     This method is an overload of the above template for stuff of type LINALG::SerialDenseMatrix
+     This method is an overload of the above template for stuff of type
+     CORE::LINALG::SerialDenseMatrix
 
      @param position (in/out) : place in data where to extract stuff. Position will be incremented
      by this method
      @param data (in)         : char vector where stuff is extracted from
-     @param stuff (out)       : LINALG::SerialDenseMatrix to extract from data
+     @param stuff (out)       : CORE::LINALG::SerialDenseMatrix to extract from data
 
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, LINALG::SerialDenseMatrix& stuff);
+        const std::vector<char>& data, CORE::LINALG::SerialDenseMatrix& stuff);
 
     /*!
     @brief Extract stuff from a char vector data and increment position
@@ -923,7 +924,7 @@ namespace DRT
     */
     template <unsigned int i, unsigned int j>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, LINALG::Matrix<i, j>& stuff)
+        const std::vector<char>& data, CORE::LINALG::Matrix<i, j>& stuff)
     {
       int m = 0;
       ExtractfromPack(position, data, m);
@@ -947,7 +948,7 @@ namespace DRT
      */
     template <unsigned int i, unsigned int j>
     static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<LINALG::Matrix<i, j>>& stuff)
+        const std::vector<char>& data, std::vector<CORE::LINALG::Matrix<i, j>>& stuff)
     {
       // get length of vector to be extracted and allocate according amount of memory for all
       // extracted data

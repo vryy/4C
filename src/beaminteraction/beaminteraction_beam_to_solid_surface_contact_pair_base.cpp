@@ -119,7 +119,7 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
     const ::DRT::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
-  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(discret, this->Element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.

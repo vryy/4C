@@ -65,9 +65,9 @@ bool NOX::FSI::MinimalPolynomial::compute(
   const NOX::Abstract::Vector& x = soln.getX();
 
   std::vector<Teuchos::RCP<NOX::Epetra::Vector>> q;
-  LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
-  LINALG::SerialDenseVector c(kmax_ + 1, true);
-  LINALG::SerialDenseVector gamma(kmax_ + 1, true);
+  CORE::LINALG::SerialDenseMatrix r(kmax_ + 1, kmax_ + 1, true);
+  CORE::LINALG::SerialDenseVector c(kmax_ + 1, true);
+  CORE::LINALG::SerialDenseVector gamma(kmax_ + 1, true);
 
   int k;
   for (k = 0; k < kmax_; ++k)
@@ -194,7 +194,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
   }
 
   // calc extrapolated vector
-  LINALG::SerialDenseVector xi(kmax_, true);
+  CORE::LINALG::SerialDenseVector xi(kmax_, true);
   xi(0) = 1. - gamma(0);
   for (int j = 1; j < k; ++j)
   {

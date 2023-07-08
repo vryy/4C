@@ -62,7 +62,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::GetLastT
 bool STR::MODELEVALUATOR::PartitionedPASI::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  LINALG::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
 
   return true;
 }

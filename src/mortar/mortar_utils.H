@@ -20,11 +20,11 @@
 
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace MORTAR
 {
@@ -64,8 +64,9 @@ namespace MORTAR
 
   \post Output matrix will be FillComplete()
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowTransformGIDs(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (only GIDs)
@@ -82,8 +83,9 @@ namespace MORTAR
 
   \post Output matrix will be FillComplete()
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newdomainmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixColTransformGIDs(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*! \brief Replace the column and domain map of a filled matrix
    *
@@ -104,7 +106,7 @@ namespace MORTAR
    *                                  effort can be avoided.
    *
    *  \author hiermeier \date 04/17  */
-  void ReplaceColumnAndDomainMap(LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
+  void ReplaceColumnAndDomainMap(CORE::LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
       Teuchos::RCP<Epetra_Map>* const newcolmap_ptr = NULL);
 
   /*! \brief Create a new column map
@@ -115,7 +117,7 @@ namespace MORTAR
    *  \param newcolmap    (out): new column map
    *
    *  \author hiermeier \date 04/17 */
-  void CreateNewColMap(const LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
+  void CreateNewColMap(const CORE::LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
       Teuchos::RCP<Epetra_Map>& newcolmap);
 
   /*!
@@ -134,9 +136,9 @@ namespace MORTAR
 
   \post Output matrix will be FillComplete()
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap,
-      Teuchos::RCP<const Epetra_Map> newdomainmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowColTransformGIDs(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newrowmap, Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row map of a matrix (parallel distribution)
@@ -145,8 +147,9 @@ namespace MORTAR
   row map with identical GIDs but different parallel distribution.
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransform(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowTransform(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (parallel distribution)
@@ -156,8 +159,9 @@ namespace MORTAR
   (and the domain map, accordingly).
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransform(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newdomainmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixColTransform(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (parallel distribution)
@@ -167,9 +171,9 @@ namespace MORTAR
   parallel distribution (and the domain map, accordingly).
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransform(
-      Teuchos::RCP<const LINALG::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap,
-      Teuchos::RCP<const Epetra_Map> newdomainmap);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> MatrixRowColTransform(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> inmat,
+      Teuchos::RCP<const Epetra_Map> newrowmap, Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Parallel redistribution of a sparse matrix
@@ -177,7 +181,7 @@ namespace MORTAR
   Helper method for the MatrixTransform() methods above.
 
   */
-  Teuchos::RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
+  Teuchos::RCP<Epetra_CrsMatrix> Redistribute(const CORE::LINALG::SparseMatrix& src,
       const Epetra_Map& permrowmap, const Epetra_Map& permdomainmap);
 
   /*!
@@ -224,8 +228,8 @@ namespace MORTAR
     */
     void PrepareNURBSNode(DRT::Node* node, Teuchos::RCP<MORTAR::MortarNode> mnode);
 
-    void MortarMatrixCondensation(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& k,
-        const std::vector<Teuchos::RCP<LINALG::SparseMatrix>>& p);
+    void MortarMatrixCondensation(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& k,
+        const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);
 
     /*! \brief Perform static condensation of Jacobian with mortar matrix \f$D^{-1}M\f$
      *
@@ -233,21 +237,21 @@ namespace MORTAR
      * @param[in] p_row Mortar projection operator for condensation of rows
      * @param[in] p_col Mortar projection operator for condenstaion of columns
      */
-    void MortarMatrixCondensation(Teuchos::RCP<LINALG::SparseMatrix>& k,
-        const Teuchos::RCP<const LINALG::SparseMatrix>& p_row,
-        const Teuchos::RCP<const LINALG::SparseMatrix>& p_col);
+    void MortarMatrixCondensation(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k,
+        const Teuchos::RCP<const CORE::LINALG::SparseMatrix>& p_row,
+        const Teuchos::RCP<const CORE::LINALG::SparseMatrix>& p_col);
 
     void MortarRhsCondensation(
-        Teuchos::RCP<Epetra_Vector>& rhs, const Teuchos::RCP<LINALG::SparseMatrix>& p);
+        Teuchos::RCP<Epetra_Vector>& rhs, const Teuchos::RCP<CORE::LINALG::SparseMatrix>& p);
 
-    void MortarRhsCondensation(
-        Teuchos::RCP<Epetra_Vector>& rhs, const std::vector<Teuchos::RCP<LINALG::SparseMatrix>>& p);
-
-    void MortarRecover(
-        Teuchos::RCP<Epetra_Vector>& inc, const Teuchos::RCP<LINALG::SparseMatrix>& p);
+    void MortarRhsCondensation(Teuchos::RCP<Epetra_Vector>& rhs,
+        const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);
 
     void MortarRecover(
-        Teuchos::RCP<Epetra_Vector>& inc, const std::vector<Teuchos::RCP<LINALG::SparseMatrix>>& p);
+        Teuchos::RCP<Epetra_Vector>& inc, const Teuchos::RCP<CORE::LINALG::SparseMatrix>& p);
+
+    void MortarRecover(Teuchos::RCP<Epetra_Vector>& inc,
+        const std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>& p);
   }  // namespace UTILS
 }  // namespace MORTAR
 

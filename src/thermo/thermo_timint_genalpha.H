@@ -59,7 +59,7 @@ namespace THR
         const Teuchos::ParameterList& tdynparams,           //!< input parameters
         const Teuchos::ParameterList& xparams,              //!< extra flags
         Teuchos::RCP<DRT::Discretization> actdis,           //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,                //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,          //!< the solver
         Teuchos::RCP<IO::DiscretizationWriter> output       //!< the output
     );
 
@@ -98,13 +98,13 @@ namespace THR
     void PredictConstTempConsistRate();
 
     //! Evaluate ordinary internal force, its tangent at state
-    void ApplyForceTangInternal(const double time,  //!< evaluation time
-        const double dt,                            //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,    //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fcap,           //!< capacity force
-        Teuchos::RCP<Epetra_Vector> fint,           //!< internal force
-        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    void ApplyForceTangInternal(const double time,     //!< evaluation time
+        const double dt,                               //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
+        Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
+        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -117,11 +117,11 @@ namespace THR
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void ApplyForceExternalConv(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> tempn,    //!< temperature state T_n
-        const Teuchos::RCP<Epetra_Vector> temp,     //!< temperature state T_n+1
-        Teuchos::RCP<Epetra_Vector> fext,           //!< internal force
-        Teuchos::RCP<LINALG::SparseMatrix> tang     //!< tangent matrix
+    void ApplyForceExternalConv(const double time,     //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> tempn,       //!< temperature state T_n
+        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
+        Teuchos::RCP<Epetra_Vector> fext,              //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Create force residual #fres_ and its tangent #tang_

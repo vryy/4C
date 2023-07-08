@@ -29,12 +29,12 @@ namespace FSI
   class MonolithicFluidSplit;
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FPSI
 {
@@ -61,13 +61,13 @@ namespace FPSI
     //@}
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     /// setup composed right hand side from field solvers
     virtual void SetupRHS(bool firstcall = false);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     /// Recover the Lagrange multiplier at the interface   mayr.mt (03/2012)
     virtual void RecoverLagrangeMultiplier();
@@ -111,39 +111,39 @@ namespace FPSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixRowColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
         fggtransform_;  // g_fsi/g_fsi || F->S/F->S transform (FSI/FSI)
-    Teuchos::RCP<LINALG::MatrixRowColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
         fggtransform2_;  // g_fis/g_fpsi || F->S/F->S transform (FSI/FPSI)
-    Teuchos::RCP<LINALG::MatrixRowColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>
         fmgitransform_;  // g_fsi/i transform || F->S/F->A transform (FSI/FluidVolume)
 
-    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixRowTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform1_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform2_;  // g_fsi || F->S transform (FSI)
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
         Cfgtransform_;  // full FluidField || F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixRowTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
         Cfptransform_;  // full FluidField || F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixRowTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform>
         Cfptransform2_;  // full FluidField || F->S transform (FSI)
 
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         figtransform1_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         figtransform2_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         figtransform3_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         figtransform4_;  // for Row/Col-Map for Full - FluidField & F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         aigtransform_;  // for Row/Col-Map for Full - AleField & F->S transform (FSI)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         aigtransform2_;  // for Row/Col-Map for Full - AleField & F->S transform (FPSI)
 
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         couplingcoltransform_;  // for Row/Col-Map for Full - FluidField & F->A transform
                                 // (FluidVolume)
-    Teuchos::RCP<LINALG::MatrixColTransform>
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform>
         couplingcoltransformfs_;  // for Row/Col-Map for Full - FluidField & F->S transform (FPSI)
     ///@}
 
@@ -199,32 +199,32 @@ namespace FPSI
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgicur_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgiprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggprev_;
 
     //! block \f$F_{\Gamma I,i+1}^G\f$ of fluid shape derivatives matrix at current NOX iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgicur_;
 
     //! block \f$F_{\Gamma I,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgiprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}^G\f$ of fluid shape derivatives matrix at current NOX
     //! iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggcur_;
 
     //! block \f$F_{\Gamma\Gamma,i}^G\f$ of fluid shape derivatives matrix at previous NOX iteration
     //! \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggprev_;
 
     //@}
 

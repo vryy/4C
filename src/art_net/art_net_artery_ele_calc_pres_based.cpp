@@ -69,8 +69,8 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
   const int numnode = my::iel_;
 
   // construct views
-  LINALG::Matrix<numnode, numnode> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<numnode, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<numnode, numnode> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<numnode, 1> elevec1(elevec1_epetra.A(), true);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::ScatraEvaluate(Artery* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    LINALG::Matrix<my::iel_, my::iel_>& sysmat, LINALG::Matrix<my::iel_, 1>& rhs,
+    CORE::LINALG::Matrix<my::iel_, my::iel_>& sysmat, CORE::LINALG::Matrix<my::iel_, 1>& rhs,
     Teuchos::RCP<const MAT::Material> material)
 {
   // clear
@@ -136,8 +136,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   if (pressnp == Teuchos::null) dserror("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
-  LINALG::Matrix<my::iel_, 1> mypress(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = CalculateEleLength(ele, discretization, la);
@@ -190,7 +190,7 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
 
     // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
     //       nonlinear
-    LINALG::Matrix<1, 1> pressgrad;
+    CORE::LINALG::Matrix<1, 1> pressgrad;
     pressgrad.Multiply(my::deriv_, mypress);
     for (int inode = 0; inode < numnode; inode++)
       rhs(inode) -= my::deriv_(0, inode) * fac * pressgrad(0, 0);
@@ -212,8 +212,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::EvaluateFlow(Artery* ele,
   if (pressnp == Teuchos::null) dserror("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
-  LINALG::Matrix<my::iel_, 1> mypress(true);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
+  CORE::LINALG::Matrix<my::iel_, 1> mypress(true);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<my::iel_, 1>>(*pressnp, mypress, la[0].lm_);
 
   // calculate the element length
   const double L = CalculateEleLength(ele, discretization, la);

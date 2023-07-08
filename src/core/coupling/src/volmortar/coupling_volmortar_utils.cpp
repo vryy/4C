@@ -38,7 +38,7 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
       ::DRT::Element* actele2 = dis2->gElement(ids_2[i]);
       std::vector<double> centercoords2 = ::DRT::UTILS::ElementCenterRefeCoords(actele2);
 
-      LINALG::Matrix<3, 1> diffcoords(true);
+      CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
@@ -81,7 +81,7 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
       ::DRT::Element* actele1 = dis1->gElement(ids_1[i]);
       std::vector<double> centercoords1 = ::DRT::UTILS::ElementCenterRefeCoords(actele1);
 
-      LINALG::Matrix<3, 1> diffcoords(true);
+      CORE::LINALG::Matrix<3, 1> diffcoords(true);
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 

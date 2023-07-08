@@ -351,18 +351,18 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>> invJ_;
       // determinant of Jacobian in material frame
       std::vector<double> detJ_;
       // stuff consistent mass matrix
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>> invJ_mass_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>> invJ_mass_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_mass_;
 
       //! vector of partial derivatives in material frame
-      // vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
-      LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> nxyz_;
+      // vector<CORE::LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
+      CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> nxyz_;
 
       /// prestressing switch & time
       INPAR::STR::PreStress pstype_;
@@ -400,28 +400,30 @@ namespace DRT
           std::vector<double>* acc,                             ///< current accelerations
           std::vector<double>& residual,                        ///< current residual displ
           std::vector<double>& dispmat,                         ///< current material displacements
-          LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>*
-              stiffmatrix,                                             ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* massmatrix,  ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOTET10, 1>* force,       ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOTET10, 1>* forceinert,  ///< element inertial force vector
-          LINALG::Matrix<NUMDOF_SOTET10, 1>* force_str,   ///< element structural force vector
-          LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>*
+              massmatrix,                                       ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOTET10, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOTET10, 1>* forceinert,  ///< element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOTET10, 1>* force_str,   ///< element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,   ///< stress output option
           const INPAR::STR::StrainType iostrain);  ///< strain output option
 
       //! lump mass matrix (bborn 07/08)
-      void so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* emass);
+      void so_tet10_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* emass);
 
       // These functions are basically copied from the So_integrator,
       // along with the rather inconsitent matrix sizes.
 
       //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>> so_tet10_4gp_shapefcts();
       //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>& so_tet10_4gp_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
+      so_tet10_4gp_derivs();
 
       /*!
        * \brief Evaluate the first derivative of the shape functions at the Gauss point with the
@@ -431,15 +433,17 @@ namespace DRT
        * \param gp Gauss point
        */
       template <CORE::DRT::UTILS::GaussRule3D intrule>
-      void so_tet10_derivs(LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, int gp) const;
+      void so_tet10_derivs(
+          CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, int gp) const;
 
       //! Evaluate Tet10 Weights at 4 gausspoints to keep them static
       const std::vector<double>& so_tet10_4gp_weights();
 
       //! Evaluate Tet10 Shapefcts at 10 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOTET10, 1>>& so_tet10_11gp_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET10, 1>>& so_tet10_11gp_shapefcts();
       //! Evaluate Tet10 Derivs at 10 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>& so_tet10_11gp_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
+      so_tet10_11gp_derivs();
       //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
       const std::vector<double>& so_tet10_11gp_weights();
 

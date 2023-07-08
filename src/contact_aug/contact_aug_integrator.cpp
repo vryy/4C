@@ -533,7 +533,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
     // get Gauss point in slave element coordinates
     const double sxi[2] = {eta[0], eta[1]};
-    const LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+    const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
@@ -545,7 +545,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
     const double jac = sele.Jacobian(sxi);
 
     // evaluate the convective slave base vectors
-    LINALG::Matrix<3, 2> stau;
+    CORE::LINALG::Matrix<3, 2> stau;
     sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
     // evaluate the slave Jacobian 1-st order derivative
@@ -682,7 +682,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
@@ -691,7 +691,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
 
       // evaluate the convective slave base vectors
-      LINALG::Matrix<3, 2> stau;
+      CORE::LINALG::Matrix<3, 2> stau;
       sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
       // evaluate the two Jacobians (int. cell and slave element)
@@ -703,7 +703,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       evaluator_->Deriv_Jacobian(sele, sxi, sderiv_, stau);
 
       const double uniqueProjalpha = projInfo.uniqueProjAlpha_[my::gp_id_];
-      const LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -711,7 +711,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       shape_function_and_deriv1_and_deriv2<mastertype>(mele, uniqueMxi, mval_, mderiv_, mderiv2nd_);
 
       // evaluate the convective master base vectors
-      LINALG::Matrix<3, 2> mtau;
+      CORE::LINALG::Matrix<3, 2> mtau;
       mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
@@ -817,7 +817,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
@@ -828,7 +828,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::Integr
       // evaluate the two Jacobians (int. cell and slave element)
       const double jacslave = sele.Jacobian(sxi);
 
-      const LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -898,7 +898,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
 
       // get Gauss point in slave element coordinates
       const double sxi[2] = {eta[0], eta[1]};
-      const LINALG::Matrix<2, 1> sxi_mat(sxi, true);
+      const CORE::LINALG::Matrix<2, 1> sxi_mat(sxi, true);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.EvaluateShapeLagMult(this->ShapeFcn(), sxi, lmval_, lmderiv_, my::SLAVENUMNODE, true);
@@ -907,7 +907,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       shape_function_and_deriv1<slavetype>(sele, sxi_mat, sval_, sderiv_);
 
       // evaluate the convective slave base vectors
-      LINALG::Matrix<3, 2> stau;
+      CORE::LINALG::Matrix<3, 2> stau;
       sele.Metrics(sxi, &stau(0, 0), &stau(0, 1));
 
       // evaluate the two Jacobians (int. cell and slave element)
@@ -918,7 +918,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       evaluator_->Deriv_Jacobian(sele, sxi, sderiv_, stau);
 
       const double uniqueProjalpha = projInfo.uniqueProjAlpha_[my::gp_id_];
-      const LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
+      const CORE::LINALG::Matrix<2, 1>& uniqueMxi = projInfo.uniqueMxi_[my::gp_id_];
 
       mele.GetNodalCoords(mcoord_);
 
@@ -926,7 +926,7 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype,
       shape_function_and_deriv1<mastertype>(mele, uniqueMxi, mval_, mderiv_);
 
       // evaluate the convective master base vectors
-      LINALG::Matrix<3, 2> mtau;
+      CORE::LINALG::Matrix<3, 2> mtau;
       mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives

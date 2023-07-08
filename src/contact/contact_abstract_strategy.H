@@ -33,11 +33,11 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -227,18 +227,18 @@ namespace CONTACT
     };
 
     //! return global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix>& DMatrixPtr() { return dmatrix_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> DMatrixPtr() const { return dmatrix_; };
-    LINALG::SparseMatrix& DMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& DMatrixPtr() { return dmatrix_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> DMatrixPtr() const { return dmatrix_; };
+    CORE::LINALG::SparseMatrix& DMatrix()
     {
       if (dmatrix_.is_null()) dserror("The dmatrix_ is not initialized!");
       return *dmatrix_;
     }
 
     //! return global Mortar matrix M
-    Teuchos::RCP<LINALG::SparseMatrix>& MMatrixPtr() { return mmatrix_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> MMatrixPtr() const { return mmatrix_; };
-    LINALG::SparseMatrix& MMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& MMatrixPtr() { return mmatrix_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> MMatrixPtr() const { return mmatrix_; };
+    CORE::LINALG::SparseMatrix& MMatrix()
     {
       if (mmatrix_.is_null()) dserror("The mmatrix_ is not initialized!");
       return *mmatrix_;
@@ -286,39 +286,39 @@ namespace CONTACT
     }
 
     //! return global Matrix LinD containing slave fc derivatives
-    Teuchos::RCP<LINALG::SparseMatrix>& DLinMatrixPtr() { return lindmatrix_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> DLinMatrixPtr() const { return lindmatrix_; };
-    LINALG::SparseMatrix& DLinMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLinMatrixPtr() { return lindmatrix_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLinMatrixPtr() const { return lindmatrix_; };
+    CORE::LINALG::SparseMatrix& DLinMatrix()
     {
       if (lindmatrix_.is_null()) dserror("The augDnLinMatrixPtr_ is not initialized!");
       return *lindmatrix_;
     }
 
     //! return global Matrix LinM containing master fc derivatives
-    Teuchos::RCP<LINALG::SparseMatrix>& MLinMatrixPtr() { return linmmatrix_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> MLinMatrixPtr() const { return linmmatrix_; };
-    LINALG::SparseMatrix& MLinMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& MLinMatrixPtr() { return linmmatrix_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> MLinMatrixPtr() const { return linmmatrix_; };
+    CORE::LINALG::SparseMatrix& MLinMatrix()
     {
       if (linmmatrix_.is_null()) dserror("The augMnLinMatrixPtr_ is not initialized!");
       return *linmmatrix_;
     }
 
     //! return global Matrix kteffnew containing modified jacobian
-    Teuchos::RCP<LINALG::SparseMatrix>& kteffnewMatrixPtr() { return kteffnew_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> kteffnewMatrixPtr() const { return kteffnew_; };
-    LINALG::SparseMatrix& kteffnewMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffnewMatrixPtr() { return kteffnew_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> kteffnewMatrixPtr() const { return kteffnew_; };
+    CORE::LINALG::SparseMatrix& kteffnewMatrix()
     {
       if (kteffnew_.is_null()) dserror("The kteffnewMatrixPtr is not initialized!");
       return *kteffnew_;
     }
 
     //! return global Mortar matrix D (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<LINALG::SparseMatrix>& OldDMatrixPtr() { return dold_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> OldDMatrixPtr() const { return dold_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& OldDMatrixPtr() { return dold_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> OldDMatrixPtr() const { return dold_; };
 
     //! return global Mortar matrix M (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<LINALG::SparseMatrix>& OldMMatrixPtr() { return mold_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> OldMMatrixPtr() const { return mold_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& OldMMatrixPtr() { return mold_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> OldMMatrixPtr() const { return mold_; };
 
     //! return current vector of Lagrange multipliers at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& LmPtr() { return z_; };
@@ -395,20 +395,26 @@ namespace CONTACT
     bool IsDualQuadSlaveTrafo() const { return dualquadslavetrafo_; };
 
     //! return transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>& TrafoPtr() { return trafo_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> TrafoPtr() const { return trafo_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& TrafoPtr() { return trafo_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> TrafoPtr() const { return trafo_; };
 
     //! return inverse trafo matrix T^(-1) for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix>& InvTrafoPtr() { return invtrafo_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> InvTrafoPtr() const { return invtrafo_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& InvTrafoPtr() { return invtrafo_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> InvTrafoPtr() const { return invtrafo_; };
 
     //! return modified global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix>& ModifiedDMatrixPtr() { return dmatrixmod_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> ModifiedDMatrixPtr() const { return dmatrixmod_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& ModifiedDMatrixPtr() { return dmatrixmod_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> ModifiedDMatrixPtr() const
+    {
+      return dmatrixmod_;
+    };
 
     //! return modified global Mortar matrix Dold
-    Teuchos::RCP<LINALG::SparseMatrix>& OldModifiedDMatrixPtr() { return doldmod_; };
-    Teuchos::RCP<const LINALG::SparseMatrix> OldModifiedDMatrixPtr() const { return doldmod_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& OldModifiedDMatrixPtr() { return doldmod_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> OldModifiedDMatrixPtr() const
+    {
+      return doldmod_;
+    };
 
     //! return integration time
     double& IntTime() { return inttime_; };
@@ -544,10 +550,10 @@ namespace CONTACT
     //!@}
 
     //! global Mortar matrix \f$D\f$
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrix_;
 
     //! global Mortar matrix \f$M\f$
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrix_;
 
     //! global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector> g_;
@@ -568,19 +574,19 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> constrrhs_;
 
     //! global Matrix LinD containing slave fc derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> lindmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lindmatrix_;
 
     //! global Matrix LinM containing master fc derivatives
-    Teuchos::RCP<LINALG::SparseMatrix> linmmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> linmmatrix_;
 
     //! global K matrix
-    Teuchos::RCP<LINALG::SparseMatrix> kteffnew_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kteffnew_;
 
     //! global Mortar matrix D (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<LINALG::SparseMatrix> dold_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dold_;
 
     //! global Mortar matrix M (last end-point \f$t_{n}\f$)
-    Teuchos::RCP<LINALG::SparseMatrix> mold_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mold_;
 
     //! current vector of Lagrange multipliers at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> z_;
@@ -650,16 +656,16 @@ namespace CONTACT
     //!@}
 
     //! transformation matrix T for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix> trafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> trafo_;
 
     //! inverse trafo matrix T^(-1) for dual quad 3D case
-    Teuchos::RCP<LINALG::SparseMatrix> invtrafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> invtrafo_;
 
     //! modified global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixmod_;
 
     //! modified global Mortar matrix Dold
-    Teuchos::RCP<LINALG::SparseMatrix> doldmod_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> doldmod_;
 
     /*! \brief Integration time
      *
@@ -944,7 +950,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = NULL) const
     {
@@ -956,7 +962,7 @@ namespace CONTACT
 
     //! Apply modifications (e.g. condensation) directly before linear solve
     virtual void RunPreApplyJacobianInverse(
-        Teuchos::RCP<LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs)
     { /* do nothing */
       ;
     }
@@ -966,8 +972,8 @@ namespace CONTACT
      *  \remark Please note, that a Teuchos::null pointer is returned, if no active contact
      *  contributions are present.
      */
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
-        Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
@@ -1069,10 +1075,10 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> GetLagrMultSolveIncr() const { return Data().LmIncrPtr(); };
 
     //! Return mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> DMatrix() { return Data().DMatrixPtr(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> DMatrix() { return Data().DMatrixPtr(); }
 
     //! Return mortar matrix M
-    Teuchos::RCP<LINALG::SparseMatrix> MMatrix() { return Data().MMatrixPtr(); }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MMatrix() { return Data().MMatrixPtr(); }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> ContactNorStress() { return Data().StressNormalPtr(); }
@@ -1162,7 +1168,7 @@ namespace CONTACT
     inline INPAR::MORTAR::ParallelRedist WhichParRedist() const { return Data().ParType(); }
 
     //! Return matrix T
-    virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix() { return Teuchos::null; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix() { return Teuchos::null; }
 
     //! Return number of active nodes
     int NumberOfActiveNodes() const
@@ -1239,7 +1245,7 @@ namespace CONTACT
     @param[in] predictor Is this called during the predictor?
     */
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int timeStep, const int nonlinearIteration, bool predictor = false);
 
     /*! \brief Reset the internal state variables
@@ -1306,7 +1312,7 @@ namespace CONTACT
     /*! \brief Evaluate matrix of nodal normals
 
      This is needed for energy-conserving time integration (Velocity-Update) */
-    Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis);
 
     //!@}
 
@@ -1385,7 +1391,7 @@ namespace CONTACT
      to set the D.B.C. status in each CNode.
 
      \param dbcmaps (in): MapExtractor carrying global dbc map */
-    virtual void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
+    virtual void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps);
 
     virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<DRT::Discretization> dis){
@@ -1495,21 +1501,21 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const = 0;
     virtual double ConstraintNorm() const = 0;
     virtual void EvaluateContact(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual void EvaluateFriction(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual void EvaluateRelMovPredict() = 0;
     virtual double InitialPenalty() = 0;
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(
-        Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
     virtual void ResetActiveSet() = 0;
     virtual void ResetPenalty() = 0;
     virtual void ModifyPenalty() = 0;
-    void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+    void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override = 0;
     void UpdateDisplacementsAndLMincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
@@ -1532,7 +1538,7 @@ namespace CONTACT
 
     void RedistributeMeshtying() final {}
     void RestrictMeshtyingZone() {}
-    void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+    void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
     {
     }
@@ -1547,7 +1553,7 @@ namespace CONTACT
     //!@{
 
     //! Run after the StoreDirichletStatus() routine has been called
-    virtual void PostStoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps){};
+    virtual void PostStoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps){};
 
     /*! \brief Run at the beginning of the Evaluate() routine
      *
@@ -1724,14 +1730,14 @@ namespace CONTACT
      on the effective stiffness matrix is handed in. This way, after building the
      new effective stiffness matrix with contact, we can simply let the pointer
      kteff point onto the new object. The same is true for the effective force
-     vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
+     vector feff. Be careful: kteff is of type Teuchos::RCP<CORE::LINALG::SparseOperator>&.
 
      \param kteff (in/out): effective stiffness matrix (without -> with contact)
      \param feff (in/out): effective residual / force vector (without -> with contact)
 
      */
-    void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
-        Teuchos::RCP<Epetra_Vector> dis);
+    void Evaluate(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     /*! \brief Evaluate relative movement of contact bodies
 
@@ -1969,7 +1975,7 @@ namespace CONTACT
      *  The global Lagrange multiplier DoF row map is created in a deterministic
      *  manner based on the previously created global slave DoF row map. This is
      *  necessary for the later ReplaceMap calls. Especially, the std::sort during
-     *  a LINALG::MergeMap call would otherwise destroy the correlation. This becomes
+     *  a CORE::LINALG::MergeMap call would otherwise destroy the correlation. This becomes
      *  obvious if more than one interface is considered.
      *
      *  \pre The method UpdateLagMultSets() has to be called on each involved
@@ -2117,10 +2123,10 @@ namespace CONTACT
     //!@}
 
     //! Global Mortar matrix \f$D\f$
-    Teuchos::RCP<LINALG::SparseMatrix>& dmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& dmatrix_;
 
     //! Global Mortar matrix \f$M\f$
-    Teuchos::RCP<LINALG::SparseMatrix>& mmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& mmatrix_;
 
     //! Global weighted gap vector \f$g\f$
     Teuchos::RCP<Epetra_Vector>& g_;
@@ -2144,21 +2150,21 @@ namespace CONTACT
      *
      * \todo What is fc?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& lindmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& lindmatrix_;
 
     /*! \brief Global Matrix LinM containing master fc derivatives
      *
      * \todo What is fc?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& linmmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& linmmatrix_;
 
-    Teuchos::RCP<LINALG::SparseMatrix>& kteffnew_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteffnew_;
 
     //! Global Mortar matrix \f$D\f$ at end of last time step \f$t_{n}\f$
-    Teuchos::RCP<LINALG::SparseMatrix>& dold_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& dold_;
 
     //! Global Mortar matrix \f$M\f$ at end of last time step \f$t_{n}\f$
-    Teuchos::RCP<LINALG::SparseMatrix>& mold_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& mold_;
 
     //!< Current vector of Lagrange multipliers at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& z_;
@@ -2246,37 +2252,37 @@ namespace CONTACT
      *
      * \todo What does quad refer to? Quadratic or quadrilateral elements?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& trafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& trafo_;
 
     /*! \brief Transformation matrix \f$T\f$ for dual quad 3D case (all problem dofs)
      *
      * \todo What does quad refer to? Quadratic or quadrilateral elements?
      */
-    Teuchos::RCP<LINALG::SparseMatrix> systrafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systrafo_;
 
     /*! \brief Inverse transformation matrix \f$T\f$ for dual quad 3D case (all problem dofs)
      *
      * \todo What does quad refer to? Quadratic or quadrilateral elements?
      */
-    Teuchos::RCP<LINALG::SparseMatrix> invsystrafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> invsystrafo_;
 
     /*! \brief Inverse transformation matrix \f$T^{-1}\f$ for dual quad 3D case
      *
      * \todo What does quad refer to? Quadratic or quadrilateral elements?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& invtrafo_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& invtrafo_;
 
     /*! \brief Modified global Mortar matrix \f$D\d$
      *
      * \todo What modifications?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& dmatrixmod_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& dmatrixmod_;
 
     /*! \brief Modified global Mortar matrix Dold
      *
      * \todo What modifications?
      */
-    Teuchos::RCP<LINALG::SparseMatrix>& doldmod_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& doldmod_;
 
     /*! \brief Integration time
      *

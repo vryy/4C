@@ -26,8 +26,9 @@ TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::TutorialMatStVenantKirchhoff(c
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
 void TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::EvaluateMaterial(
-    TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress, LINALG::Matrix<2, 2>* linearization,
-    const double strain, const double defgrd, const double J, const LINALG::Matrix<2, 1> B)
+    TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress,
+    CORE::LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
+    const double J, const CORE::LINALG::Matrix<2, 1> B)
 {
   // see NiliFEM Script page 101 !
   // calculate stress

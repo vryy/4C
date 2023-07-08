@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief A collection of singular value decomposition (SVD) methods for namespace LINALG
+\brief A collection of singular value decomposition (SVD) methods for namespace CORE::LINALG
 
 \level 0
 */
@@ -15,7 +15,7 @@
 #include <Teuchos_LAPACK.hpp>
 #include "lib_exporter.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
    \brief Compute singular value decomposition (SVD) of a real M-by-N matrix A
@@ -26,8 +26,8 @@ namespace LINALG
    \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
    \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
    */
-  void SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& U,
-      LINALG::SerialDenseMatrix& SIGMA, LINALG::SerialDenseMatrix& Vt);
+  void SVD(const Epetra_SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& U,
+      CORE::LINALG::SerialDenseMatrix& SIGMA, CORE::LINALG::SerialDenseMatrix& Vt);
 
   /*!
    \brief Singular value decomposition (SVD) of a real M-by-N matrix in fixed
@@ -44,8 +44,8 @@ namespace LINALG
    \param VT (out):      N-by-N orthogonal matrix (transpose of V)
    */
   template <unsigned int rows, unsigned int cols>
-  void SVD(const LINALG::Matrix<rows, cols>& A, LINALG::Matrix<rows, rows>& Q,
-      LINALG::Matrix<rows, cols>& S, LINALG::Matrix<cols, cols>& VT)
+  void SVD(const CORE::LINALG::Matrix<rows, cols>& A, CORE::LINALG::Matrix<rows, rows>& Q,
+      CORE::LINALG::Matrix<rows, cols>& S, CORE::LINALG::Matrix<cols, cols>& VT)
   {
     Matrix<rows, cols> tmp(A.A(), false);  // copy, because content of matrix is destroyed
     const char jobu = 'A';                 // compute and return all M columns of U
@@ -72,6 +72,6 @@ namespace LINALG
     return;
   }
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // LINALG_UTILS_DENSEMATRIX_SVD_H

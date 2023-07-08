@@ -87,9 +87,9 @@ namespace CONTACT
             i.e. mortar, augmented, gpts,...
      */
     void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -103,9 +103,9 @@ namespace CONTACT
             i.e. mortar, augmented, gpts,...
      */
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -122,9 +122,9 @@ namespace CONTACT
     */
     template <int dim>
     void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
+        const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxi,
-        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
+        const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, const double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, const double wgt,
         const double gap, const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
@@ -133,9 +133,9 @@ namespace CONTACT
 
     template <int dim>
     double GetNormalContactTransition(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseVector& mval,
-        const double* sxi, const LINALG::Matrix<dim, 1>& pxsi, const LINALG::Matrix<dim, 1>& normal,
-        bool& FSI_integrated, bool& gp_on_this_proc);
+        const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& mval,
+        const double* sxi, const CORE::LINALG::Matrix<dim, 1>& pxsi,
+        const CORE::LINALG::Matrix<dim, 1>& normal, bool& FSI_integrated, bool& gp_on_this_proc);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
     void UpdateEleContactState(MORTAR::MortarElement& sele, int state);

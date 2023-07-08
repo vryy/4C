@@ -389,8 +389,8 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::DScaledCauchyStressIntegran
 }
 
 template <typename Number>
-std::function<std::tuple<LINALG::Matrix<2, 1, Number>, LINALG::Matrix<2, 2, Number>>(
-    const LINALG::Matrix<2, 1, Number>&)>
+std::function<std::tuple<CORE::LINALG::Matrix<2, 1, Number>, CORE::LINALG::Matrix<2, 2, Number>>(
+    const CORE::LINALG::Matrix<2, 1, Number>&)>
 MIXTURE::FullConstrainedMixtureFiber<Number>::GetLocalNewtonEvaluator() const
 {
   dsassert(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -438,7 +438,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::GetLocalNewtonEvaluator() const
               *fiber_material_, lambda_pre_ * current_state_.lambda_f) +
       IntegrateOverDepositionHistory<Number>(history_, scaled_cauchy_stress_integrand);
 
-  return [=](const LINALG::Matrix<2, 1, Number>& growth_scalar_and_cauchy_stress)
+  return [=](const CORE::LINALG::Matrix<2, 1, Number>& growth_scalar_and_cauchy_stress)
   {
     const Number growth_scalar = growth_scalar_and_cauchy_stress(0);
     const Number cauchy_stress = growth_scalar_and_cauchy_stress(1);
@@ -473,11 +473,11 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::GetLocalNewtonEvaluator() const
         dmy_scaled_cauchy_stress_dintegrand *
         dscaled_cauchy_stress_integrand_dgrowth_scalar(current_increment);
 
-    LINALG::Matrix<2, 1, Number> residua;
+    CORE::LINALG::Matrix<2, 1, Number> residua;
     residua(0) = my_growth_scalar - growth_scalar;
     residua(1) = my_scaled_cauchy_stress / growth_scalar - cauchy_stress;
 
-    LINALG::Matrix<2, 2, Number> derivative;
+    CORE::LINALG::Matrix<2, 2, Number> derivative;
     derivative(0, 0) =
         dmy_growth_scalar_dgrowth_scalar - 1.0;  // d residuum growth scalar d growth scalar
     derivative(0, 1) = dmy_growth_scalar_dsig;   // d residuum growth scalar d sig
@@ -611,7 +611,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::ComputeInternalVariables()
   constexpr auto tolerance = 1e-10;
   constexpr auto max_iterations = 500;
 
-  LINALG::Matrix<2, 1, Number> initial_guess;
+  CORE::LINALG::Matrix<2, 1, Number> initial_guess;
   initial_guess(0) = computed_growth_scalar_;
   initial_guess(1) = computed_sigma_;
   auto [growth_scalar_and_sigma, K] = CORE::UTILS::SolveLocalNewtonAndReturnJacobian(

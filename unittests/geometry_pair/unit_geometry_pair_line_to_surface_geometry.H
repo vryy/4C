@@ -17,8 +17,8 @@ namespace
   /**
    * Setup the surface geometry for the tri4 tests.
    */
-  void XtestSetupTri3(
-      LINALG::Matrix<9, 1, double>& q_solid, LINALG::Matrix<9, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupTri3(CORE::LINALG::Matrix<9, 1, double>& q_solid,
+      CORE::LINALG::Matrix<9, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -48,8 +48,8 @@ namespace
   /**
    * Setup the surface geometry for the tri6 tests.
    */
-  void XtestSetupTri6(LINALG::Matrix<18, 1, double>& q_solid,
-      LINALG::Matrix<18, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupTri6(CORE::LINALG::Matrix<18, 1, double>& q_solid,
+      CORE::LINALG::Matrix<18, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -97,8 +97,8 @@ namespace
   /**
    * Setup the surface geometry for the quad4 tests.
    */
-  void XtestSetupQuad4(LINALG::Matrix<12, 1, double>& q_solid,
-      LINALG::Matrix<12, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad4(CORE::LINALG::Matrix<12, 1, double>& q_solid,
+      CORE::LINALG::Matrix<12, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0;
     q_solid(1) = 0;
@@ -134,8 +134,8 @@ namespace
   /**
    * Setup the surface geometry for the quad8 tests.
    */
-  void XtestSetupQuad8(LINALG::Matrix<24, 1, double>& q_solid,
-      LINALG::Matrix<24, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad8(CORE::LINALG::Matrix<24, 1, double>& q_solid,
+      CORE::LINALG::Matrix<24, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -195,8 +195,8 @@ namespace
   /**
    * Setup the surface geometry for the quad9 tests.
    */
-  void XtestSetupQuad9(LINALG::Matrix<27, 1, double>& q_solid,
-      LINALG::Matrix<27, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad9(CORE::LINALG::Matrix<27, 1, double>& q_solid,
+      CORE::LINALG::Matrix<27, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -262,7 +262,8 @@ namespace
   /**
    * Setup the beam geometry for the tests.
    */
-  void XtestSetupBeam(Teuchos::RCP<DRT::Element>& element_1, LINALG::Matrix<12, 1, double>& q_beam)
+  void XtestSetupBeam(
+      Teuchos::RCP<DRT::Element>& element_1, CORE::LINALG::Matrix<12, 1, double>& q_beam)
   {
     // Set up the beam.
     const int dummy_node_ids[2] = {0, 1};

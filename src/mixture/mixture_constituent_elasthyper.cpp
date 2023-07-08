@@ -48,9 +48,10 @@ INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_ElastHyper::MaterialType() 
 }
 
 // Evaluates the stress of the constituent
-void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+    const int eleGID)
 {
   if (PrestressStrategy() != nullptr)
   {
@@ -66,11 +67,12 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
 }
 
 // Compute the stress resultant with incorporating an elastic and inelastic part of the deformation
-void MIXTURE::MixtureConstituent_ElastHyper::EvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyper::EvaluateElasticPart(
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
-  static LINALG::Matrix<3, 3> iFin(false);
+  static CORE::LINALG::Matrix<3, 3> iFin(false);
   iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
 
   MAT::ElastHyperEvaluateElasticPart(

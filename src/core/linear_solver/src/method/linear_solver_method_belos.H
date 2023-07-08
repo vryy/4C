@@ -37,7 +37,7 @@ namespace CORE::LINEAR_SOLVER
      */
     void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
         const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector) override;
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) override;
 
     //! Actual call to the underlying Belos solver
     int Solve() override;

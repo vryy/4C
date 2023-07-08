@@ -551,15 +551,15 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           w1_defgrad(F, strain, xrefe, xcure, boplin, numnode);
 
           // Gauss point in reference configuration
-          LINALG::Matrix<2, 1> xgp(true);
+          CORE::LINALG::Matrix<2, 1> xgp(true);
           for (int k = 0; k < numdf; ++k)
             for (int n = 0; n < numnode; ++n) xgp(k, 0) += funct[n] * xrefe(k, n);
 
           //**************************************************************
           // get analytical solution
-          LINALG::Matrix<2, 1> uanalyt(true);
-          LINALG::Matrix<4, 1> strainanalyt(true);
-          LINALG::Matrix<2, 2> derivanalyt(true);
+          CORE::LINALG::Matrix<2, 1> uanalyt(true);
+          CORE::LINALG::Matrix<4, 1> strainanalyt(true);
+          CORE::LINALG::Matrix<2, 2> derivanalyt(true);
 
           // check if we evaluate the error through the contact facilities
           const Teuchos::ParameterList& listcmt = DRT::Problem::Instance()->ContactDynamicParams();
@@ -607,12 +607,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute displacements at GP
-          LINALG::Matrix<2, 1> ugp(true);
+          CORE::LINALG::Matrix<2, 1> ugp(true);
           for (int k = 0; k < numdf; ++k)
             for (int n = 0; n < numnode; ++n) ugp(k, 0) += funct[n] * (xcure(k, n) - xrefe(k, n));
 
           // displacement error
-          LINALG::Matrix<2, 1> uerror(true);
+          CORE::LINALG::Matrix<2, 1> uerror(true);
           for (int k = 0; k < numdf; ++k) uerror(k, 0) = uanalyt(k, 0) - ugp(k, 0);
 
           // compute GP contribution to L2 error norm
@@ -623,14 +623,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute partial derivatives at GP
-          LINALG::Matrix<2, 2> derivgp(true);
+          CORE::LINALG::Matrix<2, 2> derivgp(true);
           derivgp(0, 0) = F[0] - 1.0;
           derivgp(0, 1) = F[2];
           derivgp(1, 0) = F[3];
           derivgp(1, 1) = F[1] - 1.0;
 
           // derivative error
-          LINALG::Matrix<2, 2> deriverror(true);
+          CORE::LINALG::Matrix<2, 2> deriverror(true);
           for (int k = 0; k < numdf; ++k)
             for (int m = 0; m < numdf; ++m) deriverror(k, m) = derivanalyt(k, m) - derivgp(k, m);
 
@@ -643,14 +643,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute linear strain at GP
-          LINALG::Matrix<4, 1> straingp(true);
+          CORE::LINALG::Matrix<4, 1> straingp(true);
           straingp(0, 0) = 0.5 * (F[0] + F[0]) - 1.0;
           straingp(1, 0) = 0.5 * (F[1] + F[1]) - 1.0;
           straingp(2, 0) = 0.5 * (F[2] + F[3]);
           straingp(3, 0) = straingp(2, 0);
 
           // strain error
-          LINALG::Matrix<4, 1> strainerror(true);
+          CORE::LINALG::Matrix<4, 1> strainerror(true);
           for (int k = 0; k < numeps; ++k) strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
 
           // compute stress vector and constitutive matrix
@@ -665,7 +665,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           tempstrainerror[3] = strainerror(3, 0);
           Teuchos::RCP<const MAT::Material> material = Material();
           w1_call_matgeononl(tempstrainerror, tempstress, C, numeps, material, params, ip);
-          LINALG::Matrix<4, 1> stress(true);
+          CORE::LINALG::Matrix<4, 1> stress(true);
           stress(0, 0) = tempstress(0, 0);
           stress(1, 0) = tempstress(1, 1);
           stress(2, 0) = tempstress(0, 2);
@@ -884,7 +884,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
       std::vector<double> mydispmat(lm.size(), 0.0);
       // reference and current geometry (nodal positions)
-      LINALG::Matrix<2, 4> xcurr;  // current  coord. of element
+      CORE::LINALG::Matrix<2, 4> xcurr;  // current  coord. of element
 
       for (int k = 0; k < 4; ++k)
       {
@@ -1059,7 +1059,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
       if (functnum > 0)
       {
         // calculate reference position of GP
-        LINALG::SerialDenseMatrix gp_coord(1, numdim_);
+        CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim_);
         gp_coord.Multiply('T', 'T', 1.0, shapefcts, xrefe, 0.0);
 
         // write coordinates in another datatype

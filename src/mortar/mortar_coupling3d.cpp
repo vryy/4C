@@ -254,8 +254,8 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
 
 
   // calculate auxplane with cpp normal!
-  //  LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
-  //  LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
+  //  CORE::LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
+  //  CORE::LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
   //  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().NumNode(),false);
   //  Auxn()[0] = 0.0;
   //  Auxn()[1] = 0.0;
@@ -1702,10 +1702,10 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
 
         // get node coordinates
-        LINALG::SerialDenseMatrix scoord(3, nsnodes);
+        CORE::LINALG::SerialDenseMatrix scoord(3, nsnodes);
         SlaveIntElement().GetNodalCoords(scoord);
         double scolor = (double)SlaveIntElement().Owner();
-        LINALG::SerialDenseMatrix mcoord(3, nmnodes);
+        CORE::LINALG::SerialDenseMatrix mcoord(3, nmnodes);
         MasterIntElement().GetNodalCoords(mcoord);
         double mcolor = (double)MasterIntElement().Owner();
 
@@ -2442,7 +2442,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     }
 
     // trafo matrix
-    LINALG::Matrix<3, 3> trafo;
+    CORE::LINALG::Matrix<3, 3> trafo;
     for (int k = 0; k < 3; ++k)
     {
       trafo(0, k) = newxaxis[k];
@@ -2752,7 +2752,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
   if (clipsize == 3)
   {
     // IntCell vertices = clip polygon vertices
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
       for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
@@ -2820,7 +2820,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       int idx2 = triangles[t][2];
 
       // coordinates of current triangle
-      LINALG::Matrix<3, 3> coords;
+      CORE::LINALG::Matrix<3, 3> coords;
       for (int k = 0; k < 3; ++k)
       {
         coords(k, 0) = Clip()[idx0].Coord()[k];
@@ -3189,7 +3189,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
     int idx2 = triangles[t][2];
 
     // coordinates of current triangle
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int k = 0; k < 3; ++k)
     {
       coords(k, 0) = Clip()[idx0].Coord()[k];
@@ -3239,7 +3239,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
   if (clipsize == 3)
   {
     // IntCell vertices = clip polygon vertices
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int i = 0; i < clipsize; ++i)
       for (int k = 0; k < 3; ++k) coords(k, i) = Clip()[i].Coord()[k];
 
@@ -3352,7 +3352,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
   {
     // the first vertex is always the clip center
     // the second vertex is always the current clip vertex
-    LINALG::Matrix<3, 3> coords;
+    CORE::LINALG::Matrix<3, 3> coords;
     for (int k = 0; k < 3; ++k)
     {
       coords(k, 0) = clipcenter[k];
@@ -3528,7 +3528,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
     fp = fopen(filename.str().c_str(), "a");
 
   // plot current integration cell
-  const LINALG::Matrix<3, 3>& coord = Cells()[lid]->Coords();
+  const CORE::LINALG::Matrix<3, 3>& coord = Cells()[lid]->Coords();
 
   // write output to temporary std::stringstream
   std::stringstream gmshfilecontent;
@@ -3872,8 +3872,8 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
       dserror("don't know what to do with this ele.NormalFac()");
 
 
-    LINALG::SerialDenseVector sval(9);
-    LINALG::SerialDenseMatrix sderiv(9, 2);
+    CORE::LINALG::SerialDenseVector sval(9);
+    CORE::LINALG::SerialDenseMatrix sderiv(9, 2);
     std::vector<int> empty_dofs(3, -1);
 
     for (int i = 0; i < 4; ++i)
@@ -4321,8 +4321,8 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   double detg = 0.0;
 
   // initialize matrices de and me
-  LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
   // loop over all master elements associated with this slave element
   for (int m = 0; m < (int)MasterElements().size(); ++m)
@@ -4359,8 +4359,8 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
                 globgp, Coupling()[m]->Auxn(), SlaveElement(), sxi, sprojalpha);
 
         // create vector for shape function evaluation
-        LINALG::SerialDenseVector sval(nnodes);
-        LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
+        CORE::LINALG::SerialDenseVector sval(nnodes);
+        CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
         if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
@@ -4397,23 +4397,23 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   if (me.Det_long() == 0) return;
 
   // declare dual shape functions coefficient matrix
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
   // compute matrix A_e for linear interpolation of quadratic element
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
   {
     // declare and initialize to zero inverse of Matrix M_e
-    LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+    CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
     if (SlaveElement().Shape() == DRT::Element::tri6)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<3, 3> melin;
+      CORE::LINALG::Matrix<3, 3> melin;
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse(melin);
+      CORE::LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
@@ -4423,12 +4423,12 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
              SlaveElement().Shape() == DRT::Element::quad9)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<4, 4> melin;
+      CORE::LINALG::Matrix<4, 4> melin;
       for (int j = 0; j < 4; ++j)
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse(melin);
+      CORE::LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)
@@ -4442,10 +4442,10 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   }
   // compute matrix A_e for all other cases
   else
-    LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+    CORE::LINALG::InvertAndMultiplyByCholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 
   return;
 }

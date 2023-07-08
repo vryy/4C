@@ -24,7 +24,8 @@
 #include <Teuchos_ParameterList.hpp>
 
 FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output)
     : discret_(discret),
       solver_(solver),

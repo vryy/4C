@@ -31,12 +31,12 @@
 // #define BLOCKMATRIXMERGE
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MapExtractor;
   class MatrixColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace ADAPTER
 {
@@ -63,12 +63,12 @@ namespace FSI
 
   /// Base class for Freesurface block preconditioning matrices
   class BlockPreconditioningMatrixFS
-      : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+      : public CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
   {
    public:
-    BlockPreconditioningMatrixFS(const LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
-        ::ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0, int iterations = 1,
-        double fomega = 1.0, int fiterations = 0, FILE* err = NULL);
+    BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps,
+        ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0,
+        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = NULL);
 
     /** \name Mathematical functions */
     //@{
@@ -89,18 +89,18 @@ namespace FSI
     void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
-    static void LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
-        const LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
+    static void LocalBlockRichardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
+        const CORE::LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
         Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
         double omega, FILE* err, const Epetra_Comm& comm);
 
     /** \name Field solver objects */
     //@{
 
-    Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
-    Teuchos::RCP<LINALG::Preconditioner> alesolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> fluidsolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> alesolver_;
 
-    Teuchos::RCP<LINALG::Preconditioner> constalesolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> constalesolver_;
 
     //@}
 
@@ -122,7 +122,7 @@ namespace FSI
 
 #ifdef BLOCKMATRIXMERGE
     /// debug merged sparse
-    Teuchos::RCP<LINALG::SparseMatrix> sparse_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_;
 #endif
   };
 
@@ -136,7 +136,7 @@ namespace FSI
   {
    public:
     /// construction
-    OverlappingBlockMatrixFS(const LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
+    OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
         ::ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
         int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = NULL);
 
@@ -338,7 +338,7 @@ namespace FSI
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //@}
 
@@ -356,7 +356,7 @@ namespace FSI
 
    private:
     /// dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     /// output utilities
     Teuchos::RCP<NOX::Utils> utils_;
@@ -400,12 +400,12 @@ namespace FSI
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(), b); }
@@ -419,11 +419,11 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
 
@@ -465,7 +465,7 @@ namespace FSI
     virtual void SetupRHS(Epetra_Vector& f, bool firstcall = false);
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat);
 
     //@}
 
@@ -473,14 +473,14 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     /// setup solver for global block system
@@ -518,10 +518,10 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmgitransform_;
 
     ///@}
 

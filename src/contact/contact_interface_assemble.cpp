@@ -46,7 +46,7 @@ void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod
     }
 
     // do assembly
-    LINALG::Assemble(*xsmod, xspatial, dof, owner);
+    CORE::LINALG::Assemble(*xsmod, xspatial, dof, owner);
   }
   return;
 }
@@ -909,7 +909,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 /*----------------------------------------------------------------------*
  |  Assemble derivatives of lagrange multipliers              popp 05/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
+void CONTACT::CoInterface::AssembleLinZ(CORE::LINALG::SparseMatrix& linzglobal)
 {
   // loop over all slave nodes (row map)
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -963,8 +963,8 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix with nodal tangents or/and normals         popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleTN(
-    Teuchos::RCP<LINALG::SparseMatrix> tglobal, Teuchos::RCP<LINALG::SparseMatrix> nglobal)
+void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> nglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1108,7 +1108,7 @@ void CONTACT::CoInterface::AssembleTN(
  |  PS: "AssembleS" is an outdated name which could make                |
  |  you confused.                                                       |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
+void CONTACT::CoInterface::AssembleS(CORE::LINALG::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1151,8 +1151,8 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble tangent deriv or/and normal deriv matrix         popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal,
-    Teuchos::RCP<LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
+void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> nderivglobal, bool usePoroLM)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -1297,7 +1297,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinD containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool usePoroLM)
+void CONTACT::CoInterface::AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1385,7 +1385,7 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
 /*----------------------------------------------------------------------*
  |  Assemble matrices LinM containing fc derivatives          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool usePoroLM)
+void CONTACT::CoInterface::AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
   /**********************************************************************/
   // NEW VERSION (09/2010): No more communication, thanks to FE_MATRIX!
@@ -1474,7 +1474,7 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool u
  |  Assemble matrices LinDM containing fc derivatives        farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleLinDM(
-    LINALG::SparseMatrix& lindglobal, LINALG::SparseMatrix& linmglobal, bool usePoroLM)
+    CORE::LINALG::SparseMatrix& lindglobal, CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM)
 {
   // call both sub functions
   AssembleLinD(lindglobal, usePoroLM);
@@ -1554,7 +1554,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
           lm[i] = cnode->Dofs()[i];
           lmowner[i] = cnode->Owner();
         }
-        LINALG::Assemble(gglobal, gnode, lm, lmowner);
+        CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
       }
       else
       {
@@ -1565,7 +1565,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
         gnode(0) = gap;
         lm[0] = cnode->Id();
         lmowner[0] = cnode->Owner();
-        LINALG::Assemble(gglobal, gnode, lm, lmowner);
+        CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
       }
     }
   }
@@ -1582,8 +1582,8 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = LINALG::SplitMap(*sdofrowmap_, *activedofs_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivedofs = CORE::LINALG::SplitMap(*sdofrowmap_, *activedofs_);
 
   static std::vector<int> lm_gid(Dim());
   static std::vector<int> lm_owner(Dim());
@@ -1609,7 +1609,7 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[0] = inactivedofs->GID(2 * i);
       lm_gid[1] = inactivedofs->GID(2 * i + 1);
 
-      LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      CORE::LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
     else if (Dim() == 3)
     {
@@ -1623,7 +1623,7 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
       lm_gid[1] = inactivedofs->GID(3 * i + 1);
       lm_gid[2] = inactivedofs->GID(3 * i + 2);
 
-      LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
+      CORE::LINALG::Assemble(inactiverhs, lm_i, lm_gid, lm_owner);
     }
   }
 }
@@ -1663,7 +1663,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
                 cnode->CoData().txi()[i] * cnode->CoData().txi()[j] * cnode->MoData().lm()[j];
           }
         }
-        LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Dim() == 3)
       {
@@ -1684,7 +1684,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
                 cnode->CoData().teta()[i] * cnode->CoData().teta()[j] * cnode->MoData().lm()[j];
           }
         }
-        LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
     else
@@ -1698,7 +1698,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
         for (int j = 0; j < Dim(); ++j)
           lm_t[0] -= cnode->CoData().txi()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
 
-        LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
       else if (Dim() == 3)
       {
@@ -1716,7 +1716,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
           lm_t[1] -=
               cnode->CoData().teta()[j] * cnode->MoData().lm()[j];  // already negative rhs!!!
         }
-        LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
+        CORE::LINALG::Assemble(tangrhs, lm_t, lm_gid, lm_owner);
       }
     }
   }
@@ -1725,8 +1725,8 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 /*----------------------------------------------------------------------*
  |  Assemble matrix LinStick with tangential+D+M derivatives  mgit 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-    LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
+void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+    CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal)
 {
   // FIXGIT: Assemble LinStick is containing a matrix for the de-
   // rivatives of the Lagrange multipliers. This is according to Hueeber.
@@ -1734,8 +1734,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   // code is commented after the algorithm.
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -1895,7 +1895,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           rhsnode[j] -= ztxi * txi[j];
           if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -1915,7 +1915,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
       // 3) Entries from differentiation with respect to displacements
@@ -2068,7 +2068,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           rhsnode(j) += frcoeff * (znor - cn * wgap) * ct * jumptxi * txi[j];
           if (Dim() == 3) rhsnode(j) += frcoeff * (znor - cn * wgap) * ct * jumpteta * teta[j];
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -2085,7 +2085,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2379,7 +2379,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           rhsnode(j) -= jumptxi * txi[j];
           if (Dim() == 3) rhsnode(j) -= jumpteta * teta[j];
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
       else
       {
@@ -2409,7 +2409,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           lm[1] = cnode->Dofs()[2];
           lmowner[1] = cnode->Owner();
         }
-        LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linstickRHSglobal, rhsnode, lm, lmowner);
       }
 
 
@@ -2555,8 +2555,8 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 /*---------------------------------------------------------------------*
  | Assemble matrix LinSlip with tangential+D+M derivatives  mgit 02/09 |
  *---------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-    LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
+void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+    CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -2765,7 +2765,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             rhsnode[j] -= ztxi * txi[j];
             if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -2785,7 +2785,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -2947,7 +2947,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
             for (int j = 0; j < Dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -2979,7 +2979,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -3727,7 +3727,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         lm[0] = cnode->Dofs()[1];
         lmowner[0] = cnode->Owner();
 
-        LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+        CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
 
         // 3) Entries from differentiation with respect to displacements
         /******************************************************************/
@@ -3795,7 +3795,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             rhsnode(j) = value1 * txi[j];
           }
 
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -3808,7 +3808,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           lm[0] = cnode->Dofs()[1];
           lmowner[0] = cnode->Owner();
 
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4241,7 +4241,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 }
 
 void CONTACT::CoInterface::AssembleNormalContactRegularization(
-    LINALG::SparseMatrix& d_disp, LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
+    CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f)
 {
   const bool regularization =
       DRT::INPUT::IntegralValue<int>(InterfaceParams(), "REGULARIZED_NORMAL_CONTACT");
@@ -4260,8 +4260,8 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("not a contact node");
 
-    LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     const double gLM = gmax * (1. - exp(-k / gmax * lm_n));
@@ -4315,7 +4315,7 @@ void CONTACT::CoInterface::AssembleNormalContactRegularization(
 }
 
 void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
-    LINALG::SparseMatrix& linslipLMglobal, LINALG::SparseMatrix& linslipDISglobal,
+    CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal,
     Epetra_Vector& linslipRHSglobal)
 {
   // nothing to do if no slip nodes
@@ -4524,7 +4524,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
             rhsnode[j] -= ztxi * txi[j];
             if (Dim() == 3) rhsnode[j] -= zteta * teta[j];
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -4544,7 +4544,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -4673,7 +4673,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
             for (int j = 0; j < Dim(); j++) rhsnode(j) += valueteta1 * teta[j];
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
         else
         {
@@ -4693,7 +4693,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
             lm[1] = cnode->Dofs()[2];
             lmowner[1] = cnode->Owner();
           }
-          LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
+          CORE::LINALG::Assemble(linslipRHSglobal, rhsnode, lm, lmowner);
         }
 
         // 3) Entries from differentiation with respect to displacements
@@ -5153,7 +5153,7 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
 
       lmowner[0] = mrtnode->Owner();
 
-      LINALG::Assemble(gglobal, gnode, lm, lmowner);
+      CORE::LINALG::Assemble(gglobal, gnode, lm, lmowner);
     }
   }
 
@@ -5165,7 +5165,7 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleNCoupLin(
-    LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
+    CORE::LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
@@ -5176,8 +5176,8 @@ void CONTACT::CoInterface::AssembleNCoupLin(
   if (AssembleVelocityLin)
   {
     // store map on all processors, simple but expensive
-    MasterDofMap_full = LINALG::AllreduceEMap(*coupfs.MasterDofMap());
-    PermSlaveDofMap_full = LINALG::AllreduceEMap(*coupfs.PermSlaveDofMap());
+    MasterDofMap_full = CORE::LINALG::AllreduceEMap(*coupfs.MasterDofMap());
+    PermSlaveDofMap_full = CORE::LINALG::AllreduceEMap(*coupfs.PermSlaveDofMap());
   }
 
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -5235,7 +5235,7 @@ void CONTACT::CoInterface::AssembleNCoupLin(
  | Derivative of D-matrix multiplied with a slave dof vector              |
  *------------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleCoupLinD(
-    LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
+    CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
@@ -5313,7 +5313,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
  | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
  *-----------------------------------------------------------------------------------*/
 void CONTACT::CoInterface::AssembleCoupLinM(
-    LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
+    CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x)
 {
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof

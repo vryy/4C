@@ -58,8 +58,8 @@ BEAMINTERACTION::BeamLink::BeamLink(const BEAMINTERACTION::BeamLink& old)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLink::Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-    const std::vector<LINALG::Matrix<3, 1>>& initpos,
-    const std::vector<LINALG::Matrix<3, 3>>& inittriad,
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
+    const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
     INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset)
 {
   issetup_ = false;
@@ -162,8 +162,8 @@ void BEAMINTERACTION::BeamLink::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::ResetState(
-    std::vector<LINALG::Matrix<3, 1>>& bspotpos, std::vector<LINALG::Matrix<3, 3>>& bspottriad)
+void BEAMINTERACTION::BeamLink::ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
+    std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad)
 {
   CheckInitSetup();
 

@@ -184,7 +184,7 @@ void MAT::ConstraintMixtureHistory::Setup(const int ngp, const double massprodba
 /*----------------------------------------------------------------------*
  |  History: SetStretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetStretches(int gp, LINALG::Matrix<4, 1> stretches)
+void MAT::ConstraintMixtureHistory::SetStretches(int gp, CORE::LINALG::Matrix<4, 1> stretches)
 {
   if (gp < numgp_)
   {
@@ -200,7 +200,7 @@ void MAT::ConstraintMixtureHistory::SetStretches(int gp, LINALG::Matrix<4, 1> st
 /*----------------------------------------------------------------------*
  |  History: GetStretches                         (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetStretches(int gp, LINALG::Matrix<4, 1>* stretches)
+void MAT::ConstraintMixtureHistory::GetStretches(int gp, CORE::LINALG::Matrix<4, 1>* stretches)
 {
   if (gp < numgp_)
   {
@@ -216,7 +216,7 @@ void MAT::ConstraintMixtureHistory::GetStretches(int gp, LINALG::Matrix<4, 1>* s
 /*----------------------------------------------------------------------*
  |  History: SetMass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::SetMass(int gp, LINALG::Matrix<4, 1> massprod)
+void MAT::ConstraintMixtureHistory::SetMass(int gp, CORE::LINALG::Matrix<4, 1> massprod)
 {
   if (gp < numgp_)
   {
@@ -262,7 +262,7 @@ void MAT::ConstraintMixtureHistory::SetMass(int gp, double massprod, int idfiber
 /*----------------------------------------------------------------------*
  |  History: GetMass                              (private)        03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::GetMass(int gp, LINALG::Matrix<4, 1>* massprod)
+void MAT::ConstraintMixtureHistory::GetMass(int gp, CORE::LINALG::Matrix<4, 1>* massprod)
 {
   if (gp < numgp_)
   {

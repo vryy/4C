@@ -10,11 +10,11 @@
 
 #include "linalg_gauss.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   template <bool do_piv, unsigned dim, typename valtype>
-  valtype gaussElimination(LINALG::Matrix<dim, dim, valtype>& A, LINALG::Matrix<dim, 1, valtype>& b,
-      LINALG::Matrix<dim, 1, valtype>& x)
+  valtype gaussElimination(CORE::LINALG::Matrix<dim, dim, valtype>& A,
+      CORE::LINALG::Matrix<dim, 1, valtype>& b, CORE::LINALG::Matrix<dim, 1, valtype>& x)
   {
     if (dim > 1)
     {
@@ -122,9 +122,9 @@ namespace LINALG
     \return determinant of system matrix
   */
   template <unsigned dim>
-  double scaledGaussElimination(LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
-      LINALG::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
-      LINALG::Matrix<dim, 1>& x                               ///< (out)   : solution vector
+  double scaledGaussElimination(CORE::LINALG::Matrix<dim, dim>& A,  ///< (in)    : system matrix
+      CORE::LINALG::Matrix<dim, 1>& b,                              ///< (in)    : right-hand-side
+      CORE::LINALG::Matrix<dim, 1>& x                               ///< (out)   : solution vector
   )
   {
     // infnorm scaling
@@ -141,7 +141,7 @@ namespace LINALG
       // close to zero row detected -> matrix does probably not have full rank
       if (max < 1.0e-14)
       {
-        return LINALG::gaussElimination<true, dim>(A, b, x);
+        return CORE::LINALG::gaussElimination<true, dim>(A, b, x);
       }
 
       // scale row with inv of max entry
@@ -154,9 +154,9 @@ namespace LINALG
     }
 
     // solve scaled system using pivoting
-    return LINALG::gaussElimination<true, dim>(A, b, x);
+    return CORE::LINALG::gaussElimination<true, dim>(A, b, x);
   }
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif
