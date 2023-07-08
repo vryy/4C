@@ -10,7 +10,6 @@ set(_fluid_xfluid_dependencies
     io
     levelset
     lib
-    linalg
     mat
     xfem
     )

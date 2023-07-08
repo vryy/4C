@@ -5,6 +5,5 @@ set(_fiber_dependencies
     core
     inpar
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fiber_dependencies})

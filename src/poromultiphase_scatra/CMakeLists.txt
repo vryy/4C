@@ -8,7 +8,6 @@ set(_poromultiphase_scatra_dependencies
     inpar
     io
     lib
-    linalg
     mat
     poroelast
     poroelast_scatra

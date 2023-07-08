@@ -4,7 +4,6 @@ set(_mixture_dependencies
     # cmake-format: sortable
     inpar
     lib
-    linalg
     mat
     matelast
     )

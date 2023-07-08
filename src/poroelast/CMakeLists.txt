@@ -11,7 +11,6 @@ set(_poroelast_dependencies
     inpar
     io
     lib
-    linalg
     mat
     mortar
     so3

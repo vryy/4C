@@ -8,7 +8,6 @@ set(_ssi_dependencies
     inpar
     io
     lib
-    linalg
     mat
     rebalance
     scatra

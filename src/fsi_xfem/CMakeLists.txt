@@ -11,7 +11,6 @@ set(_fsi_xfem_dependencies
     inpar
     io
     lib
-    linalg
     poroelast
     structure
     xfem

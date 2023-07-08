@@ -5,10 +5,10 @@ set(LIBS_ADAPTER_COUPLING
     comm
     constraint
     core_coupling_volmortar
+    core_linalg
     io
     levelset
     lib
-    linalg
     mortar
     nurbs_discret
     )

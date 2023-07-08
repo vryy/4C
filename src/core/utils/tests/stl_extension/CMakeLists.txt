@@ -10,4 +10,4 @@ baci_add_google_test_executable(
   ${SOURCE_LIST}
   )
 
-baci_link_google_test_necessary_libraries(${TESTNAME})
+baci_link_google_test_necessary_libraries(${TESTNAME} core_utils_stl_extension)

@@ -10,7 +10,6 @@ set(_scatra_dependencies
     inpar
     io
     lib
-    linalg
     mat
     mortar
     nurbs_discret

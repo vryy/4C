@@ -5,7 +5,6 @@ set(_truss3cl_dependencies
     core
     inpar
     lib
-    linalg
     mat
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_truss3cl_dependencies})

@@ -7,7 +7,6 @@ set(_inv_analysis_dependencies
     inpar
     io
     lib
-    linalg
     mat
     timestepping
     )

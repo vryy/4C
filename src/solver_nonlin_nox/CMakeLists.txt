@@ -9,7 +9,6 @@ set(_solver_nonlin_nox_dependencies
     core
     inpar
     lib
-    linalg
     scatra
     structure_new
     )

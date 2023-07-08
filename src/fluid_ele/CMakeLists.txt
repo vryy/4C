@@ -10,7 +10,6 @@ set(_fluid_ele_dependencies
     inpar
     io
     lib
-    linalg
     mat
     nurbs_discret
     poroelast

@@ -9,7 +9,6 @@ set(_fluid_turbulence_dependencies
     inpar
     io
     lib
-    linalg
     mat
     nurbs_discret
     scatra

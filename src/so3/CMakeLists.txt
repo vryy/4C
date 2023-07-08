@@ -11,7 +11,6 @@ set(_so3_dependencies
     inpar
     io
     lib
-    linalg
     mat
     nurbs_discret
     structure_new

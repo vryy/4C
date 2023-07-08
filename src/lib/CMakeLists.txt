@@ -16,7 +16,6 @@ set(_lib_dependencies
     fluid_xfluid
     inpar
     io
-    linalg
     mat
     nurbs_discret
     particle_engine

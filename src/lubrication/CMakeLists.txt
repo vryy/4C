@@ -6,7 +6,6 @@ set(_lubrication_dependencies
     inpar
     io
     lib
-    linalg
     lubrication_ele
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lubrication_dependencies})

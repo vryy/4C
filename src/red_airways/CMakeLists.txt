@@ -7,7 +7,6 @@ set(_red_airways_dependencies
     inpar
     io
     lib
-    linalg
     mat
     rebalance
     )

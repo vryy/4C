@@ -7,7 +7,6 @@ set(_contact_aug_dependencies
     inpar
     io
     lib
-    linalg
     mortar
     solver_nonlin_nox
     structure_new

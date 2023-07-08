@@ -13,6 +13,5 @@ set(_fbi_dependencies
     inpar
     io
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fbi_dependencies})
