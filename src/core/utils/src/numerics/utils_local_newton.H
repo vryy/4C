@@ -11,7 +11,7 @@
 
 #include <functional>
 #include "linalg_fixedsizematrix.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 namespace CORE::UTILS
 {
@@ -47,13 +47,13 @@ namespace CORE::UTILS
   template <typename DefaultAndFADScalarType>
   DefaultAndFADScalarType L2Norm(const DefaultAndFADScalarType& x)
   {
-    return FADUTILS::Norm(x);
+    return CORE::FADUTILS::Norm(x);
   }
 
   template <unsigned N, typename ScalarType>
   ScalarType L2Norm(const LINALG::Matrix<N, 1, ScalarType>& x)
   {
-    return FADUTILS::VectorNorm(x);
+    return CORE::FADUTILS::VectorNorm(x);
   }
   /// @}
 

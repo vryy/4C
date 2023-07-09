@@ -44,7 +44,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam,
   // Beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
+    this->ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_fad>::apply(
         beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 
@@ -150,9 +150,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
 
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      point_coordinates.push_back(FADUTILS::CastToDouble(X_beam(dim)));
-      displacement.push_back(FADUTILS::CastToDouble(u_beam(dim)));
-      projection_direction.push_back(FADUTILS::CastToDouble(projection_dir(dim)));
+      point_coordinates.push_back(CORE::FADUTILS::CastToDouble(X_beam(dim)));
+      displacement.push_back(CORE::FADUTILS::CastToDouble(u_beam(dim)));
+      projection_direction.push_back(CORE::FADUTILS::CastToDouble(projection_dir(dim)));
     }
 
     if (write_unique_ids)

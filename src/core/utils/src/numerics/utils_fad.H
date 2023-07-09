@@ -10,35 +10,37 @@
 /*----------------------------------------------------------------------*/
 
 
-#ifndef LINALG_FAD_UTILS_H
-#define LINALG_FAD_UTILS_H
+#ifndef UTILS_FAD_H
+#define UTILS_FAD_H
 
 #include "linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
 
-namespace FADUTILS
+namespace CORE::FADUTILS
 {
+
+  /*!
+   * \brief Overload of CastToDouble() for double.
+   */
+  inline double CastToDouble(double a) { return a; }
+
   /**
    * \brief Cast of FAD to double.
    *
-   * This function will be used for FAD types, since the double version is specialized (see next
-   * function). We pass the value of the FAD variable to this function again. By doing so this
-   * function can also handle nested FAD types, i.e. higher order derivatives.
+   * This function will be used exclusively for FAD or FAD expression types and can also handle
+   * nested FAD types, i.e., higher order derivatives.
+   *
+   * @note We recursively call this function with the value of the FAD variable @p a until we reach
+   * the innermost double value.
    */
-  template <typename scalar_type>
-  inline double CastToDouble(scalar_type a)
+  template <typename FADType,
+      typename =
+          std::enable_if_t<Sacado::IsFad<FADType>::value || Sacado::IsExpr<FADType>::value, void*>>
+  inline double CastToDouble(FADType a)
   {
     return CastToDouble(a.val());
   }
 
-  /*!
-  \brief Template specialization for double
-  */
-  template <>
-  inline double CastToDouble(double a)
-  {
-    return a;
-  }
 
   /*!
   \brief Cast of a FAD matrix to a double matrix
@@ -73,7 +75,7 @@ namespace FADUTILS
   /*!
   \brief Calculate square root of a scalar FAD quantity. If a compiler Error is thrown when calling
   this function, check if the template argument is explicitly stated in the function call, i.e.
-  FADUTILS::sqrt<my_AD_type>(...)
+  CORE::FADUTILS::sqrt<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type sqrt(scalar_type a)
@@ -87,23 +89,19 @@ namespace FADUTILS
   }
 
   /*!
-  \brief Template specialization for double
+  \brief Overload for double.
   */
-  template <>
-  inline double sqrt(double a)
-  {
-    return std::sqrt(a);
-  }
+  inline double sqrt(double a) { return std::sqrt(a); }
 
   /*!
   \brief Calculate Norm of a scalar FAD quantity. If a compiler Error is thrown when calling this
   function, check if the template argument is explicitly stated in the function call, i.e.
-  FADUTILS::Norm<my_AD_type>(...)
+  CORE::FADUTILS::Norm<my_AD_type>(...)
   */
   template <typename scalar_type>
   inline scalar_type Norm(scalar_type a)
   {
-    return FADUTILS::sqrt<scalar_type>(a * a);
+    return CORE::FADUTILS::sqrt<scalar_type>(a * a);
   }
 
   /*!
@@ -118,7 +116,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt<scalar_type>(norm_squared);
+    return CORE::FADUTILS::sqrt<scalar_type>(norm_squared);
   }
 
   /*!
@@ -141,7 +139,7 @@ namespace FADUTILS
       norm_squared += v(i) * v(i);
     }
 
-    return FADUTILS::sqrt(norm_squared);
+    return CORE::FADUTILS::sqrt(norm_squared);
   }
 
   /*!
@@ -261,6 +259,6 @@ namespace FADUTILS
     static double apply(const int n, const int i, const double x) { return x; }
   };
 
-}  // namespace FADUTILS
+}  // namespace CORE::FADUTILS
 
 #endif

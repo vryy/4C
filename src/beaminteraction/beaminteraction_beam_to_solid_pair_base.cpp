@@ -101,7 +101,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
 {
   // Beam element.
   for (unsigned int i = 0; i < beam::n_dof_; i++)
-    ele1pos_(i) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    ele1pos_(i) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
@@ -156,8 +156,9 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   for (unsigned int index_segment = 0; index_segment < line_to_3D_segments_.size(); index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
-        << ", " << FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB()) << "]";
+    out << "eta in [" << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
+        << ", " << CORE::FADUTILS::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB())
+        << "]";
     out << ", Gauss points = " << line_to_3D_segments_[index_segment].GetNumberOfProjectionPoints();
     out << "\n";
   }
@@ -176,8 +177,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     GEOMETRYPAIR::EvaluatePosition<beam>(
         integration_point.GetEta(), ele1posref_, r_beam, this->Element1());
   else
-    GEOMETRYPAIR::EvaluatePosition<beam>(
-        integration_point.GetEta(), FADUTILS::CastToDouble(ele1pos_), r_beam, this->Element1());
+    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(),
+        CORE::FADUTILS::CastToDouble(ele1pos_), r_beam, this->Element1());
 }
 
 

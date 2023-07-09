@@ -15,7 +15,7 @@ function)
 
 #include "lib_globalproblem.H"
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include <cmath>
 
 /*-----------------------------------------------------------------------------------------------*
@@ -260,7 +260,7 @@ void MAT::BeamPlasticMaterial<T>::EvaluateForceContributionsToStress(
 
       deltaGammaplast_[gp](0) =
           ((CN(0, 0) - cN_eff_[gp](0, 0)) / CN(0, 0) * deltastressN_[gp](0) / CN(0, 0)) *
-          FADUTILS::Signum(stressN(0));
+          CORE::FADUTILS::Signum(stressN(0));
 
       gammaplastnew_[gp](0) = gammaplastconv_[gp](0) + deltaGammaplast_[gp](0);
 

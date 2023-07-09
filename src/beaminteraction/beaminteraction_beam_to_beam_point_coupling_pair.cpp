@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
     BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
         *discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-      beam_pos[i_beam](i_dof) = FADUTILS::HigherOrderFadValue<scalar_type_pos>::apply(
+      beam_pos[i_beam](i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pos>::apply(
           2 * beam::n_dof_, i_beam * beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
 
     // Evaluate the position of the coupling point.
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
       force_vector->SumIntoGlobalValues(gid_pos[i_beam].M(), gid_pos[i_beam].A(),
-          FADUTILS::CastToDouble(force_element[i_beam]).A());
+          CORE::FADUTILS::CastToDouble(force_element[i_beam]).A());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
@@ -205,7 +205,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
         quaternion_double, position_in_parameterspace_[i_beam]);
     CORE::LARGEROTATIONS::quaterniontoangle(quaternion_double, psi_double);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      psi(i_dim) = FADUTILS::HigherOrderFadValue<scalar_type_rot>::apply(
+      psi(i_dim) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_rot>::apply(
           6, i_beam * rot_dim_ + i_dim, psi_double(i_dim));
     CORE::LARGEROTATIONS::angletoquaternion(psi, quaternion[i_beam]);
 
@@ -261,7 +261,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
 
     if (force_vector != Teuchos::null)
       force_vector->SumIntoGlobalValues(gid_rot[i_beam].M(), gid_rot[i_beam].A(),
-          FADUTILS::CastToDouble(moment_nodal_load[i_beam]).A());
+          CORE::FADUTILS::CastToDouble(moment_nodal_load[i_beam]).A());
   }
 
   // Evaluate and assemble the coupling stiffness terms.

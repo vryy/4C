@@ -16,7 +16,7 @@
 
 #include "linalg_utils_densematrix_inverse.H"
 #include "utils_exceptions.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include <vector>
 
@@ -95,9 +95,9 @@ namespace GEOMETRYPAIR
     template <typename scalar_type_other>
     inline void SetFromOtherPointDouble(const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
     {
-      eta_ = FADUTILS::CastToDouble(point_other.GetEta());
+      eta_ = CORE::FADUTILS::CastToDouble(point_other.GetEta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        xi_(i_dim) = FADUTILS::CastToDouble(point_other.GetXi()(i_dim));
+        xi_(i_dim) = CORE::FADUTILS::CastToDouble(point_other.GetXi()(i_dim));
       projection_result_ = point_other.GetProjectionResult();
       gauss_weight_ = point_other.GetGaussWeightNoCheck();
       intersection_face_ = point_other.GetIntersectionFace();

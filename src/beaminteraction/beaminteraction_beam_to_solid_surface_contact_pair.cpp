@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
           eta, this->ele1posref_, dr_beam_ref, this->Element1());
 
       // Jacobian including the segment length.
-      segment_jacobian = FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
       GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(xi, this->face_element_->GetFacePosition(),
@@ -154,7 +154,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_force_vector.M(); j_dof++)
-      force_pair_double[j_dof] = FADUTILS::CastToDouble(pair_force_vector(j_dof));
+      force_pair_double[j_dof] = CORE::FADUTILS::CastToDouble(pair_force_vector(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -162,8 +162,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_force_vector.M(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->FEAssemble(FADUTILS::CastToDouble(pair_force_vector(i_dof).dx(j_dof)),
-            pair_gid[i_dof], pair_gid[j_dof]);
+        stiffness_matrix->FEAssemble(
+            CORE::FADUTILS::CastToDouble(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],
+            pair_gid[j_dof]);
 }
 
 
@@ -237,7 +238,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
           eta, this->ele1posref_, dr_beam_ref, this->Element1());
 
       // Jacobian including the segment length.
-      segment_jacobian = FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
+      segment_jacobian = CORE::FADUTILS::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
       GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(xi, this->face_element_->GetFacePosition(),
@@ -265,7 +266,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-      force_pair_double[j_dof] = FADUTILS::CastToDouble(potential.dx(j_dof));
+      force_pair_double[j_dof] = CORE::FADUTILS::CastToDouble(potential.dx(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
@@ -273,7 +274,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
   if (stiffness_matrix != Teuchos::null)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
-        stiffness_matrix->FEAssemble(FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
+        stiffness_matrix->FEAssemble(CORE::FADUTILS::CastToDouble(potential.dx(i_dof).dx(j_dof)),
             pair_gid[i_dof], pair_gid[j_dof]);
 }
 

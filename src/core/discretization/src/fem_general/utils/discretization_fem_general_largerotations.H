@@ -12,7 +12,7 @@
 #define DISCRETIZATION_FEM_GENERAL_LARGEROTATIONS_H
 
 #include "linalg_fixedsizematrix.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 
 namespace CORE::LARGEROTATIONS
@@ -75,7 +75,7 @@ namespace CORE::LARGEROTATIONS
   void angletoquaternion(const LINALG::Matrix<3, 1, T>& theta, LINALG::Matrix<4, 1, T>& q)
   {
     // absolute value of rotation angle theta
-    const T abs_theta = FADUTILS::VectorNorm(theta);
+    const T abs_theta = CORE::FADUTILS::VectorNorm(theta);
 
     // computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
     if (abs_theta > 1e-12)
@@ -145,7 +145,7 @@ namespace CORE::LARGEROTATIONS
       {
         omega(i) = q(i) * 2 / q(3);
       }
-      const T abs_omega = FADUTILS::VectorNorm(omega);
+      const T abs_omega = CORE::FADUTILS::VectorNorm(omega);
       const T tanhalf = abs_omega / 2;
       const T thetaabs = atan(tanhalf) * 2;
 
@@ -203,7 +203,7 @@ namespace CORE::LARGEROTATIONS
 
     if (trace > R(0, 0) && trace > R(1, 1) && trace > R(2, 2))
     {
-      q(3) = 0.5 * FADUTILS::sqrt<T>(1 + trace);
+      q(3) = 0.5 * CORE::FADUTILS::sqrt<T>(1 + trace);
       /*note: if trace is greater than each element on diagonal, all diagonal elements are
        *positive and hence also the trace is positive and thus q(3) > 0 so that division by q(3)
        *is allowed*/
@@ -221,7 +221,7 @@ namespace CORE::LARGEROTATIONS
         if (R(i, i) >= R(j, j) && R(i, i) >= R(k, k))
         {
           // equation (16.78a)
-          q(i) = FADUTILS::sqrt<T>(0.5 * R(i, i) + 0.25 * (1 - trace));
+          q(i) = CORE::FADUTILS::sqrt<T>(0.5 * R(i, i) + 0.25 * (1 - trace));
 
           // equation (16.78b)
           q(3) = 0.25 * (R(k, j) - R(j, k)) / q(i);
@@ -269,7 +269,7 @@ namespace CORE::LARGEROTATIONS
   LINALG::Matrix<4, 1, T> inversequaternion(const LINALG::Matrix<4, 1, T>& q)
   {
     // square norm ||q||^2 of quaternion q
-    const T qnormsq = FADUTILS::VectorNorm(q);
+    const T qnormsq = CORE::FADUTILS::VectorNorm(q);
 
     // declaration of variable for inverse quaternion
     LINALG::Matrix<4, 1, T> qinv;
@@ -292,7 +292,7 @@ namespace CORE::LARGEROTATIONS
   LINALG::Matrix<3, 3, T> Tmatrix(LINALG::Matrix<3, 1, T> theta)
   {
     LINALG::Matrix<3, 3, T> result(true);
-    const T theta_abs = FADUTILS::VectorNorm(theta);
+    const T theta_abs = CORE::FADUTILS::VectorNorm(theta);
 
     // in case of theta_abs == 0 the following computation has problems with singularities
     if (theta_abs > 1e-8)
@@ -330,7 +330,7 @@ namespace CORE::LARGEROTATIONS
   {
     LINALG::Matrix<3, 3, T> result(true);
     T theta_abs =
-        FADUTILS::sqrt<T>(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2));
+        CORE::FADUTILS::sqrt<T>(theta(0) * theta(0) + theta(1) * theta(1) + theta(2) * theta(2));
 
     // in case of theta_abs == 0 the following computation has problems with ill-conditioning /
     // singularities
@@ -374,7 +374,7 @@ namespace CORE::LARGEROTATIONS
     LINALG::Matrix<3, 3, T> auxmatrix;
 
     // norm of \Psi^l:
-    T normPsil = FADUTILS::sqrt<T>(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2));
+    T normPsil = CORE::FADUTILS::sqrt<T>(Psil(0) * Psil(0) + Psil(1) * Psil(1) + Psil(2) * Psil(2));
 
     // for relative rotations smaller then 1e-12 we use the limit for Psil -> 0 according to the
     // comment above NOTE 4 on page 152, Jelenic 1999
@@ -457,7 +457,7 @@ namespace CORE::LARGEROTATIONS
     T temp_scalar3 = 0.0;
     T fac_n0 = 0.0;
     T fac_b0 = 0.0;
-    T abs_r_s = FADUTILS::Norm<T>(r_s);
+    T abs_r_s = CORE::FADUTILS::Norm<T>(r_s);
 
     for (int i = 0; i < 3; i++)
     {

@@ -17,7 +17,7 @@
 #include "structure_new_elements_paramsinterface.H"
 
 // Todo @grill: check for obsolete header inclusions
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include "lib_discret.H"
 #include "lib_utils.H"
 #include "utils_exceptions.H"
@@ -1218,7 +1218,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
     r_s.Clear();
     r_s.Multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = FADUTILS::Norm(r_s);
+    abs_r_s = CORE::FADUTILS::Norm(r_s);
 
 
     Calc_v_thetaperp<nnodecl>(v_thetaperp_cp[ind], N_s, r_s, abs_r_s);
@@ -1365,7 +1365,7 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
     r_s.Clear();
     r_s.Multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = FADUTILS::Norm(r_s);
+    abs_r_s = CORE::FADUTILS::Norm(r_s);
 
     g_1_cp.Clear();
     g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
@@ -1518,7 +1518,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     r_s.Clear();
     r_s.Multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = FADUTILS::Norm(r_s);
+    abs_r_s = CORE::FADUTILS::Norm(r_s);
 
 
     // lin_thetaperp
@@ -1725,7 +1725,7 @@ void DRT::ELEMENTS::Beam3k::AddRefValuesDisp(
       LINALG::Matrix<4, 1> Qnew(true);
       for (unsigned int i = 0; i < 3; ++i)
       {
-        disptheta(i) = FADUTILS::CastToDouble(dofvec(7 * node + 3 + i));
+        disptheta(i) = CORE::FADUTILS::CastToDouble(dofvec(7 * node + 3 + i));
       }
 
       CORE::LARGEROTATIONS::angletoquaternion(disptheta, deltaQ);
@@ -1841,7 +1841,8 @@ void DRT::ELEMENTS::Beam3k::SetTangentsAndTriadsAndReferenceTriadsAtBoundaryNode
       // Store nodal reference triad
       LINALG::Matrix<4, 1, T> Qref(true);
       CORE::LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
-      for (unsigned int i = 0; i < 4; ++i) Qref_new[node](i) = FADUTILS::CastToDouble(Qref(i));
+      for (unsigned int i = 0; i < 4; ++i)
+        Qref_new[node](i) = CORE::FADUTILS::CastToDouble(Qref(i));
 
       // calculate material triad
       triad_mat_cp[node].Clear();
@@ -1929,7 +1930,7 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     // Store nodal reference triad
     LINALG::Matrix<4, 1, T> Qref(true);
     CORE::LARGEROTATIONS::triadtoquaternion(triad_ref, Qref);
-    for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = FADUTILS::CastToDouble(Qref(i));
+    for (unsigned int i = 0; i < 4; ++i) Qref_new[ind](i) = CORE::FADUTILS::CastToDouble(Qref(i));
 
     // calculate material triad
     triad_mat_cp[ind].Clear();
@@ -1995,7 +1996,7 @@ void DRT::ELEMENTS::Beam3k::Calc_velocity(
   for (unsigned int idim = 0; idim < ndim; ++idim)
   {
     unshiftedrconvmass_i(idim) = rconvmass_[gausspoint_index](idim);
-    position_i_double(idim) = FADUTILS::CastToDouble(position(idim));
+    position_i_double(idim) = CORE::FADUTILS::CastToDouble(position(idim));
   }
 
   // difference in position of this GP as compared to last time step

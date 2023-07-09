@@ -54,7 +54,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
-    patch_displacement_fad[i_dof] = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    patch_displacement_fad[i_dof] = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         n_patch_dof + n_beam_dof_, n_beam_dof_ + i_dof, patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
       face_position_(i_dof) = face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
@@ -70,9 +70,9 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositi
 {
   LINALG::Matrix<surface::n_dof_, 1, double> position_double;
   if (reference)
-    position_double = FADUTILS::CastToDouble(face_reference_position_);
+    position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
   else
-    position_double = FADUTILS::CastToDouble(face_position_);
+    position_double = CORE::FADUTILS::CastToDouble(face_position_);
 
   EvaluatePosition<surface>(xi, position_double, r, drt_face_element_.get());
 }
@@ -95,9 +95,9 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormal
     // Calculate the normals on the face geometry.
     LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     if (reference)
-      position_double = FADUTILS::CastToDouble(face_reference_position_);
+      position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
     else
-      position_double = FADUTILS::CastToDouble(face_position_);
+      position_double = CORE::FADUTILS::CastToDouble(face_position_);
 
     EvaluateSurfaceNormal<surface>(xi, position_double, n, drt_face_element_.get());
   }
@@ -235,7 +235,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
-    patch_displacement_fad[i_dof] = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    patch_displacement_fad[i_dof] = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         n_patch_dof + this->n_beam_dof_, this->n_beam_dof_ + i_dof, patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
       this->face_position_(i_dof) =
@@ -383,7 +383,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalN
   averaged_normals.PutScalar(0.0);
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
-    normals(i_node).Scale(1.0 / FADUTILS::VectorNorm(normals(i_node)));
+    normals(i_node).Scale(1.0 / CORE::FADUTILS::VectorNorm(normals(i_node)));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       averaged_normals(i_dim + 3 * i_node) = normals(i_node)(i_dim);
   }
@@ -526,7 +526,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   volume_position_.PutScalar(0.0);
   for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
   {
-    volume_position_(i_dof) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+    volume_position_(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
         volume::n_dof_ + this->n_beam_dof_, this->n_beam_dof_ + i_dof,
         volume_displacement[i_dof] + volume_reference_position_(i_dof));
   }
@@ -567,7 +567,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
     EvaluatePosition<surface>(xi_surface, surface_position, r_surface);
     EvaluatePosition<volume>(xi_volume, volume_position, r_volume);
     r_volume -= r_surface;
-    if (FADUTILS::VectorNorm(r_volume) > 1e-10)
+    if (CORE::FADUTILS::VectorNorm(r_volume) > 1e-10)
       dserror("Nodal positions for face and volume do not match.");
 
     EvaluatePositionDerivative1<volume>(xi_volume, volume_position, dr_volume);

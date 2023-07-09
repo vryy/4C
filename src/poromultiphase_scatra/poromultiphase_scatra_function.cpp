@@ -9,7 +9,7 @@
 
 #include "poromultiphase_scatra_function.H"
 #include "poromultiphase_scatra_utils.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include <Teuchos_RCP.hpp>
 #include "lib_linedefinition.H"
 

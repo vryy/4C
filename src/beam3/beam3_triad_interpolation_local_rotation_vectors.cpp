@@ -18,7 +18,7 @@
 
 #include "linalg_fixedsizematrix.H"
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include <Sacado.hpp>
 
@@ -605,11 +605,11 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
 
   CORE::LARGEROTATIONS::computespin(vI, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
-  if (FADUTILS::VectorNorm(phiIJ) == 0.0)
+  if (CORE::FADUTILS::VectorNorm(phiIJ) == 0.0)
     vI.Scale(0.25);
   else  // Fixme @grill: why do we cast to double here?
-    vI.Scale(std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm(phiIJ)) / 4.0) /
-             FADUTILS::VectorNorm(phiIJ));
+    vI.Scale(std::tan(CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm(phiIJ)) / 4.0) /
+             CORE::FADUTILS::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vI(i, i) += 1.0;
 
@@ -627,11 +627,12 @@ void LARGEROTATIONS::TriadInterpolationLocalRotationVectors<numnodes, T>::Calc_v
 
   CORE::LARGEROTATIONS::computespin(vJ, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
-  if (FADUTILS::VectorNorm(phiIJ) == 0.0)
+  if (CORE::FADUTILS::VectorNorm(phiIJ) == 0.0)
     vJ.Scale(-0.25);
   else  // Fixme why do we cast to double here?
-    vJ.Scale(-1.0 * std::tan(FADUTILS::CastToDouble(FADUTILS::VectorNorm(phiIJ)) / 4.0) /
-             FADUTILS::VectorNorm(phiIJ));
+    vJ.Scale(-1.0 *
+             std::tan(CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm(phiIJ)) / 4.0) /
+             CORE::FADUTILS::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vJ(i, i) += 1.0;
 

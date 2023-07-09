@@ -351,7 +351,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
 #if defined(GMSHDEBUG) || defined(GMSHFORCE) || defined(SAVEFORCE)
     // Compute some variables at contact interval border
     ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
-    gap = FADUTILS::ScalarProduct(n2, rD) - radius1;
+    gap = CORE::FADUTILS::ScalarProduct(n2, rD) - radius1;
     double fp = 0.0;
     if (gap < 0)
     {
@@ -520,10 +520,11 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
     ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
 
     // Compute sign of projection of distance vector rD on surface unit normal vector n2
-    sgn = FADUTILS::CastToDouble(FADUTILS::Signum(FADUTILS::ScalarProduct(nD, n2)));
+    sgn =
+        CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Signum(CORE::FADUTILS::ScalarProduct(nD, n2)));
 
     // Compute gap at Gauss point
-    gap = FADUTILS::ScalarProduct(n2, rD) - radius1;  // = sgn * norm_rD - radius1;
+    gap = CORE::FADUTILS::ScalarProduct(n2, rD) - radius1;  // = sgn * norm_rD - radius1;
 
     // If the beam element center line lies under the surface element and there is no change of sgn
     // from the last to the current time step, the contact is not active (here called projection not
@@ -1105,16 +1106,16 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   LINALG::Matrix<2, dim1 + dim2, TYPEBTS> D(true);
 
   // Compute Lpar for all parametes
-  Lpar(0, 0) =
-      -::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) + ::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
-  Lpar(1, 0) =
-      -::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) + ::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
-  Lpar(0, 1) =
-      -::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) + ::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
-  Lpar(1, 1) =
-      -::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) + ::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
-  Lpar(0, 2) = ::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
-  Lpar(1, 2) = ::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
+  Lpar(0, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi1) +
+               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi1);
+  Lpar(1, 0) = -::CORE::FADUTILS::ScalarProduct(x2_xi1, x2_xi2) +
+               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi1);
+  Lpar(0, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi1) +
+               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi1xi2);
+  Lpar(1, 1) = -::CORE::FADUTILS::ScalarProduct(x2_xi2, x2_xi2) +
+               ::CORE::FADUTILS::ScalarProduct(rD, x2_xi2xi2);
+  Lpar(0, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi1);
+  Lpar(1, 2) = ::CORE::FADUTILS::ScalarProduct(r1_eta, x2_xi2);
 
   // Assemble needed entries of Lpar in L
   L(0, 0) = Lpar(0, par_i[0]);
@@ -1124,7 +1125,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
 
   // Invert L by hand
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
-  if (FADUTILS::CastToDouble(FADUTILS::Norm(det_L)) < DETERMINANTTOL)
+  if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
   {
     dserror("ERROR: Determinant of L = 0");
   }
@@ -1433,8 +1434,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
   }
 
   // Assemble fc1 and fc2 into global contact force vector
-  for (int i = 0; i < dim1; i++) fcontact1[i] = FADUTILS::CastToDouble(fc1(i));
-  for (int i = 0; i < dim2; i++) fcontact2[i] = FADUTILS::CastToDouble(fc2(i));
+  for (int i = 0; i < dim1; i++) fcontact1[i] = CORE::FADUTILS::CastToDouble(fc1(i));
+  for (int i = 0; i < dim2; i++) fcontact2[i] = CORE::FADUTILS::CastToDouble(fc2(i));
 
   LINALG::Assemble(*fint, fcontact1, lm1, lmowner1);
   LINALG::Assemble(*fint, fcontact2, lm2, lmowner2);
@@ -1488,8 +1489,10 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
     // Change sign of stiffc1 and stiffc2 due to time integration. According to analytical
     // derivation there is no minus sign, but for our time integration methods the negative
     // stiffness must be assembled.
-    for (int i = 0; i < dim1; i++) stiffcontact1(i, j) = -FADUTILS::CastToDouble(stiffc1(i, j));
-    for (int i = 0; i < dim2; i++) stiffcontact2(i, j) = -FADUTILS::CastToDouble(stiffc2(i, j));
+    for (int i = 0; i < dim1; i++)
+      stiffcontact1(i, j) = -CORE::FADUTILS::CastToDouble(stiffc1(i, j));
+    for (int i = 0; i < dim2; i++)
+      stiffcontact2(i, j) = -CORE::FADUTILS::CastToDouble(stiffc2(i, j));
   }
 
   stiffmatrix.Assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
@@ -1923,12 +1926,12 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
     }
 
     // Compute norm of difference vector
-    norm_rD = FADUTILS::VectorNorm<3>(rD);
+    norm_rD = CORE::FADUTILS::VectorNorm<3>(rD);
 
     // If automatic differentiation via FAD is applied, norm_rD has to be of type double since
     // this factor is needed for a pure scaling of the orthogonality conditions and has not to be
     // linearized
-    double norm_rD_scale = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(rD));
+    double norm_rD_scale = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(rD));
 
     // The closer the beam and surface element get, the smaller is norm_rD, but norm_rD is not
     // allowed to be too small, else numerical problems occur. Since in this case |eta| > 1,
@@ -1947,7 +1950,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
     }
 
     // Compute scalar residuum
-    residual = FADUTILS::VectorNorm<2>(f);
+    residual = CORE::FADUTILS::VectorNorm<2>(f);
 
     // Reset matrices
     J.Clear();
@@ -1999,14 +2002,14 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
     // If det_J = 0 we assume, that the beam centerline and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
     // identified by two contact interval borders found with the GetContactLines method
-    parallel = FADUTILS::CastToDouble(FADUTILS::Norm(det_J)) < COLINEARTOL;
+    parallel = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_J)) < COLINEARTOL;
 
     // Check if the local Newton iteration has converged
     // If the start point fulfills the orthogonalty conditions (residual < BEAMCONTACTTOL), we also
     // check if the beam centerline and the surface edge are parallel. This is done by calculating
     // det_J before checking if the local Newton iteration has converged by fulfilling the condition
     // residual < BEAMCONTACTTOL
-    if (FADUTILS::CastToDouble(residual) < BEAMCONTACTTOL && !parallel)
+    if (CORE::FADUTILS::CastToDouble(residual) < BEAMCONTACTTOL && !parallel)
     {
       if (output)
       {
@@ -2030,8 +2033,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
       // Sort out
       if (output)
       {
-        std::cout << "elementscolinear: det_J = " << FADUTILS::CastToDouble(FADUTILS::Norm(det_J))
-                  << std::endl;
+        std::cout << "elementscolinear: det_J = "
+                  << CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_J)) << std::endl;
       }
       break;
     }
@@ -2084,7 +2087,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
     ComputeSurfaceNormal(x2_xi1, x2_xi2, a2, norm_a2, n2);
 
     // Compute sign of projection of distance vector rD on surface unit normal vector n2
-    sgn = FADUTILS::CastToDouble(FADUTILS::Signum(FADUTILS::ScalarProduct(nD, n2)));
+    sgn =
+        CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Signum(CORE::FADUTILS::ScalarProduct(nD, n2)));
 
     if (sgn < 0)
     {
@@ -2116,7 +2120,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Projec
         }
 
         // Check if the direction of nD has changed
-        if (FADUTILS::ScalarProduct(nD, normalsets_old_[nearest_index].second) < 0)
+        if (CORE::FADUTILS::ScalarProduct(nD, normalsets_old_[nearest_index].second) < 0)
         {
           normaldir_changed = true;
         }
@@ -2473,9 +2477,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   }
 
   // Compute norm of distance vector
-  norm_rD = FADUTILS::VectorNorm<3>(rD);
+  norm_rD = CORE::FADUTILS::VectorNorm<3>(rD);
 
-  if (FADUTILS::CastToDouble(norm_rD) < NORMTOL)
+  if (CORE::FADUTILS::CastToDouble(norm_rD) < NORMTOL)
   {
     dserror("ERROR: Distance vector of length zero! --> Change time step!");
   }
@@ -2512,9 +2516,9 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Comput
   a2(2) = x2_xi1(0) * x2_xi2(1) - x2_xi1(1) * x2_xi2(0);
 
   // Compute norm of surface normal vector
-  norm_a2 = FADUTILS::VectorNorm<3>(a2);
+  norm_a2 = CORE::FADUTILS::VectorNorm<3>(a2);
 
-  if (FADUTILS::CastToDouble(norm_a2) < NORMTOL)
+  if (CORE::FADUTILS::CastToDouble(norm_a2) < NORMTOL)
   {
     dserror("ERROR: Surface normal vector of length zero! --> Change time step!");
   }
@@ -2668,7 +2672,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetNew
 {
   //  TYPEBTS gap_diff = gap_-gap_original_;
   //
-  //  if (FADUTILS::CastToDouble(FADUTILS::Norm(gap_diff)) < GAPTOL)
+  //  if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(gap_diff)) < GAPTOL)
   //    return false;
   //  else
   return true;
@@ -2715,7 +2719,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Update
   //  LINALG::Matrix<3*numnodes,1> elepos_aux(true);
   //  //Tangent smoothing only possible with data type double (not with Sacado FAD)
   //  for (int i=0;i<3*numnodes;i++)
-  //    elepos_aux(i)=FADUTILS::CastToDouble(ele1pos_(i));
+  //    elepos_aux(i)=CORE::FADUTILS::CastToDouble(ele1pos_(i));
   //
   //  nodaltangentssmooth1_=CONTACT::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(currentpositions,elepos_aux
   //  ,element1_,neighbors1_);
@@ -2723,7 +2727,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Update
   //  elepos_aux.Clear();
   //  //Tangent smoothing only possible with data type double (not with Sacado FAD)
   //  for (int i=0;i<3*numnodes;i++)
-  //    elepos_aux(i)=FADUTILS::CastToDouble(ele2pos_(i));
+  //    elepos_aux(i)=CORE::FADUTILS::CastToDouble(ele2pos_(i));
   //
   //  nodaltangentssmooth2_=CONTACT::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(currentpositions,elepos_aux
   //  ,element2_,neighbors2_);
@@ -3046,7 +3050,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADChe
   // NOTE: Even if automatic differentiation via FAD is applied, norm_rD has to be of type double
   // since this factor is needed for a pure scaling of the nonlinear orthogonality conditions and
   // has not to be linearized!
-  double norm_rD_scale = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(rD));
+  double norm_rD_scale = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(rD));
 
   // Evaluate f of orthogonality conditions
   LINALG::Matrix<2, 1, TYPEBTS> f(true);
@@ -3070,7 +3074,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::FADChe
 
   // Invert L by hand
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
-  if (FADUTILS::CastToDouble(FADUTILS::Norm(det_L)) < DETERMINANTTOL)
+  if (CORE::FADUTILS::CastToDouble(CORE::FADUTILS::Norm(det_L)) < DETERMINANTTOL)
     dserror("ERROR: Determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
@@ -3384,7 +3388,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
   // NOTE: Even if automatic differentiation via FAD is applied, norm_rD has to be of type double
   // since this factor is needed for a pure scaling of the nonlinear orthogonality conditions and
   // has not to be linearized!
-  double norm_rD_scale = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(rD));
+  double norm_rD_scale = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(rD));
 
   // Evaluate f of orthogonality conditions
   LINALG::Matrix<2, 1, TYPEBTS> f(true);

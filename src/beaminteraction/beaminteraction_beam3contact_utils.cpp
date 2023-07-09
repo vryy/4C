@@ -14,7 +14,7 @@
 #include "beam3_kirchhoff.H"
 #include "rigidsphere.H"
 #include "beamcontact_beam3contact_manager.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|
@@ -230,13 +230,13 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a
   LINALG::Matrix<3, 1, double> vec1(true);
   LINALG::Matrix<3, 1, double> vec2(true);
 
-  t1 = FADUTILS::DiffVector(r1_b, r1_a);
-  t2 = FADUTILS::DiffVector(r2_b, r2_a);
+  t1 = CORE::FADUTILS::DiffVector(r1_b, r1_a);
+  t2 = CORE::FADUTILS::DiffVector(r2_b, r2_a);
 
-  vec1 = FADUTILS::DiffVector(r1_a, r2_a);
-  vec2 = FADUTILS::VectorProduct(t1, t2);
-  closestlinedist =
-      FADUTILS::Norm(FADUTILS::ScalarProduct(vec1, vec2)) / FADUTILS::VectorNorm<3>(vec2);
+  vec1 = CORE::FADUTILS::DiffVector(r1_a, r2_a);
+  vec2 = CORE::FADUTILS::VectorProduct(t1, t2);
+  closestlinedist = CORE::FADUTILS::Norm(CORE::FADUTILS::ScalarProduct(vec1, vec2)) /
+                    CORE::FADUTILS::VectorNorm<3>(vec2);
 
   // 1)Check, if a solution for the Closest-Point-Projection of the two lines exists in eta1_seg,
   // eta2_seg \in [-1.0;1.0] (existence of local minimum in the 2D domain eta1_seg, eta2_seg \in
@@ -259,21 +259,21 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(LINALG::Matrix<3, 1, double>& r1_a
     double eta2_seg(0.0);
 
     // local variables for element coordinates
-    double aux1 = FADUTILS::ScalarProduct(FADUTILS::DiffVector(b_1, b_2), t2);
-    aux1 = aux1 * FADUTILS::ScalarProduct(t1, t2);
-    double aux2 = FADUTILS::ScalarProduct(FADUTILS::DiffVector(b_2, b_1), t1);
-    aux2 = aux2 * FADUTILS::ScalarProduct(t2, t2);
-    eta1_seg =
-        (aux1 + aux2) / (FADUTILS::ScalarProduct(t2, t2) * FADUTILS::ScalarProduct(t1, t1) -
-                            FADUTILS::ScalarProduct(t2, t1) * FADUTILS::ScalarProduct(t2, t1));
+    double aux1 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_1, b_2), t2);
+    aux1 = aux1 * CORE::FADUTILS::ScalarProduct(t1, t2);
+    double aux2 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_2, b_1), t1);
+    aux2 = aux2 * CORE::FADUTILS::ScalarProduct(t2, t2);
+    eta1_seg = (aux1 + aux2) /
+               (CORE::FADUTILS::ScalarProduct(t2, t2) * CORE::FADUTILS::ScalarProduct(t1, t1) -
+                   CORE::FADUTILS::ScalarProduct(t2, t1) * CORE::FADUTILS::ScalarProduct(t2, t1));
 
-    aux1 = FADUTILS::ScalarProduct(FADUTILS::DiffVector(b_2, b_1), t1);
-    aux1 = aux1 * FADUTILS::ScalarProduct(t1, t2);
-    aux2 = FADUTILS::ScalarProduct(FADUTILS::DiffVector(b_1, b_2), t2);
-    aux2 = aux2 * FADUTILS::ScalarProduct(t1, t1);
-    eta2_seg =
-        (aux1 + aux2) / (FADUTILS::ScalarProduct(t2, t2) * FADUTILS::ScalarProduct(t1, t1) -
-                            FADUTILS::ScalarProduct(t2, t1) * FADUTILS::ScalarProduct(t2, t1));
+    aux1 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_2, b_1), t1);
+    aux1 = aux1 * CORE::FADUTILS::ScalarProduct(t1, t2);
+    aux2 = CORE::FADUTILS::ScalarProduct(CORE::FADUTILS::DiffVector(b_1, b_2), t2);
+    aux2 = aux2 * CORE::FADUTILS::ScalarProduct(t1, t1);
+    eta2_seg = (aux1 + aux2) /
+               (CORE::FADUTILS::ScalarProduct(t2, t2) * CORE::FADUTILS::ScalarProduct(t1, t1) -
+                   CORE::FADUTILS::ScalarProduct(t2, t1) * CORE::FADUTILS::ScalarProduct(t2, t1));
 
     if (fabs(eta1_seg) < 1.0 and fabs(eta2_seg) < 1.0)
     {
@@ -334,18 +334,19 @@ double BEAMCONTACT::CalcPointLineDist(LINALG::Matrix<3, 1, double>& rline_a,  //
   double closestpointlinedist = 0.0;
 
   LINALG::Matrix<3, 1, double> tline(true);
-  tline = FADUTILS::DiffVector(rline_b, rline_a);
+  tline = CORE::FADUTILS::DiffVector(rline_b, rline_a);
   LINALG::Matrix<3, 1, double> vec1(true);
-  vec1 = FADUTILS::DiffVector(rline_a, rp);
-  closestpointlinedist = fabs(FADUTILS::VectorNorm<3>(FADUTILS::VectorProduct(vec1, tline)) /
-                              FADUTILS::VectorNorm<3>(tline));
+  vec1 = CORE::FADUTILS::DiffVector(rline_a, rp);
+  closestpointlinedist =
+      fabs(CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::VectorProduct(vec1, tline)) /
+           CORE::FADUTILS::VectorNorm<3>(tline));
 
   vec1.Clear();
   vec1.Update(-1.0, rline_a, 0.0);
   vec1.Update(-1.0, rline_b, 1.0);
   vec1.Update(2.0, rp, 1.0);
 
-  eta = FADUTILS::ScalarProduct(tline, vec1) / FADUTILS::ScalarProduct(tline, tline);
+  eta = CORE::FADUTILS::ScalarProduct(tline, vec1) / CORE::FADUTILS::ScalarProduct(tline, tline);
 
   return closestpointlinedist;
 }
@@ -355,11 +356,12 @@ double BEAMCONTACT::CalcPointLineDist(LINALG::Matrix<3, 1, double>& rline_a,  //
  *----------------------------------------------------------------------*/
 double BEAMCONTACT::CalcAngle(LINALG::Matrix<3, 1, double> a, LINALG::Matrix<3, 1, double> b)
 {
-  if (FADUTILS::VectorNorm<3>(a) < 1.0e-12 or FADUTILS::VectorNorm<3>(b) < 1.0e-12)
+  if (CORE::FADUTILS::VectorNorm<3>(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm<3>(b) < 1.0e-12)
     dserror("Can not determine angle for zero vector!");
 
-  double scalarproduct = std::fabs(
-      FADUTILS::ScalarProduct(a, b) / (FADUTILS::VectorNorm<3>(a) * FADUTILS::VectorNorm<3>(b)));
+  double scalarproduct =
+      std::fabs(CORE::FADUTILS::ScalarProduct(a, b) /
+                (CORE::FADUTILS::VectorNorm<3>(a) * CORE::FADUTILS::VectorNorm<3>(b)));
   double angle = 0.0;
 
   if (scalarproduct < 1.0)
@@ -387,15 +389,15 @@ type BEAMCONTACT::GetClosestEndpointDist(LINALG::Matrix<3, 1, type> r1_a,
   type minnodaldist = 0.0;
   type nodaldist = 0.0;
 
-  minnodaldist = FADUTILS::VectorNorm<3>(FADUTILS::DiffVector(r1_a, r2_a));
+  minnodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_a, r2_a));
 
-  nodaldist = FADUTILS::VectorNorm<3>(FADUTILS::DiffVector(r1_a, r2_b));
+  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_a, r2_b));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
-  nodaldist = FADUTILS::VectorNorm<3>(FADUTILS::DiffVector(r1_b, r2_a));
+  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_b, r2_a));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
-  nodaldist = FADUTILS::VectorNorm<3>(FADUTILS::DiffVector(r1_b, r2_b));
+  nodaldist = CORE::FADUTILS::VectorNorm<3>(CORE::FADUTILS::DiffVector(r1_b, r2_b));
   if (nodaldist < minnodaldist) minnodaldist = nodaldist;
 
   return minnodaldist;

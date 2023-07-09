@@ -52,7 +52,8 @@ namespace BEAMINTERACTION
     //! FAD type to evaluate the rotational coupling terms. The first 3 entries are the values of
     //! psi_beam, the following entries are the discrete solid DOFs.
     using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + solid::n_dof_>;
-    using scalar_type_rot_2nd = typename FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
+    using scalar_type_rot_2nd =
+        typename CORE::FADUTILS::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
     static const unsigned int n_dof_rot_ = 9;

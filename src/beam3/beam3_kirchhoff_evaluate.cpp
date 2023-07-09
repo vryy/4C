@@ -691,7 +691,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     r_s.Multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
-    abs_r_s = FADUTILS::Norm<T>(r_s);
+    abs_r_s = CORE::FADUTILS::Norm<T>(r_s);
     epsilon_cp[ind] = abs_r_s - 1.0;
 
     AssembleShapefunctionsL(L_i, L);
@@ -842,25 +842,25 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     }
 
     // Calculate internal energy and store it in class variable
-    Eint_ += 0.5 * FADUTILS::CastToDouble(epsilon_bar) * FADUTILS::CastToDouble(f_par) * wgt *
-             jacobi_[numgp];
+    Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(epsilon_bar) * CORE::FADUTILS::CastToDouble(f_par) *
+             wgt * jacobi_[numgp];
 
     for (unsigned int idim = 0; idim < 3; ++idim)
     {
-      Eint_ += 0.5 * FADUTILS::CastToDouble(Omega(idim)) * FADUTILS::CastToDouble(M(idim)) * wgt *
-               jacobi_[numgp];
+      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Omega(idim)) *
+               CORE::FADUTILS::CastToDouble(M(idim)) * wgt * jacobi_[numgp];
     }
 
     // store material strain and stress resultant values in class variables
-    axial_strain_GP_[numgp] = FADUTILS::CastToDouble(epsilon_bar);
-    twist_GP_[numgp] = FADUTILS::CastToDouble(Omega(0));
-    curvature_2_GP_[numgp] = FADUTILS::CastToDouble(Omega(1));
-    curvature_3_GP_[numgp] = FADUTILS::CastToDouble(Omega(2));
+    axial_strain_GP_[numgp] = CORE::FADUTILS::CastToDouble(epsilon_bar);
+    twist_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
+    curvature_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
+    curvature_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
 
-    axial_force_GP_[numgp] = FADUTILS::CastToDouble(f_par);
-    torque_GP_[numgp] = FADUTILS::CastToDouble(M(0));
-    bending_moment_2_GP_[numgp] = FADUTILS::CastToDouble(M(1));
-    bending_moment_3_GP_[numgp] = FADUTILS::CastToDouble(M(2));
+    axial_force_GP_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
+    torque_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
+    bending_moment_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
+    bending_moment_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -1262,7 +1262,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     r_s.Multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
-    abs_r_s = FADUTILS::Norm<FAD>(r_s);
+    abs_r_s = CORE::FADUTILS::Norm<FAD>(r_s);
     epsilon_cp[ind] = abs_r_s - 1.0;
 
     v_epsilon_cp[ind].Clear();
@@ -1383,7 +1383,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
     // Auxilliary quantities
     abs_r_s = 0.0;
     rsTrss = 0.0;
-    abs_r_s = FADUTILS::Norm<FAD>(r_s);
+    abs_r_s = CORE::FADUTILS::Norm<FAD>(r_s);
     for (unsigned int i = 0; i < 3; i++)
     {
       rsTrss += r_s(i) * r_ss(i);
@@ -1581,15 +1581,15 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffSK(Teuchos::Parameter
 
 
     // store material strain and stress resultant values in class variables
-    axial_strain_GP_[numgp] = FADUTILS::CastToDouble(epsilon);
-    twist_GP_[numgp] = FADUTILS::CastToDouble(Omega(0));
-    curvature_2_GP_[numgp] = FADUTILS::CastToDouble(Omega(1));
-    curvature_3_GP_[numgp] = FADUTILS::CastToDouble(Omega(2));
+    axial_strain_GP_[numgp] = CORE::FADUTILS::CastToDouble(epsilon);
+    twist_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(0));
+    curvature_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(1));
+    curvature_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(Omega(2));
 
-    axial_force_GP_[numgp] = FADUTILS::CastToDouble(f_par);
-    torque_GP_[numgp] = FADUTILS::CastToDouble(M(0));
-    bending_moment_2_GP_[numgp] = FADUTILS::CastToDouble(M(1));
-    bending_moment_3_GP_[numgp] = FADUTILS::CastToDouble(M(2));
+    axial_force_GP_[numgp] = CORE::FADUTILS::CastToDouble(f_par);
+    torque_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(0));
+    bending_moment_2_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(1));
+    bending_moment_3_GP_[numgp] = CORE::FADUTILS::CastToDouble(M(2));
   }
   //******end: gauss integration for internal force vector and stiffness matrix*********
 }
@@ -1852,8 +1852,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
     ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
     ekintrans.MultiplyTN(rtnewmass, rtnewmass);
     Ekin_ += 0.5 *
-             (FADUTILS::CastToDouble(ekinrot(0, 0)) +
-                 mass_inertia_translational * FADUTILS::CastToDouble(ekintrans(0, 0))) *
+             (CORE::FADUTILS::CastToDouble(ekinrot(0, 0)) +
+                 mass_inertia_translational * CORE::FADUTILS::CastToDouble(ekintrans(0, 0))) *
              wgt * jacobi_[numgp];
 
     //**********begin: update class variables needed for storage**************
@@ -1872,19 +1872,19 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
     for (unsigned int i = 0; i < 4; ++i)
     {
-      (Qnewmass_[numgp])(i) = FADUTILS::CastToDouble(Qnewmass(i));
+      (Qnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
     }
 
     for (unsigned int i = 0; i < 3; ++i)
     {
-      (wnewmass_[numgp])(i) = FADUTILS::CastToDouble(wnewmass(i));
-      (anewmass_[numgp])(i) = FADUTILS::CastToDouble(anewmass(i));
-      (amodnewmass_[numgp])(i) = FADUTILS::CastToDouble(amodnewmass(i));
+      (wnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(wnewmass(i));
+      (anewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(anewmass(i));
+      (amodnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(amodnewmass(i));
 
-      (rnewmass_[numgp])(i) = FADUTILS::CastToDouble(rnewmass(i));
-      (rtnewmass_[numgp])(i) = FADUTILS::CastToDouble(rtnewmass(i));
-      (rttnewmass_[numgp])(i) = FADUTILS::CastToDouble(rttnewmass(i));
-      (rttmodnewmass_[numgp])(i) = FADUTILS::CastToDouble(rttmodnewmass(i));
+      (rnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(rnewmass(i));
+      (rtnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(rtnewmass(i));
+      (rttnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(rttnewmass(i));
+      (rttmodnewmass_[numgp])(i) = CORE::FADUTILS::CastToDouble(rttmodnewmass(i));
     }
     //**********end: update class variables needed for storage**************
   }
@@ -2235,7 +2235,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(Epetra_SerialDenseVector& for
 
       for (unsigned int i = 0; i < 3; ++i) r_s(i) = disp_totlag_centerline(node * 7 + 3 + i);
 
-      abs_r_s = FADUTILS::Norm(r_s);
+      abs_r_s = CORE::FADUTILS::Norm(r_s);
 
       // matrix for moment at node
       LINALG::Matrix<3, 1, double> moment(true);
@@ -2286,7 +2286,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(Epetra_SerialDenseVector& for
       for (unsigned int i = 0; i < 3; ++i)
         r_s_FAD(i) = disp_totlag_centerline_FAD(node * 7 + 3 + i);
 
-      abs_r_s_FAD = FADUTILS::Norm(r_s_FAD);
+      abs_r_s_FAD = CORE::FADUTILS::Norm(r_s_FAD);
 
 
       // matrix for moment at node
@@ -3178,7 +3178,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     r_s.Clear();
     r_s.Multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s = FADUTILS::Norm<T>(r_s);
+    abs_r_s = CORE::FADUTILS::Norm<T>(r_s);
 
     Calc_v_thetapartheta<2, T>(v_thetapar_cp[ind], L, r_s, abs_r_s);
 
@@ -3217,7 +3217,8 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     CORE::LARGEROTATIONS::quaterniontotriad(Qnewmass, triad_mat);
 
     // store in class variable in order to get QconvGPmass_ in subsequent time step
-    for (unsigned int i = 0; i < 4; ++i) (Qnewmass_[gp])(i) = FADUTILS::CastToDouble(Qnewmass(i));
+    for (unsigned int i = 0; i < 4; ++i)
+      (Qnewmass_[gp])(i) = CORE::FADUTILS::CastToDouble(Qnewmass(i));
 
     LINALG::Matrix<4, 1, T> Qconv(true);
     for (unsigned int i = 0; i < 4; ++i) Qconv(i) = (Qconvmass_[gp])(i);
@@ -3626,7 +3627,7 @@ void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo(
       g_1(i) = disp_totlag_centerline(7 * node + 3 + i);
     }
 
-    t = FADUTILS::Norm<T>(g_1);
+    t = CORE::FADUTILS::Norm<T>(g_1);
     g_1.Scale(1.0 / t);
     CORE::LARGEROTATIONS::computespin(auxmatrix, g_1);
     auxmatrix.Scale(-1.0 * t);
@@ -3681,7 +3682,7 @@ void DRT::ELEMENTS::Beam3k::TransformStiffMatrixMultipl(Epetra_SerialDenseMatrix
   for (unsigned int node = 0; node < 2; node++)
   {
     for (unsigned int i = 0; i < 3; ++i)
-      theta[node](i) = FADUTILS::CastToDouble(disp_totlag(7 * node + 3 + i));
+      theta[node](i) = CORE::FADUTILS::CastToDouble(disp_totlag(7 * node + 3 + i));
   }
 
   // Loop over the two boundary nodes

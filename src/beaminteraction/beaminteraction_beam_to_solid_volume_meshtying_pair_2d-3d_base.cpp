@@ -67,7 +67,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
   if (reference)
     evaluate_position(this->ele1posref_, r_beam);
   else
-    evaluate_position(FADUTILS::CastToDouble(this->ele1pos_), r_beam);
+    evaluate_position(CORE::FADUTILS::CastToDouble(this->ele1pos_), r_beam);
 }
 
 

@@ -130,7 +130,7 @@ bool CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::Evaluate(
 
   bool validclosestpointprojection = true;
 
-  if (abs(FADUTILS::CastToDouble(xicontact_)) <
+  if (abs(CORE::FADUTILS::CastToDouble(xicontact_)) <
       (1.0 + XIETATOL))  // ToDo when to reset nodalcontactflag_?
   {
     nodalcontactflag_[0] = false;
@@ -306,7 +306,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ClosestPointProjec
     // Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
     // double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
     // linearized!
-    double norm_delta_x = FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(delta_x));
+    double norm_delta_x = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(delta_x));
 
     // the closer the beams get, the smaller is norm
     // norm is not allowed to be too small, else numerical problems occur
@@ -319,7 +319,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ClosestPointProjec
     EvaluateOrthogonalityCondition(f, delta_x, norm_delta_x, dx1);
 
     // compute the scalar residuum
-    residual = abs(FADUTILS::CastToDouble(f));
+    residual = abs(CORE::FADUTILS::CastToDouble(f));
 
     // check if Newton iteration has converged
     if (residual < BEAMCONTACTTOL) break;
@@ -532,9 +532,9 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateFcContact(
   //**********************************************************************
   if (!DoNotAssemble)
   {
-    for (int i = 0; i < dim1; ++i) fc1_copy[i] = FADUTILS::CastToDouble(fc1_(i));
+    for (int i = 0; i < dim1; ++i) fc1_copy[i] = CORE::FADUTILS::CastToDouble(fc1_(i));
 
-    for (int i = 0; i < 3; ++i) fc2_copy[i] = FADUTILS::CastToDouble(fc2_(i));
+    for (int i = 0; i < 3; ++i) fc2_copy[i] = CORE::FADUTILS::CastToDouble(fc2_(i));
 
     // assemble fc1 and fc2 into global contact force vector
     LINALG::Assemble(fint, fc1_copy, lm1, lmowner1);
@@ -792,18 +792,20 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcCont
     // our time integration methods the negative stiffness must be assembled.
     for (int j = 0; j < dim1 + dim2; j++)
     {
-      for (int i = 0; i < dim1; i++) stiffc1_copy(i, j) = -FADUTILS::CastToDouble(stiffc1(i, j));
-      for (int i = 0; i < dim2; i++) stiffc2_copy(i, j) = -FADUTILS::CastToDouble(stiffc2(i, j));
+      for (int i = 0; i < dim1; i++)
+        stiffc1_copy(i, j) = -CORE::FADUTILS::CastToDouble(stiffc1(i, j));
+      for (int i = 0; i < dim2; i++)
+        stiffc2_copy(i, j) = -CORE::FADUTILS::CastToDouble(stiffc2(i, j));
     }
 #else
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
         stiffc1_copy(i, j) =
-            -FADUTILS::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
+            -CORE::FADUTILS::CastToDouble(fc1_(i).dx(j) + fc1_(i).dx(dim1 + dim2) * delta_xi(j));
       for (int i = 0; i < dim2; i++)
         stiffc2_copy(i, j) =
-            -FADUTILS::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
+            -CORE::FADUTILS::CastToDouble(fc2_(i).dx(j) + fc2_(i).dx(dim1 + dim2) * delta_xi(j));
     }
 
 #ifdef FADCHECKS
@@ -875,7 +877,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeNormal(
   for (int i = 0; i < 3; i++) normal(i) = x1(i) - x2(i);
 
   // compute length of normal
-  norm = FADUTILS::VectorNorm<3>(normal);
+  norm = CORE::FADUTILS::VectorNorm<3>(normal);
   if (norm < NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
 
   // compute unit normal and store it in class variable

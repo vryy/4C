@@ -19,7 +19,7 @@
 
 #include "beaminteraction_beam3contact_defines.H"
 #include "beaminteraction_beam3contact_tangentsmoothing.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 namespace CONTACT
 {
@@ -243,7 +243,7 @@ namespace CONTACT
     /*!
     \brief Get gap of this contact pair
     */
-    double GetGap() { return FADUTILS::CastToDouble(gap_); };
+    double GetGap() { return CORE::FADUTILS::CastToDouble(gap_); };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -257,7 +257,7 @@ namespace CONTACT
     {
       Epetra_SerialDenseVector r1;
       r1.Resize(3);
-      for (int i = 0; i < 3; i++) r1(i) = FADUTILS::CastToDouble(r1_(i));
+      for (int i = 0; i < 3; i++) r1(i) = CORE::FADUTILS::CastToDouble(r1_(i));
 
       return r1;
     };
@@ -266,7 +266,7 @@ namespace CONTACT
     {
       Epetra_SerialDenseVector r2;
       r2.Resize(3);
-      for (int i = 0; i < 3; i++) r2(i) = FADUTILS::CastToDouble(r2_(i));
+      for (int i = 0; i < 3; i++) r2(i) = CORE::FADUTILS::CastToDouble(r2_(i));
 
       return r2;
     };

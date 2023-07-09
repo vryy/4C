@@ -23,7 +23,7 @@
 #include "discretization_fem_general_utils_fem_shapefunctions.H"
 #include "linalg_fixedsizematrix.H"
 #include "discretization_fem_general_largerotations.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include "structure_new_elements_paramsinterface.H"
 #include "structure_new_model_evaluator_data.H"
 #include "structure_new_enum_lists.H"
@@ -787,7 +787,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     if (force != NULL)
     {
       for (unsigned int idof = 0; idof < numdofelement; ++idof)
-        (*force)(idof) = FADUTILS::CastToDouble(internal_force(idof));
+        (*force)(idof) = CORE::FADUTILS::CastToDouble(internal_force(idof));
     }
 
     if (stiffmatrix != NULL)
@@ -1008,22 +1008,22 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // add elastic energy from forces at this GP
     for (unsigned int dim = 0; dim < 3; ++dim)
     {
-      Eint_ += 0.5 * FADUTILS::CastToDouble(Gamma(dim)) * FADUTILS::CastToDouble(stressN(dim)) *
-               jacobiGPelastf_[numgp] * wgt;
+      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Gamma(dim)) *
+               CORE::FADUTILS::CastToDouble(stressN(dim)) * jacobiGPelastf_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    axial_strain_GP_elastf_[numgp] = FADUTILS::CastToDouble(Gamma(0));
-    shear_strain_2_GP_elastf_[numgp] = FADUTILS::CastToDouble(Gamma(1));
-    shear_strain_3_GP_elastf_[numgp] = FADUTILS::CastToDouble(Gamma(2));
+    axial_strain_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(0));
+    shear_strain_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(1));
+    shear_strain_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(Gamma(2));
 
-    material_axial_force_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressN(0));
-    material_shear_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressN(1));
-    material_shear_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressN(2));
+    material_axial_force_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(0));
+    material_shear_force_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(1));
+    material_shear_force_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressN(2));
 
-    spatial_x_force_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressn(0));
-    spatial_y_force_2_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressn(1));
-    spatial_z_force_3_GP_elastf_[numgp] = FADUTILS::CastToDouble(stressn(2));
+    spatial_x_force_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(0));
+    spatial_y_force_2_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(1));
+    spatial_z_force_3_GP_elastf_[numgp] = CORE::FADUTILS::CastToDouble(stressn(2));
   }
 
 
@@ -1076,8 +1076,9 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     computeK<T>(Psi_l, Psi_l_s, KrefGP_[numgp], Cur);
 
     // determine norm of maximal bending curvature at this GP and store in class variable if needed
-    double Kmax = std::sqrt(FADUTILS::CastToDouble(Cur(1)) * FADUTILS::CastToDouble(Cur(1)) +
-                            FADUTILS::CastToDouble(Cur(2)) * FADUTILS::CastToDouble(Cur(2)));
+    double Kmax =
+        std::sqrt(CORE::FADUTILS::CastToDouble(Cur(1)) * CORE::FADUTILS::CastToDouble(Cur(1)) +
+                  CORE::FADUTILS::CastToDouble(Cur(2)) * CORE::FADUTILS::CastToDouble(Cur(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
     GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, Cur, numgp);
@@ -1114,22 +1115,22 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // add elastic energy from moments at this GP
     for (unsigned int dim = 0; dim < 3; dim++)
     {
-      Eint_ += 0.5 * FADUTILS::CastToDouble(Cur(dim)) * FADUTILS::CastToDouble(stressM(dim)) *
-               jacobiGPelastm_[numgp] * wgt;
+      Eint_ += 0.5 * CORE::FADUTILS::CastToDouble(Cur(dim)) *
+               CORE::FADUTILS::CastToDouble(stressM(dim)) * jacobiGPelastm_[numgp] * wgt;
     }
 
     // store material strain and stress values in class variables
-    twist_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(0));
-    curvature_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(1));
-    curvature_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(Cur(2));
+    twist_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(0));
+    curvature_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(1));
+    curvature_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(Cur(2));
 
-    material_torque_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressM(0));
-    material_bending_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressM(1));
-    material_bending_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressM(2));
+    material_torque_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(0));
+    material_bending_moment_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(1));
+    material_bending_moment_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressM(2));
 
-    spatial_x_moment_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(0));
-    spatial_y_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(1));
-    spatial_z_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(2));
+    spatial_x_moment_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(0));
+    spatial_y_moment_2_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(1));
+    spatial_z_moment_3_GP_elastm_[numgp] = CORE::FADUTILS::CastToDouble(stressm(2));
   }
 }
 

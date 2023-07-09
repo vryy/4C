@@ -16,7 +16,7 @@
 
 #include "geometry_pair_utility_classes.H"
 #include "linalg_fixedsizematrix.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 
 // Forward declarations.
@@ -58,7 +58,7 @@ namespace GEOMETRYPAIR
     }
     else
     {
-      vector_double = FADUTILS::CastToDouble(*vector_scalar_type_ptr);
+      vector_double = CORE::FADUTILS::CastToDouble(*vector_scalar_type_ptr);
       return &vector_double;
     }
   }

@@ -12,7 +12,7 @@
 
 #include "beam3_spatial_discretization_utils.H"
 
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 
 #include "io_pstream.H"
 
@@ -66,14 +66,14 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const&
         master_centerline_dof_values, N_i_xixi, r_xixi_master);
 
     // use delta_r = r1-r2 as auxiliary quantity
-    delta_r = FADUTILS::DiffVector(r_slave, r_master);
+    delta_r = CORE::FADUTILS::DiffVector(r_slave, r_master);
 
     // compute norm of difference vector to scale the equations
     // (this yields better conditioning)
     /* Note: Even if automatic differentiation via FAD is applied, norm_delta_r has to be of type
      * double since this factor is needed for a pure scaling of the nonlinear CCP and has not to be
      * linearized! */
-    double norm_delta_r = FADUTILS::CastToDouble(FADUTILS::VectorNorm(delta_r));
+    double norm_delta_r = CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm(delta_r));
 
     /* The closer the beams get, the smaller is norm_delta_r, but
      * norm_delta_r is not allowed to be too small, else numerical problems occur.
@@ -90,14 +90,14 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const&
     // compute the scalar residuum
     /* The residual is scaled with 1/element_length of the beam element representing the curve
      * since r_xi scales with the element_length */
-    residual = std::abs(FADUTILS::CastToDouble(f / master_ele_ref_length));
+    residual = std::abs(CORE::FADUTILS::CastToDouble(f / master_ele_ref_length));
 
     // store initial residual
     if (iter == 0) residual0 = residual;
 
     // check if Newton iteration has converged
-    if (FADUTILS::CastToDouble(residual) < POINT_TO_CURVE_PROJECTION_TOLERANCE_RESIDUUM and
-        std::abs(xi_master_previous_iteration - FADUTILS::CastToDouble(xi_master)) <
+    if (CORE::FADUTILS::CastToDouble(residual) < POINT_TO_CURVE_PROJECTION_TOLERANCE_RESIDUUM and
+        std::abs(xi_master_previous_iteration - CORE::FADUTILS::CastToDouble(xi_master)) <
             POINT_TO_CURVE_PROJECTION_TOLERANCE_INCREMENT)
     {
       IO::cout(IO::debug) << "\nPoint-to-Curve projection: local Newton loop "
@@ -116,7 +116,7 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const&
           "Linearization of point to line projection is zero, i.e. the minimal distance "
           "problem seems to be non-unique!");
 
-    xi_master_previous_iteration = FADUTILS::CastToDouble(xi_master);
+    xi_master_previous_iteration = CORE::FADUTILS::CastToDouble(xi_master);
 
     // update master element coordinate of closest point
     xi_master += -f / df;
@@ -128,7 +128,7 @@ bool BEAMINTERACTION::GEO::PointToCurveProjection(LINALG::Matrix<3, 1, T> const&
                       << " iterations!" << IO::endl;
   IO::cout(IO::debug) << "residual in first iteration: " << residual0 << IO::endl;
   IO::cout(IO::debug) << "residual: " << residual << IO::endl;
-  IO::cout(IO::debug) << "xi_master: " << FADUTILS::CastToDouble(xi_master) << IO::endl;
+  IO::cout(IO::debug) << "xi_master: " << CORE::FADUTILS::CastToDouble(xi_master) << IO::endl;
   IO::cout(IO::debug) << "xi_master_previous_iteration: " << xi_master_previous_iteration
                       << IO::endl;
 
@@ -171,7 +171,7 @@ bool BEAMINTERACTION::GEO::EvaluateLinearizationPointToCurveOrthogonalityConditi
   /* check for df==0.0, i.e. non-uniqueness of the minimal distance problem
    * This can happen e.g. when the curve describes a circle geometry and
    * the projecting slave point coincides with the center of the circle */
-  if (std::abs(FADUTILS::CastToDouble(df)) <
+  if (std::abs(CORE::FADUTILS::CastToDouble(df)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
     return false;
   else
@@ -593,7 +593,7 @@ void BEAMINTERACTION::GEO::CalcPTCProjectionOrthogonalityConditionPartialDerivPa
 {
   orthogon_condition_partial_xi_master = -r_xi_master.Dot(r_xi_master) + delta_r.Dot(r_xixi_master);
 
-  if (std::abs(FADUTILS::CastToDouble(orthogon_condition_partial_xi_master)) <
+  if (std::abs(CORE::FADUTILS::CastToDouble(orthogon_condition_partial_xi_master)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
     dserror(
         "Linearization of point to line projection is zero, i.e. the minimal distance "
@@ -636,10 +636,11 @@ template <typename T>
 void BEAMINTERACTION::GEO::CalcEnclosedAngle(
     T& angle, T& cosine_angle, const LINALG::Matrix<3, 1, T>& a, const LINALG::Matrix<3, 1, T>& b)
 {
-  if (FADUTILS::VectorNorm(a) < 1.0e-12 or FADUTILS::VectorNorm(b) < 1.0e-12)
+  if (CORE::FADUTILS::VectorNorm(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm(b) < 1.0e-12)
     dserror("Cannot determine angle for zero vector!");
 
-  cosine_angle = FADUTILS::Norm<T>(a.Dot(b) / (FADUTILS::VectorNorm(a) * FADUTILS::VectorNorm(b)));
+  cosine_angle = CORE::FADUTILS::Norm<T>(
+      a.Dot(b) / (CORE::FADUTILS::VectorNorm(a) * CORE::FADUTILS::VectorNorm(b)));
 
   if (cosine_angle < 1.0)
   {

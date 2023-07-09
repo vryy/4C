@@ -16,7 +16,7 @@
 #include "linalg_fixedsizematrix.H"
 #include "linalg_sparsematrix.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "linalg_FAD_utils.H"
+#include "utils_fad.H"
 #include <Sacado.hpp>
 
 #include "beaminteraction_contact_pair.H"
@@ -188,10 +188,10 @@ namespace BEAMINTERACTION
     {
       out << "\nInstance of BeamToBeamContactVariables (SegmentIds " << segids_.first << " & "
           << segids_.second << "):";
-      out << "\ngap= " << FADUTILS::CastToDouble(gap_);
+      out << "\ngap= " << CORE::FADUTILS::CastToDouble(gap_);
       out << "\nangle= " << angle_ / M_PI * 180.0 << " degree";
-      out << "\nclosest point coords: " << FADUTILS::CastToDouble(closestpoint_.first) << " "
-          << FADUTILS::CastToDouble(closestpoint_.second);
+      out << "\nclosest point coords: " << CORE::FADUTILS::CastToDouble(closestpoint_.first) << " "
+          << CORE::FADUTILS::CastToDouble(closestpoint_.second);
 
       out << "\n";
     }
