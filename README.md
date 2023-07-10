@@ -28,7 +28,7 @@ using modern software design and is parallelized with MPI for distributed memory
 
 ### Set-up LRZ GitLab account
 
-1. Register an account on [LRZ GitLab](www.gitlab.lrz.de).
+1. Register an account on [LRZ GitLab](https://gitlab.lrz.de/).
 
     **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
 
