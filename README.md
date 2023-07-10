@@ -117,6 +117,8 @@ and some are optional, e.g.
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
 Look into the CMake presets in `presets/` or ask your colleagues for further information.
 
+Some helper scripts to install these TPLs can be found in `dependencies/`.
+
 Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wikis/External-dependencies).
 
 [↑ Contents](#contents)
