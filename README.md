@@ -100,7 +100,7 @@ Our Wiki provides a [detailed setup guide for your local git configuration](http
 
 ### Set-up the Environment
 
-BACI heavily relies on the [Trilinos project](www.trilinos.org).
+BACI heavily relies on the [Trilinos project](https://trilinos.github.io).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
 - ParMETIS (recommended version: 4.0.3)
