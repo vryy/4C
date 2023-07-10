@@ -109,6 +109,7 @@ namespace DRT
        * @param[in] differentiationtype        type of variable for linearization
        * @param[in] dsqrtdetg_dd               derivatives of the square root of the determinant of
        *                                       the metric tensor w.r.t. the displacement dofs
+       * @param[in] shape_spatial_derivatives  spatial derivative of shape functions
        * @param[out] k_ss         linearizations of slave-side residuals w.r.t. slave-side dofs
        * @param[out] k_sm         linearizations of slave-side residuals w.r.t. master-side dofs
        */
@@ -130,8 +131,9 @@ namespace DRT
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           SCATRA::DifferentiationType differentiationtype,
-          const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm);
+          const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
+          const CORE::LINALG::Matrix<nsd_, nen_>& shape_spatial_derivatives,
+          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
 
      private:
       //! private constructor for singletons

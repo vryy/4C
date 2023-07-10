@@ -11,6 +11,9 @@ electrochemistry
 #include "contact_nitsche_integrator_ssi_elch.H"
 #include "contact_nitsche_utils.H"
 
+#include "discretization_fem_general_utils_boundary_integration.H"
+#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+
 #include "mat_electrode.H"
 
 #include "scatra_ele_parameter_timint.H"
@@ -18,9 +21,14 @@ electrochemistry
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
+#include "so3_utils.H"
+
+template <int dim>
 struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 {
   MORTAR::MortarElement* element;
+  double* xi;
+  const CORE::LINALG::Matrix<dim, 1>* gp_normal;
   const CORE::LINALG::SerialDenseVector* shape_funct;
   const CORE::LINALG::SerialDenseMatrix* shape_deriv;
   const std::vector<CORE::GEN::pairedvector<int, double>>* d_xi_dd;
@@ -133,9 +141,16 @@ void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slav
           d_cauchy_nn_weighted_average_ds, normal, d_gp_normal_dd);
     }
 
+    ElementDataBundle<dim> electrode_quantities, electrolyte_quantities;
+    bool slave_is_electrode(true);
+    AssignElectrodeAndElectrolyteQuantities<dim>(slave_ele, slave_xi, slave_shape,
+        slave_shape_deriv, slave_normal, d_slave_xi_dd, master_ele, master_xi, master_shape,
+        master_shape_deriv, master_normal, d_master_xi_dd, slave_is_electrode, electrode_quantities,
+        electrolyte_quantities);
+
     // integrate the scatra-scatra interface condition
-    IntegrateSSIInterfaceCondition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
-        master_ele, master_shape, master_shape_deriv, d_master_xi_dd, jac, d_jac_dd, gp_wgt);
+    IntegrateSSIInterfaceCondition<dim>(
+        slave_is_electrode, jac, d_jac_dd, gp_wgt, electrode_quantities, electrolyte_quantities);
   }
 }
 
@@ -176,24 +191,138 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
-    MORTAR::MortarElement& slave_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
-    const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
-    const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, const double jac,
-    const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt)
+double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
+    const ElementDataBundle<dim>& electrode_quantities)
 {
-  // do only integrate if there is something to integrate!
-  if (slave_ele.MoData().ParentScalarDof().empty()) return;
-  if (master_ele.MoData().ParentScalarDof().empty()) dserror("This is not allowed!");
+  auto electrode_ele = electrode_quantities.element;
+  auto xi_parent = CORE::DRT::UTILS::CalculateParentGPFromFaceElementData<dim>(
+      electrode_quantities.xi, electrode_ele);
 
-  ElementDataBundle electrode_quantities, electrolyte_quantities;
-  bool slave_is_electrode(true);
-  AssignElectrodeAndElectrolyteQuantities(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
-      master_ele, master_shape, master_shape_deriv, d_master_xi_dd, slave_is_electrode,
-      electrode_quantities, electrolyte_quantities);
+  // calculate defgrad based on element discretization type
+  static CORE::LINALG::Matrix<dim, dim> defgrd;
+  switch (electrode_ele->ParentElement()->Shape())
+  {
+    case DRT::Element::hex8:
+    {
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::hex8, dim>(defgrd,
+          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
+
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::tet4, dim>(defgrd,
+          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
+
+      break;
+    }
+    default:
+    {
+      dserror(
+          "Not implemented for discretization type: %i!", electrode_ele->ParentElement()->Shape());
+      break;
+    }
+  }
+  return defgrd.Determinant();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+    const ElementDataBundle<dim>& electrode_quantities,
+    CORE::GEN::pairedvector<int, double>& d_detF_dd)
+{
+  auto* electrode_ele = electrode_quantities.element;
+  switch (electrode_ele->Shape())
+  {
+    case DRT::Element::quad4:
+    {
+      CalculateSpatialDerivativeOfDetF<DRT::Element::quad4, dim>(
+          detF, electrode_quantities, d_detF_dd);
+      break;
+    }
+    case DRT::Element::tri3:
+    {
+      CalculateSpatialDerivativeOfDetF<DRT::Element::tri3, dim>(
+          detF, electrode_quantities, d_detF_dd);
+      break;
+    }
+    default:
+    {
+      dserror("Not implemented for discretization type: %i!", electrode_ele->Shape());
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int dim>
+void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const double detF,
+    const ElementDataBundle<dim>& electrode_quantities,
+    CORE::GEN::pairedvector<int, double>& d_detF_dd)
+{
+  auto electrode_ele = electrode_quantities.element;
+
+  const int num_ele_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+  const int ele_dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+
+  dsassert(num_ele_nodes == electrode_ele->NumNode(),
+      "Number of nodes is not matching discretization type");
+
+  static CORE::LINALG::Matrix<num_ele_nodes, dim> xyze;
+  DRT::ELEMENTS::UTILS::EvaluateNodalCoordinates<distype, dim>(electrode_ele->Nodes(), xyze);
+
+  static CORE::LINALG::Matrix<ele_dim, num_ele_nodes> deriv;
+  for (auto i = 0; i < num_ele_nodes; ++i)
+  {
+    const auto parent_nodeid = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        electrode_ele->ParentElement()->Shape(), electrode_ele->FaceParentNumber(), i);
+    for (auto j = 0; j < dim; ++j)
+      xyze(i, j) += electrode_ele->MoData().ParentDisp()[parent_nodeid * dim + j];
+
+    for (auto k = 0; k < ele_dim; ++k) deriv(k, i) = (*electrode_quantities.shape_deriv)(i, k);
+  }
+
+  static CORE::LINALG::Matrix<dim, num_ele_nodes> derxy;
+  DRT::ELEMENTS::UTILS::EvaluateShapeFunctionSpatialDerivative<distype, dim>(
+      derxy, deriv, xyze, *electrode_quantities.gp_normal);
+
+  d_detF_dd.resize(electrode_ele->NumNode() * dim);
+  d_detF_dd.clear();
+
+  // d_detF_dd = d_detF_dF * d_F_dd = detF F^{-T} * d_F_dd  = detF * d_N_dx
+  for (auto i = 0; i < electrode_ele->NumNode(); ++i)
+  {
+    for (auto j = 0; j < dim; ++j)
+    {
+      d_detF_dd[i * dim + j] = detF * derxy(j, i);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
+    const bool slave_is_electrode, const double jac,
+    const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt,
+    const ElementDataBundle<dim>& electrode_quantities,
+    const ElementDataBundle<dim>& electrolyte_quantities)
+{
+  if (slave_is_electrode)
+  {
+    if (electrode_quantities.element->MoData().ParentScalarDof().empty()) return;
+    if (electrolyte_quantities.element->MoData().ParentScalarDof().empty())
+      dserror("Something went wrong!");
+  }
+  else
+  {
+    if (electrolyte_quantities.element->MoData().ParentScalarDof().empty()) return;
+    if (electrode_quantities.element->MoData().ParentScalarDof().empty())
+      dserror("Something went wrong!");
+  }
 
   // get the scatra-scatra interface kinetic model
   const int kinetic_model = GetScaTraEleParameterBoundary()->KineticModel();
@@ -220,7 +349,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       // gauss point
       double electrode_conc(0.0), electrode_pot(0.0);
       CORE::GEN::pairedvector<int, double> d_electrode_conc_dc(0), d_electrode_pot_dpot(0),
-          d_electrode_conc_dd(0), d_electrode_pot_dd(0);
+          d_electrode_conc_dd(0), d_electrode_pot_dd(0), d_detF_dd(0);
       SetupGpElchProperties<dim>(electrode_quantities, electrode_conc, electrode_pot,
           d_electrode_conc_dc, d_electrode_conc_dd, d_electrode_pot_dpot, d_electrode_pot_dd);
 
@@ -238,26 +367,27 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       if (cmax < 1.0e-12)
         dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
-      // equilibrium electric potential difference and derivative w.r.t. concentration at electrode
-      // surface
-      // TODO try to replace this
-      const double dummy_detF(1.0);
-      const double epd =
-          electrode_material->ComputeOpenCircuitPotential(electrode_conc, faraday, frt, dummy_detF);
-      const double d_epd_dc = electrode_material->ComputeFirstDerivOpenCircuitPotentialConc(
-          electrode_conc, faraday, frt, dummy_detF);
+      const double detF = CalculateDetFOfParentElement(electrode_quantities);
 
-      // Butler-Volmer exchange mass flux density
-      const double j0(kinetic_model == INPAR::S2I::kinetics_butlervolmerreduced
-                          ? kr
-                          : kr * std::pow(electrolyte_conc, alphaa) *
-                                std::pow(cmax - electrode_conc, alphaa) *
-                                std::pow(electrode_conc, alphac));
+      CalculateSpatialDerivativeOfDetF(detF, electrode_quantities, d_detF_dd);
+
+      const double epd =
+          electrode_material->ComputeOpenCircuitPotential(electrode_conc, faraday, frt, detF);
 
       // skip further computation in case equilibrium electric potential difference is outside
       // physically meaningful range
       if (not std::isinf(epd))
       {
+        const double d_epd_dc = electrode_material->ComputeFirstDerivOpenCircuitPotentialConc(
+            electrode_conc, faraday, frt, detF);
+
+        // Butler-Volmer exchange mass flux density
+        const double j0(kinetic_model == INPAR::S2I::kinetics_butlervolmerreduced
+                            ? kr
+                            : kr * std::pow(electrolyte_conc, alphaa) *
+                                  std::pow(cmax - electrode_conc, alphaa) *
+                                  std::pow(electrode_conc, alphac));
+
         // electrode-electrolyte overpotential at integration point
         const double eta = electrode_pot - electrolyte_pot - epd;
 
@@ -287,33 +417,45 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
                 electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
                 dj_dpot_electrolyte);
 
+        // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
+        const double dj_depd = dj_dpot_electrolyte;
+
+        const double depd_ddetF =
+            electrode_material->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
+                electrode_conc, faraday, frt, detF);
+        const double dj_ddetF = dj_depd * depd_ddetF;
+
         // initialize derivatives of flux w.r.t. electrochemistry dofs
         CORE::GEN::pairedvector<int, double> dj_delch(
             d_electrode_conc_dc.size() + d_electrolyte_conc_dc.size() +
             d_electrode_pot_dpot.size() + d_electrolyte_pot_dpot.size());
-        for (const auto& d_electrodeconc_dc : d_electrode_conc_dc)
-          dj_delch[d_electrodeconc_dc.first] += dj_dc_electrode * d_electrodeconc_dc.second;
-        for (const auto& d_electrolyteconc_dc : d_electrolyte_conc_dc)
-          dj_delch[d_electrolyteconc_dc.first] += dj_dc_electrolyte * d_electrolyteconc_dc.second;
-        for (const auto& d_electrodepot_dpot : d_electrode_pot_dpot)
-          dj_delch[d_electrodepot_dpot.first] += dj_dpot_electrode * d_electrodepot_dpot.second;
-        for (const auto& d_electrolytepot_dpot : d_electrolyte_pot_dpot)
-          dj_delch[d_electrolytepot_dpot.first] +=
-              dj_dpot_electrolyte * d_electrolytepot_dpot.second;
+        for (const auto& [d_electrodeconc_dc_dof, d_electrodeconc_dc_val] : d_electrode_conc_dc)
+          dj_delch[d_electrodeconc_dc_dof] += dj_dc_electrode * d_electrodeconc_dc_val;
+        for (const auto& [d_electrolyteconc_dc_dof, d_electrolyteconc_dc_val] :
+            d_electrolyte_conc_dc)
+          dj_delch[d_electrolyteconc_dc_dof] += dj_dc_electrolyte * d_electrolyteconc_dc_val;
+        for (const auto& [d_electrodepot_dpot_dof, d_electrodepot_dpot_val] : d_electrode_pot_dpot)
+          dj_delch[d_electrodepot_dpot_dof] += dj_dpot_electrode * d_electrodepot_dpot_val;
+        for (const auto& [d_electrolytepot_dpot_dof, d_electrolytepot_dpot_val] :
+            d_electrolyte_pot_dpot)
+          dj_delch[d_electrolytepot_dpot_dof] += dj_dpot_electrolyte * d_electrolytepot_dpot_val;
 
         // initialize derivatives of flux w.r.t. displacements
         CORE::GEN::pairedvector<int, double> dj_dd(
-            d_electrode_conc_dd.size() + d_electrode_pot_dd.size() + d_electrolyte_conc_dd.size() +
-            d_electrolyte_pot_dd.size());
+            d_electrode_conc_dd.size() + d_electrode_pot_dd.size() + d_detF_dd.size() +
+            d_electrolyte_conc_dd.size() + d_electrolyte_pot_dd.size());
 
-        for (const auto& d_electrodeconc_dd : d_electrode_conc_dd)
-          dj_dd[d_electrodeconc_dd.first] += dj_dc_electrode * d_electrodeconc_dd.second;
-        for (const auto& d_electrodepot_dd : d_electrode_pot_dd)
-          dj_dd[d_electrodepot_dd.first] += dj_dpot_electrode * d_electrodepot_dd.second;
-        for (const auto& d_electrolyteconc_dd : d_electrolyte_conc_dd)
-          dj_dd[d_electrolyteconc_dd.first] += dj_dc_electrolyte * d_electrolyteconc_dd.second;
-        for (const auto& d_electrolytepot_dd : d_electrolyte_pot_dd)
-          dj_dd[d_electrolytepot_dd.first] += dj_dpot_electrolyte * d_electrolytepot_dd.second;
+        for (const auto& [d_electrodeconc_dd_dof, d_electrodeconc_dd_val] : d_electrode_conc_dd)
+          dj_dd[d_electrodeconc_dd_dof] += dj_dc_electrode * d_electrodeconc_dd_val;
+        for (const auto& [d_detF_dd_dof, d_detF_dd_val] : d_detF_dd)
+          dj_dd[d_detF_dd_dof] += dj_ddetF * d_detF_dd_val;
+        for (const auto& [d_electrodepot_dd_dof, d_electrodepot_dd_val] : d_electrode_pot_dd)
+          dj_dd[d_electrodepot_dd_dof] += dj_dpot_electrode * d_electrodepot_dd_val;
+        for (const auto& [d_electrolyteconc_dd_dof, d_electrolyteconc_dd_val] :
+            d_electrolyte_conc_dd)
+          dj_dd[d_electrolyteconc_dd_dof] += dj_dc_electrolyte * d_electrolyteconc_dd_val;
+        for (const auto& [d_electrolytepot_dd_dof, d_electrolytepot_dd_val] : d_electrolyte_pot_dd)
+          dj_dd[d_electrolytepot_dd_dof] += dj_dpot_electrolyte * d_electrolytepot_dd_val;
 
         if (!two_half_pass_ or slave_is_electrode)
           IntegrateElchTest<dim>(1.0, electrode_quantities, jac, d_jac_dd, wgt, j, dj_dd, dj_delch);
@@ -330,7 +472,6 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
     {
       dserror("Evaluation is not implemented for this scatra-scatra interface kinetic model: %i",
           kinetic_model);
-      break;
     }
   }
 }
@@ -338,9 +479,9 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(double fac,
-    ElementDataBundle& ele_data_bundle, double jac,
-    const CORE::GEN::pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
+void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(const double fac,
+    const ElementDataBundle<dim>& ele_data_bundle, const double jac,
+    const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt, const double test_val,
     const CORE::GEN::pairedvector<int, double>& d_test_val_dd,
     const CORE::GEN::pairedvector<int, double>& d_test_val_ds)
 {
@@ -411,8 +552,9 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(double fac,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(ElementDataBundle& ele_data_bundle,
-    double& gp_conc, double& gp_pot, CORE::GEN::pairedvector<int, double>& d_conc_dc,
+void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
+    const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc, double& gp_pot,
+    CORE::GEN::pairedvector<int, double>& d_conc_dc,
     CORE::GEN::pairedvector<int, double>& d_conc_dd,
     CORE::GEN::pairedvector<int, double>& d_pot_dpot,
     CORE::GEN::pairedvector<int, double>& d_pot_dd)
@@ -499,15 +641,20 @@ void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mor
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+template <int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
-    MORTAR::MortarElement& slave_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
+    MORTAR::MortarElement& slave_ele, double* slave_xi,
+    const CORE::LINALG::SerialDenseVector& slave_shape,
     const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
+    const CORE::LINALG::Matrix<dim, 1>& slave_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+    MORTAR::MortarElement& master_ele, double* master_xi,
+    const CORE::LINALG::SerialDenseVector& master_shape,
     const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
+    const CORE::LINALG::Matrix<dim, 1>& master_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
-    bool& slave_is_electrode, ElementDataBundle& electrode_quantitites,
-    ElementDataBundle& electrolyte_quantities)
+    bool& slave_is_electrode, ElementDataBundle<dim>& electrode_quantitites,
+    ElementDataBundle<dim>& electrolyte_quantities)
 {
   Teuchos::RCP<const MAT::Electrode> electrode_material =
       Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slave_ele.ParentElement()->Material(1));
@@ -530,11 +677,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantitie
   if (slave_is_electrode)
   {
     electrode_quantitites.element = &slave_ele;
+    electrode_quantitites.xi = slave_xi;
+    electrode_quantitites.gp_normal = &slave_normal;
     electrode_quantitites.shape_funct = &slave_shape;
     electrode_quantitites.shape_deriv = &slave_shape_deriv;
     electrode_quantitites.d_xi_dd = &d_slave_xi_dd;
 
     electrolyte_quantities.element = &master_ele;
+    electrolyte_quantities.xi = master_xi;
+    electrolyte_quantities.gp_normal = &master_normal;
     electrolyte_quantities.shape_funct = &master_shape;
     electrolyte_quantities.shape_deriv = &master_shape_deriv;
     electrolyte_quantities.d_xi_dd = &d_master_xi_dd;
@@ -542,11 +693,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantitie
   else
   {
     electrolyte_quantities.element = &slave_ele;
+    electrolyte_quantities.xi = slave_xi;
+    electrolyte_quantities.gp_normal = &slave_normal;
     electrolyte_quantities.shape_funct = &slave_shape;
     electrolyte_quantities.shape_deriv = &slave_shape_deriv;
     electrolyte_quantities.d_xi_dd = &d_slave_xi_dd;
 
     electrode_quantitites.element = &master_ele;
+    electrode_quantitites.xi = master_xi;
+    electrode_quantitites.gp_normal = &master_normal;
     electrode_quantitites.shape_funct = &master_shape;
     electrode_quantitites.shape_deriv = &master_shape_deriv;
     electrode_quantitites.d_xi_dd = &d_master_xi_dd;

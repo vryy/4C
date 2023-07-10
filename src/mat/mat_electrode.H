@@ -201,6 +201,22 @@ namespace MAT
     }
 
     /*!
+     * @brief compute the derivative of the lithiation w.r.t. the determinant of the deformation
+     * gradient
+     *
+     * @param[in] concentration  concentration
+     * @param[in] chi_max        lithiation value of saturation value of intercalated lithium
+     *                           concentration
+     * @param[in] c_max          saturation value of intercalated lithium concentration
+     * @return  the derivative of the lithiation w.r.t. the determinant of the deformation gradient
+     */
+    static double ComputeIntercalationFractionDetFDerivative(
+        const double concentration, const double chi_max, const double c_max)
+    {
+      return concentration * chi_max / c_max;
+    }
+
+    /*!
      * @brief compute first derivative of half cell open circuit potential w.r.t. concentration
      *
      * @param[in] concentration  concentration
@@ -211,6 +227,32 @@ namespace MAT
      */
     [[nodiscard]] double ComputeFirstDerivOpenCircuitPotentialConc(
         double concentration, double faraday, double frt, double detF) const;
+
+    /*!
+     * @brief calculate the first derivative of the open circuit potential w.r.t. the determinant of
+     * the deformation gradient
+     *
+     * @param[in] concentration  concentration
+     * @param[in] faraday        Faraday constant
+     * @param[in] frt            factor F/RT
+     * @param[in] detF           determinant of Jacobian from deformation at Gauss point
+     * @return derivative of open circuit potential w.r.t. the determinant of the deformation
+     * gradient
+     */
+    [[nodiscard]] double ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
+        double concentration, double faraday, double frt, double detF) const;
+
+    /*!
+     * @brief calculate the first derivative of the open circuit potential w.r.t. the intercalation
+     * fraction
+     *
+     * @param[in] X         intercalation fraction
+     * @param[in] faraday   Faraday constant
+     * @param[in] frt       factor F/RT
+     * @return derivative of the open circuit potential w.r.t. the intercalation fraction
+     */
+    [[nodiscard]] double ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(
+        double X, double faraday, double frt) const;
 
     /*!
      * @brief compute first derivative of half cell open circuit potential w.r.t. temperature

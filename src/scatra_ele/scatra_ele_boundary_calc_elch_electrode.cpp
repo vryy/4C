@@ -19,6 +19,8 @@
 #include "mat_electrode.H"
 #include "utils_singleton_owner.H"
 
+#include "so3_utils.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
@@ -97,10 +99,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
-  CORE::LINALG::Matrix<nsd_, nen_> XYZe;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
-
   CORE::LINALG::Matrix<nsd_, 1> normal;
 
   // element slave mechanical stress tensor
@@ -116,9 +114,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   {
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
-    const double detg =
-        my::EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(intpoints, gpid, XYZe);
-    const double detF = fac / detg;
+    const double detF = my::CalculateDetFOfParentElement(ele, intpoints.Point(gpid));
 
     // evaluate overall integration factors
     const double timefacfac = my::scatraparamstimint_->TimeFac() * fac;
@@ -643,26 +639,24 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
-  CORE::LINALG::Matrix<nsd_, nen_> XYZe;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
-
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
     // evaluate values of shape functions at current integration point
-    const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
-    const double detg =
-        my::EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(intpoints, gpid, XYZe);
-    const double detF = fac / detg;
+    const double facwgt = my::EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
 
     const double pseudo_contact_fac = my::CalculatePseudoContactFactor(
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
 
-    // evaluate shape derivatives
     static CORE::LINALG::Matrix<nsd_, nen_> dsqrtdetg_dd;
     if (differentiationtype == SCATRA::DifferentiationType::disp)
+    {
+      static CORE::LINALG::Matrix<nen_, nsd_> xyze_transposed;
+      xyze_transposed.UpdateT(my::xyze_);
+      DRT::ELEMENTS::UTILS::EvaluateShapeFunctionSpatialDerivative<distype, nsd_>(
+          my::derxy_, my::deriv_, xyze_transposed, normal);
       my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
+    }
 
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
@@ -701,6 +695,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
 
         // compute factor F/(RT)
         const double frt = myelch::elchparams_->FRT();
+        const double detF = my::CalculateDetFOfParentElement(ele, intpoints.Point(gpid));
 
         // equilibrium electric potential difference at electrode surface
         const double epd =
@@ -709,6 +704,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         // skip further computation in case equilibrium electric potential difference is
         // outside physically meaningful range
         if (std::isinf(epd)) break;
+
+        const double depd_ddetF =
+            matelectrode->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
+                eslavephiint, faraday, frt, detF);
 
         // Butler-Volmer exchange mass flux density
         const double j0 = myelectrodeutils::IsReducedButlerVolmer(kineticmodel)
@@ -725,9 +724,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         {
           case SCATRA::DifferentiationType::disp:
           {
-            double dj_dsqrtdetg_timefacwgt(0.0);
+            double dj_dsqrtdetg(0.0), dj_ddetF(0.0);
             myelectrodeutils::CalculateButlerVolmerDispLinearizations(
-                kineticmodel, alphaa, alphac, frt, j0, eta, timefacwgt, dj_dsqrtdetg_timefacwgt);
+                kineticmodel, alphaa, alphac, frt, j0, eta, depd_ddetF, dj_dsqrtdetg, dj_ddetF);
+
+            const double dj_dsqrtdetg_timefacwgt = pseudo_contact_fac * dj_dsqrtdetg * timefacwgt;
+            const double dj_ddetF_timefacfac =
+                pseudo_contact_fac * dj_ddetF * facwgt * my::scatraparamstimint_->TimeFac();
 
             // loop over matrix columns
             for (int ui = 0; ui < nen_; ++ui)
@@ -739,16 +742,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
               {
                 const int row_conc = vi * my::numdofpernode_;
                 const int row_pot = row_conc + 1;
-                const double vi_dj_dsqrtdetg =
-                    my::funct_(vi) * pseudo_contact_fac * dj_dsqrtdetg_timefacwgt;
+                const double vi_dj_dsqrtdetg = my::funct_(vi) * dj_dsqrtdetg_timefacwgt;
+                const double vi_dj_ddetF = my::funct_(vi) * dj_ddetF_timefacfac;
 
                 // loop over spatial dimensions
                 for (int dim = 0; dim < 3; ++dim)
                 {
                   // compute linearizations w.r.t. slave-side structural displacements
                   eslavematrix(row_conc, fui + dim) += vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
+                  eslavematrix(row_conc, fui + dim) += vi_dj_ddetF * detF * my::derxy_(dim, ui);
                   eslavematrix(row_pot, fui + dim) +=
                       numelectrons * vi_dj_dsqrtdetg * dsqrtdetg_dd(dim, ui);
+                  eslavematrix(row_pot, fui + dim) +=
+                      numelectrons * vi_dj_ddetF * detF * my::derxy_(dim, ui);
                 }
               }
             }

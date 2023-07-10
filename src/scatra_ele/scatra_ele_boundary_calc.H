@@ -139,6 +139,19 @@ namespace DRT
       void ExtractDisplacementValues(DRT::FaceElement* ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
+      /*!
+       * @brief This method extracts the displacement values if ALE is activated
+       *
+       * @tparam parentdistype      discretization type of the parent element of the evaluated face
+       *                            element
+       * @param[in] ele             currently evaluated face element
+       * @param[in] discretization  discretization
+       * @param[in] la              location array
+       */
+      template <DRT::Element::DiscretizationType parentdistype>
+      void ExtractDisplacementValues(DRT::FaceElement* ele,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+
       //! Evaluate the element (using location array)
       int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
@@ -210,6 +223,31 @@ namespace DRT
           Epetra_SerialDenseVector& r_m);
 
       /*!
+       * @brief This method returns the determinant of the deformation gradient of the parent
+       * element at the current gauss point coordinates
+       *
+       * @param[in] faceele     pointer to current face element
+       * @param[in] faceele_xsi coordinates of current gauss point in parameter space of the face
+       *                        element
+       * @return determinant of the deformation gradient of the parent element
+       */
+      double CalculateDetFOfParentElement(
+          const DRT::FaceElement* faceele, const double* faceele_xsi);
+
+      /*!
+       * @brief This method returns the determinant of the deformation gradient of the parent
+       * element at the current gauss point coordinates
+       *
+       * @param[in] faceele     pointer to current face element
+       * @param[in] faceele_xsi coordinates of current gauss point in parameter space of the face
+       *                        element
+       * @return determinant of the deformation gradient of the parent element
+       */
+      template <DRT::Element::DiscretizationType parentdistype>
+      double CalculateDetFOfParentElement(
+          const DRT::FaceElement* faceele, const double* faceele_xsi);
+
+      /*!
        * @brief Method that calculates the prefactor indicating if interface at current gauss point
        *        is under tensile or compressive stresses. If it is under tensile stresses no flux is
        *        allowed and the prefactor is set to zero, otherwise it is set to one.
@@ -273,18 +311,6 @@ namespace DRT
       void EvaluateSpatialDerivativeOfAreaIntegrationFactor(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, int iquad,
           CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd);
-
-      /*!
-       * @brief Evaluate the square root of the metric tensor determinant
-       *
-       * @param[in] intpoints  integration points
-       * @param[in] iquad      id of current Gauss point
-       * @param[in] XYZe       nodal positions of element in material configuration
-       * @return square root of the metric tensor determinant
-       */
-      double EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
-          const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-          const CORE::LINALG::Matrix<nsd_, nen_>& XYZe);
 
       //! evaluate scatra-scatra interface coupling condition
       virtual void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
@@ -537,6 +563,8 @@ namespace DRT
       std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp_;
       //! nodal displacement values for ALE
       CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
+      //! nodal displacement values of parent element for ALE
+      std::vector<double> eparentdispnp_;
       //! diffusivity / diffusivities (in case of systems) / thermal conductivity
       std::vector<double> diffus_;
       //! specific heat capacity at constant pressure (in case of temperature eq.)
@@ -548,7 +576,7 @@ namespace DRT
       //! array for shape function derivatives w.r.t r,s,t
       CORE::LINALG::Matrix<nsd_ele_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      CORE::LINALG::Matrix<nsd_ele_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
       //! unit normal vector at integration point
       CORE::LINALG::Matrix<nsd_, 1> normal_;
       //! velocity vector in gausspoint

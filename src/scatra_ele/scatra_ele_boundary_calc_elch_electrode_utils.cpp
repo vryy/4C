@@ -154,11 +154,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
     CalculateButlerVolmerDispLinearizations(const int kineticmodel, const double alphaa,
         const double alphac, const double frt, const double j0, const double eta,
-        const double timefacwgt, double& dj_dsqrtdetg_timefacwgt)
+        const double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF)
 {
+  double dj_depd;
+
   if (IsButlerVolmerLinearized(kineticmodel))
   {
-    dj_dsqrtdetg_timefacwgt = timefacwgt * j0 * frt * eta;
+    dj_dsqrtdetg = j0 * frt * eta;
+    dj_depd = -j0 * frt;
   }
   else
   {
@@ -174,8 +177,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
           expterm);
     }
 
-    dj_dsqrtdetg_timefacwgt = timefacwgt * j0 * expterm;
+    dj_dsqrtdetg = j0 * expterm;
+    dj_depd = -j0 * frt * (alphaa * expterm1 + alphac * expterm2);
   }
+
+  dj_ddetF = dj_depd * depd_ddetF;
 }
 
 /*----------------------------------------------------------------------*

@@ -32,6 +32,40 @@ namespace DRT
           Teuchos::ParameterList& params);
 
       /*!
+       * @brief compute the deformation gradient of the element at a specific Gauss point
+       *
+       * @tparam distype     shape of the element
+       * @tparam probdim     dimension of the problem
+       * @param[out] defgrd  deformation gradient
+       * @param[in] nodes    list of nodes of the element
+       * @param[in] xsi      position of the gauss point in parameter space
+       * @param[in] xdisp    nodal displacements of the element
+       */
+      template <DRT::Element::DiscretizationType distype,
+          int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+      void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
+          DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>&
+              xdisp);
+
+      /*!
+       * @brief compute the deformation gradient of the element at a specific Gauss point
+       *
+       * @tparam distype          shape of the element
+       * @tparam probdim          dimension of the problem
+       * @param[out] defgrd       deformation gradient
+       * @param[in] nodes         list of nodes of the element
+       * @param[in] xsi           position of the gauss point in parameter space
+       * @param[in] displacement  displacement vector of the element
+       */
+      template <DRT::Element::DiscretizationType distype,
+          int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+      void ComputeDeformationGradient(CORE::LINALG::Matrix<probdim, probdim>& defgrd,
+          DRT::Node** nodes, const CORE::LINALG::Matrix<probdim, 1>& xsi,
+          const std::vector<double>& displacement);
+
+      /*!
        * \brief Compute the deformation gradient of the element at a specific Gauss point (including
        * the MULF switch)
        *
@@ -167,6 +201,27 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
           CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
+
+      /*!
+       * @brief This method calculates the spatial derivatives of the shape function
+       *
+       * @tparam distype shape of the element
+       * @tparam probdim dimension of the problem
+       * @param[out] deriv_xyz  derivatives of the shape function w.r.t. spatial coordinates
+       * @param[in] deriv       derivatives of the shape function w.r.t. parameter coordinates
+       * @param[in] xyze        spatial positions of the element nodes
+       * @param[in] normal      normal vector
+       */
+      template <DRT::Element::DiscretizationType distype,
+          int probdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
+      void EvaluateShapeFunctionSpatialDerivative(
+          CORE::LINALG::Matrix<probdim,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv_xyz,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xyze,
+          const CORE::LINALG::Matrix<probdim, 1>& normal);
 
       /*!
        * \brief Checks whether maerial tangent should be computed via finite difference. If so,

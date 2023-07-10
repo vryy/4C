@@ -879,9 +879,9 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
-        my::test_lm_master_, dummy_shapederivatives, my::scatraparamsboundary_,
-        SCATRA::DifferentiationType::temp, timefacfac, timefacwgt, dummy_detF,
-        my::numdofpernode_slave_, k_ss, k_ms);
+        my::test_lm_master_, dummy_shapederivatives, dummy_shapederivatives,
+        my::scatraparamsboundary_, SCATRA::DifferentiationType::temp, timefacfac, timefacwgt,
+        dummy_detF, my::numdofpernode_slave_, k_ss, k_ms);
   }  // loop over integration points
 }
 
@@ -1173,8 +1173,8 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
-        timefacfac, fac, dummy_detF, SCATRA::DifferentiationType::elch, dummy_shape_deriv, k_ss,
-        k_sm);
+        timefacfac, fac, dummy_detF, SCATRA::DifferentiationType::elch, dummy_shape_deriv,
+        dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
 }
 

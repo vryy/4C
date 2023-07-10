@@ -14,6 +14,8 @@
 
 #include "discretization_fem_general_utils_boundary_integration.H"
 
+#include "fluid_rotsym_periodicbc.H"
+
 #include "lib_globalproblem.H"  // for curves and functions
 
 #include "mat_fourieriso.H"
@@ -23,7 +25,8 @@
 
 #include "nurbs_discret_nurbs_utils.H"
 
-#include "fluid_rotsym_periodicbc.H"
+#include "so3_utils.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
@@ -100,7 +103,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
   ExtractDisplacementValues(ele, discretization, la);
 
   // check for the action parameter
-
   const auto action = Teuchos::getIntegralValue<SCATRA::BoundaryAction>(params, "action");
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -112,6 +114,52 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::Evaluate(DRT::FaceEl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
+    DRT::FaceElement* ele, const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la)
+{
+  switch (ele->ParentElement()->Shape())
+  {
+    case DRT::Element::hex8:
+    {
+      ExtractDisplacementValues<DRT::Element::hex8>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      ExtractDisplacementValues<DRT::Element::hex27>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      ExtractDisplacementValues<DRT::Element::tet4>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::quad4:
+    {
+      ExtractDisplacementValues<DRT::Element::quad4>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::tri6:
+    {
+      ExtractDisplacementValues<DRT::Element::tri6>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::nurbs9:
+    {
+      ExtractDisplacementValues<DRT::Element::nurbs9>(ele, discretization, la);
+      break;
+    }
+    default:
+      dserror("Not implemented for discretization type: %i!", ele->ParentElement()->Shape());
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+template <DRT::Element::DiscretizationType parentdistype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacementValues(
     DRT::FaceElement* ele, const DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
@@ -139,9 +187,42 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
 
     // add nodal displacements to point coordinates
     UpdateNodeCoordinates();
+
+    // determine location array information of parent element
+    DRT::Element::LocationArray parent_la(discretization.NumDofSets());
+    ele->ParentElement()->LocationVector(discretization, parent_la, false);
+
+    const int num_node_parent_ele =
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
+
+    // determine number of the displacement related dofs per node
+    const int parent_numdispdofpernode = parent_la[ndsdisp].lm_.size() / num_node_parent_ele;
+
+    std::vector<int> parent_lmdisp(nsd_ * num_node_parent_ele, -1);
+    for (int inode = 0; inode < num_node_parent_ele; ++inode)
+    {
+      for (int idim = 0; idim < nsd_; ++idim)
+      {
+        parent_lmdisp[inode * nsd_ + idim] =
+            parent_la[ndsdisp].lm_[inode * parent_numdispdofpernode + idim];
+      }
+    }
+
+    // extract local values of displacement field from global state vector
+    CORE::LINALG::Matrix<nsd_, num_node_parent_ele> parentdispnp;
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, num_node_parent_ele>>(
+        *dispnp, parentdispnp, parent_lmdisp);
+
+    eparentdispnp_.resize(num_node_parent_ele * nsd_);
+    for (int i = 0; i < num_node_parent_ele; ++i)
+      for (int idim = 0; idim < nsd_; ++idim)
+        eparentdispnp_[i * nsd_ + idim] = parentdispnp(idim, i);
   }
   else
+  {
     edispnp_.Clear();
+    eparentdispnp_.clear();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -915,25 +996,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
-    EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
-        const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-        const CORE::LINALG::Matrix<nsd_, nen_>& XYZe)
-{
-  EvaluateShapeFuncAndDerivativeAtIntPoint(intpoints, iquad);
-
-  double detg(0.0);
-  CORE::LINALG::Matrix<nsd_, 1>* normalvec(nullptr);
-  CORE::LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor;
-  CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim>(
-      XYZe, deriv_, metrictensor, detg, normalvec);
-
-  return intpoints.IP().qwgt[iquad] * detg;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
 CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::GetConstNormal(
     const CORE::LINALG::Matrix<3, nen_>& xyze)
 {
@@ -1229,6 +1291,77 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculatePseudoCo
   }
   else
     return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
+    const DRT::FaceElement* faceele, const double* faceele_xsi)
+{
+  if (scatraparams_->IsAle())
+  {
+    switch (faceele->ParentElement()->Shape())
+    {
+      case DRT::Element::hex8:
+      {
+        return CalculateDetFOfParentElement<DRT::Element::hex8>(faceele, faceele_xsi);
+      }
+      case DRT::Element::tet4:
+      {
+        return CalculateDetFOfParentElement<DRT::Element::tet4>(faceele, faceele_xsi);
+      }
+      default:
+      {
+        dserror("Not implemented for discretization type: %i!", faceele->ParentElement()->Shape());
+        break;
+      }
+    }
+  }
+
+  return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+template <DRT::Element::DiscretizationType parentdistype>
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfParentElement(
+    const DRT::FaceElement* faceele, const double* faceele_xi)
+{
+  const int parent_ele_dim = CORE::DRT::UTILS::DisTypeToDim<parentdistype>::dim;
+  const int parent_ele_num_nodes =
+      CORE::DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
+
+  auto parent_xi =
+      CORE::DRT::UTILS::CalculateParentGPFromFaceElementData<parent_ele_dim>(faceele_xi, faceele);
+  static CORE::LINALG::Matrix<probdim, probdim> defgrd;
+
+  static CORE::LINALG::Matrix<parent_ele_num_nodes, probdim> xdisp, xrefe, xcurr;
+
+  for (auto i = 0; i < parent_ele_num_nodes; ++i)
+  {
+    const double* x = faceele->ParentElement()->Nodes()[i]->X();
+    for (auto dim = 0; dim < probdim; ++dim)
+    {
+      xdisp(i, dim) = eparentdispnp_.at(i * probdim + dim);
+      xrefe(i, dim) = x[dim];
+    }
+  }
+
+  CORE::LINALG::Matrix<probdim, parent_ele_num_nodes> deriv_parent(true);
+  CORE::DRT::UTILS::shape_function_deriv1<parentdistype>(parent_xi, deriv_parent);
+
+  static CORE::LINALG::Matrix<probdim, probdim> inv_detF;
+  inv_detF.Multiply(deriv_parent, xrefe);
+  inv_detF.Invert();
+
+  static CORE::LINALG::Matrix<probdim, parent_ele_num_nodes> N_XYZ;
+  xcurr.Update(1.0, xrefe, 1.0, xdisp);
+  N_XYZ.Multiply(inv_detF, deriv_parent);
+  defgrd.MultiplyTT(xcurr, N_XYZ);
+
+  return defgrd.Determinant();
 }
 
 /*----------------------------------------------------------------------*

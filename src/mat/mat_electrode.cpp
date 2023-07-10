@@ -427,11 +427,20 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
-  double d_ocp_dX(0.0), d_ocp_dc(0.0);
-
-  // intercalation fraction
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
+  const double d_ocp_dX =
+      ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(X, faraday, frt);
   const double d_X_dc = ComputeIntercalationFractionConcDerivative(ChiMax(), CMax(), detF);
+
+  return d_ocp_dX * d_X_dc;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(
+    const double X, const double faraday, const double frt) const
+{
+  double d_ocp_dX(0.0);
 
   // physically reasonable intercalation fraction
   if (X > 0.0 and X < 1.0)
@@ -521,19 +530,29 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
       default:
       {
         dserror("Model for half cell open circuit potential not recognized!");
-        break;
       }
     }
-
-    // final scaling
-    d_ocp_dc = d_ocp_dX * d_X_dc;
   }
 
   // non-physical intercalation fraction
   else
-    d_ocp_dc = std::numeric_limits<double>::infinity();
+    d_ocp_dX = std::numeric_limits<double>::infinity();
 
-  return d_ocp_dc;
+  return d_ocp_dX;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
+    const double concentration, const double faraday, const double frt, const double detF) const
+{
+  const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
+  const double d_OCP_dX =
+      ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(X, faraday, frt);
+  const double d_X_ddetF =
+      ComputeIntercalationFractionDetFDerivative(concentration, ChiMax(), CMax());
+
+  return d_OCP_dX * d_X_ddetF;
 }
 
 /*----------------------------------------------------------------------*
