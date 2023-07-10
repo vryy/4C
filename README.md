@@ -115,7 +115,7 @@ and some are optional, e.g.
 - [MIRCO](https://github.com/imcs-compsim/MIRCO/)
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
-Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.
+Look into the CMake presets in `presets/` or ask your colleagues for further information.
 
 Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wikis/External-dependencies).
 
