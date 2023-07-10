@@ -20,7 +20,6 @@ overhead as possible from the time integration method.
 #include "fluid_xwall.H"
 #include "scatra_timint_implicit.H"
 #include "fluid_utils.H"  // for LiftDrag
-#include "lib_dofset_independent_pbc.H"
 #include "io_pstream.H"
 #include "fluid_turbulence_statistics_mean_general.H"
 #include "fluid_turbulence_statistics_ccy.H"
