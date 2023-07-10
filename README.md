@@ -155,7 +155,7 @@ A preset name needs to be passed to cmake via the command line argument `--prese
 
 More information about the cmake presets can be found [in the wiki](https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets).
 
-**Note:** Make sure to use at least cmake 3.25. Install it in your path or use the ones provided on your institute's server.
+**Note:** Make sure to use at least CMake 3.25. Install it in your path or use the ones provided on your institute's server.
 
 #### Build
 
