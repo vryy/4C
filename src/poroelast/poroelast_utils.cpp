@@ -35,6 +35,8 @@
 #include "mat_fluidporo.H"
 #include "mat_structporo.H"
 
+#include "solid_ele_poro.H"
+
 #include "linalg_utils_densematrix_communication.H"
 #include "linalg_utils_sparse_algebra_create.H"
 
@@ -42,6 +44,7 @@ bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or

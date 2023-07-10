@@ -86,24 +86,27 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
+        const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
+
+        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
         LINALG::Matrix<numstr_, numdofperelement_> Bop =
-            EvaluateStrainGradient(jacobian_mapping, strains);
+            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-        const Stress<distype> stress =
-            EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
+        const Stress<distype> stress = EvaluateMaterialStress(
+            solid_material, spatial_material_mapping, gl_strain, params, gp, ele.Id());
 
         if (force.has_value()) AddInternalForceVector(Bop, stress, integration_factor, *force);
 
         if (stiff.has_value())
         {
           AddElasticStiffnessMatrix(Bop, stress, integration_factor, *stiff);
-          AddGeometricStiffnessMatrix(jacobian_mapping.n_xyz_, stress, integration_factor, *stiff);
+          AddGeometricStiffnessMatrix(jacobian_mapping.N_XYZ_, stress, integration_factor, *stiff);
         }
-
-
 
         if (mass.has_value())
         {
@@ -154,10 +157,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        solid_material.Update(strains.defgrd_, gp, params, ele.Id());
+        solid_material.Update(spatial_material_mapping.deformation_gradient_, gp, params, ele.Id());
       });
 
   solid_material.Update();
@@ -177,11 +180,16 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
+        const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
+
+        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
         double psi = 0.0;
-        solid_material.StrainEnergy(strains.gl_strain_, psi, gp, ele.Id());
+        solid_material.StrainEnergy(gl_strain, psi, gp, ele.Id());
 
         intenergy += psi * integration_factor;
       });
@@ -212,15 +220,21 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const Strains<distype> strains =
-            EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
+        const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const Stress<distype> stress =
-            EvaluateMaterialStress(solid_material, strains, params, gp, ele.Id());
+        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+            EvaluateGreenLagrangeStrain(cauchygreen);
 
-        AssembleStrainTypeToMatrixRow(strains, strainIO.type, strain_data, gp);
-        AssembleStressTypeToMatrixRow(strains, stress, stressIO.type, stress_data, gp);
+        const Stress<distype> stress = EvaluateMaterialStress(
+            solid_material, spatial_material_mapping, gl_strain, params, gp, ele.Id());
+
+        AssembleStrainTypeToMatrixRow(
+            gl_strain, spatial_material_mapping, strainIO.type, strain_data, gp);
+        AssembleStressTypeToMatrixRow(
+            spatial_material_mapping, stress, stressIO.type, stress_data, gp);
       });
 
 

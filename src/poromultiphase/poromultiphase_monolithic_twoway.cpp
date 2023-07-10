@@ -10,6 +10,10 @@
 #include "poromultiphase_monolithic_twoway.H"
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "structure_new_model_evaluator_data.H"
+
+#include "lib_elements_paramsinterface.H"
+#include "structure_new_elements_paramsinterface.H"
 #include "adapter_porofluidmultiphase_wrapper.H"
 #include "adapter_str_wrapper.H"
 #include "adapter_art_net.H"
@@ -546,6 +550,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyStrCouplMatrix(
     // std::cout << Dt() << std::endl;
 
     sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", params);
+    sparams.set<std::string>("action", "struct_poro_calc_fluidcoupling");
+    sparams.set<double>("delta time", Dt());
+    sparams.set<double>("total time", Time());
 
     StructureField()->Discretization()->ClearState();
     StructureField()->Discretization()->SetState(0, "displacement", StructureField()->Dispnp());

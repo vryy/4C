@@ -149,6 +149,11 @@ namespace DRT
         return struct_calc_mass_volume;
       else if (action == "calc_struct_predict")
         return struct_calc_predict;
+      else if (action == "struct_poro_calc_fluidcoupling")
+        return struct_poro_calc_fluidcoupling;
+      else if (action == "struct_poro_calc_scatracoupling")
+        return struct_poro_calc_scatracoupling;
+
 
 
       return none;
@@ -241,6 +246,10 @@ namespace DRT
           return "struct_create_backup";
         case struct_recover_from_backup:
           return "struct_recover_from_backup";
+        case struct_poro_calc_fluidcoupling:
+          return "struct_poro_calc_fluidcoupling";
+        case struct_poro_calc_scatracoupling:
+          return "struct_poro_calc_scatracoupling";
         default:
           return "unknown";
       }
