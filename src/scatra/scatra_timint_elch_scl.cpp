@@ -303,8 +303,8 @@ void SCATRA::ScaTraTimIntElchSCL::NonlinearSolve()
       system_matrix_elch_scl_->Complete();
 
       // All DBCs are on the macro scale
-      CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
-          residual_elch_scl_, zeros_, *dbcmaps_elch_scl_->CondMap());
+      CORE::LINALG::ApplyDirichlettoSystem(*system_matrix_elch_scl_, *increment_elch_scl_,
+          *residual_elch_scl_, *zeros_, *dbcmaps_elch_scl_->CondMap());
 
       if (BreakNewtonLoopAndPrintConvergence()) break;
     }
@@ -1146,8 +1146,8 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
     system_matrix_elch_scl_->Complete();
 
     // All DBCs are on the macro scale
-    CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
-        residual_elch_scl_, zeros_, *dbcmaps_elch_scl_->CondMap());
+    CORE::LINALG::ApplyDirichlettoSystem(*system_matrix_elch_scl_, *increment_elch_scl_,
+        *residual_elch_scl_, *zeros_, *dbcmaps_elch_scl_->CondMap());
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
@@ -1155,8 +1155,8 @@ void SCATRA::ScaTraTimIntElchSCL::CalcInitialPotentialField()
         CORE::LINALG::MergeMap(splitter_->OtherMap(), MicroScaTraField()->Splitter()->OtherMap());
     auto pseudo_zeros_scl = CORE::LINALG::CreateVector(*pseudo_dbc_scl, true);
 
-    CORE::LINALG::ApplyDirichlettoSystem(system_matrix_elch_scl_, increment_elch_scl_,
-        residual_elch_scl_, pseudo_zeros_scl, *pseudo_dbc_scl);
+    CORE::LINALG::ApplyDirichlettoSystem(*system_matrix_elch_scl_, *increment_elch_scl_,
+        *residual_elch_scl_, *pseudo_zeros_scl, *pseudo_dbc_scl);
 
     // compute L2 norm of state vector
     double state_L2_macro, state_L2_micro;

@@ -220,12 +220,17 @@ void STR::TimIntAdjoint::Solve()
 
   // transform to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
+  {
     locsysman_->RotateGlobalToLocal(
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), rhsn_);
-
-  // Apply Dirichlet
-  CORE::LINALG::ApplyDirichlettoSystem(
-      stiff_, disdualn_, rhsn_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+        *disdualn_, *rhsn_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+  }
+  else
+  {
+    CORE::LINALG::ApplyDirichlettoSystem(
+        *stiff_, *disdualn_, *rhsn_, *zeros_, *(dbcmaps_->CondMap()));
+  }
 
   // Solve
   solver_->Solve(stiff_->EpetraOperator(), disdualn_, rhsn_, true, true, Teuchos::null);

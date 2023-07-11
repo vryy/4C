@@ -3132,16 +3132,16 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
       Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
       CORE::LINALG::Export(*lmDBC, *lmDBCexp);
       if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) dserror("Update failed.");
-      trkzd->ApplyDirichlet(lmDBC, false);
+      trkzd->ApplyDirichlet(*lmDBC, false);
 
       trkzz->Complete();
-      trkzz->ApplyDirichlet(lmDBC, true);
+      trkzz->ApplyDirichlet(*lmDBC, true);
 
       // apply Dirichlet conditions to (0,0) and (0,1) blocks
       Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
       Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-      CORE::LINALG::ApplyDirichlettoSystem(stiffmt, sold, rhscopy, zeros, dirichtoggle);
-      trkdz->ApplyDirichlet(dirichtoggle, false);
+      CORE::LINALG::ApplyDirichlettoSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+      trkdz->ApplyDirichlet(*dirichtoggle, false);
     }
 
     // row map (equals domain map) extractor
@@ -3185,7 +3185,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
-    CORE::LINALG::ApplyDirichlettoSystem(mergedsol, mergedrhs, mergedzeros, dirichtoggleexp);
+    CORE::LINALG::ApplyDirichlettoSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     blocksol = mergedsol;
     blockrhs = mergedrhs;

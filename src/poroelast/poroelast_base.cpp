@@ -565,7 +565,7 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
   if (has_cond_)
   {
     const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopenetration_->Map(1);
-    CORE::LINALG::ApplyDirichlettoSystem(iterinc, rhs, cond_rhs_, *nopenetrationmap);
+    CORE::LINALG::ApplyDirichlettoSystem(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
   }
 }
 

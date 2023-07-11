@@ -1029,7 +1029,7 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(), true));
-    CORE::LINALG::ApplyDirichlettoSystem(rhs, zeros, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(*rhs, *zeros, *(dbcmaps_->CondMap()));
     f.Update(1.0, *rhs, 0.0);
   }
 

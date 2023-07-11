@@ -182,9 +182,8 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
-  void ApplyDirichlettoSystem(Teuchos::RCP<SparseOperator> A, Teuchos::RCP<Epetra_Vector>& x,
-      Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,
-      const Teuchos::RCP<const Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
+      const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -203,9 +202,8 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-      Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-      const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
+  void ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
+      const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -230,36 +228,9 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-      Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-      Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
-      const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
-
-  /*!
-   \brief Apply dirichlet boundary condition to a linear system of equations
-
-   This is a flexible routine. The vectors b and dbcval might have different
-   maps. The map does not need to contain all Dirichlet dofs.
-
-   The purpose is to set Dirichlet values at a subset of all Dirichlet
-   boundaries.
-
-   Special in this routine is the ability to insert rows of general rotation
-   matrices (stored in #trafo) rather than simply put ones and zeros
-   at the rows associated Dirichlet DOFs.
-
-   \param A (in/out)         : Matrix of Ax=b
-   \param b (in/out)         : vector b of Ax=b
-   \param trafo (in)         : global matrix holding rotation matrices to convert
-   from global to local co-ordinate systems
-   \param dbcval (in)        : vector holding values that are supposed to be prescribed
-   \param dbcmap (in)        : unique map of all dofs that should be constrained
-
-   \pre The map dbcmap must be subset of the maps of the vectors.
-   */
-  void ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-      Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
-      const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
+  void ApplyDirichlettoSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
+      const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
+      const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -271,9 +242,8 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-      const Teuchos::RCP<const Epetra_Vector> dbcval,
-      const Teuchos::RCP<const Epetra_Vector> dbctoggle);
+  void ApplyDirichlettoSystem(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
+      const Epetra_Vector& dbctoggle);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -292,8 +262,8 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-      Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap);
+  void ApplyDirichlettoSystem(
+      Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Apply dirichlet boundary condition to a linear system of equations
@@ -312,8 +282,8 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
-      const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap);
+  void ApplyDirichlettoSystem(
+      Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
    \brief Convert a Dirichlet toggle vector in a Dirichlet map

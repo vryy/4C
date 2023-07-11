@@ -533,8 +533,7 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
     // merge blockmatrix to SparseMatrix and solve
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichlettoSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
     //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
     // standard solver call
@@ -546,7 +545,7 @@ void POROELASTSCATRA::PoroScatraMono::LinearSolve()
     // in case of inclined boundary conditions
     // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
     CORE::LINALG::ApplyDirichlettoSystem(
-        systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+        *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
   }
@@ -1279,7 +1278,7 @@ void POROELASTSCATRA::PoroScatraMono::FDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     CORE::LINALG::ApplyDirichlettoSystem(
-        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
 
     if (i == spaltenr)

@@ -253,13 +253,22 @@ void ALE::Ale::Evaluate(
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
-    CORE::LINALG::ApplyDirichlettoSystem(sysmat_, disi_, residual_, GetLocSysTrafo(), dispnp_local,
-        *(dbcmaps_[dbc_type]->CondMap()));
+    if (GetLocSysTrafo() != Teuchos::null)
+    {
+      CORE::LINALG::ApplyDirichlettoSystem(
+          *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
+          *GetLocSysTrafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
+    }
+    else
+    {
+      CORE::LINALG::ApplyDirichlettoSystem(
+          *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
+    }
   }
   else
   {
     CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, disi_, residual_, zeros_, *(dbcmaps_[dbc_type]->CondMap()));
+        *sysmat_, *disi_, *residual_, *zeros_, *(dbcmaps_[dbc_type]->CondMap()));
   }
 
   /* residual_ contains the most recent "mechanical" residual including DBCs.

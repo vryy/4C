@@ -346,7 +346,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_ss->ApplyDirichletWithTrafo(
-        locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), true);
+        *locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), true);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
@@ -391,7 +391,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
     // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
     //     on diagonal of row, i.e. on diagonal of k_ss
     k_sf->ApplyDirichletWithTrafo(
-        locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), false);
+        *locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), false);
   }  // end locsys
   // default: (locsysman_ == Teuchos::null), i.e. NO inclined Dirichlet BC
   else
@@ -1085,7 +1085,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::PoroFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     CORE::LINALG::ApplyDirichlettoSystem(
-        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
     Teuchos::RCP<Epetra_CrsMatrix> test_crs = sparse_copy->EpetraMatrix();
     int sparsenumentries;
     int sparselength = test_crs->NumGlobalEntries(i);

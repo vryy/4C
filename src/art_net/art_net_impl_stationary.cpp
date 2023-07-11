@@ -225,7 +225,7 @@ void ART::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
   CORE::LINALG::ApplyDirichlettoSystem(
-      sysmat_, pressureincnp_, rhs_, zeros_, *(dbcmaps_->CondMap()));
+      *sysmat_, *pressureincnp_, *rhs_, *zeros_, *(dbcmaps_->CondMap()));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

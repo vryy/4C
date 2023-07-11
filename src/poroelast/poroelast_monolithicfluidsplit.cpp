@@ -298,9 +298,9 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
     Teuchos::RCP<Epetra_Vector> f = FluidField()->Interface()->InsertOtherVector(fox);
     FluidField()->Interface()->InsertFSICondVector(fcx, f);
 
-    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f->Map(), true));
+    auto zeros = Teuchos::rcp(new const Epetra_Vector(f->Map(), true));
     CORE::LINALG::ApplyDirichlettoSystem(
-        f, zeros, *(FluidField()->GetDBCMapExtractor()->CondMap()));
+        *f, *zeros, *(FluidField()->GetDBCMapExtractor()->CondMap()));
 
     fx = f;
 

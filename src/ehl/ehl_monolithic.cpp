@@ -880,7 +880,7 @@ void EHL::Monolithic::SetupSystemMatrix()
 
   // Apply Dirichet to k_ls
   k_ls_->ApplyDirichlet(*lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap(), false);
-  if (inf_gap_toggle_lub_ != Teuchos::null) k_ls_->ApplyDirichlet(inf_gap_toggle_lub_, false);
+  if (inf_gap_toggle_lub_ != Teuchos::null) k_ls_->ApplyDirichlet(*inf_gap_toggle_lub_, false);
 
   // Assign k_ls to system matrix
   systemmatrix_->Assign(1, 0, CORE::LINALG::View, *k_ls_);
@@ -2158,8 +2158,8 @@ void EHL::Monolithic::ApplyDBC()
 
   if (inf_gap_toggle_lub_ != Teuchos::null)
   {
-    k_ls->ApplyDirichlet(inf_gap_toggle_lub_, false);
-    k_ll->ApplyDirichlet(inf_gap_toggle_lub_, true);
+    k_ls->ApplyDirichlet(*inf_gap_toggle_lub_, false);
+    k_ll->ApplyDirichlet(*inf_gap_toggle_lub_, true);
   }
 
   systemmatrix_->UnComplete();
@@ -2171,9 +2171,9 @@ void EHL::Monolithic::ApplyDBC()
 
 
   CORE::LINALG::ApplyDirichlettoSystem(
-      rhs_, zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
+      *rhs_, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
   CORE::LINALG::ApplyDirichlettoSystem(
-      rhs_, zeros_, *lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
+      *rhs_, *zeros_, *lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
 
   if (inf_gap_toggle_lub_ != Teuchos::null)
     for (int i = 0; i < inf_gap_toggle_lub_->MyLength(); ++i)

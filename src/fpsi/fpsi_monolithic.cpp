@@ -762,11 +762,10 @@ void FPSI::Monolithic::LinearSolve()
     {
       // remove entries in condensed dofs from matrix and rhs...
       CORE::LINALG::ApplyDirichlettoSystem(
-          sparse, iterinc_, rhs_, Teuchos::null, zeros_, *FluidField()->Interface()->FSICondMap());
+          *sparse, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichlettoSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // line search
     if (linesearch_)
@@ -782,12 +781,12 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_,
-          *FluidField()->Interface()->FSICondMap());
+      CORE::LINALG::ApplyDirichlettoSystem(
+          *systemmatrix_, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
     CORE::LINALG::ApplyDirichlettoSystem(
-        systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+        *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -1581,10 +1580,10 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     PoroField()->ClearPoroIterinc();
-    CORE::LINALG::ApplyDirichlettoSystem(sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_,
-        *FluidField()->Interface()->FSICondMap());
     CORE::LINALG::ApplyDirichlettoSystem(
-        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *FluidField()->Interface()->FSICondMap());
+    CORE::LINALG::ApplyDirichlettoSystem(
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative
     rhs_copy->Scale(-1.0 / delta);

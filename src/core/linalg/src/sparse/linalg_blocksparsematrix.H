@@ -97,8 +97,7 @@ namespace CORE::LINALG
 
     void UnComplete();
 
-    void ApplyDirichlet(
-        const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true);
 
     void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true);
 

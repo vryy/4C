@@ -494,7 +494,7 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
       const Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP<const Epetra_Map> dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap, false);
-      CORE::LINALG::ApplyDirichlettoSystem(coupforce, zeros, *dbcmap);
+      CORE::LINALG::ApplyDirichlettoSystem(*coupforce, *zeros, *dbcmap);
     }
   }
 }

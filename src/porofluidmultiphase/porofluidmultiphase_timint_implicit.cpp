@@ -1823,12 +1823,12 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrepareSystemForNewtonSolve()
     if (time_ <= starting_dbc_time_end_)
     {
       CORE::LINALG::ApplyDirichlettoSystem(
-          sysmat_, increment_, residual_, zeros_, *(dbcmaps_starting_condition_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_starting_condition_->CondMap()));
     }
     else
     {
       CORE::LINALG::ApplyDirichlettoSystem(
-          sysmat_, increment_, residual_, zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_with_volfracpress_->CondMap()));
     }
   }
 }

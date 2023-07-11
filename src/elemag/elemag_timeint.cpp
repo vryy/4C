@@ -739,10 +739,10 @@ void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
   discret_->EvaluateDirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)
-    CORE::LINALG::ApplyDirichlettoSystem(residual_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(*residual_, *zeros_, *(dbcmaps_->CondMap()));
   else
     CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, trace_, residual_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
+        *sysmat_, *trace_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   return;
 }  // ApplyDirichletToSystem

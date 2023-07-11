@@ -156,157 +156,106 @@ void CORE::LINALG::Assemble(Epetra_MultiVector& V, const int n,
 }
 
 /*----------------------------------------------------------------------*
- |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
-    Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,
-    const Teuchos::RCP<const Epetra_Vector> dbctoggle)
+void CORE::LINALG::ApplyDirichlettoSystem(
+    Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
-  const Epetra_Vector& dbct = *dbctoggle;
-  if (x != Teuchos::null && b != Teuchos::null)
+  // set the prescribed value in x and b
+  const int mylength = dbcval.MyLength();
+  for (int i = 0; i < mylength; ++i)
   {
-    Epetra_Vector& X = *x;
-    Epetra_Vector& B = *b;
-    const Epetra_Vector& dbcv = *dbcval;
-    // set the prescribed value in x and b
-    const int mylength = dbcv.MyLength();
-    for (int i = 0; i < mylength; ++i)
-      if (dbct[i] == 1.0)
-      {
-        X[i] = dbcv[i];
-        B[i] = dbcv[i];
-      }
-  }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& x,
-    Teuchos::RCP<Epetra_Vector>& b, const Teuchos::RCP<const Epetra_Vector> dbcval,
-    const Epetra_Map& dbcmap)
-{
-  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
-
-  if (x != Teuchos::null and b != Teuchos::null)
-  {
-    Epetra_Vector& X = *x;
-    Epetra_Vector& B = *b;
-    const Epetra_Vector& dbcv = *dbcval;
-
-    // We use two maps since we want to allow dbcv and X to be independent of
-    // each other. So we are slow and flexible...
-    const Epetra_BlockMap& xmap = X.Map();
-    const Epetra_BlockMap& dbcvmap = dbcv.Map();
-
-    const int mylength = dbcmap.NumMyElements();
-    const int* mygids = dbcmap.MyGlobalElements();
-    for (int i = 0; i < mylength; ++i)
+    if (dbctoggle[i] == 1.0)
     {
-      int gid = mygids[i];
-
-      int dbcvlid = dbcvmap.LID(gid);
-      if (dbcvlid < 0) dserror("illegal Dirichlet map");
-
-      int xlid = xmap.LID(gid);
-      if (xlid < 0) dserror("illegal Dirichlet map");
-
-      X[xlid] = dbcv[dbcvlid];
-      B[xlid] = dbcv[dbcvlid];
+      x[i] = dbcval[i];
+      b[i] = dbcval[i];
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<Epetra_Vector>& b,
-    const Teuchos::RCP<const Epetra_Vector> dbcval, const Epetra_Map& dbcmap)
+void CORE::LINALG::ApplyDirichlettoSystem(
+    Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) dserror("unique map required");
 
-  if (b != Teuchos::null)
+  // We use two maps since we want to allow dbcv and X to be independent of
+  // each other. So we are slow and flexible...
+  const Epetra_BlockMap& xmap = x.Map();
+  const Epetra_BlockMap& dbcvmap = dbcval.Map();
+
+  const int mylength = dbcmap.NumMyElements();
+  const int* mygids = dbcmap.MyGlobalElements();
+  for (int i = 0; i < mylength; ++i)
   {
-    Epetra_Vector& B = *b;
-    const Epetra_Vector& dbcv = *dbcval;
+    int gid = mygids[i];
 
-    // We use two maps since we want to allow dbcv and X to be independent of
-    // each other. So we are slow and flexible...
-    const Epetra_BlockMap& bmap = B.Map();
-    const Epetra_BlockMap& dbcvmap = dbcv.Map();
+    int dbcvlid = dbcvmap.LID(gid);
+    if (dbcvlid < 0) dserror("illegal Dirichlet map");
 
-    const int mylength = dbcmap.NumMyElements();
-    const int* mygids = dbcmap.MyGlobalElements();
-    for (int i = 0; i < mylength; ++i)
+    int xlid = xmap.LID(gid);
+    if (xlid < 0) dserror("illegal Dirichlet map");
+
+    x[xlid] = dbcval[dbcvlid];
+    b[xlid] = dbcval[dbcvlid];
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CORE::LINALG::ApplyDirichlettoSystem(
+    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
+{
+  if (not dbcmap.UniqueGIDs()) dserror("unique map required");
+
+  const int mylength = dbcmap.NumMyElements();
+  const int* mygids = dbcmap.MyGlobalElements();
+  for (int i = 0; i < mylength; ++i)
+  {
+    const int gid = mygids[i];
+
+    const int dbcvlid = dbcval.Map().LID(gid);
+
+    const int blid = b.Map().LID(gid);
+    // Note:
+    // if gid is not found in vector b, just continue
+    // b might only be a subset of a larger field vector
+    if (blid >= 0)
     {
-      int gid = mygids[i];
-
-      int dbcvlid = dbcvmap.LID(gid);
-
-      int blid = bmap.LID(gid);
-      // Note:
-      // if gid is not found in vector b, just continue
-      // b might only be a subset of a larger field vector
-      if (blid >= 0)
-      {
-        if (dbcvlid < 0)
-          dserror("illegal Dirichlet map");
-        else
-          B[blid] = dbcv[dbcvlid];
-      }
+      if (dbcvlid < 0)
+        dserror("illegal Dirichlet map");
+      else
+        b[blid] = dbcval[dbcvlid];
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-    Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    const Teuchos::RCP<const Epetra_Vector> dbcval,
-    const Teuchos::RCP<const Epetra_Vector> dbctoggle)
+void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
-  A->ApplyDirichlet(dbctoggle);
+  A.ApplyDirichlet(dbctoggle);
   ApplyDirichlettoSystem(x, b, dbcval, dbctoggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-    Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
+void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
-  A->ApplyDirichlet(dbcmap);
+  A.ApplyDirichlet(dbcmap);
   ApplyDirichlettoSystem(x, b, dbcval, dbcmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-    Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<Epetra_Vector>& b,
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
-    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
+void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x,
+    Epetra_Vector& b, const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
+    const Epetra_Map& dbcmap)
 {
-  if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
-        trafo, dbcmap);
-  else
-    // trafo==Teuchos::null
-    A->ApplyDirichlet(dbcmap);
+  A.ApplyDirichletWithTrafo(trafo, dbcmap);
   ApplyDirichlettoSystem(x, b, dbcval, dbcmap);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> A,
-    Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
-    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
-{
-  if (trafo != Teuchos::null)
-    Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(A, true)->ApplyDirichletWithTrafo(
-        trafo, dbcmap);
-  else
-    // trafo==Teuchos::null
-    A->ApplyDirichlet(dbcmap);
-  ApplyDirichlettoSystem(b, dbcval, dbcmap);
 }
 
 /*----------------------------------------------------------------------*
