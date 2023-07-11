@@ -1167,7 +1167,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi)
+  else if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi or
+           problemtype == ProblemType::poroscatra)
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::poro);
