@@ -16,9 +16,7 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
 -----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
@@ -27,7 +25,6 @@ STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
 STRUCT_STRAIN                   gl
 STRUCT_STRESS                   Cauchy
 STRUCT_SURFACTANT               No

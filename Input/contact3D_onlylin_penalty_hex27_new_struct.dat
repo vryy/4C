@@ -27,9 +27,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard

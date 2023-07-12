@@ -31,7 +31,6 @@ STDOUTEVRY                      1
 STRUCT_COUPLING_STRESS          No
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_VEL_ACC                  No

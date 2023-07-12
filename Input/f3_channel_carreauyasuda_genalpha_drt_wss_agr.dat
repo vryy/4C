@@ -73,10 +73,8 @@ SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FLUID_WALL_SHEAR_STRESS         Yes
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRAIN                   No

@@ -550,13 +550,7 @@ DIVPROJECTION                   no
 FILESTEPS                       1000
 //
 //                              Yes,No,yes,no,YES,NO
-FLUID_SOL                       Yes
-//
-//                              Yes,No,yes,no,YES,NO
 FLUID_STRESS                    No
-//
-//                              Yes,No,yes,no,YES,NO
-FLUID_VIS                       No
 //
 //                              Yes,No,yes,no,YES,NO
 FLUID_WALL_SHEAR_STRESS         No
@@ -582,10 +576,6 @@ STRUCT_DISP                     Yes
 //
 //                              No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_PLASTIC_STRAIN           No
-//
-// output of strain energy
-//                              Yes,No,yes,no,YES,NO
-STRUCT_SE                       No
 //
 //                              No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRAIN                   No

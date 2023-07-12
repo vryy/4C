@@ -71,9 +71,7 @@ TOL_VEL_RES_INF                 1e-09
 TOL_VEL_RES_L2                  1e-09
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No

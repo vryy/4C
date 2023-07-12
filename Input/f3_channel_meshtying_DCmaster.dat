@@ -19,15 +19,12 @@ NUMALEDIS    0
 NUMTHERMDIS  0
 -----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         Yes
 OUTPUT_BIN                      Yes
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No

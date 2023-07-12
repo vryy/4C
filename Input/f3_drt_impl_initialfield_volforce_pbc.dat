@@ -22,7 +22,6 @@ NUMALEDIS                       0
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
-FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FILESTEPS                       1000
 ---------------------------------------------------------------FLUID DYNAMIC
