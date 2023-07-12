@@ -26,7 +26,7 @@ XFEM::XFACoupling_Manager::XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,
       idx_(idx),
       structure_(structure)
 {
-  if (idx_.size() != (uint)(2 + (structure_ != Teuchos::null)))
+  if (idx_.size() != static_cast<std::size_t>(2 + (structure_ != Teuchos::null)))
     dserror("XFACoupling_Manager required (two + num coupled block) ( %d != %d)",
         (2 + (structure_ != Teuchos::null)), idx_.size());
 

@@ -974,7 +974,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
 
     // coordinates of the current integration point in parent coordinate system
-    for (uint idim = 0; idim < SLAVE_NUMDOF; idim++)
+    for (unsigned int idim = 0; idim < SLAVE_NUMDOF; idim++)
     {
       pxsi(idim) = pqxg(0, idim);
     }
@@ -1016,7 +1016,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
       // update element geometry of parent element
       {
         DRT::Node** nodes = coupl_ele->Nodes();
-        for (uint inode = 0; inode < PARENT_NEN; ++inode)
+        for (unsigned int inode = 0; inode < PARENT_NEN; ++inode)
         {
           for (unsigned int idof = 0; idof < SLAVE_NUMDOF; ++idof)
           {

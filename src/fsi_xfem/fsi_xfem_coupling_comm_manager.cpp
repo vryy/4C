@@ -260,7 +260,7 @@ void XFEM::Coupling_Comm_Manager::SetupFullMapExtractors(
        dit != dis.end(); ++dit)
   {
     Teuchos::RCP<LINALG::MapExtractor> me = Teuchos::rcp(new LINALG::MapExtractor());
-    if ((uint)dit->first < dis.size() - 1)
+    if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
       Teuchos::RCP<CORE::ADAPTER::Coupling> coup = GetCoupling(dit->first, dit->first + 1);
       me->Setup(*dit->second->DofRowMap(), coup->MasterDofMap(),
@@ -322,9 +322,9 @@ void XFEM::Coupling_Comm_Manager::SetupFullCouplings(
 {
   if (dis.size() < 2) return;
 
-  for (uint idx_a = 0; idx_a < dis.size(); ++idx_a)
+  for (std::size_t idx_a = 0; idx_a < dis.size(); ++idx_a)
   {
-    for (uint idx_b = 0; idx_b < dis.size(); ++idx_b)
+    for (std::size_t idx_b = 0; idx_b < dis.size(); ++idx_b)
     {
       if (idx_a >= idx_b) continue;  // we  create couplings just for idxa < idxb
 

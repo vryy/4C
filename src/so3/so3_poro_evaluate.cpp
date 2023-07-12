@@ -2759,7 +2759,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
     CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xi, shapefcts);
 
-    for (uint nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
+    for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
 
     if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
@@ -2770,10 +2770,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
       d_cauchyndir_dp->Reshape(NUMNOD_SOH8, 1);
       LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->A(), true);
 
-      for (uint nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
+      for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       {
         dsntdp_m(nlid, 0) = -dot * shapefcts(nlid, 0);
-        for (uint dim = 0; dim < 3; ++dim)
+        for (unsigned dim = 0; dim < 3; ++dim)
         {
           (*d_cauchyndir_dn)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * dir(dim, 0);
           (*d_cauchyndir_ddir)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * n(dim, 0);
