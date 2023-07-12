@@ -1080,7 +1080,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
 
-    CORE::LINALG::ApplyDirichlettoSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   /***
@@ -2403,7 +2403,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
   // Apply the BCs to the system matrix and rhs
   {
-    CORE::LINALG::ApplyDirichlettoSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
+    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *pnp_, *rhs_, *bcval_, *dbctog_);
   }
 
   // Evaluate Residual

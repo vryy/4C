@@ -182,7 +182,7 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
      */
-  void ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
+  void ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
       const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle);
 
   /*!
@@ -202,7 +202,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
+  void ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x, Epetra_Vector& b,
       const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -228,7 +228,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
+  void ApplyDirichletToSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x, Epetra_Vector& b,
       const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
       const Epetra_Map& dbcmap);
 
@@ -242,7 +242,7 @@ namespace CORE::LINALG
    \param dbctoggle (in)     : vector holding 1.0 where dirichlet should be applied
    and 0.0 everywhere else
    */
-  void ApplyDirichlettoSystem(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
+  void ApplyDirichletToSystem(Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval,
       const Epetra_Vector& dbctoggle);
 
   /*!
@@ -262,7 +262,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(
+  void ApplyDirichletToSystem(
       Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!
@@ -282,7 +282,7 @@ namespace CORE::LINALG
 
    \pre The map dbcmap must be subset of the maps of the vectors.
    */
-  void ApplyDirichlettoSystem(
+  void ApplyDirichletToSystem(
       Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap);
 
   /*!

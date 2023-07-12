@@ -1260,7 +1260,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateGlobalToLocal(rhs_structure_master);
-    CORE::LINALG::ApplyDirichlettoSystem(*rhs_structure_master, *zeros,
+    CORE::LINALG::ApplyDirichletToSystem(*rhs_structure_master, *zeros,
         *ssti_mono_->StructureField()->GetDBCMapExtractor()->CondMap());
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateLocalToGlobal(rhs_structure_master);

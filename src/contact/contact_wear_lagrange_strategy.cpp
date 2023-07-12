@@ -3766,7 +3766,7 @@ void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(
     // apply Dirichlet conditions to (0,0) and (0,1) blocks
     Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
     Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-    CORE::LINALG::ApplyDirichlettoSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+    CORE::LINALG::ApplyDirichletToSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
     trkdz->ApplyDirichlet(*dirichtoggle, false);
 
     // row map (equals domain map) extractor
@@ -3924,7 +3924,7 @@ void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(
     // apply Dirichlet B.C. to mergedrhs and mergedsol
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     CORE::LINALG::Export(*dirichtoggle, *dirichtoggleexp);
-    CORE::LINALG::ApplyDirichlettoSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
+    CORE::LINALG::ApplyDirichletToSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     // return references to solution and rhs vector
     blocksol = mergedsol;

@@ -1003,7 +1003,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   PrepareSystemForNewtonSolve()
   //     blank residual DOFs that are on Dirichlet BC
   //     in case of local coordinate systems rotate the residual forth and back
-  //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
+  //     Be AWARE: ApplyDirichletToSystem has to be called with rotated stiff_!
   if (iter_ == 0)
     StructureField()->Evaluate();
   else
@@ -2967,11 +2967,11 @@ void TSI::Monolithic::ApplyDBC()
     Teuchos::RCP<Epetra_Vector> s_rhs, t_rhs;
     ExtractFieldVectors(rhs_, s_rhs, t_rhs);
     locsysman_->RotateGlobalToLocal(s_rhs);
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *s_rhs, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
     locsysman_->RotateLocalToGlobal(s_rhs);
 
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *t_rhs, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
 
     Extractor()->InsertVector(*s_rhs, 0, *rhs_);
@@ -2979,9 +2979,9 @@ void TSI::Monolithic::ApplyDBC()
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *rhs_, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *rhs_, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
   }
 }

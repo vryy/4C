@@ -707,7 +707,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
       rhs = StructureField()->Interface()->InsertFSICondVector(tmprhs);
 
       auto zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(), true));
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *rhs, *zeros, *(StructureField()->GetDBCMapExtractor()->CondMap()));
 
       if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
@@ -726,7 +726,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
       rhs = FluidField()->Interface()->InsertOtherVector(rhs);
 
       zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(), true));
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *rhs, *zeros, *(StructureField()->GetDBCMapExtractor()->CondMap()));
 
       rhs->Scale(-timescale * Dt());

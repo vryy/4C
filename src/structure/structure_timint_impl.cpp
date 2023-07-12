@@ -672,12 +672,12 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   stiff_->Complete();
   if (GetLocSysTrafo() != Teuchos::null)
   {
-    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
         *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // solve for disi_
@@ -1546,12 +1546,12 @@ int STR::TimIntImpl::NewtonFull()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
           *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -2135,12 +2135,12 @@ int STR::TimIntImpl::LsSolveNewtonStep()
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   if (GetLocSysTrafo() != Teuchos::null)
   {
-    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
         *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   /**************************************************************
@@ -2562,13 +2562,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (GetLocSysTrafo() != Teuchos::null)
       {
-        CORE::LINALG::ApplyDirichlettoSystem(
+        CORE::LINALG::ApplyDirichletToSystem(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::ApplyDirichlettoSystem(
+        CORE::LINALG::ApplyDirichletToSystem(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -2752,13 +2752,13 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
       if (GetLocSysTrafo() != Teuchos::null)
       {
-        CORE::LINALG::ApplyDirichlettoSystem(
+        CORE::LINALG::ApplyDirichletToSystem(
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
             *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
       }
       else
       {
-        CORE::LINALG::ApplyDirichlettoSystem(
+        CORE::LINALG::ApplyDirichletToSystem(
             *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
       }
 
@@ -3407,12 +3407,12 @@ int STR::TimIntImpl::PTC()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
           *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -4194,7 +4194,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  CORE::LINALG::ApplyDirichlettoSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
   solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
@@ -4238,11 +4238,11 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
   {
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
           *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
     }
     else
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 

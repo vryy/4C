@@ -157,7 +157,7 @@ void CORE::LINALG::Assemble(Epetra_MultiVector& V, const int n,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(
+void CORE::LINALG::ApplyDirichletToSystem(
     Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
   // set the prescribed value in x and b
@@ -174,7 +174,7 @@ void CORE::LINALG::ApplyDirichlettoSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(
+void CORE::LINALG::ApplyDirichletToSystem(
     Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) dserror("unique map required");
@@ -203,7 +203,7 @@ void CORE::LINALG::ApplyDirichlettoSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(
+void CORE::LINALG::ApplyDirichletToSystem(
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) dserror("unique map required");
@@ -232,30 +232,30 @@ void CORE::LINALG::ApplyDirichlettoSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+void CORE::LINALG::ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
 {
   A.ApplyDirichlet(dbctoggle);
-  ApplyDirichlettoSystem(x, b, dbcval, dbctoggle);
+  ApplyDirichletToSystem(x, b, dbcval, dbctoggle);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
+void CORE::LINALG::ApplyDirichletToSystem(CORE::LINALG::SparseOperator& A, Epetra_Vector& x,
     Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
 {
   A.ApplyDirichlet(dbcmap);
-  ApplyDirichlettoSystem(x, b, dbcval, dbcmap);
+  ApplyDirichletToSystem(x, b, dbcval, dbcmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::ApplyDirichlettoSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x,
+void CORE::LINALG::ApplyDirichletToSystem(CORE::LINALG::SparseMatrix& A, Epetra_Vector& x,
     Epetra_Vector& b, const CORE::LINALG::SparseMatrix& trafo, const Epetra_Vector& dbcval,
     const Epetra_Map& dbcmap)
 {
   A.ApplyDirichletWithTrafo(trafo, dbcmap);
-  ApplyDirichlettoSystem(x, b, dbcval, dbcmap);
+  ApplyDirichletToSystem(x, b, dbcval, dbcmap);
 }
 
 /*----------------------------------------------------------------------*

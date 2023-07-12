@@ -2047,12 +2047,12 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletToSystem()
     // Transform system matrix and rhs to local co-ordinate systems
     locsysman_->RotateGlobalToLocal(SystemMatrix(), residual_);
 
-    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_),
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_),
         *incvel_, *residual_, *locsysman_->Trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
@@ -4139,7 +4139,7 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
   sysmat_->Complete();
 
   // apply DBC to system matrix
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 }
 
@@ -5429,7 +5429,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   //          boundary conditions
   incvel_->PutScalar(0.0);
 
-  CORE::LINALG::ApplyDirichlettoSystem(*incvel_, *residual_, *relax, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*incvel_, *residual_, *relax, *(dbcmaps_->CondMap()));
 
   CustomSolve(relax);
   //-------solve for residual displacements to correct incremental displacements
@@ -6372,7 +6372,7 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
   // apply Dirichlet BCs to system of equations
   incvel_->PutScalar(0.0);
   sysmat_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for incvel_

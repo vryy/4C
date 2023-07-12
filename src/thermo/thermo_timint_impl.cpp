@@ -308,7 +308,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);
   tang_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for tempi_
   // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -489,7 +489,7 @@ INPAR::THR::ConvergenceStatus THR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     tempi_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichlettoSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
     // Solve for tempi_
     // Solve K_Teffdyn . IncT = -R  ===>  IncT_{n+1}
@@ -675,7 +675,7 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
   // at dofs with DBC change tang_:
   // blank all off-diagonal terms and put 1s at diagonal terms of tang_
-  CORE::LINALG::ApplyDirichlettoSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*tang_, *tempi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // final sip
   return;
@@ -1063,7 +1063,7 @@ void THR::TimIntImpl::FDCheck()
     Evaluate(disturbtempi);
     rhs_copy->Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->CondMap()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb

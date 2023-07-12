@@ -202,8 +202,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 
   // apply DBCs
   // 1) on vector
-  CORE::LINALG::ApplyDirichlettoSystem(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
-  CORE::LINALG::ApplyDirichlettoSystem(*rhs, *zeros_art_, *(dbcmap_art));
+  CORE::LINALG::ApplyDirichletToSystem(*rhs, *zeros_cont_, *(dbcmap_cont->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*rhs, *zeros_art_, *(dbcmap_art));
   // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());

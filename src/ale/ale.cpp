@@ -249,25 +249,25 @@ void ALE::Ale::Evaluate(
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_), residual_);
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
-    // ApplyDirichlettoSystem
+    // ApplyDirichletToSystem
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
     if (GetLocSysTrafo() != Teuchos::null)
     {
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_), *disi_, *residual_,
           *GetLocSysTrafo(), *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
     }
     else
     {
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->CondMap()));
     }
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *disi_, *residual_, *zeros_, *(dbcmaps_[dbc_type]->CondMap()));
   }
 

@@ -233,7 +233,7 @@ void STR::Dbc::ApplyDirichletToVector(Teuchos::RCP<Epetra_Vector>& vec) const
   // rotate the coordinate system if desired
   RotateGlobalToLocal(vec);
   // apply the dbc
-  CORE::LINALG::ApplyDirichlettoSystem(*vec, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*vec, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
   // rotate back
   RotateLocalToGlobal(vec);
 }
@@ -248,7 +248,7 @@ void STR::Dbc::ApplyDirichletToLocalRhs(Teuchos::RCP<Epetra_Vector>& b) const
   RotateGlobalToLocal(b);
 
   ExtractFreact(b);
-  CORE::LINALG::ApplyDirichlettoSystem(*b, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*b, *zeros_ptr_, *(dbcmap_ptr_->CondMap()));
 
 
   return;

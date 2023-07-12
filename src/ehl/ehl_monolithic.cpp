@@ -2170,9 +2170,9 @@ void EHL::Monolithic::ApplyDBC()
   systemmatrix_->Complete();
 
 
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *rhs_, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *rhs_, *zeros_, *lubrication_->LubricationField()->GetDBCMapExtractor()->CondMap());
 
   if (inf_gap_toggle_lub_ != Teuchos::null)

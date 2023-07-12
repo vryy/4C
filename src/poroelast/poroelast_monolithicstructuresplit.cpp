@@ -258,7 +258,7 @@ void POROELAST::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
     StructureField()->Interface()->InsertFSICondVector(scx, s);
 
     auto zeros = Teuchos::rcp(new const Epetra_Vector(s->Map(), true));
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *s, *zeros, *(StructureField()->GetDBCMapExtractor()->CondMap()));
 
     sx = s;

@@ -256,7 +256,7 @@ void STR::TimAda::EvaluateLocalErrorDis()
 
   // blank Dirichlet DOFs since they always carry the exact solution
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *locerrdisn_, *zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 

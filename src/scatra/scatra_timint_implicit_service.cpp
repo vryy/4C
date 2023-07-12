@@ -639,7 +639,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // auxiliary degrees of freedom (= non-transported scalars) constant when solving for initial time
   // derivatives of primary degrees of freedom (= transported scalars)
   if (splitter_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *phidtnp_, *residual_, *zeros_, *(splitter_->CondMap()));
 
   // solve global system of equations for initial time derivative of state variables
@@ -1385,7 +1385,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   sysmat_sd_->Complete();
 
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *sysmat_sd_, *phinp_, *residual_, *phinp_, *(dbcmaps_->CondMap()));
 
   // get normalized fine-scale subgrid-diffusivity matrix

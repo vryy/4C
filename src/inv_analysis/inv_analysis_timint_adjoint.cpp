@@ -223,12 +223,12 @@ void STR::TimIntAdjoint::Solve()
   {
     locsysman_->RotateGlobalToLocal(
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), rhsn_);
-    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
         *disdualn_, *rhsn_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *stiff_, *disdualn_, *rhsn_, *zeros_, *(dbcmaps_->CondMap()));
   }
 

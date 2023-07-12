@@ -439,7 +439,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+  CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -547,7 +547,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    CORE::LINALG::ApplyDirichlettoSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
+    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fresn_, *zeros_, *dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}

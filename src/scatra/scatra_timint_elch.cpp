@@ -1917,12 +1917,12 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     if (projector_ != Teuchos::null) projector_->ApplyPT(*residual_);
 
     // apply actual Dirichlet boundary conditions to system of equations
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
     // apply artificial Dirichlet boundary conditions to system of equations
     // to hold initial concentrations constant when solving for initial potential field
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *increment_, *residual_, *zeros_, *(splitter_->OtherMap()));
 
     // compute L2 norm of electric potential state vector
@@ -2707,7 +2707,7 @@ void SCATRA::ScaTraTimIntElch::LinearizationNernstCondition()
   // Nernst-BC is a additional constraint coupled to the original system of equation
   if (!sysmat_->Filled()) sysmat_->Complete();
   sysmat_->ApplyDirichlet(*ektoggle_, false);
-  CORE::LINALG::ApplyDirichlettoSystem(*increment_, *residual_, *zeros_, *ektoggle_);
+  CORE::LINALG::ApplyDirichletToSystem(*increment_, *residual_, *zeros_, *ektoggle_);
 
   // create an parameter list
   Teuchos::ParameterList condparams;

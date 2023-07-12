@@ -103,12 +103,12 @@ void STR::TimIntAdjointPrestress::Solve()
     locsysman_->RotateGlobalToLocal(
         Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), rhsn_);
 
-    CORE::LINALG::ApplyDirichlettoSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
         *disdualn_, *rhsn_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *stiff_, *disdualn_, *rhsn_, *zeros_, *(dbcmaps_->CondMap()));
   }
   solver_->Solve(stiff_->EpetraOperator(), disdualn_, rhsn_, true, true, Teuchos::null);
@@ -122,7 +122,7 @@ void STR::TimIntAdjointPrestress::Solve()
   stiffn_->Apply(*disdualn_, *rhsnp_);
   rhsnp_->Update(-1.0, *rhsn_, 1.0);
 
-  CORE::LINALG::ApplyDirichlettoSystem(*disdualnp_, *rhsnp_, *zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*disdualnp_, *rhsnp_, *zeros_, *(dbcmaps_->CondMap()));
   solver_->Solve(stiffp_->EpetraOperator(), disdualnp_, rhsnp_, true, true, Teuchos::null);
 
   return;

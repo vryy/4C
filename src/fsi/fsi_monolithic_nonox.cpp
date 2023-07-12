@@ -304,7 +304,7 @@ void FSI::MonolithicNoNOX::LinearSolve()
   else
     iterinc_->PutScalar(0.0);
 
-  CORE::LINALG::ApplyDirichlettoSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+  CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
 #ifndef moresolvers
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();

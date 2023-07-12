@@ -648,13 +648,13 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
 
   // set '0' on all pressure DOFs
   auto zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  CORE::LINALG::ApplyDirichlettoSystem(*locerrvelnp_, *zeros, *PressureRowMap());
-  // TODO: Do not misuse ApplyDirichlettoSystem()...works for this purpose here: writes zeros into
+  CORE::LINALG::ApplyDirichletToSystem(*locerrvelnp_, *zeros, *PressureRowMap());
+  // TODO: Do not misuse ApplyDirichletToSystem()...works for this purpose here: writes zeros into
   // all pressure DoFs
 
   // set '0' on Dirichlet DOFs
   zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  CORE::LINALG::ApplyDirichlettoSystem(*locerrvelnp_, *zeros, *(GetDBCMapExtractor()->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*locerrvelnp_, *zeros, *(GetDBCMapExtractor()->CondMap()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond =

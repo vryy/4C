@@ -180,7 +180,7 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of sca
   const Teuchos::RCP<const Epetra_Map> dbcmap =
       scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
   mat_scal->ApplyDirichlet(*dbcmap, false);
-  CORE::LINALG::ApplyDirichlettoSystem(*rhs_scal, *scatrazeros_[i], *dbcmap);
+  CORE::LINALG::ApplyDirichletToSystem(*rhs_scal, *scatrazeros_[i], *dbcmap);
 }
 
 /*----------------------------------------------------------------------*

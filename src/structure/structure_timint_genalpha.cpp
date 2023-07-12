@@ -508,7 +508,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
     fresn_str_->Update(-1.0, *fextm_, 1.0);
     fresn_str_->Update(1.0, *finertm_, 1.0);
     if (damping_ == INPAR::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
-    CORE::LINALG::ApplyDirichlettoSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // close stiffness matrix
@@ -639,7 +639,7 @@ void STR::TimIntGenAlpha::EvaluateForceResidual()
     fresn_str_->Update(1.0, *finertm_, 1.0);
     if (damping_ == INPAR::STR::damp_rayleigh) fresn_str_->Update(1.0, *fviscm_, 1.0);
 
-    CORE::LINALG::ApplyDirichlettoSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;

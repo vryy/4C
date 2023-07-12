@@ -1275,7 +1275,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
     auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
 
     auto rhs = ssi_vectors_->Residual();
-    CORE::LINALG::ApplyDirichlettoSystem(*ssi_matrices_->SystemMatrix(), *ssi_vectors_->Increment(),
+    CORE::LINALG::ApplyDirichletToSystem(*ssi_matrices_->SystemMatrix(), *ssi_vectors_->Increment(),
         *rhs, *dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
@@ -1539,7 +1539,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
   // temporal derivative of transported scalars
   auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
-  CORE::LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichletToSystem(
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 
   // solve global system of equations for initial time derivative of state variables

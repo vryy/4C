@@ -2342,7 +2342,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
     }
   }
@@ -2351,7 +2351,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sysmat_, *phinp_, *residual_, *phinp_, *(dbcmaps_->CondMap()));
   }
 }
@@ -2707,7 +2707,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
     }
 

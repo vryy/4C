@@ -761,11 +761,11 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *sparse, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::ApplyDirichlettoSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // line search
     if (linesearch_)
@@ -781,11 +781,11 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      CORE::LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichletToSystem(
           *systemmatrix_, *iterinc_, *rhs_, *zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
@@ -1580,9 +1580,9 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     PoroField()->ClearPoroIterinc();
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *FluidField()->Interface()->FSICondMap());
-    CORE::LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichletToSystem(
         *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative

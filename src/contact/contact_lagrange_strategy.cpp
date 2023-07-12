@@ -3140,7 +3140,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
       // apply Dirichlet conditions to (0,0) and (0,1) blocks
       Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(*ProblemDofs(), true));
       Teuchos::RCP<Epetra_Vector> rhscopy = Teuchos::rcp(new Epetra_Vector(*fd));
-      CORE::LINALG::ApplyDirichlettoSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
+      CORE::LINALG::ApplyDirichletToSystem(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
       trkdz->ApplyDirichlet(*dirichtoggle, false);
     }
 
@@ -3185,7 +3185,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
     // apply Dirichlet B.C. to mergedrhs and mergedsol
-    CORE::LINALG::ApplyDirichlettoSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
+    CORE::LINALG::ApplyDirichletToSystem(*mergedsol, *mergedrhs, *mergedzeros, *dirichtoggleexp);
 
     blocksol = mergedsol;
     blockrhs = mergedrhs;
