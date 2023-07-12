@@ -24,8 +24,9 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 unsigned CORE::GEO::CUT::KERNEL::FindNextCornerPoint(const std::vector<Point*>& points,
-    LINALG::Matrix<3, 1>& x1, LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3,
-    LINALG::Matrix<3, 1>& b1, LINALG::Matrix<3, 1>& b2, LINALG::Matrix<3, 1>& b3, unsigned i)
+    CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
+    CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2, CORE::LINALG::Matrix<3, 1>& b3,
+    unsigned i)
 {
   unsigned pointsize = points.size();
   unsigned j = (i + 1) % pointsize;
@@ -106,8 +107,8 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
 {
   if (points.size() == 4)
   {
-    LINALG::Matrix<3, 3> xyze;
-    LINALG::Matrix<3, 1> xyz;
+    CORE::LINALG::Matrix<3, 3> xyze;
+    CORE::LINALG::Matrix<3, 1> xyz;
     for (int i = 0; i < 4; ++i)
     {
       points[(i + 0) % 4]->Coordinates(&xyze(0, 0));
@@ -130,8 +131,8 @@ bool CORE::GEO::CUT::KERNEL::IsValidQuad4(const std::vector<Point*>& points)
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::KERNEL::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, bool DeleteInlinePts)
 {
-  LINALG::Matrix<3, 1> x1, x2, x3;
-  LINALG::Matrix<3, 1> pt1pt2, pt1pt3, cross;
+  CORE::LINALG::Matrix<3, 1> x1, x2, x3;
+  CORE::LINALG::Matrix<3, 1> pt1pt2, pt1pt3, cross;
   pt1->Coordinates(x1.A());
   pt2->Coordinates(x2.A());
   pt3->Coordinates(x3.A());
@@ -223,7 +224,7 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
   else
     dserror("unspecified projection type");
 
-  LINALG::Matrix<3, 1> x1, x2, x3, xtemp;
+  CORE::LINALG::Matrix<3, 1> x1, x2, x3, xtemp;
   std::vector<int> leftind, rightind;
   std::vector<int> concPts;
   for (unsigned i = 0; i < ptlist.size(); i++)
@@ -473,7 +474,7 @@ bool CORE::GEO::CUT::KERNEL::PtInsideTriangle(
 {
   if (tri.size() != 3) dserror("expecting a triangle");
 
-  LINALG::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
+  CORE::LINALG::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
   tri[0]->Coordinates(t1.A());
   tri[1]->Coordinates(t2.A());
   tri[2]->Coordinates(t3.A());
@@ -743,7 +744,7 @@ std::vector<CORE::GEO::CUT::Point*> CORE::GEO::CUT::KERNEL::Get3NoncollinearPts(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CORE::GEO::CUT::KERNEL::getAreaTri(
-    const std::vector<Point*>& poly, LINALG::Matrix<3, 1>* normalvec)
+    const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
 
@@ -760,17 +761,17 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1_ptr,
-    const double* p2_ptr, LINALG::Matrix<3, 1>* normalvec)
+    const double* p2_ptr, CORE::LINALG::Matrix<3, 1>* normalvec)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
 
   // create planes consisting of 3 nodes each
-  const LINALG::Matrix<3, 1> p0(p0_ptr, true);
-  const LINALG::Matrix<3, 1> p1(p1_ptr, true);
-  const LINALG::Matrix<3, 1> p2(p2_ptr, true);
+  const CORE::LINALG::Matrix<3, 1> p0(p0_ptr, true);
+  const CORE::LINALG::Matrix<3, 1> p1(p1_ptr, true);
+  const CORE::LINALG::Matrix<3, 1> p2(p2_ptr, true);
 
-  LINALG::Matrix<3, 1> v01;
-  LINALG::Matrix<3, 1> v02;
+  CORE::LINALG::Matrix<3, 1> v01;
+  CORE::LINALG::Matrix<3, 1> v02;
 
   v01.Update(1, p1, -1, p0, 0);
   v02.Update(1, p2, -1, p0, 0);
@@ -779,7 +780,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
   // Cross product way:
   if (normalvec == NULL)
   {
-    LINALG::Matrix<3, 1> crossprod;
+    CORE::LINALG::Matrix<3, 1> crossprod;
     crossprod.CrossProduct(v01, v02);  // Cross prod between two vectors of the triangle
     doubleareacrossprod = crossprod.Norm2();
   }
@@ -791,16 +792,16 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
   }
 
 #if DEBUG
-  LINALG::Matrix<3, 1> v12;
+  CORE::LINALG::Matrix<3, 1> v12;
   v12.Update(1, p1, -1, p2, 0);
 
   double areacrossprod = 0.5 * doubleareacrossprod;
   // Cross referencing!
-  LINALG::Matrix<3, 1> crossprod2;
+  CORE::LINALG::Matrix<3, 1> crossprod2;
   crossprod2.CrossProduct(v01, v12);
   double areacrossprod2 = 0.5 * crossprod2.Norm2();
 
-  LINALG::Matrix<3, 1> crossprod3;
+  CORE::LINALG::Matrix<3, 1> crossprod3;
   crossprod3.CrossProduct(v02, v12);
   double areacrossprod3 = 0.5 * crossprod3.Norm2();
 

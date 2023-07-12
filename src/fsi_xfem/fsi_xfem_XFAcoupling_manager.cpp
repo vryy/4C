@@ -109,21 +109,21 @@ void XFEM::XFACoupling_Manager::SetCouplingStates()
 | Add the coupling matrixes to the global systemmatrix                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XFACoupling_Manager::AddCouplingMatrix(
-    LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
+    CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   // Get Idx of fluid and ale field map extractors
   const int& aidx_other = ALE::UTILS::MapExtractor::cond_other;
-  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = ale_->BlockSystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> a = ale_->BlockSystemMatrix();
 
   // ALE Condensation
-  LINALG::SparseMatrix& aii = a->Matrix(aidx_other, aidx_other);
+  CORE::LINALG::SparseMatrix& aii = a->Matrix(aidx_other, aidx_other);
 
-  systemmatrix.Assign(idx_[1], idx_[1], LINALG::View, aii);
+  systemmatrix.Assign(idx_[1], idx_[1], CORE::LINALG::View, aii);
 
   if (Ale_Struct_coupling_ != Teuchos::null)
   {
     const int& aidx_as = ALE::UTILS::MapExtractor::cond_lung_asi;
-    LINALG::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
+    CORE::LINALG::SparseMatrix& ai_gau = a->Matrix(aidx_other, aidx_as);
     Ale_Struct_coupling_->InsertMatrix(0, 0, ai_gau, 1, systemmatrix.Matrix(idx_[1], idx_[2]),
         XFEM::Coupling_Comm_Manager::col, 1.0, true, false);
   }
@@ -144,7 +144,7 @@ void XFEM::XFACoupling_Manager::AddCouplingMatrix(
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 void XFEM::XFACoupling_Manager::AddCouplingRHS(
-    Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling)
+    Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling)
 {
   Teuchos::RCP<const Epetra_Vector> av = ale_->RHS();
   Teuchos::RCP<Epetra_Vector> aov = ale_->Interface()->ExtractOtherVector(av);

@@ -26,7 +26,7 @@
 /*----------------------------------------------------------------------*
  |  forward declarations                                              |
  *----------------------------------------------------------------------*/
-namespace LINALG
+namespace CORE::LINALG
 {
   //  class SparseMatrix;
   //  class SparseOperator;
@@ -35,7 +35,7 @@ namespace LINALG
   //  class Solver;
   class MapExtractor;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ namespace POROELASTSCATRA
     //! @name Access methods
 
     //! composed system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     //! right hand side vector
     Teuchos::RCP<Epetra_Vector> RHS() { return rhs_; };
@@ -122,10 +122,13 @@ namespace POROELASTSCATRA
 
    protected:
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    {
+      return blockrowdofmap_;
+    }
 
     //! extractor for DBCs
-    const Teuchos::RCP<LINALG::MapExtractor>& DBCExtractor() const { return dbcmaps_; }
+    const Teuchos::RCP<CORE::LINALG::MapExtractor>& DBCExtractor() const { return dbcmaps_; }
 
     //! set full monolithic dof row map
     /*!
@@ -203,9 +206,9 @@ namespace POROELASTSCATRA
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;           //!< tolerance to which is adpated ?
-    bool solveradapttol_;                  //!< adapt solver tolerance
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
+    bool solveradapttol_;                        //!< adapt solver tolerance
     //@}
 
     //! @name Iterative solution technique
@@ -269,30 +272,30 @@ namespace POROELASTSCATRA
     //! @name variables of monolithic system
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! rhs of monolithic system
     Teuchos::RCP<Epetra_Vector> rhs_;
 
     //! structure-scatra coupling matrix
-    Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_pss_;
     //! fluid-scatra coupling matrix
-    Teuchos::RCP<LINALG::SparseMatrix> k_pfs_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_pfs_;
 
     //! scatra-structure coupling matrix
-    Teuchos::RCP<LINALG::SparseMatrix> k_sps_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sps_;
     //! scatra-fluid coupling matrix
-    Teuchos::RCP<LINALG::SparseMatrix> k_spf_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_spf_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! scatra row map as map extractor (used to build coupling matrixes)
-    LINALG::MultiMapExtractor scatrarowdofmap_;
-    LINALG::MultiMapExtractor pororowdofmap_;
+    CORE::LINALG::MultiMapExtractor scatrarowdofmap_;
+    CORE::LINALG::MultiMapExtractor pororowdofmap_;
 
     //! dirichlet map of monolithic system
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
     //@}
 
     //! flag for direct solver

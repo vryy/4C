@@ -85,7 +85,7 @@ namespace THR
         const Teuchos::ParameterList& tdynparams,      //!< input parameters
         const Teuchos::ParameterList& xparams,         //!< extra flags
         Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,     //!< the solver
         Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
@@ -288,34 +288,34 @@ namespace THR
 
     //! Apply convective boundary conditions force
     void ApplyForceExternalConv(Teuchos::ParameterList& p,
-        const double time,                         //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> tempn,   //!< old temperature state T_n
-        const Teuchos::RCP<Epetra_Vector> temp,    //!< temperature state T_n+1
-        Teuchos::RCP<Epetra_Vector>& fext,         //!< external force
-        Teuchos::RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
+        const double time,                               //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> tempn,         //!< old temperature state T_n
+        const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
+        Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
+        Teuchos::RCP<CORE::LINALG::SparseOperator> tang  //!< tangent at time n+1
     );
 
     //! Evaluate ordinary internal force, its tangent at state
     void ApplyForceTangInternal(
-        Teuchos::ParameterList& p,                //!< parameter list handed down to elements
-        const double time,                        //!< evaluation time
-        const double dt,                          //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fint,         //!< internal force
-        Teuchos::RCP<LINALG::SparseMatrix> tang   //!< tangent matrix
+        Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
+        const double time,                             //!< evaluation time
+        const double dt,                               //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
+        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
     void ApplyForceTangInternal(
-        Teuchos::ParameterList& p,                //!< parameter list handed down to elements
-        const double time,                        //!< evaluation time
-        const double dt,                          //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fcap,         //!< capacity force
-        Teuchos::RCP<Epetra_Vector> fint,         //!< internal force
-        Teuchos::RCP<LINALG::SparseMatrix> tang   //!< tangent matrix
+        Teuchos::ParameterList& p,                     //!< parameter list handed down to elements
+        const double time,                             //!< evaluation time
+        const double dt,                               //!< step size
+        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
+        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
+        Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
+        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -397,10 +397,10 @@ namespace THR
     }
 
     //! Access solver
-    Teuchos::RCP<LINALG::Solver> Solver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> Solver() { return solver_; }
 
     //! get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; }
 
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
@@ -453,7 +453,7 @@ namespace THR
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (SystemMatrix()/stiff_ in STR)
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return tang_; }
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() { return tang_; }
 
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
@@ -495,10 +495,13 @@ namespace THR
     virtual inline const Epetra_Comm& Comm() const { return discret_->Comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
+    {
+      return dbcmaps_;
+    }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     //! Return thermal contact manager
     Teuchos::RCP<CONTACT::CoNitscheStrategyTsi> NitscheContactStrategy()
@@ -518,14 +521,14 @@ namespace THR
     Teuchos::RCP<DRT::Discretization> discret_;        //!< attached discretisation
     Teuchos::RCP<DRT::Discretization> discretstruct_;  //!< structural discretisation
 
-    int myrank_;                                  //!< ID of actual processor in parallel
-    Teuchos::RCP<LINALG::Solver> solver_;         //!< linear algebraic solver
-    bool solveradapttol_;                         //!< adapt solver tolerance
-    double solveradaptolbetter_;                  //!< tolerance to which is adpated ????
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
-                                                  //!< containing non-overlapping
-                                                  //!< map of global DOFs on Dirichlet
-                                                  //!< boundary conditions
+    int myrank_;                                        //!< ID of actual processor in parallel
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;         //!< linear algebraic solver
+    bool solveradapttol_;                               //!< adapt solver tolerance
+    double solveradaptolbetter_;                        //!< tolerance to which is adpated ????
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+                                                        //!< containing non-overlapping
+                                                        //!< map of global DOFs on Dirichlet
+                                                        //!< boundary conditions
     //@}
 
     //! @name Printing and output
@@ -598,9 +601,9 @@ namespace THR
     //@{
 
     //! holds eventually effective tangent (STR: stiff_)
-    Teuchos::RCP<LINALG::SparseMatrix> tang_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
-    // Teuchos::RCP<LINALG::SparseMatrix> capa_;
+    // Teuchos::RCP<CORE::LINALG::SparseMatrix> capa_;
 
     //@}
 

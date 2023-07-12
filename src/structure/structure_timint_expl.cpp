@@ -32,9 +32,9 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
     const Teuchos::ParameterList& sdynparams,                          //!< input parameters
     const Teuchos::ParameterList& xparams,                             //!< extra flags
     Teuchos::RCP<DRT::Discretization> actdis,                          //!< current discretisation
-    Teuchos::RCP<LINALG::Solver> solver,                               //!< the solver
-    Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-    Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+    Teuchos::RCP<CORE::LINALG::Solver> solver,                         //!< the solver
+    Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+    Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     )
     : TimInt(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)
 {
@@ -51,7 +51,7 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntExpl::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimInt::Init(timeparams, sdynparams, xparams, actdis, solver);

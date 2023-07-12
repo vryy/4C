@@ -176,47 +176,48 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* const defgrad,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 1>* glstrain,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>* stress,
+    CORE::LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // do all stuff that only has to be done once per Evaluate() call
   PreEvaluate(params, gp);
 
   // static variables
-  static LINALG::Matrix<6, 6> cmatiso(true);
-  static LINALG::Matrix<6, 9> dSdiFin(true);
-  static LINALG::Matrix<6, 6> cmatadd(true);
+  static CORE::LINALG::Matrix<6, 6> cmatiso(true);
+  static CORE::LINALG::Matrix<6, 9> dSdiFin(true);
+  static CORE::LINALG::Matrix<6, 6> cmatadd(true);
 
   // build inverse inelastic deformation gradient
-  static LINALG::Matrix<3, 3> iFinM(true);
+  static CORE::LINALG::Matrix<3, 3> iFinM(true);
   inelastic_->EvaluateInverseInelasticDefGrad(defgrad, iFinM);
 
   // determinante of inelastic deformation gradient
   const double detFin = 1.0 / iFinM.Determinant();
 
   // static variables of kinetic quantities
-  static LINALG::Matrix<6, 1> iCV(true);
-  static LINALG::Matrix<6, 1> iCinV(true);
-  static LINALG::Matrix<6, 1> iCinCiCinV(true);
-  static LINALG::Matrix<3, 3> iCinCM(true);
-  static LINALG::Matrix<3, 3> iFinCeM(true);
-  static LINALG::Matrix<9, 1> CiFin9x1(true);
-  static LINALG::Matrix<9, 1> CiFinCe9x1(true);
-  static LINALG::Matrix<9, 1> CiFiniCe9x1(true);
-  static LINALG::Matrix<3, 1> prinv(true);
+  static CORE::LINALG::Matrix<6, 1> iCV(true);
+  static CORE::LINALG::Matrix<6, 1> iCinV(true);
+  static CORE::LINALG::Matrix<6, 1> iCinCiCinV(true);
+  static CORE::LINALG::Matrix<3, 3> iCinCM(true);
+  static CORE::LINALG::Matrix<3, 3> iFinCeM(true);
+  static CORE::LINALG::Matrix<9, 1> CiFin9x1(true);
+  static CORE::LINALG::Matrix<9, 1> CiFinCe9x1(true);
+  static CORE::LINALG::Matrix<9, 1> CiFiniCe9x1(true);
+  static CORE::LINALG::Matrix<3, 1> prinv(true);
   EvaluateKinQuantElast(defgrad, iFinM, iCinV, iCinCiCinV, iCV, iCinCM, iFinCeM, CiFin9x1,
       CiFinCe9x1, CiFiniCe9x1, prinv);
 
   // derivatives of principle invariants
-  static LINALG::Matrix<3, 1> dPIe(true);
-  static LINALG::Matrix<6, 1> ddPIIe(true);
+  static CORE::LINALG::Matrix<3, 1> dPIe(true);
+  static CORE::LINALG::Matrix<6, 1> ddPIIe(true);
   EvaluateInvariantDerivatives(prinv, gp, eleGID, dPIe, ddPIIe);
 
   // 2nd Piola Kirchhoff stresses factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
-  static LINALG::Matrix<3, 1> gamma(true);
+  static CORE::LINALG::Matrix<3, 1> gamma(true);
   // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
-  static LINALG::Matrix<8, 1> delta(true);
+  static CORE::LINALG::Matrix<8, 1> delta(true);
   // compose coefficients
   CalculateGammaDelta(gamma, delta, prinv, dPIe, ddPIIe);
 
@@ -262,56 +263,58 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivatives(
-    const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-    const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-    LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<9, 1>* d_cauchyndir_dF,
-    LINALG::Matrix<9, 9>* d2_cauchyndir_dF2, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
-    LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID, const double* concentration,
-    const double* temp, double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
+    const CORE::LINALG::Matrix<3, 3>& defgrd, const CORE::LINALG::Matrix<3, 1>& n,
+    const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF, CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+    const double* concentration, const double* temp, double* d_cauchyndir_dT,
+    CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   if (concentration != nullptr) SetConcentrationGP(*concentration);
 
   // reset sigma contracted with n and dir
   cauchy_n_dir = 0.0;
 
-  static LINALG::Matrix<6, 1> idV(true);
+  static CORE::LINALG::Matrix<6, 1> idV(true);
   for (int i = 0; i < 3; ++i) idV(i) = 1.0;
-  static LINALG::Matrix<3, 3> idM(true);
+  static CORE::LINALG::Matrix<3, 3> idM(true);
   for (int i = 0; i < 3; ++i) idM(i, i) = 1.0;
-  static LINALG::Matrix<3, 3> iFinM(true);
+  static CORE::LINALG::Matrix<3, 3> iFinM(true);
   inelastic_->EvaluateInverseInelasticDefGrad(&defgrd, iFinM);
-  static LINALG::Matrix<3, 3> FeM(true);
+  static CORE::LINALG::Matrix<3, 3> FeM(true);
   FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
 
   // get elastic left cauchy-green tensor and corresponding principal invariants
-  static LINALG::Matrix<3, 3> beM(true);
+  static CORE::LINALG::Matrix<3, 3> beM(true);
   beM.MultiplyNT(1.0, FeM, FeM, 0.0);
-  static LINALG::Matrix<6, 1> beV_strain(true);
+  static CORE::LINALG::Matrix<6, 1> beV_strain(true);
   UTILS::VOIGT::Strains::MatrixToVector(beM, beV_strain);
-  static LINALG::Matrix<3, 1> prinv(true);
+  static CORE::LINALG::Matrix<3, 1> prinv(true);
   UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, beV_strain);
-  static LINALG::Matrix<6, 1> beV_stress(true);
+  static CORE::LINALG::Matrix<6, 1> beV_stress(true);
   UTILS::VOIGT::Stresses::MatrixToVector(beM, beV_stress);
 
-  static LINALG::Matrix<3, 1> beMdn(true);
+  static CORE::LINALG::Matrix<3, 1> beMdn(true);
   beMdn.Multiply(1.0, beM, n, 0.0);
   const double beMdnddir = beMdn.Dot(dir);
-  static LINALG::Matrix<3, 1> beMddir(true);
+  static CORE::LINALG::Matrix<3, 1> beMddir(true);
   beMddir.Multiply(1.0, beM, dir, 0.0);
 
-  static LINALG::Matrix<3, 3> ibeM(true);
+  static CORE::LINALG::Matrix<3, 3> ibeM(true);
   ibeM.Invert(beM);
-  static LINALG::Matrix<6, 1> ibeV_stress(true);
+  static CORE::LINALG::Matrix<6, 1> ibeV_stress(true);
   UTILS::VOIGT::Stresses::MatrixToVector(ibeM, ibeV_stress);
-  static LINALG::Matrix<3, 1> ibeMdn(true);
+  static CORE::LINALG::Matrix<3, 1> ibeMdn(true);
   ibeMdn.Multiply(1.0, ibeM, n, 0.0);
   const double ibeMdnddir = ibeMdn.Dot(dir);
-  static LINALG::Matrix<3, 1> ibeMddir(true);
+  static CORE::LINALG::Matrix<3, 1> ibeMddir(true);
   ibeMddir.Multiply(1.0, ibeM, dir, 0.0);
 
   // derivatives of principle invariants of elastic left cauchy-green tensor
-  static LINALG::Matrix<3, 1> dPI(true);
-  static LINALG::Matrix<6, 1> ddPII(true);
+  static CORE::LINALG::Matrix<3, 1> dPI(true);
+  static CORE::LINALG::Matrix<6, 1> ddPII(true);
   EvaluateInvariantDerivatives(prinv, gp, eleGID, dPI, ddPII);
 
   const double detFe = FeM.Determinant();
@@ -340,28 +343,28 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
 
   if (d_cauchyndir_dF)
   {
-    static LINALG::Matrix<6, 1> d_I1_dbe(true);
+    static CORE::LINALG::Matrix<6, 1> d_I1_dbe(true);
     d_I1_dbe = idV;
-    static LINALG::Matrix<6, 1> d_I2_dbe(true);
+    static CORE::LINALG::Matrix<6, 1> d_I2_dbe(true);
     d_I2_dbe.Update(prinv(0), idV, -1.0, beV_stress);
-    static LINALG::Matrix<6, 1> d_I3_dbe(true);
+    static CORE::LINALG::Matrix<6, 1> d_I3_dbe(true);
     d_I3_dbe.Update(prinv(2), ibeV_stress, 0.0);
 
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
-    static LINALG::Matrix<6, 9> d_be_dFe(true);
+    static CORE::LINALG::Matrix<6, 9> d_be_dFe(true);
     d_be_dFe.Clear();
     AddRightNonSymmetricHolzapfelProductStrainLike(d_be_dFe, idM, FeM, 1.0);
-    static LINALG::Matrix<9, 9> d_Fe_dF(true);
+    static CORE::LINALG::Matrix<9, 9> d_Fe_dF(true);
     d_Fe_dF.Clear();
     AddNonSymmetricProduct(1.0, idM, iFinM, d_Fe_dF);
-    static LINALG::Matrix<6, 9> d_be_dF(true);
+    static CORE::LINALG::Matrix<6, 9> d_be_dF(true);
     d_be_dF.Multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
 
     // calculation of \partial I_i / \partial F (Invariants of b_{el} w.r.t. deformation gradient)
-    static LINALG::Matrix<9, 1> d_I1_dF(true);
-    static LINALG::Matrix<9, 1> d_I2_dF(true);
-    static LINALG::Matrix<9, 1> d_I3_dF(true);
+    static CORE::LINALG::Matrix<9, 1> d_I1_dF(true);
+    static CORE::LINALG::Matrix<9, 1> d_I2_dF(true);
+    static CORE::LINALG::Matrix<9, 1> d_I3_dF(true);
     d_I1_dF.MultiplyTN(1.0, d_be_dF, d_I1_dbe, 0.0);
     d_I2_dF.MultiplyTN(1.0, d_be_dF, d_I2_dbe, 0.0);
     d_I3_dF.MultiplyTN(1.0, d_be_dF, d_I3_dbe, 0.0);
@@ -383,44 +386,44 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
 
     // next three updates add partial derivative of snt w.r.t. the deformation gradient F for
     // constant invariants first part is term arising from \partial Je^{-1} / \partial F
-    static LINALG::Matrix<3, 3> iFeM(true);
-    static LINALG::Matrix<3, 3> iFeTM(true);
+    static CORE::LINALG::Matrix<3, 3> iFeM(true);
+    static CORE::LINALG::Matrix<3, 3> iFeTM(true);
     iFeM.Invert(FeM);
     iFeTM.UpdateT(1.0, iFeM, 0.0);
-    static LINALG::Matrix<9, 1> iFeTV(true);
+    static CORE::LINALG::Matrix<9, 1> iFeTV(true);
     UTILS::VOIGT::Matrix3x3to9x1(iFeTM, iFeTV);
-    static LINALG::Matrix<1, 9> d_iJe_dFV(true);
+    static CORE::LINALG::Matrix<1, 9> d_iJe_dFV(true);
     d_iJe_dFV.MultiplyTN(1.0, iFeTV, d_Fe_dF, 0.0);
     d_cauchyndir_dF->UpdateT(-cauchy_n_dir, d_iJe_dFV, 1.0);
 
     // second part is term arising from \partial b_el * n * v / \partial F
-    static LINALG::Matrix<3, 3> FeMiFinTM(true);
+    static CORE::LINALG::Matrix<3, 3> FeMiFinTM(true);
     FeMiFinTM.MultiplyNT(1.0, FeM, iFinM, 0.0);
-    static LINALG::Matrix<3, 1> tempvec(true);
+    static CORE::LINALG::Matrix<3, 1> tempvec(true);
     tempvec.MultiplyTN(1.0, FeMiFinTM, n, 0.0);
-    static LINALG::Matrix<3, 3> d_bednddir_dF(true);
+    static CORE::LINALG::Matrix<3, 3> d_bednddir_dF(true);
     d_bednddir_dF.MultiplyNT(1.0, dir, tempvec, 0.0);
     // now reuse tempvec
     tempvec.MultiplyTN(1.0, FeMiFinTM, dir, 0.0);
     d_bednddir_dF.MultiplyNT(1.0, n, tempvec, 1.0);
-    static LINALG::Matrix<9, 1> d_bednddir_dFV(true);
+    static CORE::LINALG::Matrix<9, 1> d_bednddir_dFV(true);
     UTILS::VOIGT::Matrix3x3to9x1(d_bednddir_dF, d_bednddir_dFV);
     d_cauchyndir_dF->Update(prefac * dPI(0), d_bednddir_dFV, 1.0);
 
     // third part is term arising from \partial b_el^{-1} * n * v / \partial F
-    static LINALG::Matrix<3, 3> iFM(true);
+    static CORE::LINALG::Matrix<3, 3> iFM(true);
     iFM.Invert(defgrd);
-    static LINALG::Matrix<3, 1> tempvec2(true);
+    static CORE::LINALG::Matrix<3, 1> tempvec2(true);
     tempvec.Multiply(1.0, ibeM, dir, 0.0);
     tempvec2.Multiply(1.0, iFM, n, 0.0);
-    static LINALG::Matrix<3, 3> d_ibednddir_dFM(true);
+    static CORE::LINALG::Matrix<3, 3> d_ibednddir_dFM(true);
     d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 0.0);
     // now reuse tempvecs
     tempvec.Multiply(1.0, ibeM, n, 0.0);
     tempvec2.Multiply(1.0, iFM, dir, 0.0);
     d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
     d_ibednddir_dFM.Scale(-1.0);
-    static LINALG::Matrix<9, 1> d_ibednddir_dFV(true);
+    static CORE::LINALG::Matrix<9, 1> d_ibednddir_dFV(true);
     UTILS::VOIGT::Matrix3x3to9x1(d_ibednddir_dFM, d_ibednddir_dFV);
     d_cauchyndir_dF->Update(-prefac * prinv(2) * dPI(1), d_ibednddir_dFV, 1.0);
   }
@@ -429,7 +432,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivative
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
-    const LINALG::Matrix<3, 3>& defgrd, const double concentration, LINALG::Matrix<9, 1>* d_F_dx)
+    const CORE::LINALG::Matrix<3, 3>& defgrd, const double concentration,
+    CORE::LINALG::Matrix<9, 1>* d_F_dx)
 {
   SetConcentrationGP(concentration);
 
@@ -440,20 +444,20 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
   const int num_contributions = inelastic_->NumInelasticDefGrad();
 
   // build inverse inelastic deformation gradient
-  static LINALG::Matrix<3, 3> iFinM(true);
+  static CORE::LINALG::Matrix<3, 3> iFinM(true);
   inelastic_->EvaluateInverseInelasticDefGrad(&defgrd, iFinM);
 
-  static LINALG::Matrix<3, 3> idM(true);
+  static CORE::LINALG::Matrix<3, 3> idM(true);
   for (int i = 0; i < 3; ++i) idM(i, i) = 1.0;
-  static LINALG::Matrix<3, 3> FeM(true);
+  static CORE::LINALG::Matrix<3, 3> FeM(true);
   FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
 
   // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
-  static LINALG::Matrix<9, 9> d_F_dFin(true);
+  static CORE::LINALG::Matrix<9, 9> d_F_dFin(true);
   d_F_dFin.Clear();
   AddNonSymmetricProduct(1.0, FeM, idM, d_F_dFin);
 
-  static LINALG::Matrix<9, 1> d_Fin_dx(true);
+  static CORE::LINALG::Matrix<9, 1> d_Fin_dx(true);
 
   // check number of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
@@ -470,10 +474,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 1>& iCinV,
-    const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<3, 1>& gamma,
-    const LINALG::Matrix<8, 1>& delta, const double detFin, LINALG::Matrix<6, 1>& stress,
-    LINALG::Matrix<6, 6>& cmatiso) const
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 1>& iCinV,
+    const CORE::LINALG::Matrix<6, 1>& iCinCiCinV, const CORE::LINALG::Matrix<3, 1>& gamma,
+    const CORE::LINALG::Matrix<8, 1>& delta, const double detFin,
+    CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmatiso) const
 {
   // clear variables
   stress.Clear();
@@ -503,34 +507,35 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinM,
-    LINALG::Matrix<6, 1>& iCinV, LINALG::Matrix<6, 1>& iCinCiCinV, LINALG::Matrix<6, 1>& iCV,
-    LINALG::Matrix<3, 3>& iCinCM, LINALG::Matrix<3, 3>& iFinCeM, LINALG::Matrix<9, 1>& CiFin9x1,
-    LINALG::Matrix<9, 1>& CiFinCe9x1, LINALG::Matrix<9, 1>& CiFiniCe9x1,
-    LINALG::Matrix<3, 1>& prinv) const
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinM,
+    CORE::LINALG::Matrix<6, 1>& iCinV, CORE::LINALG::Matrix<6, 1>& iCinCiCinV,
+    CORE::LINALG::Matrix<6, 1>& iCV, CORE::LINALG::Matrix<3, 3>& iCinCM,
+    CORE::LINALG::Matrix<3, 3>& iFinCeM, CORE::LINALG::Matrix<9, 1>& CiFin9x1,
+    CORE::LINALG::Matrix<9, 1>& CiFinCe9x1, CORE::LINALG::Matrix<9, 1>& CiFiniCe9x1,
+    CORE::LINALG::Matrix<3, 1>& prinv) const
 {
   // inverse inelastic right Cauchy-Green
-  static LINALG::Matrix<3, 3> iCinM(true);
+  static CORE::LINALG::Matrix<3, 3> iCinM(true);
   iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
   UTILS::VOIGT::Stresses::MatrixToVector(iCinM, iCinV);
 
   // inverse right Cauchy-Green
-  static LINALG::Matrix<3, 3> iCM(true);
-  static LINALG::Matrix<3, 3> CM(true);
+  static CORE::LINALG::Matrix<3, 3> iCM(true);
+  static CORE::LINALG::Matrix<3, 3> CM(true);
   CM.MultiplyTN(1.0, *defgrad, *defgrad, 0.0);
   iCM.Invert(CM);
   UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
-  static LINALG::Matrix<3, 3> tmp(true);
-  static LINALG::Matrix<3, 3> iCinCiCinM;
+  static CORE::LINALG::Matrix<3, 3> tmp(true);
+  static CORE::LINALG::Matrix<3, 3> iCinCiCinM;
   MAT::EvaluateiCinCiCin(CM, iCinM, iCinCiCinM);
   UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCinM, iCinCiCinV);
 
   // elastic right Cauchy-Green in strain-like Voigt notation.
-  static LINALG::Matrix<3, 3> CeM(true);
+  static CORE::LINALG::Matrix<3, 3> CeM(true);
   MAT::EvaluateCe(*defgrad, iFinM, CeM);
-  static LINALG::Matrix<6, 1> CeV_strain(true);
+  static CORE::LINALG::Matrix<6, 1> CeV_strain(true);
   UTILS::VOIGT::Strains::MatrixToVector(CeM, CeV_strain);
 
   // principal invariants of elastic right Cauchy-Green strain
@@ -543,19 +548,19 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   iFinCeM.MultiplyNN(1.0, iFinM, CeM, 0.0);
 
   // C * F_{in}^{-1}
-  static LINALG::Matrix<3, 3> CiFinM(true);
+  static CORE::LINALG::Matrix<3, 3> CiFinM(true);
   CiFinM.MultiplyNN(1.0, CM, iFinM, 0.0);
   UTILS::VOIGT::Matrix3x3to9x1(CiFinM, CiFin9x1);
 
   // C * F_{in}^{-1} * C_e
-  static LINALG::Matrix<3, 3> CiFinCeM(true);
+  static CORE::LINALG::Matrix<3, 3> CiFinCeM(true);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFinCeM.MultiplyNN(1.0, tmp, CeM, 0.0);
   UTILS::VOIGT::Matrix3x3to9x1(CiFinCeM, CiFinCe9x1);
 
   // C * F_{in}^{-1} * C_e^{-1}
-  static LINALG::Matrix<3, 3> CiFiniCeM(true);
-  static LINALG::Matrix<3, 3> iCeM(true);
+  static CORE::LINALG::Matrix<3, 3> CiFiniCeM(true);
+  static CORE::LINALG::Matrix<3, 3> iCeM(true);
   iCeM.Invert(CeM);
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
@@ -565,8 +570,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
-    const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID, LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII) const
+    const CORE::LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID,
+    CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII) const
 {
   // clear variables
   dPI.Clear();
@@ -582,19 +587,20 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(const LINALG::Matrix<3, 1>& gamma,
-    const LINALG::Matrix<8, 1>& delta, const LINALG::Matrix<3, 3>& iFinM,
-    const LINALG::Matrix<3, 3>& iCinCM, const LINALG::Matrix<6, 1>& iCinV,
-    const LINALG::Matrix<9, 1>& CiFin9x1, const LINALG::Matrix<9, 1>& CiFinCe9x1,
-    const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<9, 1>& CiFiniCe9x1,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<3, 3>& iFinCeM, const double detFin,
-    LINALG::Matrix<6, 9>& dSdiFin) const
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
+    const CORE::LINALG::Matrix<3, 1>& gamma, const CORE::LINALG::Matrix<8, 1>& delta,
+    const CORE::LINALG::Matrix<3, 3>& iFinM, const CORE::LINALG::Matrix<3, 3>& iCinCM,
+    const CORE::LINALG::Matrix<6, 1>& iCinV, const CORE::LINALG::Matrix<9, 1>& CiFin9x1,
+    const CORE::LINALG::Matrix<9, 1>& CiFinCe9x1, const CORE::LINALG::Matrix<6, 1>& iCinCiCinV,
+    const CORE::LINALG::Matrix<9, 1>& CiFiniCe9x1, const CORE::LINALG::Matrix<6, 1>& iCV,
+    const CORE::LINALG::Matrix<3, 3>& iFinCeM, const double detFin,
+    CORE::LINALG::Matrix<6, 9>& dSdiFin) const
 {
   // clear variable
   dSdiFin.Clear();
 
   // calculate identity tensor
-  static LINALG::Matrix<3, 3> id(true);
+  static CORE::LINALG::Matrix<3, 3> id(true);
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
   // derivative of second Piola Kirchhoff stresses w.r.t. inverse growth deformation gradient
@@ -617,15 +623,15 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(const LINALG::M
   // (contribution from det(Fin))
 
   // dS/d(det(Fin))
-  LINALG::Matrix<6, 1> dSddetFin(true);
+  CORE::LINALG::Matrix<6, 1> dSddetFin(true);
   dSddetFin.Update(gamma(0), iCinV, 0.0);
   dSddetFin.Update(gamma(1), iCinCiCinV, 1.0);
   dSddetFin.Update(gamma(2), iCV, 1.0);
 
   // d(det(Fin))/diFin
-  LINALG::Matrix<9, 1> ddetFindiFinV(true);
-  LINALG::Matrix<3, 3> ddetFindiFinM(true);
-  LINALG::Matrix<3, 3> FinM(true);
+  CORE::LINALG::Matrix<9, 1> ddetFindiFinV(true);
+  CORE::LINALG::Matrix<3, 3> ddetFindiFinM(true);
+  CORE::LINALG::Matrix<3, 3> FinM(true);
   FinM.Invert(iFinM);
   ddetFindiFinM.UpdateT((-1.0) * detFin, FinM);
   UTILS::VOIGT::Matrix3x3to9x1(ddetFindiFinM, ddetFindiFinV);
@@ -637,8 +643,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(const LINALG::M
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<6, 1>& iCV,
-    const LINALG::Matrix<6, 9>& dSdiFin, LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 1>& iCV,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFin, CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
   // clear variable
   cmatadd.Clear();
@@ -664,17 +670,17 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
     // performed by nonsymmetric product \Pi_(k=num_contributions_part)^(j+1) iFin_k (x)
     // \Pi_(k=j-1)^(0) iFin_k, where (x) denots the nonsymmetric product and \Pi is the
     // multiplication operator.
-    static LINALG::Matrix<6, 9> dSdiFinj(true);
-    static LINALG::Matrix<9, 9> diFindiFinj(true);
-    static LINALG::Matrix<3, 3> id(true);
+    static CORE::LINALG::Matrix<6, 9> dSdiFinj(true);
+    static CORE::LINALG::Matrix<9, 9> diFindiFinj(true);
+    static CORE::LINALG::Matrix<3, 3> id(true);
     for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
     // product of all iFinj, except for the one, that is currently evaluated. In case of inner
     // (neither first or last) we have two products
-    static LINALG::Matrix<3, 3> producta(true);
-    static LINALG::Matrix<3, 3> productb(true);
-    static LINALG::Matrix<3, 3> producta_temp(true);
-    static LINALG::Matrix<3, 3> productb_temp(true);
+    static CORE::LINALG::Matrix<3, 3> producta(true);
+    static CORE::LINALG::Matrix<3, 3> productb(true);
+    static CORE::LINALG::Matrix<3, 3> producta_temp(true);
+    static CORE::LINALG::Matrix<3, 3> productb_temp(true);
 
     for (int i = 0; i < num_contributions; ++i)
     {
@@ -735,8 +741,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Update()
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::InelasticSource source,
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<6, 9>& dSdiFin,
-    LINALG::Matrix<6, 1>& dstressdx)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<6, 9>& dSdiFin,
+    CORE::LINALG::Matrix<6, 1>& dstressdx)
 {
   // clear variable
   dstressdx.Clear();
@@ -764,17 +770,17 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
     // performed by nonsymmetric product \Pi_(k=num_contributions_part)^(j+1) iFin_k (x)
     // \Pi_(k=j-1)^(0) iFin_k, where (x) denots the nonsymmetric product and \Pi is the
     // multiplication operator.
-    static LINALG::Matrix<6, 9> dSdiFinj(true);
-    static LINALG::Matrix<9, 9> diFindiFinj(true);
-    static LINALG::Matrix<3, 3> id(true);
+    static CORE::LINALG::Matrix<6, 9> dSdiFinj(true);
+    static CORE::LINALG::Matrix<9, 9> diFindiFinj(true);
+    static CORE::LINALG::Matrix<3, 3> id(true);
     for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
     // product of all iFinj, except for the one, that is currently evaluated. In case of inner
     // (neither first or last) we have two products
-    static LINALG::Matrix<3, 3> producta(true);
-    static LINALG::Matrix<3, 3> productb(true);
-    static LINALG::Matrix<3, 3> producta_temp(true);
-    static LINALG::Matrix<3, 3> productb_temp(true);
+    static CORE::LINALG::Matrix<3, 3> producta(true);
+    static CORE::LINALG::Matrix<3, 3> productb(true);
+    static CORE::LINALG::Matrix<3, 3> producta_temp(true);
+    static CORE::LINALG::Matrix<3, 3> productb_temp(true);
 
     for (int i = 0; i < num_contributions; ++i)
     {
@@ -881,11 +887,11 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // temporary variables
-  static LINALG::Matrix<3, 3> iFinp(true);
-  static LINALG::Matrix<3, 3> iFin_init_store(true);
+  static CORE::LINALG::Matrix<3, 3> iFinp(true);
+  static CORE::LINALG::Matrix<3, 3> iFin_init_store(true);
 
   // clear variables
   iFinM.Clear();

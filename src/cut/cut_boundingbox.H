@@ -91,7 +91,7 @@ namespace CORE::GEO
 
       /*! \brief If necessary make the boundingbox larger to include
        *  this point as one of the corners of the box */
-      void AddPoint(const LINALG::Matrix<3, 1>& p) { AddPoint(p.A()); }
+      void AddPoint(const CORE::LINALG::Matrix<3, 1>& p) { AddPoint(p.A()); }
 
       /*! \brief If necessary make the boundingbox larger to include
        *  all these nodes as one of the corners of the box */
@@ -124,7 +124,7 @@ namespace CORE::GEO
       void CornerPoint(int i, double* x);
 
       /*! \brief Get the boundingbox */
-      const LINALG::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
+      const CORE::LINALG::Matrix<3, 2>& GetBoundingVolume() const { return box_; }
 
       /// Compute and return the diagonal length of the BoundingBox
       double Diagonal()
@@ -138,7 +138,7 @@ namespace CORE::GEO
           const double& omax) const;
 
       bool empty_;
-      LINALG::Matrix<3, 2> box_;
+      CORE::LINALG::Matrix<3, 2> box_;
     };  // class BoundingBox
 
     /*--------------------------------------------------------------------------*/

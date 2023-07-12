@@ -67,9 +67,11 @@ namespace BEAMINTERACTION
        */
       void EvaluateForceStiff(const DRT::Discretization& discretization1,
           const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseOperator> cff,
-          Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
-          Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
+          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& cfb,
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbf,
+          Teuchos::RCP<const Epetra_Vector> fluid_vel,
           Teuchos::RCP<const Epetra_Vector> beam_vel) override;
 
      protected:

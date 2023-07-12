@@ -18,10 +18,10 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map)
 {
-  std::vector<Teuchos::RCP<LINALG::SparseOperator>> systemmatrices(2, Teuchos::null);
+  std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>> systemmatrices(2, Teuchos::null);
   std::vector<Teuchos::RCP<Epetra_Vector>> systemvectors(3, Teuchos::null);
 
   systemmatrices[0] = systemmatrix;
@@ -33,7 +33,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-    std::vector<Teuchos::RCP<LINALG::SparseOperator>>& systemmatrices,
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Epetra_Vector>>& systemvectors, const Epetra_Map* col_ele_map)
 {
   dsassert(systemmatrices.size() <= 2,

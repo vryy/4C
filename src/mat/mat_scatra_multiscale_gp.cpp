@@ -80,11 +80,11 @@ void MAT::ScatraMultiScaleGP::Init()
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis(microdisname.str());
 
   // instantiate and initialize micro-scale state vectors
-  phin_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
-  phinp_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
-  phidtn_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
-  phidtnp_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
-  hist_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
+  phin_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  phinp_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  phidtn_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  phidtnp_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  hist_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
 
   // set up micro-scale time integrator for micro-scale problem if not already done
   if (microdisnum_microtimint_map_.find(microdisnum_) == microdisnum_microtimint_map_.end() or
@@ -190,9 +190,9 @@ void MAT::ScatraMultiScaleGP::Init()
     }
 
     // create solver
-    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
-        new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
-            microdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
+        DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber), microdis->Comm(),
+        DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     // provide solver with null space information if necessary
     microdis->ComputeNullSpaceIfNecessary(solver->Params());

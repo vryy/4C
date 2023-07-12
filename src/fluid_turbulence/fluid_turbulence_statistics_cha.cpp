@@ -202,15 +202,15 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  meanvelnp_ = LINALG::CreateVector(*dofrowmap, true);
+  meanvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // this vector is only necessary for low-Mach-number flow or
   // turbulent passive scalar transport
-  meanscanp_ = LINALG::CreateVector(*dofrowmap, true);
+  meanscanp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  toggleu_ = LINALG::CreateVector(*dofrowmap, true);
-  togglev_ = LINALG::CreateVector(*dofrowmap, true);
-  togglew_ = LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = LINALG::CreateVector(*dofrowmap, true);
+  toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // ---------------------------------------------------------------------
   // compute all planes for sampling
@@ -728,7 +728,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   // arrays for point based averaging
   // --------------------------------
 
-  pointsquaredvelnp_ = LINALG::CreateVector(*dofrowmap, true);
+  pointsquaredvelnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // first order moments
   pointsumu_ = Teuchos::rcp(new std::vector<double>);

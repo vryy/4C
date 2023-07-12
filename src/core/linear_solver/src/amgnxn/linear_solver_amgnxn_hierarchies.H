@@ -42,15 +42,15 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     Teuchos::RCP<AMGNXN::BlockedMatrix> GetBlockMatrix();
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> GetH(int block);
 
-    Teuchos::RCP<LINALG::SparseMatrix> GetA(int block, int level);
-    Teuchos::RCP<LINALG::SparseMatrix> GetP(int block, int level);
-    Teuchos::RCP<LINALG::SparseMatrix> GetR(int block, int level);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetA(int block, int level);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetP(int block, int level);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetR(int block, int level);
     Teuchos::RCP<AMGNXN::MueluSmootherWrapper> GetSPre(int block, int level);
     Teuchos::RCP<AMGNXN::MueluSmootherWrapper> GetSPos(int block, int level);
 
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> GetA(int block);
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> GetP(int block);
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> GetR(int block);
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetA(int block);
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetP(int block);
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> GetR(int block);
     std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>> GetSPre(int block);
     std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>> GetSPos(int block);
 
@@ -69,9 +69,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     int NumLevelMin_;
     int NumLevelAMG_;
     std::vector<Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>> H_block_;
-    std::vector<std::vector<Teuchos::RCP<LINALG::SparseMatrix>>> A_block_level_;
-    std::vector<std::vector<Teuchos::RCP<LINALG::SparseMatrix>>> P_block_level_;
-    std::vector<std::vector<Teuchos::RCP<LINALG::SparseMatrix>>> R_block_level_;
+    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> A_block_level_;
+    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> P_block_level_;
+    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>>> R_block_level_;
     std::vector<std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>>> SPre_block_level_;
     std::vector<std::vector<Teuchos::RCP<AMGNXN::MueluSmootherWrapper>>> SPos_block_level_;
     std::string verbosity_;

@@ -32,7 +32,8 @@
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
-    const Teuchos::RCP<LINALG::Solver> &solver, const Teuchos::RCP<Teuchos::ParameterList> &params,
+    const Teuchos::RCP<CORE::LINALG::Solver> &solver,
+    const Teuchos::RCP<Teuchos::ParameterList> &params,
     const Teuchos::RCP<Teuchos::ParameterList> &extraparams,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
@@ -84,8 +85,8 @@ void SCATRA::TimIntHDG::Setup()
 
   // HDG vectors passed to the element
   const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
-  intphinp_ = LINALG::CreateVector(*intdofrowmap, true);
-  intphin_ = LINALG::CreateVector(*intdofrowmap, true);
+  intphinp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
+  intphin_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
   // write number of degrees of freedom for hdg and interior variables to screen output
   if (discret_->Comm().MyPID() == 0)
@@ -132,10 +133,10 @@ void SCATRA::TimIntHDG::Setup()
   SCATRA::TimIntGenAlpha::Setup();
 
   // create vector for concentration at nodes for output
-  interpolatedPhinp_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  interpolatedPhinp_ = CORE::LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
   // vector to store the elementdegree at each time step
-  elementdegree_ = LINALG::CreateVector(*(discret_->ElementRowMap()), true);
+  elementdegree_ = CORE::LINALG::CreateVector(*(discret_->ElementRowMap()), true);
 }
 
 
@@ -467,7 +468,7 @@ void SCATRA::TimIntHDG::ReadRestart(const int step, Teuchos::RCP<IO::InputContro
   increment_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   neumann_loads_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
 
   // reset the state vectors
   intphinp_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));
@@ -688,12 +689,12 @@ void SCATRA::TimIntHDG::FDCheck()
   const Epetra_Map *dofrowmap = discret_->DofRowMap(0);
   const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
 
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, systemmatrix2;
+  Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1, systemmatrix2;
   Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
-  systemvector1 = LINALG::CreateVector(*dofrowmap, true);
+  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  systemvector1 = CORE::LINALG::CreateVector(*dofrowmap, true);
   DRT::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
 
@@ -705,7 +706,7 @@ void SCATRA::TimIntHDG::FDCheck()
   // afterwards we need to calculate also the interior vectors with the state vector with
   // perturbation without influence for this update
   Teuchos::RCP<Epetra_Vector> intphitemp;
-  intphitemp = LINALG::CreateVector(*intdofrowmap, true);
+  intphitemp = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
   strategy.Zero();
 
@@ -741,14 +742,14 @@ void SCATRA::TimIntHDG::FDCheck()
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmatcopy = Teuchos::null;
-  sysmatcopy =
-      (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(systemmatrix1))))
-          ->EpetraMatrix();
+  sysmatcopy = (new CORE::LINALG::SparseMatrix(
+                    *(Teuchos::rcp_static_cast<CORE::LINALG::SparseMatrix>(systemmatrix1))))
+                   ->EpetraMatrix();
   sysmatcopy->FillComplete();
 
   // make a copy of system right-hand side vector
   Teuchos::RCP<Epetra_Vector> residualVec = Teuchos::rcp(new Epetra_Vector(*systemvector1));
-  Teuchos::RCP<Epetra_Vector> fdvec = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> fdvec = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
   {
@@ -1002,11 +1003,11 @@ void SCATRA::TimIntHDG::CalcMatInitial()
   discret_->SetState(nds_intvar_, "intphin", intphin_);
   discret_->SetState(nds_intvar_, "intphinp", intphinp_);
 
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, systemmatrix2;
+  Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1, systemmatrix2;
   Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  systemmatrix1 = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
   DRT::AssembleStrategy strategy(
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
@@ -1200,18 +1201,18 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
-  Teuchos::RCP<Epetra_Vector> phinp_old = LINALG::CreateVector(*facedofs_old, true);
-  LINALG::Export(*phinp_, *phinp_old);
+  Teuchos::RCP<Epetra_Vector> phinp_old = CORE::LINALG::CreateVector(*facedofs_old, true);
+  CORE::LINALG::Export(*phinp_, *phinp_old);
 
-  Teuchos::RCP<Epetra_Vector> intphinp_old = LINALG::CreateVector(*eledofs_old, true);
-  LINALG::Export(*intphinp_, *intphinp_old);
+  Teuchos::RCP<Epetra_Vector> intphinp_old = CORE::LINALG::CreateVector(*eledofs_old, true);
+  CORE::LINALG::Export(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
   residual_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   increment_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   neumann_loads_.reset(new Epetra_Vector(*(discret_->DofRowMap())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
 
   // reset the state vectors
   intphinp_.reset(new Epetra_Vector(*(discret_->DofRowMap(nds_intvar_)), true));

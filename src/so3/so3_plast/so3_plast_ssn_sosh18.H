@@ -168,26 +168,28 @@ namespace DRT
       void nln_stiffmass(std::vector<double>& disp,  // current displacements
           std::vector<double>& vel,                  // current velocities
           std::vector<double>& temp,                 // current temperatures
-          LINALG::Matrix<numdofperelement_, numdofperelement_>*
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
-          LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
-          LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
-          LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
-          LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
-          Teuchos::ParameterList& params,                   // algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,            // stress output option
-          const INPAR::STR::StrainType iostrain             // strain output option
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+              massmatrix,                                         // element mass matrix
+          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
+          Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,  // stress output option
+          const INPAR::STR::StrainType iostrain   // strain output option
           ) override;
 
       //! don't want sosh18 nlnstiffmass
-      void nlnstiffmass(std::vector<int>& lm,                       ///< location matrix
-          std::vector<double>& disp,                                ///< current displacements
-          std::vector<double>& residual,                            ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,           ///< current displacements
+          std::vector<double>& residual,       ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option

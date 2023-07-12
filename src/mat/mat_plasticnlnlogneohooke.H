@@ -200,14 +200,15 @@ namespace MAT
     virtual void Update();
 
     //! evaluate material law
-    virtual void Evaluate(
-        const LINALG::Matrix<3, 3>* defgrd,    //!< input deformation gradient for multiplicative sp
-        const LINALG::Matrix<6, 1>* glstrain,  //!< input Green-Lagrange strain (redundant with defo
-                                               //   but used for neo-hooke evaluation; maybe remove
-        Teuchos::ParameterList& params,        //!< input paramter list (e.g. Young's, ...)
-        LINALG::Matrix<6, 1>* stress,          //!< output (mandatory) second Piola-Kirchhoff stress
-        LINALG::Matrix<6, 6>* cmat,            //!< output (mandatory) material stiffness matrix
-        int gp,                                //!< Gazss point
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>*
+                              defgrd,  //!< input deformation gradient for multiplicative sp
+        const CORE::LINALG::Matrix<6, 1>*
+            glstrain,                        //!< input Green-Lagrange strain (redundant with defo
+                                             //   but used for neo-hooke evaluation; maybe remove
+        Teuchos::ParameterList& params,      //!< input paramter list (e.g. Young's, ...)
+        CORE::LINALG::Matrix<6, 1>* stress,  //!< output (mandatory) second Piola-Kirchhoff stress
+        CORE::LINALG::Matrix<6, 6>* cmat,    //!< output (mandatory) material stiffness matrix
+        int gp,                              //!< Gazss point
         int eleGID);
 
     //@}
@@ -217,9 +218,9 @@ namespace MAT
     MAT::PAR::PlasticNlnLogNeoHooke* params_;
 
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> invplrcglast_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> invplrcglast_;
     //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> invplrcgcurr_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> invplrcgcurr_;
 
     //! old (i.e. at t_n) accumulated palstic strain
     Teuchos::RCP<std::vector<double>> accplstrainlast_;

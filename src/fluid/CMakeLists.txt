@@ -12,7 +12,6 @@ set(_fluid_dependencies
     io
     levelset
     lib
-    linalg
     mat
     mortar
     nurbs_discret

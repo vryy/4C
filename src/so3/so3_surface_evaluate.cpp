@@ -124,8 +124,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   // element geometry update
   const int numnode = NumNode();
   const int numdf = NumDofPerNode(*Nodes()[0]);
-  LINALG::SerialDenseMatrix x(numnode, numdim);
-  LINALG::SerialDenseMatrix xc;
+  CORE::LINALG::SerialDenseMatrix x(numnode, numdim);
+  CORE::LINALG::SerialDenseMatrix xc;
   switch (config)
   {
     case config_material:
@@ -231,8 +231,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::SerialDenseVector funct(numnode);
-  LINALG::SerialDenseMatrix deriv(2, numnode);
+  CORE::LINALG::SerialDenseVector funct(numnode);
+  CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
@@ -257,7 +257,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     }
 
     // Stuff to get spatial Neumann
-    LINALG::SerialDenseMatrix gp_coord(1, numdim);
+    CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
 
     switch (ltype)
     {
@@ -272,9 +272,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
                 "considered.");
         }
 
-        LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+        CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
         dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
-        LINALG::SerialDenseMatrix metrictensor(2, 2);
+        CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
         metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
@@ -392,7 +392,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
         // get values for torque and coordinates of axis
         double torque_value = (*val)[0];
-        LINALG::Matrix<3, 1> axis(true);
+        CORE::LINALG::Matrix<3, 1> axis(true);
         axis(0) = (*val)[3];
         axis(1) = (*val)[4];
         axis(2) = (*val)[5];
@@ -402,7 +402,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
         SurfaceIntegration(normal, xc, deriv);
 
         // compute cross product of axis and (negative) normal
-        LINALG::Matrix<3, 1> crossprod(true);
+        CORE::LINALG::Matrix<3, 1> crossprod(true);
         crossprod(0) = -(axis(1) * normal[2] - axis(2) * normal[1]);
         crossprod(1) = -(axis(2) * normal[0] - axis(0) * normal[2]);
         crossprod(2) = -(axis(0) * normal[1] - axis(1) * normal[0]);
@@ -459,7 +459,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(std::vector<double>& n
   // note that the length of this normal is the area dA
 
   // compute dXYZ / drs
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
   if (dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0)) dserror("multiply failed");
 
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
@@ -476,7 +476,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA, std::vec
     const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
   if (dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0)) dserror("multiply failed");
 
   /* compute covariant metric tensor G for surface element
@@ -489,7 +489,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA, std::vec
   ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
   **        dr     dr            dr     ds            ds     ds
   */
-  LINALG::SerialDenseMatrix metrictensor(2, 2);
+  CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
   metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
@@ -696,13 +696,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         const int numnode = NumNode();
         const int numdf = 3;
-        LINALG::SerialDenseMatrix xc(numnode, numdf);
+        CORE::LINALG::SerialDenseMatrix xc(numnode, numdf);
         SpatialConfiguration(xc, mydisp);
 
         // integration of the displacements over the surface
         // allocate vector for shape functions and matrix for derivatives
-        LINALG::SerialDenseVector funct(numnode);
-        LINALG::SerialDenseMatrix deriv(2, numnode);
+        CORE::LINALG::SerialDenseVector funct(numnode);
+        CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
         /*----------------------------------------------------------------------*
           |               start loop over integration points                     |
@@ -757,7 +757,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
         std::vector<double> edispn(lm.size());
         DRT::UTILS::ExtractMyValues(*dispn, edispn, lm);
-        LINALG::SerialDenseMatrix xcn(numnode, numdf);
+        CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
         SpatialConfiguration(xcn, edispn);
 
         Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
@@ -767,8 +767,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         // integration of the displacements over the surface
         // allocate vector for shape functions and matrix for derivatives
-        LINALG::SerialDenseVector funct(numnode);
-        LINALG::SerialDenseMatrix deriv(2, numnode);
+        CORE::LINALG::SerialDenseVector funct(numnode);
+        CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
         // loop over integration points
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -785,7 +785,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
           double detA;
           SurfaceIntegration(detA, normal, xcn, deriv);
 
-          LINALG::SerialDenseVector tangent(3);
+          CORE::LINALG::SerialDenseVector tangent(3);
           if (aletype == INPAR::FSI::ALEprojection_rot_z ||
               aletype == INPAR::FSI::ALEprojection_rot_zsphere)
           {
@@ -850,7 +850,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       if (dispn == Teuchos::null) dserror("Cannot get state vector 'displacementnp");
       std::vector<double> edispn(lm.size());
       DRT::UTILS::ExtractMyValues(*dispn, edispn, lm);
-      LINALG::SerialDenseMatrix xcn(numnode, numdf);
+      CORE::LINALG::SerialDenseMatrix xcn(numnode, numdf);
       SpatialConfiguration(xcn, edispn);
 
       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
@@ -860,8 +860,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       // integration of the displacements over the surface
       // allocate vector for shape functions and matrix for derivatives
-      LINALG::SerialDenseVector funct(numnode);
-      LINALG::SerialDenseMatrix deriv(2, numnode);
+      CORE::LINALG::SerialDenseVector funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
       std::vector<double> nodalrot(numnode);
       for (int node = 0; node < numnode; node++)
@@ -873,7 +873,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         SurfaceIntegration(normal, xcn, deriv);
 
-        LINALG::SerialDenseVector tangent(3);
+        CORE::LINALG::SerialDenseVector tangent(3);
         if (aletype == INPAR::FSI::ALEprojection_rot_z ||
             aletype == INPAR::FSI::ALEprojection_rot_zsphere)
         {
@@ -932,7 +932,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
         // call submethod for volume evaluation and store rseult in third systemvector
         double volumeele = ComputeConstrVols(xscurr, NumNode());
@@ -948,7 +948,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
@@ -1011,12 +1011,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         double V = params.get<double>("V0", 0.0);
         double dV = 0.0;
         const int numnode = NumNode();
-        LINALG::SerialDenseMatrix x(numnode, 3);
+        CORE::LINALG::SerialDenseMatrix x(numnode, 3);
         MaterialConfiguration(x);
 
         // allocate vector for shape functions and matrix for derivatives
-        LINALG::SerialDenseVector funct(numnode);
-        LINALG::SerialDenseMatrix deriv(2, numnode);
+        CORE::LINALG::SerialDenseVector funct(numnode);
+        CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
         /*----------------------------------------------------------------------*
              |               start loop over integration points                     |
@@ -1087,7 +1087,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // element geometry update
 
       const int numnode = NumNode();
-      LINALG::SerialDenseMatrix x(numnode, 3);
+      CORE::LINALG::SerialDenseMatrix x(numnode, 3);
 
       Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
       if (disn == Teuchos::null) dserror("Cannot get state vector 'new displacement'");
@@ -1162,7 +1162,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
 
         Teuchos::RCP<DRT::Condition> condition =
@@ -1196,7 +1196,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         double areaele = 0.0;
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
         // allocate matrix for derivatives of shape functions
-        LINALG::SerialDenseMatrix deriv(2, NumNode());
+        CORE::LINALG::SerialDenseMatrix deriv(2, NumNode());
 
         // Compute area
         for (int gp = 0; gp < intpoints.nquad; gp++)
@@ -1227,7 +1227,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
       // initialize variables
       double elearea;
@@ -1250,7 +1250,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
       // initialize variables
       double elearea;
@@ -1273,10 +1273,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_area:
     {
       const int numnode = NumNode();
-      LINALG::SerialDenseMatrix x(numnode, 3);
+      CORE::LINALG::SerialDenseMatrix x(numnode, 3);
       MaterialConfiguration(x);
-      // LINALG::SerialDenseVector  funct(numnode);
-      LINALG::SerialDenseMatrix deriv(2, numnode);
+      // CORE::LINALG::SerialDenseVector  funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
       double a = 0.0;
       for (int gp = 0; gp < intpoints.nquad; gp++)
@@ -1320,15 +1320,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const int numnode = NumNode();
       const int numdim = 3;
 
-      LINALG::SerialDenseMatrix x(numnode, 3);
+      CORE::LINALG::SerialDenseMatrix x(numnode, 3);
       SpatialConfiguration(x, mydisp);
 
       const double e0 = elevector2(0);
       const double e1 = elevector2(1);
 
       // allocate vector for shape functions and matrix for derivatives
-      LINALG::SerialDenseVector funct(numnode);
-      LINALG::SerialDenseMatrix deriv(2, numnode);
+      CORE::LINALG::SerialDenseVector funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
       // get shape functions and derivatives in the plane of the element
       CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
@@ -1404,11 +1404,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const int numdofpernode = NumDofPerNode(*(Nodes()[0]));
       const int globdim = globalproblem->NDim();
 
-      LINALG::Matrix<2, 4> deriv;
-      LINALG::Matrix<1, 4> funct;
-      LINALG::Matrix<1, 8> parent_funct;
-      LINALG::Matrix<3, 8> parent_deriv;
-      LINALG::Matrix<3, 8> parent_deriv_notrafo;
+      CORE::LINALG::Matrix<2, 4> deriv;
+      CORE::LINALG::Matrix<1, 4> funct;
+      CORE::LINALG::Matrix<1, 8> parent_funct;
+      CORE::LINALG::Matrix<3, 8> parent_deriv;
+      CORE::LINALG::Matrix<3, 8> parent_deriv_notrafo;
 
       // get parent location matrix
       Element::LocationArray parent_la(immerseddis->NumDofSets());
@@ -1425,7 +1425,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*dispnp, parenteledisp, parent_la[0].lm_);
 
       // geometry (surface ele)
-      LINALG::Matrix<3, 4> xrefe;  // material coord. of element
+      CORE::LINALG::Matrix<3, 4> xrefe;  // material coord. of element
 
       DRT::Node** nodes = this->Nodes();
       for (int i = 0; i < nen; ++i)
@@ -1437,8 +1437,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       }
 
       // update element geometry (parent ele)
-      LINALG::Matrix<3, 8> parent_xrefe;  // material coord. of element
-      LINALG::Matrix<3, 8> parent_xcurr;  // current  coord. of element
+      CORE::LINALG::Matrix<3, 8> parent_xrefe;  // material coord. of element
+      CORE::LINALG::Matrix<3, 8> parent_xcurr;  // current  coord. of element
 
       nodes = this->ParentElement()->Nodes();
       for (int i = 0; i < parent_nen; ++i)
@@ -1454,7 +1454,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       }
 
       // get coordinates of gauss points w.r.t. local parent coordinate system
-      LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad, globdim);
+      CORE::LINALG::SerialDenseMatrix parent_xi(intpoints.IP().nquad, globdim);
       Epetra_SerialDenseMatrix derivtrafo(3, 3);
 
       CORE::DRT::UTILS::BoundaryGPToParentGP<3>(parent_xi, derivtrafo, intpoints,
@@ -1507,13 +1507,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         ////////////////////////////////////////////////////
         // calc unitnormal N in material configuration
         ///////////////////////////////////////////////////
-        LINALG::Matrix<3, 1> unitnormal;
+        CORE::LINALG::Matrix<3, 1> unitnormal;
         std::vector<double> normal(globdim);
 
         // note that the length of this normal is the area dA
 
         // compute dXYZ / drs
-        LINALG::Matrix<2, 3> dxyzdrs;
+        CORE::LINALG::Matrix<2, 3> dxyzdrs;
         dxyzdrs.MultiplyNT(
             deriv, xrefe);  // to calculate unitnormal in current config. argument must be xcurr
 
@@ -1521,7 +1521,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
         normal[2] = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(0, 1) * dxyzdrs(1, 0);
 
-        LINALG::Matrix<2, 2> metrictensor;
+        CORE::LINALG::Matrix<2, 2> metrictensor;
         metrictensor.MultiplyNT(dxyzdrs, dxyzdrs);
         double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
@@ -1545,7 +1545,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         /////////////////////////////////////////////////////////////////////
         // extract cauchy stress tensor from result vector of interpolation
         /////////////////////////////////////////////////////////////////////
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
 
         cauchystress(0, 0) = interpolationresult[0];
         cauchystress(1, 1) = interpolationresult[1];
@@ -1575,14 +1575,14 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         */
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
-        LINALG::Matrix<3, 3> invJ(true);
-        LINALG::Matrix<3, 8> N_XYZ(true);
+        CORE::LINALG::Matrix<3, 3> invJ(true);
+        CORE::LINALG::Matrix<3, 8> N_XYZ(true);
         invJ.MultiplyNT(parent_deriv_notrafo, parent_xrefe);
         invJ.Invert();
         N_XYZ.Multiply(invJ, parent_deriv_notrafo);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-        LINALG::Matrix<3, 3> defgrd_inv;
+        CORE::LINALG::Matrix<3, 3> defgrd_inv;
         // deformation gradient
         defgrd_inv.MultiplyNT(parent_xcurr, N_XYZ);
         // Jacobian determinant
@@ -1590,8 +1590,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         // invert deformation gradient
         defgrd_inv.Invert();
 
-        LINALG::Matrix<3, 1> tempvec;
-        LINALG::Matrix<3, 3> tempmat;
+        CORE::LINALG::Matrix<3, 1> tempvec;
+        CORE::LINALG::Matrix<3, 3> tempmat;
         tempmat.MultiplyNT(cauchystress, defgrd_inv);
 
         //        //////////////////
@@ -1620,7 +1620,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         if (elevector2.RowDim() > 0)
         {
           // just pressure part of traction
-          LINALG::Matrix<3, 3> pressure_part;
+          CORE::LINALG::Matrix<3, 3> pressure_part;
           pressure_part(0, 0) = interpolationresult[6];
           pressure_part(1, 1) = interpolationresult[6];
           pressure_part(2, 2) = interpolationresult[6];
@@ -1736,7 +1736,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       const int numnode = NumNode();
 
       const int numdf = NumDofPerNode(*Nodes()[0]);
-      LINALG::SerialDenseMatrix x(numnode, numdim);
+      CORE::LINALG::SerialDenseMatrix x(numnode, numdim);
 
       std::vector<double> mydisp(lm.size());
       std::vector<double> myvelo(lm.size());
@@ -1837,8 +1837,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       }
 
       // allocate vector for shape functions and matrix for derivatives
-      LINALG::SerialDenseVector funct(numnode);
-      LINALG::SerialDenseMatrix deriv(2, numnode);
+      CORE::LINALG::SerialDenseVector funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
       /*----------------------------------------------------------------------*
       |               start loop over integration points                     |
@@ -1871,9 +1871,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
                 "Number of dimensions in Robin evaluation is 3. Further DoFs are not considered.");
         }
 
-        LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+        CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
         dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
-        LINALG::SerialDenseMatrix metrictensor(2, 2);
+        CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
         metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
@@ -2116,7 +2116,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
  * Compute Volume enclosed by surface.                          tk 10/07*
  * ---------------------------------------------------------------------*/
 double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
-    const LINALG::SerialDenseMatrix& xc, const int numnode)
+    const CORE::LINALG::SerialDenseMatrix& xc, const int numnode)
 {
   double V = 0.0;
 
@@ -2128,8 +2128,8 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
   {
     // split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
-    LINALG::SerialDenseMatrix ab = xc;
-    LINALG::SerialDenseVector c(numnode);
+    CORE::LINALG::SerialDenseMatrix ab = xc;
+    CORE::LINALG::SerialDenseVector c(numnode);
     for (int i = 0; i < numnode; i++)
     {
       ab(i, indc) = 0.0;   // project by z_i = 0.0
@@ -2144,8 +2144,8 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector funct(numnode);
-    LINALG::SerialDenseMatrix deriv(2, numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
@@ -2163,9 +2163,9 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th
       // column
-      LINALG::SerialDenseMatrix metrictensor(2, 3);
+      CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
-      // LINALG::SerialDenseMatrix metrictensor(2,2);
+      // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
@@ -2181,7 +2181,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
  * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& xc,
     const int numnode, const int ndof, double& V,
     const Teuchos::RCP<Epetra_SerialDenseVector>& Vdiff1,
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Vdiff2, const int minindex, const int maxindex)
@@ -2203,8 +2203,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
   {
     // split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
-    LINALG::SerialDenseMatrix ab = xc;
-    LINALG::SerialDenseVector c(numnode);
+    CORE::LINALG::SerialDenseMatrix ab = xc;
+    CORE::LINALG::SerialDenseVector c(numnode);
     for (int i = 0; i < numnode; i++)
     {
       ab(i, indc) = 0.0;   // project by z_i = 0.0
@@ -2219,8 +2219,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector funct(numnode);
-    LINALG::SerialDenseMatrix deriv(2, numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
@@ -2240,7 +2240,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd
       // column
-      LINALG::SerialDenseMatrix metrictensor(2, numdim);
+      CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
@@ -2302,7 +2302,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
  * Compute surface area and its first and second derivatives    lw 05/08*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,
+void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,
     const int numnode, const int ndof, double& A,
     const Teuchos::RCP<Epetra_SerialDenseVector>& Adiff,
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& Adiff2)
@@ -2318,8 +2318,8 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
   int ngp = intpoints.nquad;
 
   // allocate vector for shape functions and matrix for derivatives
-  LINALG::SerialDenseMatrix deriv(2, numnode);
-  LINALG::SerialDenseMatrix dxyzdrs(2, 3);
+  CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
+  CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
 
   /*----------------------------------------------------------------------*
    |               start loop over integration points                     |
@@ -2338,9 +2338,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     SurfaceIntegration(detA, normal, x, deriv);
     A += detA * intpoints.qwgt[gpid];
 
-    LINALG::SerialDenseMatrix ddet(3, ndof, true);
-    LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
-    LINALG::SerialDenseVector jacobi_deriv(ndof, true);
+    CORE::LINALG::SerialDenseMatrix ddet(3, ndof, true);
+    CORE::LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
+    CORE::LINALG::SerialDenseVector jacobi_deriv(ndof, true);
 
     dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
 
@@ -2444,7 +2444,7 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
   const int numnode = NumNode();
   const int numdim = 3;
 
-  LINALG::SerialDenseMatrix x(numnode, 3);
+  CORE::LINALG::SerialDenseMatrix x(numnode, 3);
   if (refconfig)
     MaterialConfiguration(x);
   else
@@ -2454,15 +2454,15 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
 
   for (int i = 0; i < numnode; ++i)
   {
-    LINALG::Matrix<3, 1> loc_coor;
+    CORE::LINALG::Matrix<3, 1> loc_coor;
     loc_coor = CORE::DRT::UTILS::getNodeCoordinates(i, Shape());
 
     const double e0 = loc_coor(0);
     const double e1 = loc_coor(1);
 
     // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector funct(numnode);
-    LINALG::SerialDenseMatrix deriv(2, numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
     // get shape functions and derivatives in the plane of the element
     CORE::DRT::UTILS::shape_function_2D(funct, e0, e1, Shape());
@@ -2550,13 +2550,13 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
   for (int gp = 0; gp < ngp; ++gp)
   {
     // get shape functions and derivatives in the plane of the element
-    // LINALG::SerialDenseVector  funct(nenparent);
-    LINALG::SerialDenseMatrix deriv(3, nenparent);
+    // CORE::LINALG::SerialDenseVector  funct(nenparent);
+    CORE::LINALG::SerialDenseMatrix deriv(3, nenparent);
     // CORE::DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
     CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, pqxg(gp, 0), pqxg(gp, 1), pqxg(gp, 2), parentele->Shape());
 
-    LINALG::SerialDenseVector funct2D(numnode);
+    CORE::LINALG::SerialDenseVector funct2D(numnode);
     CORE::DRT::UTILS::shape_function_2D(
         funct2D, intpoints.qxg[gp][0], intpoints.qxg[gp][1], Shape());
 
@@ -2565,9 +2565,9 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     //! transposed jacobian "dx/ds"
-    LINALG::SerialDenseMatrix xjm(numdim, numdim);
+    CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
     xjm.Multiply('N', 'T', 1.0, deriv, xcurr, 0.0);
-    LINALG::SerialDenseMatrix Jmat(numdim, numdim);
+    CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
     Jmat.Multiply('N', 'T', 1.0, deriv, xrefe, 0.0);
 
     double det = 0.0;

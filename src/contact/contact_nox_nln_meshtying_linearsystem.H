@@ -36,10 +36,11 @@ namespace NOX
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
             const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
             const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
             const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector,
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Epetra::Vector& cloneVector,
             const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
 
         //! Constructor without scaling object
@@ -48,22 +49,24 @@ namespace NOX
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
             const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-            const Teuchos::RCP<LINALG::SparseOperator>& J,
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
             const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
             const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-            const Teuchos::RCP<LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector);
+            const Teuchos::RCP<CORE::LINALG::SparseOperator>& M,
+            const NOX::Epetra::Vector& cloneVector);
 
         //! Destructor.
         virtual ~LinearSystem(){};
 
         //! Sets the options of the underlying solver
         virtual void SetSolverOptions(Teuchos::ParameterList& p,
-            Teuchos::RCP<LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType);
+            Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
+            const NOX::NLN::SolutionType& solverType);
 
         //! Returns a pointer to linear solver, which has to be used
         virtual NOX::NLN::SolutionType GetActiveLinSolver(
-            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
-            Teuchos::RCP<LINALG::Solver>& currSolver);
+            const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+            Teuchos::RCP<CORE::LINALG::Solver>& currSolver);
 
        private:
         //! throws an error message

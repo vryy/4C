@@ -17,8 +17,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params, bool isale,
-    bool dirichletcond)
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    bool isale, bool dirichletcond)
     : FluidFSI(xfluidfluid, embfluid->Discretization(), solver, params,
           embfluid->Discretization()->Writer(), isale, dirichletcond)
 {
@@ -147,14 +147,14 @@ void ADAPTER::FluidFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vec
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::BlockSystemMatrix()
 {
   if (mergedfluidinterface_ == Teuchos::null)
     dserror(
         "Uninitialized map FSI/inner fluid map extractor! Failed to create fluid block matrix.");
 
   // Create a local copy of the inner & conditioned map
-  // Reason: the matrix splitting method from LINALG expects non-const maps
+  // Reason: the matrix splitting method from CORE::LINALG expects non-const maps
   Teuchos::RCP<Epetra_Map> innermap =
       Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->OtherMap()));
   Teuchos::RCP<Epetra_Map> condmap =
@@ -230,7 +230,8 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidFSI::VelocityRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
   maps.push_back(xfluidfluid_->XFluidFluidMapExtractor()->FluidMap());
   maps.push_back(xfluidfluid_->VelocityRowMap());
-  Teuchos::RCP<const Epetra_Map> innervelocitymap = LINALG::MultiMapExtractor::IntersectMaps(maps);
+  Teuchos::RCP<const Epetra_Map> innervelocitymap =
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(maps);
   return innervelocitymap;
 }
 
@@ -247,7 +248,7 @@ bool ADAPTER::FluidFluidFSI::IsAleRelaxationStep(int step) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivatives()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ADAPTER::FluidFluidFSI::ShapeDerivatives()
 {
   return xfluidfluid_->ExtendedShapeDerivatives();
 }

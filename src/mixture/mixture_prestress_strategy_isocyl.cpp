@@ -52,7 +52,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::Setup(
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
+    MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // We evaluate the stress in the reference configuration with a prestretch. Hence, the
@@ -107,8 +107,8 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const Mixtur
         "strategy!");
   }
 
-  LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  gprefecoord = params.get<LINALG::Matrix<1, 3>>("gprefecoord");
+  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
+  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
 
   double r = 0;
   for (unsigned i = 0; i < 3; ++i)
@@ -189,16 +189,16 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
         "strategy!");
   }
 
-  LINALG::Matrix<3, 3> F(false);
-  LINALG::Matrix<6, 1> E_strain(true);
-  LINALG::Matrix<6, 1> S_stress(true);
-  LINALG::Matrix<6, 6> cmat(true);
+  CORE::LINALG::Matrix<3, 3> F(false);
+  CORE::LINALG::Matrix<6, 1> E_strain(true);
+  CORE::LINALG::Matrix<6, 1> S_stress(true);
+  CORE::LINALG::Matrix<6, 6> cmat(true);
   MAT::IdentityMatrix(F);
 
 
   mixtureRule.Evaluate(F, E_strain, params, S_stress, cmat, gp, eleGID);
 
-  LINALG::Matrix<6, 1> Acir(false);
+  CORE::LINALG::Matrix<6, 1> Acir(false);
   // Compute structural tensor
   for (int i = 0; i < 3; ++i) Acir(i) = cylinderCosy->GetCir()(i) * cylinderCosy->GetCir()(i);
   Acir(3) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(1);
@@ -212,7 +212,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   double initial_constituent_reference_density =
       growth_remodel_rule.GetConstituentInitialReferenceMassDensity(constituent);
 
-  LINALG::Matrix<6, 1> Smembrane(false);
+  CORE::LINALG::Matrix<6, 1> Smembrane(false);
   membraneEvaluation.EvaluateMembraneStress(Smembrane, params, gp, eleGID);
   Smembrane.Scale(initial_constituent_reference_density);
 
@@ -228,8 +228,8 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::UpdatePrestress(
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
-    LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
+    CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   dserror(
       "The prestretching strategy that you have chosen does not need iterative prestretching. It "

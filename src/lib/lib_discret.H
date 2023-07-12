@@ -32,11 +32,11 @@ namespace COMM_UTILS
   class Communicators;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 class PostProblem;
 
@@ -1531,8 +1531,8 @@ namespace DRT
                                    contributions.
     */
     void Evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
@@ -1571,7 +1571,8 @@ namespace DRT
                                   the underlying assembly methods that add element
                                   contributions.
      */
-    void Evaluate(Teuchos::ParameterList& params, Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void Evaluate(Teuchos::ParameterList& params,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> systemvector);
 
 
@@ -1611,7 +1612,7 @@ namespace DRT
                                The vector is NOT initialized to zero by this method.
     */
     virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        LINALG::SparseOperator* systemmatrix = NULL);
+        CORE::LINALG::SparseOperator* systemmatrix = NULL);
 
     /*!
     \brief Evaluate Dirichlet boundary conditions
@@ -1648,7 +1649,7 @@ namespace DRT
     void EvaluateDirichlet(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
         Teuchos::RCP<Epetra_Vector> systemvectord, Teuchos::RCP<Epetra_Vector> systemvectordd,
         Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor = Teuchos::null) override;
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) override;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void EvaluateCondition(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
@@ -1684,8 +1685,8 @@ namespace DRT
       \param condid (in):        Condition ID
       */
     void EvaluateCondition(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
         const int condid = -1);

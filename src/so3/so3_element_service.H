@@ -46,7 +46,7 @@ namespace DRT
      */
     template <DRT::Element::DiscretizationType distype>
     std::vector<double> ProjectNodalQuantityToXi(
-        const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
+        const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
   }  // namespace ELEMENTS
 }  // namespace DRT
 

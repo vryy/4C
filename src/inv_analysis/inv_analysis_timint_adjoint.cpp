@@ -33,7 +33,7 @@ STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret)
     : discret_(discret),
       writer_(Teuchos::null),
       solver_(Teuchos::null),
-      dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+      dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
       dbctoggle_(Teuchos::null),
       dis_(Teuchos::null),
       rhs_(Teuchos::null),
@@ -63,18 +63,18 @@ STR::TimIntAdjoint::TimIntAdjoint(Teuchos::RCP<DRT::Discretization> discret)
   dt_ = sdyn.get<double>("TIMESTEP");
 
   // initialize stiffness matrix
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
-  stiffn_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
+  stiffn_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
 
   // initialize zeros from the dofrowmap
-  zeros_ = LINALG::CreateVector(*(dofrowmap_), true);
+  zeros_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
 
   // initialize solution at stepn
-  disdualn_ = LINALG::CreateVector(*(dofrowmap_), true);
-  disn_ = LINALG::CreateVector(*(dofrowmap_), true);
-  rhsn_ = LINALG::CreateVector(*(dofrowmap_), true);
+  disdualn_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
+  disn_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
+  rhsn_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
 
-  dbctoggle_ = LINALG::CreateIntVector(*(dofrowmap_), true);
+  dbctoggle_ = CORE::LINALG::CreateIntVector(*(dofrowmap_), true);
 
   disdual_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_, msteps_, true));
 
@@ -170,8 +170,8 @@ void STR::TimIntAdjoint::EvaluateStiff()
   stiffn_->Zero();
 
   // a dummy internal and external force vector
-  Teuchos::RCP<Epetra_Vector> fintn = LINALG::CreateVector(*(dofrowmap_), true);
-  Teuchos::RCP<Epetra_Vector> fextn = LINALG::CreateVector(*(dofrowmap_), true);
+  Teuchos::RCP<Epetra_Vector> fintn = CORE::LINALG::CreateVector(*(dofrowmap_), true);
+  Teuchos::RCP<Epetra_Vector> fextn = CORE::LINALG::CreateVector(*(dofrowmap_), true);
 
   // set the parameters for the discretization
   Teuchos::ParameterList p;
@@ -199,7 +199,7 @@ void STR::TimIntAdjoint::EvaluateStiff()
   discret_->ClearState();
 }
 
-Teuchos::RCP<const LINALG::SparseMatrix> STR::TimIntAdjoint::GetLocSysTrafo() const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TimIntAdjoint::GetLocSysTrafo() const
 {
   if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
 
@@ -220,10 +220,11 @@ void STR::TimIntAdjoint::Solve()
 
   // transform to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
-    locsysman_->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_), rhsn_);
+    locsysman_->RotateGlobalToLocal(
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), rhsn_);
 
   // Apply Dirichlet
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       stiff_, disdualn_, rhsn_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
   // Solve
@@ -345,8 +346,9 @@ void STR::TimIntAdjoint::CreateLinearSolver(const Teuchos::ParameterList& sdyn)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-      discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+          discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
   return;

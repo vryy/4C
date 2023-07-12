@@ -23,7 +23,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }
@@ -79,7 +79,7 @@ namespace CORE::GEO
       CORE::GEO::NearestObject nearestObject_;
 
       //! axis aligned bounding box of this tree node
-      const LINALG::Matrix<3, 2> nodeBox_;
+      const CORE::LINALG::Matrix<3, 2> nodeBox_;
 
       //! x-coord of the center of this treenode
       const double xPlaneCoordinate_;
@@ -101,42 +101,42 @@ namespace CORE::GEO
        \param childIndex           index of child node
        \return returns node box
        */
-      LINALG::Matrix<3, 2> getChildNodeBox(const int childIndex) const;
+      CORE::LINALG::Matrix<3, 2> getChildNodeBox(const int childIndex) const;
 
       /*!
        \brief returns the node box of a child node
        \param index           index of child node
        \param childNodeBox    child node box
        */
-      void getChildNodeBox(const int index, LINALG::Matrix<3, 2>& childNodeBox) const;
+      void getChildNodeBox(const int index, CORE::LINALG::Matrix<3, 2>& childNodeBox) const;
 
       /*!
        \brief returns the child node index, in which a point lies
        \param point                point
        \return index
        */
-      int classifyPoint(const LINALG::Matrix<3, 1>& point) const;
+      int classifyPoint(const CORE::LINALG::Matrix<3, 1>& point) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB            AABB
        \param octants         vector of octantcs
        */
-      void classifyXAABB(const LINALG::Matrix<3, 2>& AABB, std::vector<int>& octants) const;
+      void classifyXAABB(const CORE::LINALG::Matrix<3, 2>& AABB, std::vector<int>& octants) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB            AABB
        \param octants         vector of octantcs
        */
-      void classifyKDOP(const LINALG::Matrix<9, 2>& KDOP, std::vector<int>& octants) const;
+      void classifyKDOP(const CORE::LINALG::Matrix<9, 2>& KDOP, std::vector<int>& octants) const;
 
       /*!
        \brief returns the child node indices which overlaps with a given AABB
        \param AABB                AABB
        \return vector of childen indices
        */
-      std::vector<int> classifyXAABB(const LINALG::Matrix<3, 2>& AABB) const;
+      std::vector<int> classifyXAABB(const CORE::LINALG::Matrix<3, 2>& AABB) const;
 
       /*!
        \brief returns the index of the child node which overlaps with a given AABB
@@ -144,7 +144,7 @@ namespace CORE::GEO
        \param AABB                AABB
        \return vector of childen indices
        */
-      bool classifyXAABB(int& index, const LINALG::Matrix<3, 2>& AABB) const;
+      bool classifyXAABB(int& index, const CORE::LINALG::Matrix<3, 2>& AABB) const;
 
       /*!
        \brief returns the index of the child node which overlaps with a given AABB
@@ -152,7 +152,7 @@ namespace CORE::GEO
        \param AABB                AABB
        \return vector of childen indices
        */
-      bool classifyKDOP(int& index, const LINALG::Matrix<9, 2>& KDOP) const;
+      bool classifyKDOP(int& index, const CORE::LINALG::Matrix<9, 2>& KDOP) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -161,7 +161,7 @@ namespace CORE::GEO
        \return vector of children ids
        */
       std::vector<int> classifyElement(const ::DRT::Element* element,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions) const;
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -170,7 +170,7 @@ namespace CORE::GEO
        \return vector of children ids
        */
       std::vector<int> classifyElement(
-          const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze_element) const;
+          const ::DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze_element) const;
 
       /*!
        \brief return child(ren) of this tree node in which the ele has to be inserted
@@ -179,13 +179,14 @@ namespace CORE::GEO
        \return vector of children ids
        */
       std::vector<int> classifyElement(const Teuchos::RCP<::DRT::Element> element,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions) const;
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions) const;
 
       /*!
        \brief return children, whose node box intersects with the circle with the given midpoint and
        radius \param radius              radius \param point               point \return child index
        */
-      std::vector<int> classifyRadius(const double radius, const LINALG::Matrix<3, 1>& point) const;
+      std::vector<int> classifyRadius(
+          const double radius, const CORE::LINALG::Matrix<3, 1>& point) const;
 
       /*!
        \brief create children of a treenode and insert elements
@@ -193,7 +194,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        */
       void createChildren(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
        \brief create children of a treenode and insert elements
@@ -201,13 +202,13 @@ namespace CORE::GEO
        \param currentpositions    current nodal positions of masterelements
        */
       void createChildren(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
        \brief create children of a treenode and insert tree elements
        \param currentpositions     current nodal positions in discretization
        */
-      void createChildren(const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+      void createChildren(const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
        \brief create children of a treenode and insert elements
@@ -215,14 +216,14 @@ namespace CORE::GEO
 
        \param currentXAABBs        current elemental bounding boxes
        */
-      void createChildren(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs);
+      void createChildren(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs);
 
       /*!
        \brief create children of a treenode and insert elements
 
        \param currentKDOPs        current elemental kdops
        */
-      void createChildren(const std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
+      void createChildren(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
       /*!
        \brief set XFEM label of empty children
@@ -230,7 +231,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        */
       void setXFEMLabelOfEmptyChildren(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
       /*!
        \brief set XFEM label of empty children
@@ -246,7 +247,7 @@ namespace CORE::GEO
        \param currentpositions     current nodal positions in discretization
        */
       void setXFEMLabelAndNearestObjectOfEmptyChildren(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
      public:
       /*!
@@ -255,8 +256,8 @@ namespace CORE::GEO
        \param nodeBox    node box
        \param parent     pointer to parent element
        */
-      TreeNode(const TreeNode* const parent, const int depth, const LINALG::Matrix<3, 2>& nodeBox,
-          const TreeType treeType);
+      TreeNode(const TreeNode* const parent, const int depth,
+          const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treeType);
 
       //! destructor
       virtual ~TreeNode();
@@ -336,13 +337,13 @@ namespace CORE::GEO
        \brief returns the center of this tree node
        \return returns the center of this tree node
        */
-      LINALG::Matrix<3, 1> getCenterCoord() const;
+      CORE::LINALG::Matrix<3, 1> getCenterCoord() const;
 
       /*!
        \brief returns the node box of the tree node
        \return returns the node box of the tree node
        */
-      const LINALG::Matrix<3, 2>& getNodeBox() const { return nodeBox_; };
+      const CORE::LINALG::Matrix<3, 2>& getNodeBox() const { return nodeBox_; };
 
       /*!
        \brief returns elementList
@@ -363,7 +364,7 @@ namespace CORE::GEO
        \param AABB_new             AABB_new
        */
       void updateTreeNode(
-          const LINALG::Matrix<3, 2>& AABB_old, const LINALG::Matrix<3, 2>& AABB_new);
+          const CORE::LINALG::Matrix<3, 2>& AABB_old, const CORE::LINALG::Matrix<3, 2>& AABB_new);
 
       /*!
        \brief returns the label 0 -> fluid 1 -> n solid
@@ -374,9 +375,9 @@ namespace CORE::GEO
        \return 0->fluid 1..n->Solid with XFEM-Coupling condition
        */
       int queryFSINearestObject(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-          const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-          const LINALG::Matrix<3, 1>& point, CORE::GEO::NearestObject& nearestobject);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+          const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+          const CORE::LINALG::Matrix<3, 1>& point, CORE::GEO::NearestObject& nearestobject);
 
       /*!
        \brief returns the label 0 -> fluid 1 -> n solid
@@ -386,9 +387,9 @@ namespace CORE::GEO
        \return 0->fluid 1..n->Solid with XFEM-Coupling condition
        */
       int queryXFEMFSIPointType(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-          const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-          const LINALG::Matrix<3, 1>& point);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+          const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+          const CORE::LINALG::Matrix<3, 1>& point);
 
       /*!
        \brief fi intersection for contact with XFEM FSI
@@ -402,8 +403,8 @@ namespace CORE::GEO
        */
       void moveContactNodes(const std::vector<std::vector<int>>& triangleList,
           std::vector<CORE::GEO::InterfacePoint>& pointList,
-          const std::map<int, LINALG::Matrix<3, 2>>& triangleXAABBs,
-          const LINALG::Matrix<3, 1>& querypoint, const int querypointId,
+          const std::map<int, CORE::LINALG::Matrix<3, 2>>& triangleXAABBs,
+          const CORE::LINALG::Matrix<3, 1>& querypoint, const int querypointId,
           const int querypointLabel);
 
       /*!
@@ -416,8 +417,8 @@ namespace CORE::GEO
        \return set of node gids
        */
       std::map<int, std::set<int>> searchElementsInRadius(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-          const LINALG::Matrix<3, 1>& point, const double radius, const int label);
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+          const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
       /*!
        \brief returns a vector of Ids of points closer than radius to the querypoint
@@ -427,8 +428,8 @@ namespace CORE::GEO
        \return set of node gids
        */
       std::vector<int> searchPointsInRadius(
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-          const LINALG::Matrix<3, 1>& querypoint,  // point around which should be searched
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+          const CORE::LINALG::Matrix<3, 1>& querypoint,  // point around which should be searched
           const double radius);
 
       /*!
@@ -439,8 +440,9 @@ namespace CORE::GEO
        \param xyze_element         coordinates of element
        \return set of node gids
        */
-      void queryIntersectionCandidates(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-          const LINALG::Matrix<3, 2>& eleXAABB, std::set<int>& elementset);
+      void queryIntersectionCandidates(
+          const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+          const CORE::LINALG::Matrix<3, 2>& eleXAABB, std::set<int>& elementset);
 
       /*!
        \brief   returns a set of elements whose XAABB s are
@@ -451,8 +453,8 @@ namespace CORE::GEO
        \param label                label of element to be examined
        \return set of node gids
        */
-      void queryPotentialElements(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-          const LINALG::Matrix<3, 2>& eleXAABB, std::map<int, std::set<int>>& elementset,
+      void queryPotentialElements(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+          const CORE::LINALG::Matrix<3, 2>& eleXAABB, std::map<int, std::set<int>>& elementset,
           const int label);
 
       /*!
@@ -463,9 +465,9 @@ namespace CORE::GEO
        \return set of node gids
        */
       void queryPotentialElements_Approx2(const ::DRT::Discretization& dis,
-          const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-          const LINALG::Matrix<3, 2>& eleXAABB,
-          const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
+          const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+          const CORE::LINALG::Matrix<3, 2>& eleXAABB,
+          const std::vector<CORE::LINALG::Matrix<3, 1>>& gaussPoints,
           std::map<int, std::map<int, CORE::GEO::NearestObject>>& potentialObjectsAtGP,
           const double cutoff, const int label, const int projectiontype);
 
@@ -473,13 +475,13 @@ namespace CORE::GEO
        \brief    build the static search tree for the collision detection
        \param currentBVs        map of all current AABBs for all elements
        */
-      void buildStaticSearchTree(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs);
+      void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
 
       /*!
        \brief    build the static search tree for the collision detection
        \param currentBVs        map of all current 18-DOPs for all elements
        */
-      void buildStaticSearchTree(const std::map<int, LINALG::Matrix<9, 2>>& currentBVs);
+      void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
 
       /*!
        \brief returns a set of gids of elements whose AABB (bounding volume) intersect with
@@ -490,8 +492,8 @@ namespace CORE::GEO
        \param collisions          ids of elements of overlapping current AABBs
        \return set of master contact element gids
        */
-      void searchCollisions(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs,
-          const LINALG::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
+      void searchCollisions(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs,
+          const CORE::LINALG::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
 
       /*!
        \brief returns a set of gids of elements whose 18-DOP (bounding volume) intersect with
@@ -502,8 +504,8 @@ namespace CORE::GEO
        \param collisions          ids of elements of overlapping current 18-DOPs
        \return set of master contact element gids
        */
-      void searchCollisions(const std::map<int, LINALG::Matrix<9, 2>>& currentBVs,
-          const LINALG::Matrix<9, 2>& queryBV, const int label, std::set<int>& collisions);
+      void searchCollisions(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs,
+          const CORE::LINALG::Matrix<9, 2>& queryBV, const int label, std::set<int>& collisions);
 
       /*!
        \brief print tree node
@@ -549,7 +551,7 @@ namespace CORE::GEO
      \param elementsByLabel      elementsByLabel
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const LINALG::Matrix<3, 2>& nodeBox,
+    void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
         const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype);
 
     /*!
@@ -560,10 +562,10 @@ namespace CORE::GEO
      \param dis                  discretization
      \param treetype             octtree or quadtree
      */
-    void initializeTree(const LINALG::Matrix<3, 2>& nodeBox, const ::DRT::Discretization& dis,
+    void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox, const ::DRT::Discretization& dis,
         const TreeType treetype);
 
-    void initializeTree(const LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype);
+    void initializeTree(const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype);
 
     /*!
      \brief destroys the old tree if its exists and builds the root node of a
@@ -574,8 +576,8 @@ namespace CORE::GEO
      \param dis                  discretization
      \param treetype             octtree or quadtree
      */
-    void initializePointTree(const LINALG::Matrix<3, 2>& nodeBox,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const TreeType treetype);
+    void initializePointTree(const CORE::LINALG::Matrix<3, 2>& nodeBox,
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const TreeType treetype);
 
     /*!
      \brief destroys the old tree if its exists and builds the root node of a
@@ -585,7 +587,7 @@ namespace CORE::GEO
      \param elements             elements
      \param treetype             quadtree
      */
-    void initializeTreeSlideALE(const LINALG::Matrix<3, 2>& nodeBox,
+    void initializeTreeSlideALE(const CORE::LINALG::Matrix<3, 2>& nodeBox,
         std::map<int, Teuchos::RCP<::DRT::Element>>& elements, const TreeType treetype);
 
     void insertElement(const int eid);
@@ -598,8 +600,8 @@ namespace CORE::GEO
      \param currentpositions_new     new current nodal positions in discretization
      */
     void updateTree(const ::DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions_old,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions_new);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions_old,
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions_new);
 
     /*!
      \brief returns the label 0 -> fluid 1 -> n solid
@@ -610,9 +612,9 @@ namespace CORE::GEO
      \return 0->fluid 1..n->Solid with XFEM-Coupling condition
      */
     int queryFSINearestObject(const ::DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs, const LINALG::Matrix<3, 1>& point,
-        CORE::GEO::NearestObject& nearestobject);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+        const CORE::LINALG::Matrix<3, 1>& point, CORE::GEO::NearestObject& nearestobject);
 
     /*!
      \brief returns the label 0 -> fluid 1 -> n solid
@@ -622,9 +624,9 @@ namespace CORE::GEO
      \return 0->fluid 1..n->Solid with XFEM-Coupling condition
      */
     int queryXFEMFSIPointType(const ::DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-        const LINALG::Matrix<3, 1>& point);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+        const CORE::LINALG::Matrix<3, 1>& point);
 
     /*!
      \brief fix intersection for contact with XFEM FSI
@@ -637,8 +639,9 @@ namespace CORE::GEO
      */
     void moveContactNodes(const std::vector<std::vector<int>>& triangleList,
         std::vector<CORE::GEO::InterfacePoint>& pointList,
-        const std::map<int, LINALG::Matrix<3, 2>>& triangleXAABBs,
-        const LINALG::Matrix<3, 1>& querypoint, const int querypointId, const int querypointLabel);
+        const std::map<int, CORE::LINALG::Matrix<3, 2>>& triangleXAABBs,
+        const CORE::LINALG::Matrix<3, 1>& querypoint, const int querypointId,
+        const int querypointLabel);
 
     /*!
      \brief returns a set of gids of nodes lying in a radius around a given point for each object
@@ -650,8 +653,8 @@ namespace CORE::GEO
      \return set of node gids
      */
     std::map<int, std::set<int>> searchElementsInRadius(const ::DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const LINALG::Matrix<3, 1>& point, const double radius, const int label);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
     /*!
      \brief returns a vector of Ids of points in a radius around a given querypoint
@@ -661,8 +664,8 @@ namespace CORE::GEO
      \return set of point Ids
      */
     std::vector<int> searchPointsInRadius(
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const LINALG::Matrix<3, 1>& querypoint,  // point around which should be searched
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const CORE::LINALG::Matrix<3, 1>& querypoint,  // point around which should be searched
         const double radius);
 
     /*!
@@ -672,9 +675,9 @@ namespace CORE::GEO
      \param currentpositions     current nodal positions in discretization
      \return set of node gids
      */
-    void queryIntersectionCandidates(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-        const std::vector<LINALG::Matrix<3, 2>>& structure_AABBs,
-        const LINALG::Matrix<3, 2>& eleXAABB, std::set<int>& elementset);
+    void queryIntersectionCandidates(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+        const std::vector<CORE::LINALG::Matrix<3, 2>>& structure_AABBs,
+        const CORE::LINALG::Matrix<3, 2>& eleXAABB, std::set<int>& elementset);
 
     /*!
      \brief   returns a vector of elements whose XAABB s are
@@ -683,8 +686,8 @@ namespace CORE::GEO
      \param currentpositions     current nodal positions in discretization
      \return set of node gids
      */
-    void queryPotentialElements(const std::map<int, LINALG::Matrix<3, 2>>& currentXAABBs,
-        const LINALG::Matrix<3, 2>& eleXAABB, std::map<int, std::set<int>>& elementset,
+    void queryPotentialElements(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
+        const CORE::LINALG::Matrix<3, 2>& eleXAABB, std::map<int, std::set<int>>& elementset,
         const int label);
 
     /*!
@@ -695,8 +698,9 @@ namespace CORE::GEO
      \return set of node gids
      */
     void queryPotentialElements_Approx2(const ::DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const LINALG::Matrix<3, 2>& eleXAABB, const std::vector<LINALG::Matrix<3, 1>>& gaussPoints,
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const CORE::LINALG::Matrix<3, 2>& eleXAABB,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& gaussPoints,
         std::map<int, std::map<int, CORE::GEO::NearestObject>>& potentialObjectsAtGP,
         const double cutoff, const int label, const int projectiontype);
 
@@ -704,13 +708,13 @@ namespace CORE::GEO
      \brief    build the static search tree for the collision detection
      \param currentBVs        map of all current AABBs for all elements
      */
-    void buildStaticSearchTree(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs);
+    void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs);
 
     /*!
      \brief    build the static search tree for the collision detection
      \param currentBVs        map of all current 18-DOPs for all elements
      */
-    void buildStaticSearchTree(const std::map<int, LINALG::Matrix<9, 2>>& currentBVs);
+    void buildStaticSearchTree(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentBVs);
 
     /*!
      \brief returns a set of gids of elements whose AABB (bounding volume) intersect with
@@ -720,8 +724,8 @@ namespace CORE::GEO
      \param label               label ???
      \return set of master contact element gids
      */
-    void searchCollisions(const std::map<int, LINALG::Matrix<3, 2>>& currentBVs,
-        const LINALG::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
+    void searchCollisions(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentBVs,
+        const CORE::LINALG::Matrix<3, 2>& queryBV, const int label, std::set<int>& collisions);
 
     /*!
      \brief returns a set of gids of elements whose 18-DOP (bounding volume) intersect with
@@ -731,8 +735,8 @@ namespace CORE::GEO
      \param label               label ???
      \return set of master contact element gids
      */
-    void searchCollisions(const std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs,
-        const LINALG::Matrix<9, 2>& queryKDOP, const int label, std::set<int>& contactEleIds);
+    void searchCollisions(const std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs,
+        const CORE::LINALG::Matrix<9, 2>& queryKDOP, const int label, std::set<int>& contactEleIds);
 
     /*!
      \brief prints entire tree to gmsh file

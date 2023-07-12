@@ -19,7 +19,7 @@
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
@@ -335,7 +335,7 @@ void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
@@ -606,7 +606,7 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
@@ -871,7 +871,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -1045,7 +1045,7 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),

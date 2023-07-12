@@ -111,7 +111,7 @@ namespace DRT
         {
           for (size_t i_end = i_start + 1; i_end < numnode - 1; ++i_end)
           {
-            LINALG::Matrix<3, 1> direction;
+            CORE::LINALG::Matrix<3, 1> direction;
             direction.Clear();
             direction(0) = xyze(0, i_start) - xyze(0, i_end);
             direction(1) = xyze(1, i_start) - xyze(1, i_end);
@@ -190,16 +190,16 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           int numscal,
@@ -224,8 +224,9 @@ namespace DRT
        *         compressive stresses (1.0)
        */
       double CalculatePseudoContactFactor(bool is_pseudo_contact,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavestress_vector,
-          const LINALG::Matrix<nsd_, 1>& gp_normal, const LINALG::Matrix<nen_, 1>& funct_slave);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavestress_vector,
+          const CORE::LINALG::Matrix<nsd_, 1>& gp_normal,
+          const CORE::LINALG::Matrix<nen_, 1>& funct_slave);
 
      private:
       // add nodal displacements to point coordinates
@@ -249,7 +250,7 @@ namespace DRT
        */
       double EvalShapeFuncAndIntFac(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-          LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
+          CORE::LINALG::Matrix<nsd_, 1>* normalvec = nullptr);
 
       /*!
        * @brief evaluate shape functions and derivatives at integration point
@@ -271,7 +272,7 @@ namespace DRT
        */
       void EvaluateSpatialDerivativeOfAreaIntegrationFactor(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, int iquad,
-          LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd);
+          CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd);
 
       /*!
        * @brief Evaluate the square root of the metric tensor determinant
@@ -283,7 +284,7 @@ namespace DRT
        */
       double EvaluateSquareRootOfDeterminantOfMetricTensorAtIntPoint(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad,
-          const LINALG::Matrix<nsd_, nen_>& XYZe);
+          const CORE::LINALG::Matrix<nsd_, nen_>& XYZe);
 
       //! evaluate scatra-scatra interface coupling condition
       virtual void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
@@ -353,7 +354,7 @@ namespace DRT
        * @param statename       name of relevant state
        * @param nds             number of relevant dofset
        */
-      void ExtractNodeValues(LINALG::Matrix<nen_, 1>& estate,
+      void ExtractNodeValues(CORE::LINALG::Matrix<nen_, 1>& estate,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           const std::string& statename = "phinp", const int& nds = 0) const;
 
@@ -366,7 +367,7 @@ namespace DRT
        * @param statename       name of relevant state
        * @param nds             number of relevant dofset
        */
-      void ExtractNodeValues(std::vector<LINALG::Matrix<nen_, 1>>& estate,
+      void ExtractNodeValues(std::vector<CORE::LINALG::Matrix<nen_, 1>>& estate,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           const std::string& statename = "phinp", const int& nds = 0) const;
 
@@ -408,10 +409,10 @@ namespace DRT
       //! computes the factor for the wall shear stress dependent interface flux
       //! @note: Calculated as in Calvez, V., "Mathematical and numerical modeling of early
       //!        atherosclerotic lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
-      double WSSinfluence(
-          const LINALG::Matrix<nsd_, nen_>& ewss,  ///< vector of euclidean norm of shear stress
-                                                   ///< tensor of each node of the element
-          const bool wss_onoff,  ///< flag if WSS has influence on interface permeability
+      double WSSinfluence(const CORE::LINALG::Matrix<nsd_, nen_>&
+                              ewss,  ///< vector of euclidean norm of shear stress
+                                     ///< tensor of each node of the element
+          const bool wss_onoff,      ///< flag if WSS has influence on interface permeability
           const std::vector<double>* coeffs);  ///< coefficients of the log law to determine the
                                                ///< influence of WSS on concentration flux
 
@@ -427,20 +428,20 @@ namespace DRT
 
       //! compute integral of convective mass/heat flux over boundary surface
       virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-          const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
 
       //! Compute the normal vector for a 2D boundary element in a 3D space
       //!
       //! \param xyze   position of boundary nodes
       //! \return       normal vector of boundary element
-      LINALG::Matrix<3, 1> GetConstNormal(const LINALG::Matrix<3, nen_>& xyze);
+      CORE::LINALG::Matrix<3, 1> GetConstNormal(const CORE::LINALG::Matrix<3, nen_>& xyze);
 
       //! Compute the normal vector for a 1D boundary element in a 2D space
       //!
       //! \param xyze   position of boundary nodes
       //! \return       normal vector of boundary element
-      LINALG::Matrix<2, 1> GetConstNormal(const LINALG::Matrix<2, nen_>& xyze);
+      CORE::LINALG::Matrix<2, 1> GetConstNormal(const CORE::LINALG::Matrix<2, nen_>& xyze);
 
       //! Compute the normal vector for a 1D boundary element in a 3D space
       //!
@@ -448,8 +449,8 @@ namespace DRT
       //! \param nodes_parent_ele position of 3 nodes in parent element to compute normal vector of
       //! parent element
       //! \return       normal vector of boundary element
-      LINALG::Matrix<3, 1> GetConstNormal(
-          const LINALG::Matrix<3, nen_>& xyze, const LINALG::Matrix<3, 3>& nodes_parent_ele);
+      CORE::LINALG::Matrix<3, 1> GetConstNormal(const CORE::LINALG::Matrix<3, nen_>& xyze,
+          const CORE::LINALG::Matrix<3, 3>& nodes_parent_ele);
 
       //! calculate potential Neumann inflow terms
       virtual void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -458,12 +459,12 @@ namespace DRT
 
       //! get density at integration point
       virtual double GetDensity(Teuchos::RCP<const MAT::Material> material,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp, const int k);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k);
 
       //! calculate boundary condition due to convective heat transfer
       void ConvectiveHeatTransfer(const DRT::FaceElement* ele,
           Teuchos::RCP<const MAT::Material> material,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp, Epetra_SerialDenseMatrix& emat,
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, Epetra_SerialDenseMatrix& emat,
           Epetra_SerialDenseVector& erhs, const double heatranscoeff, const double surtemp);
 
       /*!
@@ -523,9 +524,9 @@ namespace DRT
       const int numscal_;
 
       //! node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze_;
       //! weights for nurbs elements
-      LINALG::Matrix<nen_, 1> weights_;
+      CORE::LINALG::Matrix<nen_, 1> weights_;
       //! knot vector for nurbs elements
       std::vector<Epetra_SerialDenseVector> myknots_;
       //! knot vector of corresponding parent element
@@ -533,27 +534,27 @@ namespace DRT
       //! for nurbs elements the normal vector is multiplied with normalfac_!
       double normalfac_;
       //! nodal state variables associated with time t_{n+1} or t_{n+alpha_f}
-      std::vector<LINALG::Matrix<nen_, 1>> ephinp_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp_;
       //! nodal displacement values for ALE
-      LINALG::Matrix<nsd_, nen_> edispnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
       //! diffusivity / diffusivities (in case of systems) / thermal conductivity
       std::vector<double> diffus_;
       //! specific heat capacity at constant pressure (in case of temperature eq.)
       double shcacp_;
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_ele_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_ele_, 1> xsi_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_ele_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_ele_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_ele_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_ele_, nen_> derxy_;
       //! unit normal vector at integration point
-      LINALG::Matrix<nsd_, 1> normal_;
+      CORE::LINALG::Matrix<nsd_, 1> normal_;
       //! velocity vector in gausspoint
-      LINALG::Matrix<nsd_, 1> velint_;
+      CORE::LINALG::Matrix<nsd_, 1> velint_;
       //! metric tensor at integration point
-      LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor_;
+      CORE::LINALG::Matrix<nsd_ele_, nsd_ele_> metrictensor_;
       //! for the handling of rotationally symmetric periodic boundary conditions
       Teuchos::RCP<
           FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, DRT::ELEMENTS::Fluid::none>>

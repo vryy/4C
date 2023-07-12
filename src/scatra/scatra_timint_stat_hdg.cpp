@@ -17,7 +17,7 @@
  |  Constructor (public)                               berardocco 05/20 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntStationaryHDG::TimIntStationaryHDG(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntHDG(actdis, solver, params, extraparams, output)

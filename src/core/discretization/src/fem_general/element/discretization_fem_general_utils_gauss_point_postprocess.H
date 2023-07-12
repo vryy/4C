@@ -51,7 +51,7 @@ namespace CORE::DRT::ELEMENTS
   /*!
    * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
    *
-   * \tparam T Type of the data, either SerialDenseMatrix or LINALG::Matrix
+   * \tparam T Type of the data, either SerialDenseMatrix or CORE::LINALG::Matrix
    * \param global_data Global cell data
    * \param gp_data (numgp x size) matrix of the Gauss point data
    * \param ele element

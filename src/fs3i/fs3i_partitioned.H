@@ -47,13 +47,13 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class BlockSparseMatrixBase;
   class SparseMatrix;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 namespace FS3I

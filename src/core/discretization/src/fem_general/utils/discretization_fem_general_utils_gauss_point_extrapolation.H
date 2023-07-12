@@ -40,10 +40,10 @@ namespace CORE::DRT::UTILS
    *
    * @tparam distype Discretization type of the element
    * @param integration (in) : Gauss integration points
-   * @return LINALG::SerialDenseMatrix
+   * @return CORE::LINALG::SerialDenseMatrix
    */
   template <::DRT::Element::DiscretizationType distype, class GaussIntegration>
-  LINALG::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
+  CORE::LINALG::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
       const GaussIntegration& integration);
 
   /*!
@@ -61,8 +61,8 @@ namespace CORE::DRT::UTILS
    */
   template <::DRT::Element::DiscretizationType distype, class GaussIntegration>
   void ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
-      const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
-      const GaussIntegration& integration);
+      const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+      bool nodal_average, const GaussIntegration& integration);
 }  // namespace CORE::DRT::UTILS
 
 #endif  // FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_H

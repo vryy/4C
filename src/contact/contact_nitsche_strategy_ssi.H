@@ -46,8 +46,8 @@ namespace CONTACT
     }
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-        const int iter, bool predictor) override
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int step, const int iter, bool predictor) override
     {
       dserror("not implemented");
     }
@@ -82,7 +82,7 @@ namespace CONTACT
      * @param[in] bt   block type of requested matrix block
      * @return pointer to matrix block
      */
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) const;
 
     //! don't want = operator
@@ -94,22 +94,22 @@ namespace CONTACT
     Teuchos::RCP<Epetra_FEVector> SetupRhsBlockVec(
         const enum DRT::UTILS::VecBlockType& bt) const override;
 
-    Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) override;
 
-    void CompleteMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc) override;
+    void CompleteMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     //! current scalar state vector
     Teuchos::RCP<Epetra_Vector> curr_state_scalar_;
     //! ScaTra residual
     Teuchos::RCP<Epetra_FEVector> fs_;
     //! linearization of ScaTra residual w.r.t ScaTra dofs
-    Teuchos::RCP<LINALG::SparseMatrix> kss_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kss_;
     //! linearization of ScaTra residual w.r.t displacement dofs
-    Teuchos::RCP<LINALG::SparseMatrix> ksd_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ksd_;
     //! linearization of displacement residual w.r.t ScaTra dofs
-    Teuchos::RCP<LINALG::SparseMatrix> kds_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kds_;
   };
 }  // namespace CONTACT
 #endif  // CONTACT_NITSCHE_STRATEGY_SSI_H

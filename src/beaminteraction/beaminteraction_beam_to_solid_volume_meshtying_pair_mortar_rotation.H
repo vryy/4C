@@ -72,9 +72,9 @@ namespace BEAMINTERACTION
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     void EvaluateAndAssemble(const ::DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
         const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
 
    private:
@@ -94,33 +94,33 @@ namespace BEAMINTERACTION
      */
     void EvaluateRotationalCouplingTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
+        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st>& q_solid,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
-        LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
-        LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
-        LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
-        LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
-        LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
-        LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const;
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
+        CORE::LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
+        CORE::LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const;
 
     /**
      * \brief Evaluate the stiffness contributions of this pair.
      */
     void EvaluateRotationalCouplingStiffTerms(
         const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
-        const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
-        LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
+        const CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        CORE::LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
-        LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
-        LINALG::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
-        LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
-        LINALG::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const;
+        CORE::LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
+        CORE::LINALG::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
+        CORE::LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
+        CORE::LINALG::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const;
   };
 }  // namespace BEAMINTERACTION
 

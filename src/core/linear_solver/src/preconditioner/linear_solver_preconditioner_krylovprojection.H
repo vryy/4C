@@ -29,7 +29,7 @@ namespace CORE::LINEAR_SOLVER
   {
    public:
     KrylovProjectionPreconditioner(FILE* outfile, Teuchos::RCP<PreconditionerType> preconditioner,
-        Teuchos::RCP<LINALG::KrylovProjector> projector);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
     // virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
@@ -58,11 +58,11 @@ namespace CORE::LINEAR_SOLVER
     Teuchos::RCP<PreconditionerType> preconditioner_;
 
     /// Peter's projector object that does the actual work
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
 
     /// linear operator that calls a "real" preconditioning operator and does
     /// a projection afterwards.
-    Teuchos::RCP<LINALG::LinalgProjectedOperator> A_;
+    Teuchos::RCP<CORE::LINALG::LinalgProjectedOperator> A_;
 
     Teuchos::RCP<Epetra_Operator> P_;
   };

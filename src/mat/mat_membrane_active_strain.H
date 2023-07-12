@@ -172,27 +172,27 @@ namespace MAT
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Standard SO3 evaluate (not meant to be used)
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        int gp,                          ///< Gauss point
-        int eleGID)                      ///< Element ID
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,      ///< Container for additional information
+        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
+        int gp,                              ///< Gauss point
+        int eleGID)                          ///< Element ID
     {
       dserror("This a membrane material. Calling So3 evaluate does not make sense.");
     };
 
-    void UpdateMembrane(const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
+    void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) override
     {
       // nothing to do
     }
 
-    void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress,
-        LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
+    void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
+        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) override;
 
     /// Update internal variables
     virtual void Update();
@@ -233,16 +233,16 @@ namespace MAT
     void SetupFiberVectors(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     // read RAD-AXI-CIR
-    void ReadDir(
-        DRT::INPUT::LineDefinition* linedef, std::string specifier, LINALG::Matrix<3, 1>& dir);
+    void ReadDir(DRT::INPUT::LineDefinition* linedef, std::string specifier,
+        CORE::LINALG::Matrix<3, 1>& dir);
 
     // calculate normal direction from FIBER1 and FIBER2
     void SetupNormalDirection();
 
     // pullback of the tangent from intermediate to reference configuration
-    void Pullback4thTensorVoigt(const LINALG::Matrix<2, 2>& defgrd_active_inv_red,
-        const LINALG::Matrix<3, 3>& cmat_passive_intermediate,
-        LINALG::Matrix<3, 3>& cmat_reference);
+    void Pullback4thTensorVoigt(const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
+        const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
+        CORE::LINALG::Matrix<3, 3>& cmat_reference);
 
     // transform voigt to tensor notation
     void Tensor2x2Indices(int p, int* i, int* j);
@@ -252,7 +252,7 @@ namespace MAT
 
    protected:
     /// vector of fiber vectors
-    std::vector<LINALG::Matrix<3, 1>> fibervecs_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs_;
   };  // class Membrane_ActiveStrain
 
 }  // namespace MAT

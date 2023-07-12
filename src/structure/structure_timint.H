@@ -62,14 +62,14 @@ namespace CONTACT
   class MeshtyingContactBridge;
 }  // namespace CONTACT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
   class SparseMatrix;
   class SparseOperator;
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -131,13 +131,13 @@ namespace STR
 
     //! Constructor
     TimInt(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& ioparams,        //!< ioflags
-        const Teuchos::ParameterList& sdynparams,      //!< input parameters
-        const Teuchos::ParameterList& xparams,         //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact/meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+        const Teuchos::ParameterList& ioparams,            //!< ioflags
+        const Teuchos::ParameterList& sdynparams,          //!< input parameters
+        const Teuchos::ParameterList& xparams,             //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact/meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
     //! Destructor
@@ -172,7 +172,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -638,13 +638,13 @@ namespace STR
     const Epetra_Map* DofRowMapView();
 
     //! Access solver, one of these have to be removed (see below)
-    Teuchos::RCP<LINALG::Solver> Solver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> Solver() { return solver_; }
 
     //! Access solver, one of these have to be removed (see above)
-    Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; }
 
     //! Access solver for contact/meshtying problems
-    Teuchos::RCP<LINALG::Solver> ContactSolver() { return contactsolver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> ContactSolver() { return contactsolver_; }
 
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
@@ -791,18 +791,18 @@ namespace STR
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     //! Return stiffness,
     //! i.e. force residual differentiated by displacements
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
     //! switch structure field to block matrix in fsi simulations
-    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
+    virtual void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) = 0;
 
     //! Return sparse mass matrix
-    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix();
 
     //! domain map of system matrix
     virtual const Epetra_Map& DomainMap() const;
@@ -823,7 +823,7 @@ namespace STR
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
 
     //! Access to scaling matrix for STC
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() = 0;
 
 
     //@}
@@ -872,10 +872,10 @@ namespace STR
 
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     //! Return (rotatory) transformation matrix of local co-ordinate systems
-    Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Return locsys manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
@@ -1055,7 +1055,7 @@ namespace STR
     virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
     /// prepares and evalutes egde-based internal face integrals
-    void EvaluateEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    void EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1);
 
     //! @name General purpose algorithm members
@@ -1065,16 +1065,16 @@ namespace STR
     // face discretization (only initialized for edge-based stabilization)
     Teuchos::RCP<DRT::DiscretizationFaces> facediscret_;
 
-    int myrank_;                           //!< ID of actual processor in parallel
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
-    Teuchos::RCP<LINALG::Solver>
+    int myrank_;                                 //!< ID of actual processor in parallel
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
+    Teuchos::RCP<CORE::LINALG::Solver>
         contactsolver_;           //!< linear algebraic solver (for contact/meshtying)
     bool solveradapttol_;         //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adapted ????
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
-                                                  //!< containing non-overlapping
-                                                  //!< map of global DOFs on Dirichlet
-                                                  //!< boundary conditions
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;  //!< map extractor object
+                                                        //!< containing non-overlapping
+                                                        //!< map of global DOFs on Dirichlet
+                                                        //!< boundary conditions
 
     enum INPAR::STR::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
     int divconrefinementlevel_;  //!< number of refinement level in case of divercontype_ ==
@@ -1162,7 +1162,7 @@ namespace STR
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
     //! Map to differentiate pressure and displacement/velocity DOFs
-    Teuchos::RCP<LINALG::MapExtractor> pressure_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> pressure_;
 
     //! elements with micro-materials
     bool havemicromat_;
@@ -1238,13 +1238,13 @@ namespace STR
     //! @name System matrices
     //@{
     //! holds eventually effective stiffness
-    Teuchos::RCP<LINALG::SparseOperator> stiff_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff_;
 
     //! mass matrix (constant)
-    Teuchos::RCP<LINALG::SparseOperator> mass_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> mass_;
 
     //! damping matrix
-    Teuchos::RCP<LINALG::SparseOperator> damp_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> damp_;
     //@}
 
     //! @name Time measurement
@@ -1263,7 +1263,7 @@ namespace STR
 
     //! @name porous media specific stuff
     //@{
-    Teuchos::RCP<LINALG::MapExtractor> porositysplitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porositysplitter_;
     //@}
 
     Teuchos::RCP<UTILS::MOR> mor_;  //!< model order reduction

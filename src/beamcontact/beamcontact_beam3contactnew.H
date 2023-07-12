@@ -177,9 +177,9 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1
     */
-    const std::vector<LINALG::Matrix<3, 1>> GetX1()
+    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX1()
     {
-      std::vector<LINALG::Matrix<3, 1>> r1(1, LINALG::Matrix<3, 1>(true));
+      std::vector<CORE::LINALG::Matrix<3, 1>> r1(1, CORE::LINALG::Matrix<3, 1>(true));
 
       for (int j = 0; j < 3; j++) r1[0](j) = CORE::FADUTILS::CastToDouble(r1_(j));
 
@@ -189,9 +189,9 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element2
     */
-    const std::vector<LINALG::Matrix<3, 1>> GetX2()
+    const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2()
     {
-      std::vector<LINALG::Matrix<3, 1>> r2(1, LINALG::Matrix<3, 1>(true));
+      std::vector<CORE::LINALG::Matrix<3, 1>> r2(1, CORE::LINALG::Matrix<3, 1>(true));
 
       for (int j = 0; j < 3; j++) r2[0](j) = CORE::FADUTILS::CastToDouble(r2_(j));
 
@@ -251,7 +251,7 @@ namespace CONTACT
     /*!
     \brief Get normal vector of last time step
     */
-    LINALG::Matrix<3, 1, TYPE>* GetNormalOld()
+    CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld()
     {
       if (firsttimestep_)
       {
@@ -286,7 +286,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
+    bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false);
 
@@ -311,7 +311,7 @@ namespace CONTACT
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
     */
-    void UpdateEleSmoothTangents(std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+    void UpdateEleSmoothTangents(std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
 
     //@}
@@ -337,14 +337,14 @@ namespace CONTACT
     Teuchos::ParameterList& bcparams_;
 
     //! current node coordinates of the two elements
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele1pos_old_;
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_old_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele1pos_old_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_old_;
 
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele1pos_lastiter_;
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_lastiter_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele1pos_lastiter_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, double> ele2pos_lastiter_;
 
     //! variable to check which smoothing type should be applied
     int smoothing_;
@@ -388,16 +388,16 @@ namespace CONTACT
     bool shiftnodalvalues_;
 
     //! coordinates of contact point on center lines of beams
-    LINALG::Matrix<3, 1, TYPE> r1_;
-    LINALG::Matrix<3, 1, TYPE> r2_;
-    LINALG::Matrix<3, 1, TYPE> r1_old_;
-    LINALG::Matrix<3, 1, TYPE> r2_old_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r1_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r2_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r1_old_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r2_old_;
 
     //! derivative of contact point coordinates
-    LINALG::Matrix<3, 1, TYPE> r1_xi_;
-    LINALG::Matrix<3, 1, TYPE> r2_xi_;
-    LINALG::Matrix<3, 1, TYPE> r1_xi_old_;
-    LINALG::Matrix<3, 1, TYPE> r2_xi_old_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r1_xi_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r2_xi_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r1_xi_old_;
+    CORE::LINALG::Matrix<3, 1, TYPE> r2_xi_old_;
 
     //! parameter values of contact point
     TYPE xi1_;
@@ -408,10 +408,10 @@ namespace CONTACT
     double xi2_old_;
 
     //! normal vector of current time step
-    LINALG::Matrix<3, 1, TYPE> normal_;
+    CORE::LINALG::Matrix<3, 1, TYPE> normal_;
 
     //! normal vector of last time step
-    LINALG::Matrix<3, 1, TYPE> normal_old_;
+    CORE::LINALG::Matrix<3, 1, TYPE> normal_old_;
 
     //! neighbor elements of element 1
     Teuchos::RCP<B3CNeighbor> neighbors1_;
@@ -420,8 +420,8 @@ namespace CONTACT
     Teuchos::RCP<B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
-    LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;
-    LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth2_;
+    CORE::LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;
+    CORE::LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth2_;
 
     //! current penalty parameter
     double pp_;
@@ -489,97 +489,110 @@ namespace CONTACT
     \brief Evaluate contact forces
     */
     void EvaluateFcContact(const double& pp, Epetra_Vector* fint,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
-        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
 
     /*!
     \brief Evaluate contact stiffness
     */
     void EvaluateStiffcContact(const double& pp, const TYPE& norm_delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& delta_r, LINALG::SparseMatrix& stiffmatrix,
-        const LINALG::Matrix<3, 1, TYPE>& r1, const LINALG::Matrix<3, 1, TYPE>& r2,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xixi, const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
+        const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, CORE::LINALG::SparseMatrix& stiffmatrix,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1, const CORE::LINALG::Matrix<3, 1, TYPE>& r2,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
 
     /*!
     \brief Evaluate algorithmic forces that make convergence more robust / faster
     */
     void EvaluateAlgorithmicForce(const double& pp, Epetra_Vector* fint,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
-        LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
 
     /*!
     \brief Evaluate algorithmic stiffnesses that make convergence more robust / faster
     */
     void EvaluateAlgorithmicStiff(const double& pp, const TYPE& norm_delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& delta_r, LINALG::SparseMatrix& stiffmatrix,
-        const LINALG::Matrix<3, 1, TYPE>& r1, const LINALG::Matrix<3, 1, TYPE>& r2,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xixi, const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
+        const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, CORE::LINALG::SparseMatrix& stiffmatrix,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1, const CORE::LINALG::Matrix<3, 1, TYPE>& r2,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
 
     /*!
     \brief Compute linearizations of contact point parameter coordinates xi and eta
     */
-    void ComputeLinXiAndLinEta(LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
-        LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
-        const LINALG::Matrix<3, 1, TYPE>& delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
-        const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
+    void ComputeLinXiAndLinEta(
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
 
     /*!
     \brief Compute linearization of gap g
     */
-    void ComputeLinGap(LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
-        const LINALG::Matrix<3, 1, TYPE>& delta_r, const TYPE& norm_delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2);
+    void ComputeLinGap(CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const TYPE& norm_delta_r,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2);
 
     /*!
     \brief Compute linearization of time derivative g_t of gap g
     */
-    void ComputeLinGapt(LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap_t,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
-        const LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_n,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 1, TYPE>& r1_old, const LINALG::Matrix<3, 1, TYPE>& r2_old,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi_old, const LINALG::Matrix<3, 1, TYPE>& r2_xi_old);
+    void ComputeLinGapt(
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_gap_t,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+        const CORE::LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_n,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_old,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_old,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi_old,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi_old);
 
     /*!
     \brief Compute linearization of normal vector n
     */
-    void ComputeLinNormal(LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_normal,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
-        const LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
-        const TYPE& norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2);
+    void ComputeLinNormal(
+        CORE::LINALG::Matrix<3, 2 * 3 * numnodes * numnodalvalues, TYPE>& delta_normal,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
+        const CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+        const TYPE& norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2);
 
     /*!
     \brief Find contact point via closest point projection
@@ -599,71 +612,74 @@ namespace CONTACT
     /*!
     \brief Calculate shape function values for given parameter values
     */
-    void GetShapeFunctions(LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi, const TYPE& eta1,
+    void GetShapeFunctions(CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi, const TYPE& eta1,
         const TYPE& eta2);
 
     /*!
     \brief Assemble the shape functions into corresponding matrices
     */
-    void AssembleShapefunctions(const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
-        const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xi,
-        const LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xixi,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi,
-        LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xixi);
+    void AssembleShapefunctions(const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i,
+        const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xi,
+        const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, TYPE>& N_i_xixi,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi,
+        CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xixi);
 
     /*!
     \brief Compute coordinates and their derivatives from the discretization
     */
-    void ComputeCoordsAndDerivs(LINALG::Matrix<3, 1, TYPE>& r1, LINALG::Matrix<3, 1, TYPE>& r2,
-        LINALG::Matrix<3, 1, TYPE>& r1_xi, LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        LINALG::Matrix<3, 1, TYPE>& r1_xixi, LINALG::Matrix<3, 1, TYPE>& r2_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
+    void ComputeCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1,
+        CORE::LINALG::Matrix<3, 1, TYPE>& r2, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi);
 
     /*!
     \brief Compute coordinates of contact points of last time step from the discretization
     */
-    void ComputeOldCoordsAndDerivs(LINALG::Matrix<3, 1, TYPE>& r1_old,
-        LINALG::Matrix<3, 1, TYPE>& r2_old, LINALG::Matrix<3, 1, TYPE>& r1_xi_old,
-        LINALG::Matrix<3, 1, TYPE>& r2_xi_old,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
+    void ComputeOldCoordsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& r1_old,
+        CORE::LINALG::Matrix<3, 1, TYPE>& r2_old, CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi_old,
+        CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi_old,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
 
     /*!
     \brief Utility method for CPP (evaluate nonlinear function f)
     */
-    void EvaluateOrthogonalityCondition(LINALG::Matrix<2, 1, TYPE>& f,
-        const LINALG::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 1, TYPE>& t1, const LINALG::Matrix<3, 1, TYPE>& t2);
+    void EvaluateOrthogonalityCondition(CORE::LINALG::Matrix<2, 1, TYPE>& f,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, const double norm_delta_r,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi, const CORE::LINALG::Matrix<3, 1, TYPE>& t1,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& t2);
 
     /*!
     \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
     */
-    void EvaluateLinOrthogonalityCondition(LINALG::Matrix<2, 2, TYPE>& df,
-        LINALG::Matrix<2, 2, TYPE>& dfinv, const LINALG::Matrix<3, 1, TYPE>& delta_r,
-        const double norm_delta_r, const LINALG::Matrix<3, 1, TYPE>& r1_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r2_xi, const LINALG::Matrix<3, 1, TYPE>& r1_xixi,
-        const LINALG::Matrix<3, 1, TYPE>& r2_xixi, const LINALG::Matrix<3, 1, TYPE>& t1,
-        const LINALG::Matrix<3, 1, TYPE>& t2, const LINALG::Matrix<3, 1, TYPE>& t1_xi,
-        const LINALG::Matrix<3, 1, TYPE>& t2_xi);
+    void EvaluateLinOrthogonalityCondition(CORE::LINALG::Matrix<2, 2, TYPE>& df,
+        CORE::LINALG::Matrix<2, 2, TYPE>& dfinv, const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+        const double norm_delta_r, const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi, const CORE::LINALG::Matrix<3, 1, TYPE>& t1,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& t2, const CORE::LINALG::Matrix<3, 1, TYPE>& t1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& t2_xi);
 
     /*!
     \brief Compute normal vector and gap function at contact point
     */
-    void ComputeNormal(LINALG::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
+    void ComputeNormal(CORE::LINALG::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
 
     /*!
@@ -694,16 +710,19 @@ namespace CONTACT
     void GetNeighborNormalOld(
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
 
-    void FADCheckLinXiAndLinEta(const LINALG::Matrix<3, 1, TYPE>& delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xixi, const LINALG::Matrix<3, 1, TYPE>& r2_xixi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
+    void FADCheckLinXiAndLinEta(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xixi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi);
 
-    void FADCheckLinOrthogonalityCondition(const LINALG::Matrix<3, 1, TYPE>& delta_r,
-        const LINALG::Matrix<3, 1, TYPE>& r1_xi, const LINALG::Matrix<3, 1, TYPE>& r2_xi);
+    void FADCheckLinOrthogonalityCondition(const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
+        const CORE::LINALG::Matrix<3, 1, TYPE>& r2_xi);
 
     /*!
       \brief Check, if the current contact point is at one of the two ends of a physical beam

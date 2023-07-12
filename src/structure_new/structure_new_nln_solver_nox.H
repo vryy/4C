@@ -39,10 +39,10 @@ namespace NOX
   }      // namespace NLN
 }  // namespace NOX
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {

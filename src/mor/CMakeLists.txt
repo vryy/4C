@@ -5,6 +5,5 @@ set(_mor_dependencies
     adapter
     io
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_mor_dependencies})

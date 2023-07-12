@@ -30,7 +30,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
   {
     for (int gp = 0; gp < GetAnisotropy()->GetNumberOfGaussPoints(); ++gp)
     {
-      std::array<LINALG::Matrix<3, 1>, 1> fibers;
+      std::array<CORE::LINALG::Matrix<3, 1>, 1> fibers;
 
       fibers[0].Update(GetAnisotropy()->GetGPCylinderCoordinateSystem(gp).GetRad());
       MAT::FiberAnisotropyExtension<1>::SetFibers(gp, fibers);
@@ -42,7 +42,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
   }
   else if (GetAnisotropy()->HasElementCylinderCoordinateSystem())
   {
-    std::array<LINALG::Matrix<3, 1>, 1> fibers;
+    std::array<CORE::LINALG::Matrix<3, 1>, 1> fibers;
 
     fibers[0].Update(GetAnisotropy()->GetElementCylinderCoordinateSystem().GetRad());
     FiberAnisotropyExtension<1>::SetFibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
@@ -65,7 +65,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
   }
 }
 
-const LINALG::Matrix<3, 3>&
+const CORE::LINALG::Matrix<3, 3>&
 MIXTURE::ElastinMembraneAnisotropyExtension::GetOrthogonalStructuralTensor(int gp)
 {
   if (orthogonalStructuralTensor_.empty())
@@ -206,11 +206,11 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::ReadElement(
 
 // Updates all summands
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
-    LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
+    CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
-  gprefecoord = params.get<LINALG::Matrix<1, 3>>("gprefecoord");
+  CORE::LINALG::Matrix<1, 3> gprefecoord(true);  // gp coordinates in reference configuration
+  gprefecoord = params.get<CORE::LINALG::Matrix<1, 3>>("gprefecoord");
 
   double totaltime = params.get<double>("total time", -1);
   if (totaltime < 0.0)
@@ -255,20 +255,21 @@ double MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::GetGrowthScalar(in
   return current_reference_growth_[gp];
 }
 
-void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Evaluate(
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   dserror("This constituent does not support Evaluation without an elastic part.");
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateElasticPart(
-    const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFextin,
-    Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-    int gp, int eleGID)
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFextin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   // Compute total inelastic deformation gradient
-  static LINALG::Matrix<3, 3> iFin(false);
+  static CORE::LINALG::Matrix<3, 3> iFin(false);
   iFin.MultiplyNN(iFextin, PrestretchTensor(gp));
 
   // Evaluate 3D elastic part
@@ -276,8 +277,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
 
   // Evaluate Membrane
-  static LINALG::Matrix<6, 1> Smembrane_stress(false);
-  static LINALG::Matrix<6, 6> cmatmembrane(false);
+  static CORE::LINALG::Matrix<6, 1> Smembrane_stress(false);
+  static CORE::LINALG::Matrix<6, 6> cmatmembrane(false);
   EvaluateStressCMatMembrane(F, iFin, params, Smembrane_stress, cmatmembrane, gp, eleGID);
 
   S_stress.Update(1.0, Smembrane_stress, 1.0);
@@ -285,11 +286,11 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateElasticPart(
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateMembraneStress(
-    LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID)
+    CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  LINALG::Matrix<6, 6> cmat(false);
-  LINALG::Matrix<3, 3> Id(false);
-  LINALG::Matrix<3, 3> iFin(false);
+  CORE::LINALG::Matrix<6, 6> cmat(false);
+  CORE::LINALG::Matrix<3, 3> Id(false);
+  CORE::LINALG::Matrix<3, 3> iFin(false);
 
   MAT::IdentityMatrix(Id);
   iFin.MultiplyNN(Id, PrestretchTensor(gp));
@@ -298,27 +299,28 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateMembraneStre
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMembrane(
-    const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFin, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) const
+    const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<3, 3>& iFin,
+    Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) const
 {
-  static LINALG::Matrix<3, 3> Ce(false);
+  static CORE::LINALG::Matrix<3, 3> Ce(false);
   MAT::EvaluateCe(F, iFin, Ce);
 
   // Compute structural tensors in grown configuration
-  static LINALG::Matrix<3, 3> Aradgr(false);
-  static LINALG::Matrix<3, 3> Aorthgr(false);
+  static CORE::LINALG::Matrix<3, 3> Aradgr(false);
+  static CORE::LINALG::Matrix<3, 3> Aorthgr(false);
   EvaluateStructuralTensorsInGrownConfiguration(Aradgr, Aorthgr, iFin, gp, eleGID);
 
-  static LINALG::Matrix<3, 3> AorthgrCeAorthgrArad(false);
+  static CORE::LINALG::Matrix<3, 3> AorthgrCeAorthgrArad(false);
   EvaluateAorthgrCeAorthgrArad(AorthgrCeAorthgrArad, Aradgr, Aorthgr, Ce);
   double detX = AorthgrCeAorthgrArad.Determinant();
 
-  static LINALG::Matrix<3, 3> iFinAorthgriFinT(false);
+  static CORE::LINALG::Matrix<3, 3> iFinAorthgriFinT(false);
   EvaluateiFinAorthgriFinT(iFinAorthgriFinT, iFin, Aorthgr);
 
   // Z = F_{in}^{-T}*A_{gr}^{T}*X^{-1}*A_{gr}^{T}*F_{in}^{-1}
-  static LINALG::Matrix<3, 3> iFinTAorthgrTiXTAorthgriFin_sym(false);
-  static LINALG::Matrix<6, 1> iFinTAorthgrTiXTAorthgriFin_sym_stress(false);
+  static CORE::LINALG::Matrix<3, 3> iFinTAorthgrTiXTAorthgriFin_sym(false);
+  static CORE::LINALG::Matrix<6, 1> iFinTAorthgrTiXTAorthgriFin_sym_stress(false);
 
   EvaluateiFinTAorthgrTiXTAorthgriFin(
       iFinTAorthgrTiXTAorthgriFin_sym, AorthgrCeAorthgrArad, iFin, Aorthgr);
@@ -334,14 +336,14 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
   }
 
   // Compute membrane stress
-  static LINALG::Matrix<3, 3> Smembrane;
+  static CORE::LINALG::Matrix<3, 3> Smembrane;
   Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
   Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
   UTILS::VOIGT::Stresses::MatrixToVector(Smembrane, S_stress);
 
   // Compute constitutive tensor
-  static LINALG::Matrix<6, 6> dAradgriXAradgr_symdC(false);
+  static CORE::LINALG::Matrix<6, 6> dAradgriXAradgr_symdC(false);
   dAradgriXAradgr_symdC.Clear();
 
   MAT::AddtoCmatHolzapfelProduct(
@@ -353,19 +355,19 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
-    EvaluateStructuralTensorsInGrownConfiguration(LINALG::Matrix<3, 3>& Aradgr,
-        LINALG::Matrix<3, 3>& Aorthgr, const LINALG::Matrix<3, 3>& iFin, const int gp,
+    EvaluateStructuralTensorsInGrownConfiguration(CORE::LINALG::Matrix<3, 3>& Aradgr,
+        CORE::LINALG::Matrix<3, 3>& Aorthgr, const CORE::LINALG::Matrix<3, 3>& iFin, const int gp,
         const int eleGID) const
 {
   // Compute inelastic right Cauchy-Green deformation gradient
-  static LINALG::Matrix<3, 3> iCin(false);
+  static CORE::LINALG::Matrix<3, 3> iCin(false);
   iCin.MultiplyNT(iFin, iFin);
 
-  static LINALG::Matrix<3, 3> Fin(false);
+  static CORE::LINALG::Matrix<3, 3> Fin(false);
   Fin.Invert(iFin);
 
   // Compute radial structural tensor in grown configuration
-  static LINALG::Matrix<3, 3> FinArad(false);
+  static CORE::LINALG::Matrix<3, 3> FinArad(false);
   FinArad.MultiplyNN(Fin, anisotropyExtension_.GetStructuralTensor(gp, 0));
   Aradgr.MultiplyNT(iCin.Dot(anisotropyExtension_.GetStructuralTensor(gp, 0)), FinArad, Fin, 0.0);
 
@@ -375,39 +377,39 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateAorthgrCeAorthgrArad(
-    LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad, const LINALG::Matrix<3, 3>& Aradgr,
-    const LINALG::Matrix<3, 3>& Aorthgr, const LINALG::Matrix<3, 3>& Ce)
+    CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad, const CORE::LINALG::Matrix<3, 3>& Aradgr,
+    const CORE::LINALG::Matrix<3, 3>& Aorthgr, const CORE::LINALG::Matrix<3, 3>& Ce)
 {
-  static LINALG::Matrix<3, 3> AorthgrCe(false);
+  static CORE::LINALG::Matrix<3, 3> AorthgrCe(false);
   AorthgrCe.MultiplyNN(Aorthgr, Ce);
   AorthgrCeAorthgrArad.MultiplyNN(AorthgrCe, Aorthgr);
   AorthgrCeAorthgrArad.Update(1.0, Aradgr, 1.0);
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateiFinAorthgriFinT(
-    LINALG::Matrix<3, 3>& iFinAorthgriFinT, const LINALG::Matrix<3, 3>& iFin,
-    const LINALG::Matrix<3, 3>& Aorthgr)
+    CORE::LINALG::Matrix<3, 3>& iFinAorthgriFinT, const CORE::LINALG::Matrix<3, 3>& iFin,
+    const CORE::LINALG::Matrix<3, 3>& Aorthgr)
 {
-  static LINALG::Matrix<3, 3> iFinAorthgr(false);
+  static CORE::LINALG::Matrix<3, 3> iFinAorthgr(false);
   iFinAorthgr.MultiplyNN(iFin, Aorthgr);
   iFinAorthgriFinT.MultiplyNT(iFinAorthgr, iFin);
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateiFinTAorthgrTiXTAorthgriFin(
-    LINALG::Matrix<3, 3>& iFinTAorthgrTiXTAorthgriFin_sym,
-    const LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad, const LINALG::Matrix<3, 3>& iFin,
-    const LINALG::Matrix<3, 3>& Aorthgr)
+    CORE::LINALG::Matrix<3, 3>& iFinTAorthgrTiXTAorthgriFin_sym,
+    const CORE::LINALG::Matrix<3, 3>& AorthgrCeAorthgrArad, const CORE::LINALG::Matrix<3, 3>& iFin,
+    const CORE::LINALG::Matrix<3, 3>& Aorthgr)
 {
-  static LINALG::Matrix<3, 3> iAorthgrCeAorthgrArad(false);
+  static CORE::LINALG::Matrix<3, 3> iAorthgrCeAorthgrArad(false);
   iAorthgrCeAorthgrArad.Invert(AorthgrCeAorthgrArad);
 
-  static LINALG::Matrix<3, 3> AorthgriFin(false);
+  static CORE::LINALG::Matrix<3, 3> AorthgriFin(false);
   AorthgriFin.MultiplyNN(Aorthgr, iFin);
 
-  static LINALG::Matrix<3, 3> iFinTAorthgrTiXT(false);
+  static CORE::LINALG::Matrix<3, 3> iFinTAorthgrTiXT(false);
   iFinTAorthgrTiXT.MultiplyTT(AorthgriFin, iAorthgrCeAorthgrArad);
 
-  static LINALG::Matrix<3, 3> iFinTAorthgrTiXTAorthgriFin(false);
+  static CORE::LINALG::Matrix<3, 3> iFinTAorthgrTiXTAorthgriFin(false);
   iFinTAorthgrTiXTAorthgriFin.MultiplyNN(iFinTAorthgrTiXT, AorthgriFin);
 
   iFinTAorthgrTiXTAorthgriFin_sym.Update(0.5, iFinTAorthgrTiXTAorthgriFin, 0.0);

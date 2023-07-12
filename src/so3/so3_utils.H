@@ -22,13 +22,13 @@ namespace DRT
     {
       template <DRT::Element::DiscretizationType distype>
       void CalcR(const DRT::Element* ele, const std::vector<double>& disp,
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& R);
 
       template <DRT::Element::DiscretizationType distype>
       void GetTemperatureForStructuralMaterial(
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-              1>& shapefctsGP,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>& shapefctsGP,
           Teuchos::ParameterList& params);
 
       /*!
@@ -47,16 +47,19 @@ namespace DRT
        * \param gp [in] : Gauss point
        */
       template <DRT::Element::DiscretizationType distype>
-      void ComputeDeformationGradient(LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-                                          CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
+      void ComputeDeformationGradient(
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+              CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
           INPAR::STR::KinemType kinemType,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
           const INPAR::STR::PreStress prestressType,
           const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, int gp);
@@ -75,11 +78,12 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void ComputeDeformationGradientMulf(
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
           const Teuchos::RCP<DRT::ELEMENTS::PreStress> mulfHistory, int gp);
 
@@ -94,13 +98,14 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void ComputeDeformationGradientStandard(
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& defgrd,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
 
       /*!
@@ -112,7 +117,7 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void EvaluateNodalCoordinates(DRT::Node** nodes,
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe);
 
       /*!
@@ -124,7 +129,7 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void EvaluateNodalDisplacements(const std::vector<double>& disp,
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp);
 
       /*!
@@ -137,11 +142,13 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void EvaluateCurrentNodalCoordinates(
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xdisp,
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xcurr);
 
       /*!
@@ -154,11 +161,12 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype>
       void EvaluateInverseJacobian(
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          const CORE::LINALG::Matrix<
+              CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& xrefe,
-          const LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
-          LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
               CORE::DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
 
       /*!

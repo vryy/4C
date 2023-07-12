@@ -8,7 +8,6 @@ set(_tsi_dependencies
     inpar
     io
     lib
-    linalg
     mortar
     so3
     structure_new

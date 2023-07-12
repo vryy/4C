@@ -79,7 +79,7 @@ namespace CORE::GEO
       /*! \brief Returns element local coordinates "rst" of a point from its global coordinates
        * "xyz"
        *
-       *  \remark This variant uses the LINALG::Matrices as input and does a dimension check.
+       *  \remark This variant uses the CORE::LINALG::Matrices as input and does a dimension check.
        *  Call this function, to be on the safe side.
        *
        *  \param xyz (in) : Global spatial coordinate
@@ -101,8 +101,8 @@ namespace CORE::GEO
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
        *
-       *  \remark This variant uses the LINALG::Matrices as input and does a dimensional check.
-       *  Call this function to be on the safe side.
+       *  \remark This variant uses the CORE::LINALG::Matrices as input and does a dimensional
+       * check. Call this function to be on the safe side.
        *
        *  \param rst (in)  : Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
@@ -121,7 +121,7 @@ namespace CORE::GEO
 
       /*! \brief Returns the element center global coordinates
        *
-       *  \remark This variant uses the LINALG::Matrix as input and does a dimensional check.
+       *  \remark This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
@@ -137,7 +137,7 @@ namespace CORE::GEO
       /*! \brief Find the scalar value at a particular point inside the element
        *  specified by its local coordinates rst.
        *
-       *  \remark This variant uses the LINALG::Matrix as input and does a dimensional check.
+       *  \remark This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
@@ -413,8 +413,8 @@ namespace CORE::GEO
       {
         const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
         const int dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-        LINALG::Matrix<probdim, nen> xyze;
-        LINALG::Matrix<probdim, 1> xei;
+        CORE::LINALG::Matrix<probdim, nen> xyze;
+        CORE::LINALG::Matrix<probdim, 1> xei;
         xei = 0.1;  // the determinant of the Jacobian is independent of the considered point (true
                     // only for linear elements???)
 
@@ -424,8 +424,8 @@ namespace CORE::GEO
         else
           Coordinates(xyze.A());
 
-        LINALG::Matrix<dim, nen> deriv;
-        LINALG::Matrix<probdim, probdim> xjm;
+        CORE::LINALG::Matrix<dim, nen> deriv;
+        CORE::LINALG::Matrix<probdim, probdim> xjm;
         CORE::DRT::UTILS::shape_function_deriv1<distype>(xei, deriv);
 
         double det = 0;
@@ -437,7 +437,7 @@ namespace CORE::GEO
         // element dimension is smaller than the problem dimension (manifold)
         else if (dim < probdim)
         {
-          LINALG::Matrix<dim, dim> metrictensor;
+          CORE::LINALG::Matrix<dim, dim> metrictensor;
           const double throw_error_if_negative_determinant(true);
           CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype, probdim, double>(
               xyze, deriv, metrictensor, det, throw_error_if_negative_determinant);
@@ -501,7 +501,8 @@ namespace CORE::GEO
       \brief calculate the local coordinates of "xyz" with respect to the parent Quad element from
       which this shadow element is derived
        */
-      void LocalCoordinatesQuad(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst);
+      void LocalCoordinatesQuad(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
 
       /*!
       \brief Add cut face
@@ -667,7 +668,7 @@ namespace CORE::GEO
 
       bool PointInside(Point* p);
 
-      void Coordinates(LINALG::Matrix<probdim, numNodesElement>& xyze) const
+      void Coordinates(CORE::LINALG::Matrix<probdim, numNodesElement>& xyze) const
       {
         Coordinates(xyze.A());
       }
@@ -700,23 +701,25 @@ namespace CORE::GEO
       /*! \brief Returns element local coordinates "rst" of a point from its global coordinates
        * "xyz"
        *
-       *  This variant uses the LINALG::Matrices as input and does a dimension check.
+       *  This variant uses the CORE::LINALG::Matrices as input and does a dimension check.
        *  Call this function, to be on the safe side.
        *
        *  \param xyz (in)        : Global spatial coordinate
        *  \param rst (out)       : Local parameter space coordinate */
-      bool LocalCoordinates(const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rst);
+      bool LocalCoordinates(
+          const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst);
 
       /*! Returns element global coordinates "xyz" of a point from its local coordinates "rst"
        *
-       *  This variant uses the LINALG::Matrices as input and does a dimensional check.
+       *  This variant uses the CORE::LINALG::Matrices as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param rst (in)  : Local parameter space coordinate
        *  \param xyz (out) : Global spatial coordinate */
-      void GlobalCoordinates(const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, 1>& xyz)
+      void GlobalCoordinates(
+          const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
-        LINALG::Matrix<numNodesElement, 1> funct;
+        CORE::LINALG::Matrix<numNodesElement, 1> funct;
         CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
@@ -724,7 +727,7 @@ namespace CORE::GEO
         const std::vector<Node*>& nodes = Nodes();
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
-          LINALG::Matrix<probdim, 1> x(nodes[i]->point()->X());
+          CORE::LINALG::Matrix<probdim, 1> x(nodes[i]->point()->X());
           xyz.Update(funct(i), x, 1);
         }
       }
@@ -736,10 +739,10 @@ namespace CORE::GEO
        *
        *  \author hiermeier
        *  \date 08/16 */
-      void PointAt(const LINALG::Matrix<dim, 1>& rst, LINALG::Matrix<probdim, 1>& xyz)
+      void PointAt(const CORE::LINALG::Matrix<dim, 1>& rst, CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
-        LINALG::Matrix<numNodesElement, 1> funct(true);
-        LINALG::Matrix<probdim, numNodesElement> xyze(true);
+        CORE::LINALG::Matrix<numNodesElement, 1> funct(true);
+        CORE::LINALG::Matrix<probdim, numNodesElement> xyze(true);
         this->Coordinates(xyze);
 
         CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
@@ -748,14 +751,14 @@ namespace CORE::GEO
 
       /*! \brief Returns the element center global coordinates
        *
-       *  This variant uses the LINALG::Matrix as input and does a dimensional check.
+       *  This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param midpoint (out): The midpoint of the element in global spatial coordinates */
-      void ElementCenter(LINALG::Matrix<probdim, 1>& midpoint)
+      void ElementCenter(CORE::LINALG::Matrix<probdim, 1>& midpoint)
       {
         // get the element center in the parameter coordinates (dim)
-        LINALG::Matrix<dim, 1> center_rst(
+        CORE::LINALG::Matrix<dim, 1> center_rst(
             CORE::DRT::UTILS::getLocalCenterPosition<dim>(elementtype));
         PointAt(center_rst, midpoint);
       }
@@ -763,18 +766,18 @@ namespace CORE::GEO
       /*! \brief Find the scalar value at a particular point inside the element
        *  specified by its local coordinates rst.
        *
-       *  This variant uses the LINALG::Matrix as input and does a dimensional check.
+       *  This variant uses the CORE::LINALG::Matrix as input and does a dimensional check.
        *  Call this function to be on the safe side.
        *
        *  \param ns (in)   : contains the value of the scalar at the corner nodes of the element
        *  \param rst (in)  : local parameter space coordinate inside the element */
-      double Scalar(const std::vector<double>& ns, const LINALG::Matrix<dim, 1>& rst)
+      double Scalar(const std::vector<double>& ns, const CORE::LINALG::Matrix<dim, 1>& rst)
       {
-        LINALG::Matrix<numNodesElement, 1> funct;
+        CORE::LINALG::Matrix<numNodesElement, 1> funct;
         CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
-        LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
-        LINALG::Matrix<1, 1> res;
+        CORE::LINALG::Matrix<numNodesElement, 1> scalar(ns.data());
+        CORE::LINALG::Matrix<1, 1> res;
         res.MultiplyTN(funct, scalar);
         return res(0);
       }
@@ -783,9 +786,9 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param xyz (in) : Global spatial coordinates */
-      double GetLevelSetValue(const LINALG::Matrix<probdim, 1>& xyz)
+      double GetLevelSetValue(const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
-        LINALG::Matrix<dim, 1> rst;
+        CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
         return GetLevelSetValueAtLocalCoords(rst);
       }
@@ -794,16 +797,16 @@ namespace CORE::GEO
        *   has to be INSIDE the element.
        *
        *  \param rst (in) : local parameter space coordinates */
-      double GetLevelSetValueAtLocalCoords(const LINALG::Matrix<dim, 1>& rst)
+      double GetLevelSetValueAtLocalCoords(const CORE::LINALG::Matrix<dim, 1>& rst)
       {
-        LINALG::Matrix<numNodesElement, 1> funct;
+        CORE::LINALG::Matrix<numNodesElement, 1> funct;
 
         CORE::DRT::UTILS::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        LINALG::Matrix<numNodesElement, 1> escaa;
+        CORE::LINALG::Matrix<numNodesElement, 1> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -818,9 +821,9 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      std::vector<double> GetLevelSetGradient(const LINALG::Matrix<probdim, 1>& xyz)
+      std::vector<double> GetLevelSetGradient(const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
-        LINALG::Matrix<dim, 1> rst;
+        CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
         return GetLevelSetGradientAtLocalCoords(rst);
       }
@@ -828,23 +831,23 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in global coordinates
        *
        *  \param rst (in) : local parameter space coordinates */
-      std::vector<double> GetLevelSetGradientAtLocalCoords(const LINALG::Matrix<dim, 1>& rst)
+      std::vector<double> GetLevelSetGradientAtLocalCoords(const CORE::LINALG::Matrix<dim, 1>& rst)
       {
         // Calculate global derivatives
         //----------------------------------
-        LINALG::Matrix<probdim, numNodesElement> deriv1;
-        LINALG::Matrix<probdim, numNodesElement> xyze;
+        CORE::LINALG::Matrix<probdim, numNodesElement> deriv1;
+        CORE::LINALG::Matrix<probdim, numNodesElement> xyze;
         Coordinates(xyze);
         // transposed jacobian dxyz/drst
-        LINALG::Matrix<probdim, probdim> xjm;
+        CORE::LINALG::Matrix<probdim, probdim> xjm;
         // inverse of transposed jacobian drst/dxyz
-        LINALG::Matrix<probdim, probdim> xij;
+        CORE::LINALG::Matrix<probdim, probdim> xij;
         // nodal spatial derivatives dN_i/dr * dr/dx + dN_i/ds * ds/dx + ...
-        LINALG::Matrix<probdim, numNodesElement> derxy;
+        CORE::LINALG::Matrix<probdim, numNodesElement> derxy;
         // only filled for manifolds
-        LINALG::Matrix<dim, dim> metrictensor;
-        LINALG::Matrix<probdim, 1> normalvec1;
-        LINALG::Matrix<probdim, 1> normalvec2;
+        CORE::LINALG::Matrix<dim, dim> metrictensor;
+        CORE::LINALG::Matrix<probdim, 1> normalvec1;
+        CORE::LINALG::Matrix<probdim, 1> normalvec2;
 
         EvalDerivsInParameterSpace<probdim, elementtype>(
             xyze, rst, deriv1, metrictensor, xjm, &xij, &normalvec1, &normalvec2, true);
@@ -856,7 +859,7 @@ namespace CORE::GEO
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        LINALG::Matrix<1, numNodesElement> escaa;
+        CORE::LINALG::Matrix<1, numNodesElement> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -864,7 +867,7 @@ namespace CORE::GEO
           escaa(0, mm) = nod->LSV();
           mm++;
         }
-        LINALG::Matrix<probdim, 1> phi_deriv1;
+        CORE::LINALG::Matrix<probdim, 1> phi_deriv1;
         phi_deriv1.MultiplyNT(derxy, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + probdim);
@@ -876,9 +879,10 @@ namespace CORE::GEO
       /*! \brief Return the level set gradient in local (parameter space) coordinates
        *
        *  \param xyz (in) : global spatial coordinates */
-      std::vector<double> GetLevelSetGradientInLocalCoords(const LINALG::Matrix<probdim, 1>& xyz)
+      std::vector<double> GetLevelSetGradientInLocalCoords(
+          const CORE::LINALG::Matrix<probdim, 1>& xyz)
       {
-        LINALG::Matrix<dim, 1> rst;
+        CORE::LINALG::Matrix<dim, 1> rst;
         LocalCoordinates(xyz, rst);
         return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst);
       }
@@ -887,16 +891,16 @@ namespace CORE::GEO
        *
        *  \param rst (in) : local parameter space coordinates */
       std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(
-          const LINALG::Matrix<dim, 1>& rst)
+          const CORE::LINALG::Matrix<dim, 1>& rst)
       {
-        LINALG::Matrix<dim, numNodesElement> deriv1;
+        CORE::LINALG::Matrix<dim, numNodesElement> deriv1;
 
         CORE::DRT::UTILS::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        LINALG::Matrix<1, numNodesElement> escaa;
+        CORE::LINALG::Matrix<1, numNodesElement> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -904,7 +908,7 @@ namespace CORE::GEO
           escaa(0, mm) = nod->LSV();
           mm++;
         }
-        LINALG::Matrix<dim, 1> phi_deriv1;
+        CORE::LINALG::Matrix<dim, 1> phi_deriv1;
         phi_deriv1.MultiplyNT(deriv1, escaa);
 
         std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + dim);
@@ -917,71 +921,71 @@ namespace CORE::GEO
       //! derived
       virtual bool LocalCoordinates(const double* xyz, double* rst)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
-        LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
         return LocalCoordinates(xyz_mat, rst_mat);
       }
 
       //! derived
       virtual void GlobalCoordinates(const double* rst, double* xyz)
       {
-        const LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
-        LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
+        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
         GlobalCoordinates(rst_mat, xyz_mat);
       }
 
       //! derived
       virtual void ElementCenter(double* midpoint)
       {
-        LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
+        CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         ElementCenter(midpoint_mat);
       }
 
       //! derived
       virtual double Scalar(const std::vector<double>& ns, const double* rst)
       {
-        const LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return Scalar(ns, rst_mat);
       }
 
       //! derived
       virtual double GetLevelSetValue(const double* xyz)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetValue(xyz_mat);
       }
 
       virtual double GetLevelSetValueAtLocalCoords(const double* rst)
       {
-        const LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetValueAtLocalCoords(rst_mat);
       }
 
       //! derived
       virtual std::vector<double> GetLevelSetGradient(const double* xyz)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradient(xyz_mat);
       }
 
       //! derived
       virtual std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst)
       {
-        const LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoords(rst_mat);
       }
 
       //! derived
       virtual std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz)
       {
-        const LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
+        const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradientInLocalCoords(xyz_mat);
       }
 
       //! derived
       virtual std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst)
       {
-        const LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
+        const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst_mat);
       }
     };  // class ConcreteElement

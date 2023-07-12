@@ -16,8 +16,8 @@
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
 {
   // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);
@@ -121,8 +121,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_2D(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LinMeshMotion_3D(
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
 {
   // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);

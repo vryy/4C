@@ -136,7 +136,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -176,14 +176,14 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::Matrix<2, 1, double> eval;
+      CORE::LINALG::Matrix<2, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -231,14 +231,14 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::Matrix<3, 1, double> eval;
+      CORE::LINALG::Matrix<3, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -294,7 +294,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(
-        LINALG::SerialDenseMatrix &matrix) const
+        CORE::LINALG::SerialDenseMatrix &matrix) const
     {
       matrix.LightShape(nsd_, Size());
 
@@ -339,7 +339,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -381,14 +381,14 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20];
-      LINALG::Matrix<2, 1, double> eval;
+      CORE::LINALG::Matrix<2, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -440,14 +440,14 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
 
       // avoid memory allocation by allocating values on the stack
       double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
-      LINALG::Matrix<3, 1, double> eval;
+      CORE::LINALG::Matrix<3, 1, double> eval;
       for (unsigned int i = 0; i < size; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
         {
@@ -506,7 +506,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(
-        LINALG::SerialDenseMatrix &matrix) const
+        CORE::LINALG::SerialDenseMatrix &matrix) const
     {
       matrix.LightShape(nsd_, Size());
 
@@ -547,7 +547,7 @@ namespace CORE::DRT
 
     template <int nsd_>
     void LagrangeBasisTet<nsd_>::Evaluate(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
     {
       legendre_.Evaluate(point, values);
       vandermondeFactor_.SetVectors(values, values);
@@ -558,7 +558,7 @@ namespace CORE::DRT
 
     template <int nsd_>
     void LagrangeBasisTet<nsd_>::Evaluate_deriv1(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv1(point, derivatives);
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -574,7 +574,7 @@ namespace CORE::DRT
 
     template <int nsd_>
     void LagrangeBasisTet<nsd_>::Evaluate_deriv2(
-        const LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv2(point, derivatives);
       for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
@@ -674,7 +674,7 @@ namespace CORE::DRT
       Epetra_SerialDenseVector values(Size());
       Epetra_SerialDenseMatrix deriv1(nsd_, Size());
       Epetra_SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
-      LINALG::Matrix<nsd_, 1> point;
+      CORE::LINALG::Matrix<nsd_, 1> point;
       for (unsigned int i = 0; i < Size(); ++i)
       {
         for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = feketePoints_(d, i);
@@ -709,7 +709,7 @@ namespace CORE::DRT
 
     template <int nsd_>
     void DRT::UTILS::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
-        LINALG::SerialDenseMatrix &matrix) const
+        CORE::LINALG::SerialDenseMatrix &matrix) const
     {
       matrix.LightShape(feketePoints_.M(), feketePoints_.N());
       for (int i = 0; i < feketePoints_.N(); ++i)

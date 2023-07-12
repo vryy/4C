@@ -42,8 +42,8 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
+    ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -67,7 +67,7 @@ namespace SCATRA
         std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
 
     void BuildBlockNullSpaces(
-        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const override;
+        Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const override;
 
     /*========================================================================*/
     //! @name general framework
@@ -189,7 +189,7 @@ namespace SCATRA
     const double& CellVoltage() const { return cellvoltage_; };
 
     //! return map extractor for macro scale in multi-scale simulations
-    const Teuchos::RCP<const LINALG::MultiMapExtractor>& SplitterMacro() const
+    const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor>& SplitterMacro() const
     {
       return splitter_macro_;
     };
@@ -269,7 +269,7 @@ namespace SCATRA
     //! dimension. Thus, the dimension of each null space is decreased by one, and the corresponding
     //! zero null space vector is removed from the null space.
     void ReduceDimensionNullSpaceBlocks(
-        Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const;
+        Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -293,15 +293,16 @@ namespace SCATRA
     //! \param systemmatrix    global system matrix
     //! \param rhs             global right-hand side vector
     //! \param condstring      name of condition to be evaluated
-    void EvaluateElectrodeKineticsConditions(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<Epetra_Vector> rhs, const std::string& condstring);
+    void EvaluateElectrodeKineticsConditions(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
+        const std::string& condstring);
 
     //! \brief evaluate point boundary conditions for electrode kinetics
     //!
     //! \param systemmatrix  global system matrix
     //! \param rhs           global right-hand side vector
     void EvaluateElectrodeBoundaryKineticsPointConditions(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! Add Linearization for Nernst-BC
     void LinearizationNernstCondition();
@@ -309,7 +310,8 @@ namespace SCATRA
     //! update time-dependent electrode state variables at the end of an time step
     virtual void ElectrodeKineticsTimeUpdate() = 0;
 
-    void EvaluateSolutionDependingConditions(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void EvaluateSolutionDependingConditions(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<Epetra_Vector> rhs) override;
 
     void ApplyDirichletBC(
@@ -410,7 +412,7 @@ namespace SCATRA
     double dt_adapted_;
 
     //! map extractor for macro scale in multi-scale simulations
-    Teuchos::RCP<const LINALG::MultiMapExtractor> splitter_macro_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> splitter_macro_;
 
     //! CSV writers for SOC, c-rate and cell voltage
     std::map<int, std::optional<IO::RuntimeCsvWriter>> runtime_csvwriter_soc_;

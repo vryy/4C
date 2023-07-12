@@ -240,7 +240,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
 
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else
   {
@@ -248,13 +248,13 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     if (block_vec_ptr.is_null()) return true;
-    LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
 
     // --- constr. - block --------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::constraint);
     if (block_vec_ptr.is_null()) return true;
     Epetra_Vector tmp(f.Map());
-    LINALG::Export(*block_vec_ptr, tmp);
+    CORE::LINALG::Export(*block_vec_ptr, tmp);
     f.Update(1., tmp, 1.);
   }
 
@@ -264,9 +264,9 @@ bool STR::MODELEVALUATOR::Contact::AssembleForce(Epetra_Vector& f, const double&
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
   int err = 0;
   // ---------------------------------------------------------------------
   // Penalty / gpts / Nitsche system: no additional/condensed dofs
@@ -277,7 +277,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
   {
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
     if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
-    Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().ExtractDisplBlock(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
   }
   // ---------------------------------------------------------------------
@@ -289,7 +289,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -304,7 +304,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ, &EvalContact());
     if (not block_ptr.is_null())
     {
-      Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
       jac_dd_ptr->Add(*block_ptr, false, timefac_np, 1.0);
       // reset the block pointers, just to be on the safe side
       block_ptr = Teuchos::null;
@@ -342,7 +342,7 @@ bool STR::MODELEVALUATOR::Contact::AssembleJacobian(
       Teuchos::RCP<Epetra_Vector> ones =
           Teuchos::rcp(new Epetra_Vector(GState().BlockMap(Type()), false));
       err = ones->PutScalar(1.0);
-      block_ptr = Teuchos::rcp(new LINALG::SparseMatrix(*ones));
+      block_ptr = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ones));
       GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_lm);
     }
     // reset the block pointer, just to be on the safe side
@@ -512,14 +512,14 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*Strategy().ActiveRowNodes()));
-    LINALG::Export(*slipset, *slipsetexp);
+    CORE::LINALG::Export(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<const Epetra_Map> problemnodes = Strategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-  LINALG::Export(*activeset, *activesetexp);
+  CORE::LINALG::Export(*activeset, *activesetexp);
 
   if (Strategy().WearBothDiscrete())
   {
@@ -531,11 +531,11 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*Strategy().MasterActiveNodes()));
-    LINALG::Export(*slipset, *slipsetexp);
+    CORE::LINALG::Export(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-    LINALG::Export(*mactiveset, *mactivesetexp);
+    CORE::LINALG::Export(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
@@ -551,12 +551,12 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   // normal direction
   Teuchos::RCP<const Epetra_Vector> normalstresses = Strategy().ContactNorStress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*normalstresses, *normalstressesexp);
+  CORE::LINALG::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<const Epetra_Vector> tangentialstresses = Strategy().ContactTanStress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*tangentialstresses, *tangentialstressesexp);
+  CORE::LINALG::Export(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
   // contact tractions in normal and tangential direction
@@ -618,7 +618,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
+  CORE::LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), allproc.data(), Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 
@@ -645,10 +645,10 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
 
 #endif  // MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
   // export
-  LINALG::Export(*fcslavenor, *fcslavenorexp);
-  LINALG::Export(*fcslavetan, *fcslavetanexp);
-  LINALG::Export(*fcmasternor, *fcmasternorexp);
-  LINALG::Export(*fcmastertan, *fcmastertanexp);
+  CORE::LINALG::Export(*fcslavenor, *fcslavenorexp);
+  CORE::LINALG::Export(*fcslavetan, *fcslavetanexp);
+  CORE::LINALG::Export(*fcmasternor, *fcmasternorexp);
+  CORE::LINALG::Export(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
   iowriter.WriteVector("norslaveforce", fcslavenorexp);
@@ -695,7 +695,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     // write output
     Teuchos::RCP<const Epetra_Vector> wearoutput = Strategy().ContactWear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*wearoutput, *wearoutputexp);
+    CORE::LINALG::Export(*wearoutput, *wearoutputexp);
     iowriter.WriteVector("wear", wearoutputexp);
   }
 
@@ -709,7 +709,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
         dynamic_cast<const CONTACT::PoroLagrangeStrategy&>(Strategy());
     Teuchos::RCP<const Epetra_Vector> lambdaout = poro_strategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*lambdaout, *lambdaoutexp);
+    CORE::LINALG::Export(*lambdaout, *lambdaoutexp);
     iowriter.WriteVector("poronopen_lambda", lambdaoutexp);
   }
 
@@ -850,7 +850,7 @@ void STR::MODELEVALUATOR::Contact::ExtendLagrangeMultiplierDomain(
       GetBlockDofRowMapPtr()->NumGlobalElements())
   {
     Teuchos::RCP<Epetra_Vector> tmp_ptr = Teuchos::rcp(new Epetra_Vector(*GetBlockDofRowMapPtr()));
-    LINALG::Export(*lm_vec, *tmp_ptr);
+    CORE::LINALG::Export(*lm_vec, *tmp_ptr);
     lm_vec = tmp_ptr;
   }
   else
@@ -912,7 +912,7 @@ void STR::MODELEVALUATOR::Contact::RunPostIterate(const NOX::Solver::Generic& so
 void STR::MODELEVALUATOR::Contact::RunPreApplyJacobianInverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::NLN::Group& grp)
 {
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd = GState().JacobianDisplBlock();
   const_cast<CONTACT::CoAbstractStrategy&>(Strategy())
       .RunPreApplyJacobianInverse(jac_dd, const_cast<Epetra_Vector&>(rhs));
 
@@ -961,7 +961,7 @@ void STR::MODELEVALUATOR::Contact::RunPostApplyJacobianInverse(const Epetra_Vect
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> STR::MODELEVALUATOR::Contact::GetJacobianBlock(
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::MODELEVALUATOR::Contact::GetJacobianBlock(
     const DRT::UTILS::MatBlockType bt) const
 {
   return GState().GetJacobianBlock(Type(), bt);
@@ -986,12 +986,12 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Contact::AssembleForceOfModels(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> STR::MODELEVALUATOR::Contact::GetAuxDisplJacobian() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> STR::MODELEVALUATOR::Contact::GetAuxDisplJacobian() const
 {
   std::vector<INPAR::STR::ModelType> g;
   g.push_back(INPAR::STR::ModelType::model_contact);
 
-  Teuchos::RCP<LINALG::SparseOperator> jacaux = GState().CreateAuxJacobian();
+  Teuchos::RCP<CORE::LINALG::SparseOperator> jacaux = GState().CreateAuxJacobian();
   bool ok = Int().AssembleJac(*jacaux, &g);
 
   if (!ok) dserror("ERROR: CreateAuxJacobian went wrong!");

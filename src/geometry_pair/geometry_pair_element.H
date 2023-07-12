@@ -301,7 +301,7 @@ namespace GEOMETRYPAIR
       double normalfac = 1.0;
 
       // Get the knots and weights for this element.
-      using type_weights = LINALG::Matrix<base::n_nodes_, 1, double>;
+      using type_weights = CORE::LINALG::Matrix<base::n_nodes_, 1, double>;
       type_weights weights(true);
       std::vector<Epetra_SerialDenseVector> mypknots(3);
       std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -339,7 +339,7 @@ namespace GEOMETRYPAIR
         dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.
-      LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
+      CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
       std::vector<Epetra_SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
@@ -377,7 +377,7 @@ namespace GEOMETRYPAIR
       double normalfac = 1.0;
 
       // Get the knots and weights for this element.
-      using type_weights = LINALG::Matrix<base::n_nodes_, 1, double>;
+      using type_weights = CORE::LINALG::Matrix<base::n_nodes_, 1, double>;
       type_weights weights(true);
       std::vector<Epetra_SerialDenseVector> mypknots(3);
       std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -392,7 +392,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      using type_dummy = LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type>;
+      using type_dummy = CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type>;
       type_dummy N_dummy;
       CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv<type_dummy, V, T, type_weights,
           typename V::scalar_type>(N_dummy, dN, xi, myknots, weights, discretization);
@@ -417,7 +417,7 @@ namespace GEOMETRYPAIR
         dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
 
       // Get the knots and weights for this element.
-      LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
+      CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
       std::vector<Epetra_SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
@@ -428,7 +428,7 @@ namespace GEOMETRYPAIR
       DRT::Element::DiscretizationType discretization = base::discretization_;
 
       // Evaluate the shape functions.
-      LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
+      CORE::LINALG::Matrix<base::n_nodes_, 1, typename V::scalar_type> dummy;
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
           dummy, dN, xi, myknots, weights, discretization);
     };

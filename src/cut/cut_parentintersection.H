@@ -47,10 +47,11 @@ namespace CORE::GEO
        public:
         //! constructor for creating volumecells dofset data for communication between processors
         //! (constructor during the Robin round)
-        DofSetData(int set_index,                                  ///< set index for Volumecell
-            bool inside_cell,                                      ///< cell inside or outside
-            std::vector<LINALG::Matrix<3, 1>>& cut_points_coords,  ///< coordinates of cut_points
-            int peid,                                              ///< parent element id
+        DofSetData(int set_index,  ///< set index for Volumecell
+            bool inside_cell,      ///< cell inside or outside
+            std::vector<CORE::LINALG::Matrix<3, 1>>&
+                cut_points_coords,  ///< coordinates of cut_points
+            int peid,               ///< parent element id
             std::map<int, int>&
                 node_dofsetnumber_map  ///< for the current volumecell in a parent element, for each
                                        ///< node (nid) the current dofset number
@@ -89,7 +90,7 @@ namespace CORE::GEO
 
         int set_index_;     ///< set index for Volumecell
         bool inside_cell_;  ///< bool inside or outside cell
-        std::vector<LINALG::Matrix<3, 1>>
+        std::vector<CORE::LINALG::Matrix<3, 1>>
             cut_points_coords_;  ///< coordinates for points of Volumecell
         int peid_;               ///< parent element Id for volumecell
         std::map<int, int>

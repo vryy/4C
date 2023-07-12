@@ -121,26 +121,26 @@ void MAT::Membrane_ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* line
 /*----------------------------------------------------------------------*
  | hyperelastic stress response plus elasticity tensor   sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ElastHyper::EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-    const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress, LINALG::Matrix<3, 3>& cmat,
-    const int gp, const int eleGID)
+void MAT::Membrane_ElastHyper::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+    const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
+    CORE::LINALG::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
   stress.Clear();
   cmat.Clear();
 
   // kinematic quantities and identity tensors
-  LINALG::Matrix<3, 1> id2(true);
-  LINALG::Matrix<3, 3> id4sharp(true);
-  LINALG::Matrix<3, 1> rcg(true);
+  CORE::LINALG::Matrix<3, 1> id2(true);
+  CORE::LINALG::Matrix<3, 3> id4sharp(true);
+  CORE::LINALG::Matrix<3, 1> rcg(true);
   double rcg33;
-  LINALG::Matrix<3, 1> icg(true);
+  CORE::LINALG::Matrix<3, 1> icg(true);
   MembraneElastHyperEvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
 
   // evaluate isotropic 2nd Piola-Kirchhoff stress and constitutive tensor
-  LINALG::Matrix<3, 1> stress_iso(true);
-  LINALG::Matrix<3, 3> cmat_iso(true);
+  CORE::LINALG::Matrix<3, 1> stress_iso(true);
+  CORE::LINALG::Matrix<3, 3> cmat_iso(true);
   MembraneElastHyperEvaluateIsotropicStressCmat(stress_iso, cmat_iso, id2, id4sharp, rcg, rcg33,
       icg, gp, eleGID, potsum_, summandProperties_);
 
@@ -151,8 +151,8 @@ void MAT::Membrane_ElastHyper::EvaluateMembrane(const LINALG::Matrix<3, 3>& defg
   // evaluate anisotropic 2nd Piola-Kirchhoff stress and constitutive tensor
   if (summandProperties_.anisoprinc)
   {
-    LINALG::Matrix<3, 1> stress_aniso(true);
-    LINALG::Matrix<3, 3> cmat_aniso(true);
+    CORE::LINALG::Matrix<3, 1> stress_aniso(true);
+    CORE::LINALG::Matrix<3, 3> cmat_aniso(true);
     EvaluateAnisotropicStressCmat(
         stress_aniso, cmat_aniso, Q_trafo, rcg, rcg33, params, gp, eleGID);
 
@@ -172,26 +172,26 @@ void MAT::Membrane_ElastHyper::EvaluateMembrane(const LINALG::Matrix<3, 3>& defg
  | evaluate strain energy function                       sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ElastHyper::StrainEnergy(
-    LINALG::Matrix<3, 3>& cauchygreen, double& psi, const int gp, const int eleGID)
+    CORE::LINALG::Matrix<3, 3>& cauchygreen, double& psi, const int gp, const int eleGID)
 {
   // kinematic quantities and identity tensors
-  LINALG::Matrix<3, 1> id2(true);
-  LINALG::Matrix<3, 3> id4sharp(true);
-  LINALG::Matrix<3, 1> rcg(true);
+  CORE::LINALG::Matrix<3, 1> id2(true);
+  CORE::LINALG::Matrix<3, 3> id4sharp(true);
+  CORE::LINALG::Matrix<3, 1> rcg(true);
   double rcg33;
-  LINALG::Matrix<3, 1> icg(true);
+  CORE::LINALG::Matrix<3, 1> icg(true);
   MembraneElastHyperEvaluateKinQuant(cauchygreen, id2, id4sharp, rcg, rcg33, icg);
 
   // Green-Lagrange strains matrix E = 0.5 * (Cauchy-Green - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  LINALG::Matrix<6, 1> glstrain(true);
+  CORE::LINALG::Matrix<6, 1> glstrain(true);
   glstrain(0) = 0.5 * (rcg(0) - 1.0);
   glstrain(1) = 0.5 * (rcg(1) - 1.0);
   glstrain(2) = 0.5 * (rcg33 - 1.0);
   glstrain(3) = rcg(2);
 
   // principal isotropic invariants
-  LINALG::Matrix<3, 1> prinv_iso(true);
+  CORE::LINALG::Matrix<3, 1> prinv_iso(true);
   MembraneElastHyperInvariantsPrincipal(prinv_iso, rcg, rcg33);
 
   // loop map of associated potential summands
@@ -205,10 +205,10 @@ void MAT::Membrane_ElastHyper::StrainEnergy(
 /*----------------------------------------------------------------------*
  | calculate anisotropic stress and elasticity tensor    sfuchs 08/2017 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1>& stress_aniso,
-    LINALG::Matrix<3, 3>& cmat_aniso, const LINALG::Matrix<3, 3>& Q_trafo,
-    const LINALG::Matrix<3, 1>& rcg, const double& rcg33, Teuchos::ParameterList& params,
-    const int gp, int eleGID)
+void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(
+    CORE::LINALG::Matrix<3, 1>& stress_aniso, CORE::LINALG::Matrix<3, 3>& cmat_aniso,
+    const CORE::LINALG::Matrix<3, 3>& Q_trafo, const CORE::LINALG::Matrix<3, 1>& rcg,
+    const double& rcg33, Teuchos::ParameterList& params, const int gp, int eleGID)
 {
   // loop map of associated potential summands
   for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -217,7 +217,7 @@ void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1
     if (fibervecs_[p].Norm2() == 0) continue;
 
     // fibervector in orthonormal frame on membrane surface
-    LINALG::Matrix<3, 1> fibervector(true);
+    CORE::LINALG::Matrix<3, 1> fibervector(true);
     fibervector.MultiplyTN(1.0, Q_trafo, fibervecs_[p], 0.0);
 
     // set new fibervector in anisotropic material
@@ -226,26 +226,26 @@ void MAT::Membrane_ElastHyper::EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 1
     // three dimensional right Cauchy-Green
     // REMARK: strain-like 6-Voigt vector
     // NOTE: rcg is a stress-like 3-Voigt vector
-    LINALG::Matrix<6, 1> rcg_full(true);
+    CORE::LINALG::Matrix<6, 1> rcg_full(true);
     rcg_full(0) = rcg(0);
     rcg_full(1) = rcg(1);
     rcg_full(2) = rcg33;
     rcg_full(3) = 2.0 * rcg(2);
 
     // three dimensional anisotropic stress and constitutive tensor
-    LINALG::Matrix<6, 1> stress_aniso_full(true);
-    LINALG::Matrix<6, 6> cmat_aniso_full(true);
+    CORE::LINALG::Matrix<6, 1> stress_aniso_full(true);
+    CORE::LINALG::Matrix<6, 6> cmat_aniso_full(true);
 
     potsum_[p]->AddStressAnisoPrincipal(
         rcg_full, cmat_aniso_full, stress_aniso_full, params, gp, eleGID);
 
     // reduced anisotropic stress and constitutive tensor
-    LINALG::Matrix<3, 1> stress_aniso_red(true);
+    CORE::LINALG::Matrix<3, 1> stress_aniso_red(true);
     stress_aniso_red(0) = stress_aniso_full(0);
     stress_aniso_red(1) = stress_aniso_full(1);
     stress_aniso_red(2) = stress_aniso_full(3);
 
-    LINALG::Matrix<3, 3> cmat_aniso_red(true);
+    CORE::LINALG::Matrix<3, 3> cmat_aniso_red(true);
     cmat_aniso_red(0, 0) = cmat_aniso_full(0, 0);
     cmat_aniso_red(0, 1) = cmat_aniso_full(0, 1);
     cmat_aniso_red(0, 2) = cmat_aniso_full(0, 3);

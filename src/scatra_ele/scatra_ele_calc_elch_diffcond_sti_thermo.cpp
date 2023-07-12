@@ -92,7 +92,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
                               //!< time integration factor
     const double rhstaufac,  //!< domain integration factor times stabilization parameter times time
                              //!< integration factor for right-hand side vector
-    LINALG::Matrix<nen_, 1>&
+    CORE::LINALG::Matrix<nen_, 1>&
         tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
     double& rhsint  //!< body force value
 )
@@ -105,7 +105,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
   {
     // extract variables and parameters
     const double& concentration = VarManager()->Phinp(0);
-    const LINALG::Matrix<nsd_, 1>& gradtemp = VarManager()->GradTemp();
+    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = VarManager()->GradTemp();
     const double& kappa = mydiffcond::DiffManager()->GetCond();
     const double& kappaderiv = mydiffcond::DiffManager()->GetConcDerivCond(0);
     const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     {
       // extract variables and parameters
       const double& concentration = VarManager()->Phinp(0);
-      const LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradPhi(0);
+      const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradPhi(0);
       const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
       const double& invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
       const double& invfval = mydiffcond::DiffManager()->InvFVal(0);

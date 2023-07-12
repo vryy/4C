@@ -45,7 +45,8 @@ namespace CORE::GEO
       \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this
       side. Since side is 2D, the local coordinates will have only two coordinates
       */
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst) = 0;
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) = 0;
 
       /*!
       \brief For a quadratic side, get the resulting linear sides
@@ -66,7 +67,7 @@ namespace CORE::GEO
       {
         const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-        LINALG::Matrix<2, nen> xie;
+        CORE::LINALG::Matrix<2, nen> xie;
 
         const std::vector<CORE::GEO::CUT::Point*>& cpoints = bc->Points();
         if (cpoints.size() != nen) throw std::runtime_error("non-matching number of points");
@@ -74,7 +75,7 @@ namespace CORE::GEO
         for (unsigned i = 0; i < nen; ++i)
         {
           CORE::GEO::CUT::Point* p = cpoints[i];
-          const LINALG::Matrix<2, 1>& xi = LocalCoordinates(p);
+          const CORE::LINALG::Matrix<2, 1>& xi = LocalCoordinates(p);
           std::copy(xi.A(), xi.A() + 2, &xie(0, i));
         }
 
@@ -87,15 +88,15 @@ namespace CORE::GEO
       \brief Get the local coordinates of point p with respect to this side. Since side is 2D, the
       local coordinates will have only two coordinates
        */
-      const LINALG::Matrix<2, 1>& LocalCoordinates(Point* p)
+      const CORE::LINALG::Matrix<2, 1>& LocalCoordinates(Point* p)
       {
-        std::map<Point*, LINALG::Matrix<2, 1>>::iterator i = local_coordinates_.find(p);
+        std::map<Point*, CORE::LINALG::Matrix<2, 1>>::iterator i = local_coordinates_.find(p);
         if (i != local_coordinates_.end())
         {
           return i->second;
         }
-        LINALG::Matrix<2, 1>& rst = local_coordinates_[p];
-        LINALG::Matrix<3, 1> xyz;
+        CORE::LINALG::Matrix<2, 1>& rst = local_coordinates_[p];
+        CORE::LINALG::Matrix<3, 1> xyz;
         p->Coordinates(xyz.A());
         LocalCoordinates(xyz, rst);
         return rst;
@@ -141,7 +142,7 @@ namespace CORE::GEO
       }
 
      private:
-      std::map<Point*, LINALG::Matrix<2, 1>> local_coordinates_;
+      std::map<Point*, CORE::LINALG::Matrix<2, 1>> local_coordinates_;
     };
 
     /// linear side handle
@@ -160,9 +161,10 @@ namespace CORE::GEO
         side_->Coordinates(xyze.A());
       }
 
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rs)
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rs)
       {
-        LINALG::Matrix<3, 1> rst;
+        CORE::LINALG::Matrix<3, 1> rst;
         side_->LocalCoordinates(xyz, rst);
         rs(0) = rst(0);
         rs(1) = rst(1);
@@ -315,7 +317,8 @@ namespace CORE::GEO
 
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tri6; }
 
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
     };
 
     /// quad4 side handle
@@ -329,7 +332,8 @@ namespace CORE::GEO
 
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad4; }
 
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
     };
 
     /// quad8 side handle
@@ -340,7 +344,8 @@ namespace CORE::GEO
 
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad8; }
 
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
     };
 
     /// quad9 side handle
@@ -351,7 +356,8 @@ namespace CORE::GEO
 
       virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad9; }
 
-      virtual void LocalCoordinates(const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<2, 1>& rst);
+      virtual void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
     };
 
   }  // namespace CUT

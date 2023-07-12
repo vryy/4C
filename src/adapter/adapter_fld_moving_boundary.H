@@ -101,7 +101,7 @@ namespace ADAPTER
         Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
 
     /// get the linear solver object used for this field
-    // virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    // virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     //@}
 

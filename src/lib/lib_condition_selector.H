@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }
@@ -43,11 +43,11 @@ namespace DRT
 
       A stack of ConditionSelector objects is used to build a
       MultiConditionSelector which in turn is used to setup a
-      LINALG::MultiMapExtractor object.
+      CORE::LINALG::MultiMapExtractor object.
 
-      To put it the other way: A LINALG::MultiMapExtractor splits a full (row)
+      To put it the other way: A CORE::LINALG::MultiMapExtractor splits a full (row)
       map into non-overlapping parts. If each part corresponds to a Condition, a
-      MultiConditionSelector can be used to setup the LINALG::MultiMapExtractor,
+      MultiConditionSelector can be used to setup the CORE::LINALG::MultiMapExtractor,
       where each Condition is found by a ConditionSelector object.
 
       \note The Condition objects know the nodes. The maps contain dofs. The
@@ -147,13 +147,13 @@ namespace DRT
     };
 
 
-    /// a collection of ConditionSelector objects used to create a LINALG::MultiMapExtractor
+    /// a collection of ConditionSelector objects used to create a CORE::LINALG::MultiMapExtractor
     /*!
       Oftentimes the dofs of a field need to be split into a set of disjoint
-      maps. The LINALG::MultiMapExtractor class takes care of these splits. However,
-      LINALG::MultiMapExtractor does not do the splitting itself. This is where
+      maps. The CORE::LINALG::MultiMapExtractor class takes care of these splits. However,
+      CORE::LINALG::MultiMapExtractor does not do the splitting itself. This is where
       MultiConditionSelector comes in. Here, different ConditionSelector objects
-      are collected and afterwards the LINALG::MultiMapExtractor is setup according to the
+      are collected and afterwards the CORE::LINALG::MultiMapExtractor is setup according to the
       conditions.
 
       MultiConditionSelector is a helper class that is needed during the setup
@@ -173,13 +173,13 @@ namespace DRT
       /// add a new ConditionSelector
       /*!
         \note The order of the selector additions determines the slots within
-        LINALG::MultiMapExtractor.
+        CORE::LINALG::MultiMapExtractor.
        */
       void AddSelector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
 
       /// Do the setup
       void SetupExtractor(const DRT::Discretization& dis, const Epetra_Map& fullmap,
-          LINALG::MultiMapExtractor& extractor);
+          CORE::LINALG::MultiMapExtractor& extractor);
 
       /// Activate overlapping
       void SetOverlapping(bool overlapping) { overlapping_ = overlapping; }

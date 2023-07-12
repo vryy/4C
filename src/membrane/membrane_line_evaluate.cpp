@@ -68,7 +68,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   }
 
   // element geometry update - currently only material configuration
-  LINALG::Matrix<numnod_line_, noddof_> x(true);
+  CORE::LINALG::Matrix<numnod_line_, noddof_> x(true);
   for (int i = 0; i < numnod_line_; ++i)
   {
     x(i, 0) = Nodes()[i]->X()[0];
@@ -77,8 +77,8 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   }
 
   // allocate vector for shape functions and matrix for derivatives at gp
-  LINALG::Matrix<numnod_line_, 1> shapefcts(true);
-  LINALG::Matrix<1, numnod_line_> derivs(true);
+  CORE::LINALG::Matrix<numnod_line_, 1> shapefcts(true);
+  CORE::LINALG::Matrix<1, numnod_line_> derivs(true);
 
   // integration
   for (int gp = 0; gp < intpointsline_.nquad; ++gp)
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
         // uniform load on reference configuration
 
         // compute dXYZ / dr
-        LINALG::Matrix<noddof_, 1> dxyzdr(true);
+        CORE::LINALG::Matrix<noddof_, 1> dxyzdr(true);
         dxyzdr.MultiplyTT(1.0, x, derivs, 0.0);
         // compute line increment dL
         double dL;
@@ -123,7 +123,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
             if (functnum > 0)
             {
               // calculate reference position of GP
-              LINALG::Matrix<noddof_, 1> gp_coord(true);
+              CORE::LINALG::Matrix<noddof_, 1> gp_coord(true);
               gp_coord.MultiplyTN(1.0, x, shapefcts, 0.0);
 
               // write coordinates in another datatype

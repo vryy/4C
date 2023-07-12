@@ -63,11 +63,11 @@ namespace DRT
       virtual void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
           Epetra_SerialDenseMatrix& emat,                                 ///< element matrix
           Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<nen_, 1>>&
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
-          double timefac,                                     ///< time factor
-          Teuchos::RCP<const MAT::Material> material,         ///< material
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
+          double timefac,                                           ///< time factor
+          Teuchos::RCP<const MAT::Material> material,               ///< material
           Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
           const int nume,                     ///< number of transferred electrons
           const std::vector<int> stoich,      ///< stoichiometry of the reaction
@@ -94,9 +94,10 @@ namespace DRT
           Epetra_SerialDenseVector& scalars,                 ///< scalars to be integrated
           Teuchos::ParameterList& params,                    ///< parameter list
           Teuchos::RCP<DRT::Condition> cond,                 ///< condition
-          const std::vector<LINALG::Matrix<nen_, 1>>&
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+              ephidtnp,                   ///< nodal time derivative vector
           const int kinetics,             ///< desired electrode kinetics model
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int nume,                 ///< number of transferred electrons

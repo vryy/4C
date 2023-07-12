@@ -160,8 +160,8 @@ namespace MAT
      *
      *\param[in] Cur curvature
      */
-    void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& Cur,
+    void EvaluateMomentContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressM,
+        const CORE::LINALG::Matrix<3, 3, T>& CM, const CORE::LINALG::Matrix<3, 1, T>& Cur,
         const unsigned int gp) override;
 
     /*
@@ -174,27 +174,29 @@ namespace MAT
      *\param[in] Gamma triad
      */
 
-    void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma,
+    void EvaluateForceContributionsToStress(CORE::LINALG::Matrix<3, 1, T>& stressN,
+        const CORE::LINALG::Matrix<3, 3, T>& CN, const CORE::LINALG::Matrix<3, 1, T>& Gamma,
         const unsigned int gp) override;
 
     /*
      * \brief Update material-dependent variables
      */
     void ComputeConstitutiveParameter(
-        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) override;
+        CORE::LINALG::Matrix<3, 3, T>& C_N, CORE::LINALG::Matrix<3, 3, T>& C_M) override;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
      *
      */
-    void GetConstitutiveMatrixOfForcesMaterialFrame(LINALG::Matrix<3, 3, T>& C_N) const override;
+    void GetConstitutiveMatrixOfForcesMaterialFrame(
+        CORE::LINALG::Matrix<3, 3, T>& C_N) const override;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
      */
-    void GetConstitutiveMatrixOfMomentsMaterialFrame(LINALG::Matrix<3, 3, T>& C_M) const override;
+    void GetConstitutiveMatrixOfMomentsMaterialFrame(
+        CORE::LINALG::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
@@ -204,12 +206,12 @@ namespace MAT
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
-    void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::Matrix<3, 3>& J) const override;
+    void GetMassMomentOfInertiaTensorMaterialFrame(CORE::LINALG::Matrix<3, 3>& J) const override;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      */
     void GetMassMomentOfInertiaTensorMaterialFrame(
-        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const override;
+        CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const override;
 
 
 
@@ -219,11 +221,11 @@ namespace MAT
      */
     double GetInteractionRadius() const;
 
-    void GetStiffnessMatrixOfMoments(LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
+    void GetStiffnessMatrixOfMoments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;
 
-    void GetStiffnessMatrixOfForces(LINALG::Matrix<3, 3, T>& stiffness_matrix,
-        const LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
+    void GetStiffnessMatrixOfForces(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const CORE::LINALG::Matrix<3, 3, T>& C_N, const int gp) override;
 
     void Update() override{};
 

@@ -730,7 +730,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(Teuchos::RCP<DRT::Discretization>
   //                 local <-> global dof numbering
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
-  couplingbc_ = LINALG::CreateVector(*dofrowmap, true);
+  couplingbc_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   flowrate_ = 0.0;
 
@@ -944,7 +944,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
   const Epetra_Map* dofrowmap = discret_3D_->DofRowMap();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams, flowrates, condstring, condid);
 

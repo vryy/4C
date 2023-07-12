@@ -91,7 +91,8 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     deg = 1;
 
   // get bounding box dimensions
-  LINALG::Matrix<3, 2> boundingbox = particleengineinterface_->DomainBoundingBoxCornerPositions();
+  CORE::LINALG::Matrix<3, 2> boundingbox =
+      particleengineinterface_->DomainBoundingBoxCornerPositions();
 
   // get bin size
   const double* binsize = particleengineinterface_->BinSize();

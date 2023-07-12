@@ -24,7 +24,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::NewPoint(const double* x, Ed
 #if CUT_CREATION_INFO
   bool new_point = false;
 #endif
-  LINALG::Matrix<3, 1> px(x);
+  CORE::LINALG::Matrix<3, 1> px(x);
 
   Point* p = GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
 
@@ -50,7 +50,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::NewPoint(const double* x, Ed
     info << "// Another point was merged in this one with\n";
     info << "// Initial coordinates" << std::setprecision(15) << px << std::endl;
     // merged_to point coordinates
-    LINALG::Matrix<3, 1> nx;
+    CORE::LINALG::Matrix<3, 1> nx;
     p->Coordinates(nx.A());
     px.Update(-1, nx, 1);
     info << "// Merged with tolerance of " << std::setprecision(15) << px.Norm2() << std::endl;
@@ -90,8 +90,8 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
   }
   else
   {
-    LINALG::Matrix<3, 1> px(x);
-    LINALG::Matrix<3, 1> nx;
+    CORE::LINALG::Matrix<3, 1> px(x);
+    CORE::LINALG::Matrix<3, 1> nx;
 
     double tol = TOPOLOGICAL_TOLERANCE * norm_;
 
@@ -370,7 +370,7 @@ void CORE::GEO::CUT::OctTreeNode::Split(int level)
 
   if (points_.size() > 125)  /// 125 = 1/8 *1000 -> see NewPoint
   {
-    LINALG::Matrix<3, 1> x;
+    CORE::LINALG::Matrix<3, 1> x;
     bool first = true;
 
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)

@@ -81,17 +81,19 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Sysmat(Artery* ele, const LINALG::Matrix<my::iel_, 1>& eqnp,
-          const LINALG::Matrix<my::iel_, 1>& eareanp,
-          LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
-          LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+      void Sysmat(Artery* ele, const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
+          const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
+          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
+          CORE::LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
           double dt);
 
-      void ScatraSysmat(Artery* ele, const LINALG::Matrix<2 * my::iel_, 1>& escatran,
-          const LINALG::Matrix<my::iel_, 1>& eqnp, const LINALG::Matrix<my::iel_, 1>& eqn,
-          const LINALG::Matrix<my::iel_, 1>& eareanp, const LINALG::Matrix<my::iel_, 1>& earean,
-          LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
-          LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+      void ScatraSysmat(Artery* ele, const CORE::LINALG::Matrix<2 * my::iel_, 1>& escatran,
+          const CORE::LINALG::Matrix<my::iel_, 1>& eqnp,
+          const CORE::LINALG::Matrix<my::iel_, 1>& eqn,
+          const CORE::LINALG::Matrix<my::iel_, 1>& eareanp,
+          const CORE::LINALG::Matrix<my::iel_, 1>& earean,
+          CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_>& estif,
+          CORE::LINALG::Matrix<2 * my::iel_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
           double dt);
 
       virtual bool SolveRiemann(Artery* ele, Teuchos::ParameterList& params,
@@ -145,17 +147,17 @@ namespace DRT
       */
      private:
       //! nodal volumetric flow rate at time step "n"
-      LINALG::Matrix<my::iel_, 1> qn_;
+      CORE::LINALG::Matrix<my::iel_, 1> qn_;
       //! nodal cross-sectional area at time step "n"
-      LINALG::Matrix<my::iel_, 1> an_;
+      CORE::LINALG::Matrix<my::iel_, 1> an_;
       //! vector containing the initial cross-sectional area at the element nodes
-      LINALG::Matrix<my::iel_, 1> area0_;
+      CORE::LINALG::Matrix<my::iel_, 1> area0_;
       //! vector containing the initial thickness at the element nodes
-      LINALG::Matrix<my::iel_, 1> th_;
+      CORE::LINALG::Matrix<my::iel_, 1> th_;
       //! vector containing the initial Youngs modulus at the element nodes
-      LINALG::Matrix<my::iel_, 1> young_;
+      CORE::LINALG::Matrix<my::iel_, 1> young_;
       //! vector containing the fixed external pressure
-      LINALG::Matrix<my::iel_, 1> pext_;
+      CORE::LINALG::Matrix<my::iel_, 1> pext_;
     };
 
   }  // namespace ELEMENTS

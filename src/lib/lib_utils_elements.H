@@ -26,24 +26,24 @@ namespace DRT
      *
      *  \author hiermeier \date 09/18 */
     template <DRT::Element::DiscretizationType type, unsigned numnode, unsigned numdim>
-    double GetMinimalJacDeterminantAtNodes(const LINALG::Matrix<numdim, numnode>& xcurr)
+    double GetMinimalJacDeterminantAtNodes(const CORE::LINALG::Matrix<numdim, numnode>& xcurr)
     {
       // check input
       static_assert(numnode == CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement,
           "Wrong matrix dimension.");
       static_assert(numdim == CORE::DRT::UTILS::DisTypeToDim<type>::dim, "Wrong matrix dimension.");
 
-      LINALG::Matrix<numdim, numnode> deriv_at_c(false);
-      LINALG::Matrix<numdim, numdim> jac_at_c(false);
+      CORE::LINALG::Matrix<numdim, numnode> deriv_at_c(false);
+      CORE::LINALG::Matrix<numdim, numdim> jac_at_c(false);
 
       // parametric coordinates of the HEX8 corners
-      static const LINALG::SerialDenseMatrix rst =
+      static const CORE::LINALG::SerialDenseMatrix rst =
           CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(type);
       double min_detJ = std::numeric_limits<double>::max();
 
       for (unsigned c = 0; c < numnode; ++c)
       {
-        const LINALG::Matrix<numdim, 1> rst_c(&rst(0, c), true);
+        const CORE::LINALG::Matrix<numdim, 1> rst_c(&rst(0, c), true);
 
         CORE::DRT::UTILS::shape_function_deriv1<type>(rst_c, deriv_at_c);
         jac_at_c.MultiplyNT(deriv_at_c, xcurr);

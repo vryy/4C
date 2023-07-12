@@ -102,18 +102,19 @@ namespace DRT
        */
       virtual DiscretizationType Shape() const;
 
-      virtual void SetInitialTangents(std::vector<LINALG::Matrix<4, 1>>& initquaternions);
+      virtual void SetInitialTangents(std::vector<CORE::LINALG::Matrix<4, 1>>& initquaternions);
 
-      virtual void TcurrBeam3r(LINALG::Matrix<3, 1>& Tcurr1, LINALG::Matrix<3, 1>& Tcurr2);
+      virtual void TcurrBeam3r(
+          CORE::LINALG::Matrix<3, 1>& Tcurr1, CORE::LINALG::Matrix<3, 1>& Tcurr2);
 
-      virtual void TrefBeam3r(LINALG::Matrix<3, 1>& Tref1, LINALG::Matrix<3, 1>& Tref2);
+      virtual void TrefBeam3r(CORE::LINALG::Matrix<3, 1>& Tref1, CORE::LINALG::Matrix<3, 1>& Tref2);
 
       /*Print the change in angle of this element*/
 
-      virtual LINALG::Matrix<1, 3> DeltaTheta() const;
+      virtual CORE::LINALG::Matrix<1, 3> DeltaTheta() const;
 
       virtual void GetCurrTangents(
-          std::vector<double>& disp, std::vector<LINALG::Matrix<3, 1>>& Tcurr);
+          std::vector<double>& disp, std::vector<CORE::LINALG::Matrix<3, 1>>& Tcurr);
 
       /*!
        \brief Return unique ParObject id
@@ -349,29 +350,29 @@ namespace DRT
       bool isinit_;
 
       //! reference node position
-      LINALG::Matrix<6, 1> X_;
+      CORE::LINALG::Matrix<6, 1> X_;
 
       //! reference tangent position
-      std::vector<LINALG::Matrix<3, 1>> trefNode_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> trefNode_;
 
       //! Vector holding values of ref angles
       std::vector<double> ThetaRef_;
 
       //! reference tangent position
-      LINALG::Matrix<1, 3> diff_disp_ref_;
+      CORE::LINALG::Matrix<1, 3> diff_disp_ref_;
 
       // Change is angle
-      LINALG::Matrix<1, 3> deltatheta_;
+      CORE::LINALG::Matrix<1, 3> deltatheta_;
 
 
       //! nodal triads in quaternion during the current iteration step
-      std::vector<LINALG::Matrix<4, 1>> Qnew_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> Qnew_;
       //! nodal triads in quaternion form at the end of the preceeding iteration step
-      std::vector<LINALG::Matrix<4, 1>> Qold_;
+      std::vector<CORE::LINALG::Matrix<4, 1>> Qold_;
       //! rotation angle displacement at nodes; relates to current configuration
-      std::vector<LINALG::Matrix<3, 1>> dispthetanew_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> dispthetanew_;
       //! rotation angle displacement at nodes; relates to the end of the preceeding iteration step
-      std::vector<LINALG::Matrix<3, 1>> dispthetaold_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> dispthetaold_;
 
       //! material type
       int material_;
@@ -399,9 +400,9 @@ namespace DRT
       double RatioNormForceMoment;
 
       //! angle of last time step (necessary for PTC scheme)
-      LINALG::Matrix<3, 1> Theta0_;
+      CORE::LINALG::Matrix<3, 1> Theta0_;
       //! Angle of current time step (necessary for PTC scheme)
-      LINALG::Matrix<3, 1> Theta_;
+      CORE::LINALG::Matrix<3, 1> Theta_;
 
       //! internal force vector
       Teuchos::RCP<Epetra_SerialDenseVector> f_;
@@ -417,7 +418,7 @@ namespace DRT
           Epetra_SerialDenseVector* intenergy);
 
       // Calculate change in angle from reference configuration
-      void CalcDeltaTheta(std::vector<double>& disp, LINALG::Matrix<1, 3>& thetacurr);
+      void CalcDeltaTheta(std::vector<double>& disp, CORE::LINALG::Matrix<1, 3>& thetacurr);
 
       //   Calculate torsional stiffness matrices
       void torsion_stiffmass(Teuchos::ParameterList& params, std::vector<double>& disp,
@@ -426,23 +427,24 @@ namespace DRT
 
       // Calculate torsional stiffness matrices using automatic differentiation
       void FADMyTorsionalStiffTangentCos(Teuchos::ParameterList& params, double theta_0,
-          LINALG::Matrix<1, 3>& tcurrNode1, LINALG::Matrix<1, 3>& tcurrNode2,
+          CORE::LINALG::Matrix<1, 3>& tcurrNode1, CORE::LINALG::Matrix<1, 3>& tcurrNode2,
           Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce);
 
       void MyTorsionalStiffTangentDot(Teuchos::ParameterList& params,
-          LINALG::Matrix<1, 3>& tangentcurr1, LINALG::Matrix<1, 3>& tangentcurr2,
+          CORE::LINALG::Matrix<1, 3>& tangentcurr1, CORE::LINALG::Matrix<1, 3>& tangentcurr2,
           Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce);
 
       void MyTorsionalStiffatTangentSin(Teuchos::ParameterList& params, double theta,
-          double deltatheta, LINALG::Matrix<1, 3>& tcurr1, LINALG::Matrix<1, 3>& tcurr2,
+          double deltatheta, CORE::LINALG::Matrix<1, 3>& tcurr1, CORE::LINALG::Matrix<1, 3>& tcurr2,
           Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce);
 
-      void FADThetaLinearisation(LINALG::Matrix<1, 3>& diff_disp, LINALG::Matrix<1, 3>& tcurr,
-          LINALG::Matrix<1, 3>& A, LINALG::Matrix<1, 3>& B);
+      void FADThetaLinearisation(CORE::LINALG::Matrix<1, 3>& diff_disp,
+          CORE::LINALG::Matrix<1, 3>& tcurr, CORE::LINALG::Matrix<1, 3>& A,
+          CORE::LINALG::Matrix<1, 3>& B);
 
       // Calculate torsional stiffness matrices and forces between tangents of beam
       void MyTorsionalStiffTangentCos(Teuchos::ParameterList& params, double theta,
-          double deltatheta, LINALG::Matrix<1, 3>& tcurr1, LINALG::Matrix<1, 3>& tcurr2,
+          double deltatheta, CORE::LINALG::Matrix<1, 3>& tcurr1, CORE::LINALG::Matrix<1, 3>& tcurr2,
           Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce);
 
       /*!
@@ -453,7 +455,7 @@ namespace DRT
        * \f$\varepsilon=\Delta d / d\f$ as strain measure.
        *
        */
-      void t3_nlnstiffmass_spring(const LINALG::Matrix<1, 6>& DummyDisp,
+      void t3_nlnstiffmass_spring(const CORE::LINALG::Matrix<1, 6>& DummyDisp,
           Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseVector& DummyForce);
 
       //! lump mass matrix
@@ -470,10 +472,11 @@ namespace DRT
       //! damping matrix
       template <int ndim>  // number of dimensions of embedding space
       void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
-                                                           //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
-          LINALG::Matrix<ndim, ndim>&
+          const CORE::LINALG::Matrix<ndim, 1>&
+              evaluationpoint,                           //!< point at which background velocity
+                                                         //!< and its gradient has to be computed
+          CORE::LINALG::Matrix<ndim, 1>& velbackground,  //!< velocity of background fluid
+          CORE::LINALG::Matrix<ndim, ndim>&
               velbackgroundgrad);  //!< gradient of velocity of background fluid
 
       //! shifts nodes so that proper evaluation is possible even in case of periodic boundary

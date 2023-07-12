@@ -84,7 +84,7 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       lrefe_(0.0),
       gaussrule_(CORE::DRT::UTILS::GaussRule1D::line_2point),
       data_(),
-      diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
+      diff_disp_ref_(CORE::LINALG::Matrix<1, 3>(true)),
       interface_ptr_(Teuchos::null),
       isinit_(false),
       jacobimass_(),
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
   std::vector<double> xrefe;
 
   // reference nodal tangent positions
-  LINALG::Matrix<3, 1> trefNodeAux(true);
+  CORE::LINALG::Matrix<3, 1> trefNodeAux(true);
   // resize vectors for the number of coordinates we need to store
   xrefe.resize(3 * 2);
 

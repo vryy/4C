@@ -9,7 +9,6 @@ set(_beamcontact_dependencies
     inpar
     io
     lib
-    linalg
     rigidsphere
     structure
     structure_new

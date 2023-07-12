@@ -317,8 +317,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateTet4Cell(
   //       f->NewTri3Cell( mesh );
   //     }
 
-  LINALG::Matrix<3, 3> bot_xyze;
-  LINALG::Matrix<3, 1> top_xyz;
+  CORE::LINALG::Matrix<3, 3> bot_xyze;
+  CORE::LINALG::Matrix<3, 1> top_xyz;
 
   bot->CornerCoordinates(bot_xyze.A());
   top_point->Coordinates(top_xyz.A());
@@ -503,8 +503,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
     // can have arbitrary concave situations, all points have to be
     // checked. If we cannot decide on an orientation, we reject the cell.
 
-    LINALG::Matrix<3, 4> bot_xyze;
-    LINALG::Matrix<3, 4> top_xyze;
+    CORE::LINALG::Matrix<3, 4> bot_xyze;
+    CORE::LINALG::Matrix<3, 4> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top->CornerCoordinates(top_xyze.A());
@@ -512,7 +512,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
     int distance_counter = 0;
     for (int i = 0; i < 4; ++i)
     {
-      LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
+      CORE::LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
       Teuchos::RCP<CORE::GEO::CUT::Position> bot_distance =
           CORE::GEO::CUT::Position::Create(bot_xyze, top_xyz, ::DRT::Element::quad4);
 
@@ -693,8 +693,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
     // can have arbitrary concave situations, all points have to be
     // checked. If we cannot decide on an orientation, we reject the cell.
 
-    LINALG::Matrix<3, 3> bot_xyze;
-    LINALG::Matrix<3, 3> top_xyze;
+    CORE::LINALG::Matrix<3, 3> bot_xyze;
+    CORE::LINALG::Matrix<3, 3> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top->CornerCoordinates(top_xyze.A());
@@ -702,7 +702,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
     int distance_counter = 0;
     for (int i = 0; i < 3; ++i)
     {
-      LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
+      CORE::LINALG::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
       Teuchos::RCP<CORE::GEO::CUT::Position> bot_distance =
           CORE::GEO::CUT::Position::Create(bot_xyze, top_xyz, ::DRT::Element::tri3);
 
@@ -878,8 +878,8 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
     //       f->NewQuad4Cell( mesh );
     //     }
 
-    LINALG::Matrix<3, 4> bot_xyze;
-    LINALG::Matrix<3, 1> top_xyze;
+    CORE::LINALG::Matrix<3, 4> bot_xyze;
+    CORE::LINALG::Matrix<3, 1> top_xyze;
 
     bot->CornerCoordinates(bot_xyze.A());
     top_point->Coordinates(top_xyze.A());
@@ -1140,16 +1140,16 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
   // project along given axis to r
 
-  LINALG::Matrix<3, 1> rst;
+  CORE::LINALG::Matrix<3, 1> rst;
 
-  std::vector<LINALG::Matrix<3, 1>> local_points;
+  std::vector<CORE::LINALG::Matrix<3, 1>> local_points;
   local_points.reserve(inner_points.size());
   projected_points.reserve(inner_points.size());
 
   for (std::vector<Point*>::iterator i = inner_points.begin(); i != inner_points.end(); ++i)
   {
     Point* p = *i;
-    LINALG::Matrix<3, 1> xyz;
+    CORE::LINALG::Matrix<3, 1> xyz;
     p->Coordinates(xyz.A());
     element->LocalCoordinates(xyz, rst);
 
@@ -1183,10 +1183,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
       // find facet orientation in local coordinates
       double drs = 0;
-      LINALG::Matrix<3, 3> xyze;
-      LINALG::Matrix<3, 1> normal;
-      LINALG::Matrix<2, 3> deriv;
-      LINALG::Matrix<2, 2> metrictensor;
+      CORE::LINALG::Matrix<3, 3> xyze;
+      CORE::LINALG::Matrix<3, 1> normal;
+      CORE::LINALG::Matrix<2, 3> deriv;
+      CORE::LINALG::Matrix<2, 2> metrictensor;
 
       double* x = xyze.A();
 
@@ -1211,7 +1211,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
         points.push_back(projected_points[pos - inner_points.begin()]);
 
-        const LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
+        const CORE::LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
         x = std::copy(rst.A(), rst.A() + 3, x);
       }
 
@@ -1252,10 +1252,10 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
       // find facet orientation in local coordinates
       double drs = 0;
-      LINALG::Matrix<3, 4> xyze;
-      LINALG::Matrix<3, 1> normal;
-      LINALG::Matrix<2, 4> deriv;
-      LINALG::Matrix<2, 2> metrictensor;
+      CORE::LINALG::Matrix<3, 4> xyze;
+      CORE::LINALG::Matrix<3, 1> normal;
+      CORE::LINALG::Matrix<2, 4> deriv;
+      CORE::LINALG::Matrix<2, 2> metrictensor;
 
       double* x = xyze.A();
 
@@ -1280,7 +1280,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
         points.push_back(projected_points[pos - inner_points.begin()]);
 
-        const LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
+        const CORE::LINALG::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
         x = std::copy(rst.A(), rst.A() + 3, x);
       }
 

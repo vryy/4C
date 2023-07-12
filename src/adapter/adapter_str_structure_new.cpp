@@ -216,8 +216,8 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>> linsolvers =
-      STR::SOLVER::BuildLinSolvers(*modeltypes, *sdyn_, *actdis_);
+  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
+      linsolvers = STR::SOLVER::BuildLinSolvers(*modeltypes, *sdyn_, *actdis_);
 
   // ---------------------------------------------------------------------------
   // Checks in case of multi-scale simulations

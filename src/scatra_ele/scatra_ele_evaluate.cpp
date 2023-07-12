@@ -32,9 +32,10 @@
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<SCATRA::Action>(p, "action");
 

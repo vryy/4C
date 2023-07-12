@@ -29,7 +29,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -76,7 +76,8 @@ namespace NOX
        *  inclusive the pre-conditioner interfaces
        *  inclusive scaling object */
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linSolvers,
+          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+              linSolvers,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
           const OptimizationProblemType& type, const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
@@ -88,7 +89,8 @@ namespace NOX
        * inclusive the constraint interfaces map
        * without any pre-conditioner interfaces */
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linSolvers,
+          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+              linSolvers,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
           const OptimizationProblemType& type,
@@ -98,7 +100,8 @@ namespace NOX
        *  constructor without the constraint interface map (pure unconstrained optimization)
        *  inclusive the pre-conditioner interface */
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linSolvers,
+          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+              linSolvers,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
           const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
@@ -107,7 +110,8 @@ namespace NOX
        *  constructor without the constraint interface map (pure unconstrained optimization)
        *  without a pre-conditioner interface */
       GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList& noxParams,
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linSolvers,
+          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+              linSolvers,
           const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
           const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);
 
@@ -136,7 +140,8 @@ namespace NOX
       const bool& GetIsConstrained() const;
 
       // return linear solver vector
-      const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& GetLinSolvers();
+      const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+      GetLinSolvers();
 
       //! return the user-defined preconditioner interface
       const Teuchos::RCP<NOX::Epetra::Interface::Required> GetRequiredInterface();
@@ -185,7 +190,7 @@ namespace NOX
       OptimizationProblemType optType_;
 
       /// map containing all linear solvers
-      const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>> linSolvers_;
+      const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>> linSolvers_;
 
       /// required interface pointer
       Teuchos::RCP<NOX::Epetra::Interface::Required> iReqPtr_;

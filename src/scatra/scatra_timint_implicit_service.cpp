@@ -141,7 +141,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
   if (calcflux_domain_lumped_)
   {
     // vector for integrated shape functions
-    Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(dofrowmap);
+    Teuchos::RCP<Epetra_Vector> integratedshapefcts = CORE::LINALG::CreateVector(dofrowmap);
 
     // overwrite action for elements
     DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
@@ -170,8 +170,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
         "action", SCATRA::Action::calc_mass_matrix, params);
 
     // initialize global mass matrix
-    Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
-        Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap, 27, false));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(dofrowmap, 27, false));
 
     // call loop over elements
     discret_->Evaluate(params, massmatrix, Teuchos::null);
@@ -354,7 +354,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         flux_boundary_maps_->ExtractVector(*trueresidual_, icond + 1);
 
     // initialize vector for nodal values of normal boundary fluxes
-    Teuchos::RCP<Epetra_Vector> normalfluxes = LINALG::CreateVector(dofrowmap);
+    Teuchos::RCP<Epetra_Vector> normalfluxes = CORE::LINALG::CreateVector(dofrowmap);
 
     // create parameter list for boundary elements
     Teuchos::ParameterList params;
@@ -372,7 +372,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           "action", SCATRA::BoundaryAction::integrate_shape_functions, params);
 
       // create vector (+ initialization with zeros)
-      const Teuchos::RCP<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(dofrowmap);
+      const Teuchos::RCP<Epetra_Vector> integratedshapefunc = CORE::LINALG::CreateVector(dofrowmap);
 
       // call loop over elements
       discret_->EvaluateCondition(params, integratedshapefunc, "ScaTraFluxCalc", icond);
@@ -393,8 +393,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           "action", SCATRA::BoundaryAction::calc_mass_matrix, params);
 
       // initialize boundary mass matrix
-      Teuchos::RCP<LINALG::SparseMatrix> massmatrix_boundary =
-          Teuchos::rcp(new LINALG::SparseMatrix(dofrowmap, 27, false));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix_boundary =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(dofrowmap, 27, false));
 
       // call loop over elements
       discret_->EvaluateCondition(params, massmatrix_boundary, Teuchos::null, Teuchos::null,
@@ -639,7 +639,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // auxiliary degrees of freedom (= non-transported scalars) constant when solving for initial time
   // derivatives of primary degrees of freedom (= transported scalars)
   if (splitter_ != Teuchos::null)
-    LINALG::ApplyDirichlettoSystem(sysmat_, phidtnp_, residual_, zeros_, *(splitter_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(
+        sysmat_, phidtnp_, residual_, zeros_, *(splitter_->CondMap()));
 
   // solve global system of equations for initial time derivative of state variables
   solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, true, true);
@@ -784,7 +785,7 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
  | Evaluate surface/interface permeability for FS3I          Thon 11/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'SurfacePermeability'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
@@ -834,7 +835,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
  biological membranes to non-electrolytes." Biochimica et biophysica Acta 27 (1958): 229-246.
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'SurfacePermeability'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
@@ -1011,7 +1012,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
  | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'Neumann inflow'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
@@ -1038,7 +1039,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
  | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // time measurement: evaluate condition 'TransportThermoConvections'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportThermoConvections'");
@@ -1063,11 +1064,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
  | output performance statistics associated with linear solver into *.csv file   fang 02/17 |
  *------------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
-    const LINALG::Solver& solver,  //!< linear solver
-    const double& time,            //!< solver time maximized over all processors
-    const int& step,               //!< time step
-    const int& iteration,          //!< Newton-Raphson iteration number
-    const int& size                //!< size of linear system
+    const CORE::LINALG::Solver& solver,  //!< linear solver
+    const double& time,                  //!< solver time maximized over all processors
+    const int& step,                     //!< time step
+    const int& iteration,                //!< Newton-Raphson iteration number
+    const int& size                      //!< size of linear system
 )
 {
   // extract communicator
@@ -1384,7 +1385,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   sysmat_sd_->Complete();
 
   // apply DBC to normalized all-scale subgrid-diffusivity matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_sd_, phinp_, residual_, phinp_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(
+      sysmat_sd_, phinp_, residual_, phinp_, *(dbcmaps_->CondMap()));
 
   // get normalized fine-scale subgrid-diffusivity matrix
   {
@@ -1401,8 +1403,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
         extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))  // create a dummy solver
     {
-      Teuchos::RCP<LINALG::Solver> solver =
-          Teuchos::rcp(new LINALG::Solver(problem_->SolverParams(scale_sep_solvernumber),
+      Teuchos::RCP<CORE::LINALG::Solver> solver =
+          Teuchos::rcp(new CORE::LINALG::Solver(problem_->SolverParams(scale_sep_solvernumber),
               discret_->Comm(), problem_->ErrorFile()->Handle()));
       // compute the null space,
       discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
@@ -1430,14 +1432,14 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     // get plain aggregation Ptent
     Teuchos::RCP<Epetra_CrsMatrix> crsPtent;
     MLAPI::GetPtent(*sysmat_sd_->EpetraMatrix(), mlparams, nullspace, crsPtent);
-    LINALG::SparseMatrix Ptent(crsPtent, LINALG::View);
+    CORE::LINALG::SparseMatrix Ptent(crsPtent, CORE::LINALG::View);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
-    Sep_ = LINALG::Multiply(Ptent, false, Ptent, true);
+    Sep_ = CORE::LINALG::Multiply(Ptent, false, Ptent, true);
     Sep_->Scale(-1.0);
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(Sep_->RowMap(), false);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(Sep_->RowMap(), false);
     tmp->PutScalar(1.0);
-    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(Sep_->RowMap(), false);
+    Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(Sep_->RowMap(), false);
     Sep_->ExtractDiagonalCopy(*diag);
     diag->Update(1.0, *tmp, 1.0);
     Sep_->ReplaceDiagonalValues(*diag);
@@ -1453,8 +1455,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     // or one-sided M*S: only multiply M by S from left-hand side
     if (not incremental_)
     {
-      Mnsv_ = LINALG::Multiply(*sysmat_sd_, false, *Sep_, false);
-      // Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
+      Mnsv_ = CORE::LINALG::Multiply(*sysmat_sd_, false, *Sep_, false);
+      // Mnsv_ = CORE::LINALG::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }
 }  // ScaTraTimIntImpl::AVM3Preparation
@@ -1482,7 +1484,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
   }
 
   // get unscaled S^T*M*S from Sep
-  sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*Mnsv_));
+  sysmat_sd_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Mnsv_));
 
   // left and right scaling of normalized fine-scale subgrid-viscosity matrix
   ierr = sysmat_sd_->LeftScale(*subgrdiff_);
@@ -1491,7 +1493,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
   if (ierr) dserror("Epetra_CrsMatrix::RightScale returned err=%d", ierr);
 
   // add the subgrid-viscosity-scaled fine-scale matrix to obtain complete matrix
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat = SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat = SystemMatrix();
   sysmat->Add(*sysmat_sd_, false, 1.0, 1.0);
 
   // set subgrid-diffusivity vector to zero after scaling procedure
@@ -1505,9 +1507,11 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
 const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggle()
 {
   if (dbcmaps_ == Teuchos::null) dserror("Dirichlet map has not been allocated");
-  Teuchos::RCP<Epetra_Vector> dirichones = LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
+  Teuchos::RCP<Epetra_Vector> dirichones =
+      CORE::LINALG::CreateVector(*(dbcmaps_->CondMap()), false);
   dirichones->PutScalar(1.0);
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> dirichtoggle =
+      CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
   dbcmaps_->InsertCondVector(dirichones, dirichtoggle);
   return dirichtoggle;
 }  // ScaTraTimIntImpl::DirichletToggle
@@ -1696,7 +1700,7 @@ void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
 
       // temporary store velnp_ since it will be modified in NonlinearSolve()
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*dofrowmap, true);
       tmp->Update(1.0, *phinp_, 0.0);
 
       // compute intermediate solution without forcing
@@ -1907,7 +1911,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Project
 
   // TODO: make a temporary copy, as SetState does not allow to use references to RCP (adapt
   // SetState in discret)
-  const Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*discret_->DofRowMap(), false);
+  const Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*discret_->DofRowMap(), false);
   tmp->Update(1.0, *state, 0.0);
 
   // set given state for element evaluation
@@ -2124,17 +2128,17 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
-  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
+  if (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
   {
-    sysmat_original =
-        (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(sysmat_))))
-            ->EpetraMatrix();
+    sysmat_original = (new CORE::LINALG::SparseMatrix(
+                           *(Teuchos::rcp_static_cast<CORE::LINALG::SparseMatrix>(sysmat_))))
+                          ->EpetraMatrix();
   }
-  else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
+  else if (Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
   {
     sysmat_original =
-        (new LINALG::SparseMatrix(
-             *(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
+        (new CORE::LINALG::SparseMatrix(
+             *(Teuchos::rcp_static_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
             ->EpetraMatrix();
   }
   else
@@ -2586,7 +2590,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyBCToSystem()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;

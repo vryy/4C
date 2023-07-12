@@ -18,10 +18,10 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {
@@ -60,7 +60,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void WriteRestart(
@@ -129,7 +130,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> velnp_ptr_;
 
       //! structural stiffness matrix
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_spring_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_spring_ptr_;
 
       //! spring forces at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> fspring_np_ptr_;

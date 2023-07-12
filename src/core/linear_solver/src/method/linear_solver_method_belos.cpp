@@ -59,7 +59,7 @@ CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::BelosSolver(
 template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::BelosSolver<MatrixType, VectorType>::Setup(
     Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<LINALG::KrylovProjector> projector)
+    const bool refactor, const bool reset, Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);

@@ -404,7 +404,7 @@ namespace PARTICLEENGINE
 
     double LengthOfBinningDomainInASpatialDirection(const int dim) const override;
 
-    LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const override;
+    CORE::LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const override;
 
     /*!
      * \brief get distance between particles considering periodic boundaries

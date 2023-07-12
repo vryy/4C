@@ -28,7 +28,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -43,17 +43,17 @@ namespace XFEM
   /// evaluate Neumann boundary conditions
   void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
       Teuchos::RCP<Epetra_Vector> systemvector,
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null);
+      Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null);
 
   /// evaluate Neumann boundary conditions
   void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
-      Epetra_Vector& systemvector, LINALG::SparseOperator* systemmatrix = NULL);
+      Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = NULL);
 
   /// evaluate standard Neumann boundary conditions
   void EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& condition,
       const double time, bool assemblemat, Teuchos::ParameterList& params,
       Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-      LINALG::SparseOperator* systemmatrix);
+      CORE::LINALG::SparseOperator* systemmatrix);
 
 
 }  // namespace XFEM

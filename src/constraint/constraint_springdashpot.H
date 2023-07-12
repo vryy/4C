@@ -32,7 +32,7 @@ namespace Teuchos
   class ParameterList;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -74,14 +74,14 @@ namespace UTILS
     // old version, NOT consistently integrated over element surface!!
     // ToDo: remove redundant code in EvaluateForce and EvaluateForceStiff
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
-    void EvaluateForceStiff(LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
+    void EvaluateForceStiff(CORE::LINALG::SparseMatrix& stiff, Epetra_Vector& fint,
         const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velp,
         Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
-    void EvaluateRobin(Teuchos::RCP<LINALG::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
-        const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> velo,
-        Teuchos::ParameterList p);
+    void EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
+        Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
+        const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p);
 
     //! reset after Newton step
     void ResetNewton();

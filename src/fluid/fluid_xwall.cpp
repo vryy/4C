@@ -39,7 +39,7 @@
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
 FLD::XWall::XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager)
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
 {
@@ -252,7 +252,7 @@ void FLD::XWall::Setup()
   tauw_->PutScalar(constant_tauw_);
 
   wdistxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
-  LINALG::Export(*walldist_, *wdistxwdis_);
+  CORE::LINALG::Export(*walldist_, *wdistxwdis_);
 
   tauwxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
   inctauwxwdis_ = Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeColMap()), true));
@@ -361,7 +361,7 @@ void FLD::XWall::InitWallDist()
   if (myrank_ == 0) std::cout << "- calculate wall distance...                            ";
 
   tauwcouplingmattrans_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*xwallrownodemap_, 2, false, false));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*xwallrownodemap_, 2, false, false));
   wdist_ = Teuchos::rcp(new Epetra_Vector(*(discret_->NodeColMap()), true));
   walldist_ = Teuchos::rcp(new Epetra_Vector(*xwallrownodemap_, true));
 
@@ -390,7 +390,8 @@ void FLD::XWall::InitWallDist()
     commondis->AddElement(newnode);
   }
 
-  Teuchos::RCP<Epetra_Map> testrednodecolmap = LINALG::AllreduceEMap(*(discret_->NodeRowMap()));
+  Teuchos::RCP<Epetra_Map> testrednodecolmap =
+      CORE::LINALG::AllreduceEMap(*(discret_->NodeRowMap()));
   commondis->ExportColumnNodes(*testrednodecolmap);
 
   // do not assign any dofs to save memory
@@ -474,7 +475,7 @@ void FLD::XWall::InitWallDist()
     }
   }
 
-  LINALG::Export(*walldist_, *wdist_);
+  CORE::LINALG::Export(*walldist_, *wdist_);
   tauwcouplingmattrans_->Complete();
 
   double mean = 0.0;
@@ -542,8 +543,8 @@ void FLD::XWall::InitToggleVector()
     }
   }
 
-  LINALG::Export(*xtoggleloc_, *xwalltoggle_);
-  LINALG::Export(*xtoggleloc_, *xwalltogglexwdis_);
+  CORE::LINALG::Export(*xtoggleloc_, *xwalltoggle_);
+  CORE::LINALG::Export(*xtoggleloc_, *xwalltogglexwdis_);
 
   int gcount;
   (discret_->Comm()).SumAll(&count, &gcount, 1);
@@ -701,7 +702,7 @@ void FLD::XWall::SetupL2Projection()
     enrdofrowmap_ =
         Teuchos::rcp(new Epetra_Map(-1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->Comm()));
 
-    massmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
+    massmatrix_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*enrdofrowmap_, 108, false, true));
 
     incveln_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
     incvelnp_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
@@ -738,7 +739,7 @@ void FLD::XWall::SetupL2Projection()
     const auto solvertype =
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::rcp(new LINALG::Solver(
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
         solverparams, xwdiscret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     if (solvertype != INPAR::SOLVER::SolverType::umfpack)
@@ -892,7 +893,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
       break;
   }
 
-  LINALG::Export(*tauw_, *newtauw);
+  CORE::LINALG::Export(*tauw_, *newtauw);
 
   double actmean = -1.0;
   newtauw->MeanValue(&actmean);
@@ -905,7 +906,7 @@ void FLD::XWall::UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, 
 
   // convergence check, works only if we don't take the mean
   newtauw->PutScalar(0.0);
-  LINALG::Export(*inctauw_, *newtauw);
+  CORE::LINALG::Export(*inctauw_, *newtauw);
   newtauw->Norm2(&inctauwnorm_);
   // rescale inctauw to full increment
   if (fac_ > 1.0e-8) inctauwnorm_ /= fac_;
@@ -998,7 +999,7 @@ void FLD::XWall::CalcTauW(
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->DofRowMap()), true));
     Teuchos::RCP<Epetra_Vector> newtauwxwdis =
         Teuchos::rcp(new Epetra_Vector(*(xwdiscret_->NodeRowMap()), true));
-    LINALG::Export(*velnp, *statevel);
+    CORE::LINALG::Export(*velnp, *statevel);
 
     xwdiscret_->SetState("vel", statevel);
 
@@ -1056,8 +1057,8 @@ void FLD::XWall::CalcTauW(
       }
 
       // assembling into node maps
-      LINALG::Assemble(*newtauwxwdis, elevector1, lm, lmowner);
-      LINALG::Assemble(*timesvec, elevector2, lm, lmowner);
+      CORE::LINALG::Assemble(*newtauwxwdis, elevector1, lm, lmowner);
+      CORE::LINALG::Assemble(*timesvec, elevector2, lm, lmowner);
     }  // end element loop
 
     xwdiscret_->ClearState();
@@ -1078,7 +1079,7 @@ void FLD::XWall::CalcTauW(
         if (err != 0) dserror("something went wrong during replacemyvalue");
       }
     }
-    LINALG::Export(*newtauwxwdis, *newtauw);
+    CORE::LINALG::Export(*newtauwxwdis, *newtauw);
   }
   else
     dserror("unknown tauwcalctype_");
@@ -1093,17 +1094,17 @@ void FLD::XWall::CalcTauW(
   double meansp = 0.0;
   newtauw2->MeanValue(&meansp);
 
-  LINALG::Export(*newtauw2, *tauw);
+  CORE::LINALG::Export(*newtauw2, *tauw);
   inctauw_->Update(fac_, *tauw, -fac_);  // now this is the increment (new-old)
 
   tauw_->Update(1.0, *inctauw_, 1.0);
 
   OverwriteTransferredValues();
 
-  LINALG::Export(*inctauw_, *newtauw2);
-  LINALG::Export(*newtauw2, *inctauwxwdis_);
-  LINALG::Export(*tauw_, *newtauw2);
-  LINALG::Export(*newtauw2, *tauwxwdis_);
+  CORE::LINALG::Export(*inctauw_, *newtauw2);
+  CORE::LINALG::Export(*newtauw2, *inctauwxwdis_);
+  CORE::LINALG::Export(*tauw_, *newtauw2);
+  CORE::LINALG::Export(*newtauw2, *tauwxwdis_);
 
   if (meansp < 2.0e-9)
     dserror(
@@ -1130,9 +1131,9 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   if (accn != Teuchos::null) incaccn_->PutScalar(0.0);
   if (velnp != Teuchos::null) incvelnp_->PutScalar(0.0);
 
-  LINALG::Export(*veln, *stateveln_);
-  if (accn != Teuchos::null) LINALG::Export(*accn, *stateaccn_);
-  if (velnp != Teuchos::null) LINALG::Export(*velnp, *statevelnp_);
+  CORE::LINALG::Export(*veln, *stateveln_);
+  if (accn != Teuchos::null) CORE::LINALG::Export(*accn, *stateaccn_);
+  if (velnp != Teuchos::null) CORE::LINALG::Export(*velnp, *statevelnp_);
 
   // number of right hand sides during solving
   // is the number of velocity components that is solved for
@@ -1220,7 +1221,7 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
       // copy results into Serial_DenseVector for assembling
       for (int idf = 0; idf < numnode * numdf; ++idf) elevector1(idf) = elematrix2(idf, n);
       // assemble into nth vector of MultiVector
-      LINALG::Assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
+      CORE::LINALG::Assemble(*rhsassemble, n, elevector1, lmassemble, lmownerassemble);
     }
   }  // end element loop
 
@@ -1236,9 +1237,9 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   solver_->Solve(massmatrix_->EpetraOperator(), resultvec, rhsassemble, true, true, Teuchos::null);
 
   // now copy result in original vector: the result is an increment of the velocity/ acceleration
-  LINALG::Export(*((*resultvec)(0)), *incveln_);
-  if (numberofrhs > 1) LINALG::Export(*((*resultvec)(1)), *incaccn_);
-  if (numberofrhs > 2) LINALG::Export(*((*resultvec)(2)), *incvelnp_);
+  CORE::LINALG::Export(*((*resultvec)(0)), *incveln_);
+  if (numberofrhs > 1) CORE::LINALG::Export(*((*resultvec)(1)), *incaccn_);
+  if (numberofrhs > 2) CORE::LINALG::Export(*((*resultvec)(2)), *incvelnp_);
 
   veln->Update(1.0, *incveln_, 1.0);
   if (accn != Teuchos::null) accn->Update(1.0, *incaccn_, 1.0);
@@ -1251,7 +1252,7 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
 /*----------------------------------------------------------------------*
  |  Adapt ML Nullspace for MFS aggregation                     bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<LINALG::Solver>& solver)
+void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solver)
 {
   // extract the ML parameters:
   Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
@@ -1312,10 +1313,10 @@ void FLD::XWall::CalcMK()
       Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap()), true));
 
   // export
-  LINALG::Export(*((*mkxw)(0)), *mkxwv);
-  LINALG::Export(*mkxwv, *mkxwstate_);
-  LINALG::Export(*mkxwv, *mkv);
-  LINALG::Export(*mkv, *mkstate_);
+  CORE::LINALG::Export(*((*mkxw)(0)), *mkxwv);
+  CORE::LINALG::Export(*mkxwv, *mkxwstate_);
+  CORE::LINALG::Export(*mkxwv, *mkv);
+  CORE::LINALG::Export(*mkv, *mkstate_);
 
 
   return;
@@ -1358,8 +1359,8 @@ void FLD::XWall::TransferAndSaveTauw()
 {
   if (turbulent_inflow_condition_->IsActive())
   {
-    LINALG::Export(*tauw_, *oldtauw_);
-    LINALG::Export(*inctauw_, *oldinctauw_);
+    CORE::LINALG::Export(*tauw_, *oldtauw_);
+    CORE::LINALG::Export(*inctauw_, *oldinctauw_);
     turbulent_inflow_condition_->Transfer(oldtauw_, oldtauw_, 0.0);
     turbulent_inflow_condition_->Transfer(oldinctauw_, oldinctauw_, 0.0);
   }
@@ -1375,10 +1376,10 @@ void FLD::XWall::OverwriteTransferredValues()
   {
     Teuchos::RCP<Epetra_Vector> inctauwtmp =
         Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    LINALG::Export(*inctauw_, *inctauwtmp);
+    CORE::LINALG::Export(*inctauw_, *inctauwtmp);
     Teuchos::RCP<Epetra_Vector> tauwtmp =
         Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-    LINALG::Export(*tauw_, *tauwtmp);
+    CORE::LINALG::Export(*tauw_, *tauwtmp);
 
     for (int i = 0; i < discret_->NodeRowMap()->NumMyElements(); ++i)
     {
@@ -1404,8 +1405,8 @@ void FLD::XWall::OverwriteTransferredValues()
       }
     }
 
-    LINALG::Export(*inctauwtmp, *inctauw_);
-    LINALG::Export(*tauwtmp, *tauw_);
+    CORE::LINALG::Export(*inctauwtmp, *inctauw_);
+    CORE::LINALG::Export(*tauwtmp, *tauw_);
   }
   return;
 }
@@ -1418,8 +1419,8 @@ void FLD::XWall::ReadRestart(IO::DiscretizationReader& reader)
   Teuchos::RCP<Epetra_Vector> tauw =
       Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
   reader.ReadVector(tauw, "xwall_tauw");
-  LINALG::Export(*tauw, *tauw_);
-  LINALG::Export(*tauw, *tauwxwdis_);
+  CORE::LINALG::Export(*tauw, *tauw_);
+  CORE::LINALG::Export(*tauw, *tauwxwdis_);
 
   restart_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()), true));
   reader.ReadVector(restart_wss_, "wss");
@@ -1443,7 +1444,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
   {
     Teuchos::RCP<Epetra_Vector> res =
         Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()), true));
-    LINALG::Export(*trueresidual, *res);
+    CORE::LINALG::Export(*trueresidual, *res);
     for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
     {
       int xwallgid = xwallrownodemap_->GID(j);
@@ -1586,7 +1587,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
  |  Constructor (public)                                       bk 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
     Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
     Teuchos::RCP<Epetra_Vector> gridv)
     : XWall(dis, nsd, params, dbcmaps, wssmanager), mydispnp_(dispnp), mygridv_(gridv)
@@ -1654,8 +1655,8 @@ void FLD::XWallAleFSI::UpdateWDistWALE()
     if (err > 0) dserror("something wrong");
   }
 
-  LINALG::Export(*walldist_, *wdist_);
-  LINALG::Export(*walldist_, *wdistxwdis_);
+  CORE::LINALG::Export(*walldist_, *wdist_);
+  CORE::LINALG::Export(*walldist_, *wdistxwdis_);
   // save old one for projection
   incwdistxwdis_->Update(1.0, *wdistxwdis_, -1.0);
 
@@ -1686,10 +1687,12 @@ void FLD::XWallAleFSI::SetXWallParamsXWDis(Teuchos::ParameterList& eleparams)
   XWall::SetXWallParamsXWDis(eleparams);
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
-  Teuchos::RCP<Epetra_Vector> xwdisdispnp = LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
-  LINALG::Export(*mydispnp_, *xwdisdispnp);
-  Teuchos::RCP<Epetra_Vector> xwdisgridv = LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
-  LINALG::Export(*mygridv_, *xwdisgridv);
+  Teuchos::RCP<Epetra_Vector> xwdisdispnp =
+      CORE::LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
+  CORE::LINALG::Export(*mydispnp_, *xwdisdispnp);
+  Teuchos::RCP<Epetra_Vector> xwdisgridv =
+      CORE::LINALG::CreateVector(*(xwdiscret_->DofRowMap()), true);
+  CORE::LINALG::Export(*mygridv_, *xwdisgridv);
 
   xwdiscret_->SetState("dispnp", xwdisdispnp);
   xwdiscret_->SetState("gridv", xwdisgridv);

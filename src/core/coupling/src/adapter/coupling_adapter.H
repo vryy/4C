@@ -14,10 +14,10 @@
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -419,10 +419,12 @@ namespace CORE::ADAPTER
     Teuchos::RCP<Epetra_Map> MasterToSlaveMap(Teuchos::RCP<Epetra_Map> master);
 
     /// redistribute crsmatrix from master row map to permuted master row map
-    Teuchos::RCP<LINALG::SparseMatrix> MasterToPermMaster(const LINALG::SparseMatrix& sm) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MasterToPermMaster(
+        const CORE::LINALG::SparseMatrix& sm) const;
 
     /// redistribute crsmatrix from slave row map to permuted slave row map
-    Teuchos::RCP<LINALG::SparseMatrix> SlaveToPermSlave(const LINALG::SparseMatrix& sm) const;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SlaveToPermSlave(
+        const CORE::LINALG::SparseMatrix& sm) const;
 
     //@}
 

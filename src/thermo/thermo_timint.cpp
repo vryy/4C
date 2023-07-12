@@ -42,14 +42,14 @@ void THR::TimInt::Logo()
  *----------------------------------------------------------------------*/
 THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : discret_(actdis),
       myrank_(actdis->Comm().MyPID()),
       solver_(solver),
       solveradapttol_(DRT::INPUT::IntegralValue<int>(tdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
-      dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+      dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -108,7 +108,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   if ((writeenergyevery_ != 0) and (myrank_ == 0)) AttachEnergyFile();
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -124,15 +124,15 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   rate_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, discret_->DofRowMap(), true));
 
   // temperatures T_{n+1} at t_{n+1}
-  tempn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  tempn_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
   // temperature rates R_{n+1} at t_{n+1}
-  raten_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  raten_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fifc_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // create empty matrix
-  tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 81, true, true));
+  tang_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret_->DofRowMap(), 81, true, true));
   // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
@@ -156,9 +156,9 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< external force
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< external force
   Teuchos::RCP<Epetra_Vector> fint =
-      LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< internal force
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);  //!< internal force
 
   // overwrite initial state vectors with DirichletBCs
   ApplyDirichletBC((*time_)[0], (*temp_)(0), (*rate_)(0), false);
@@ -204,7 +204,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   {
     // rhs corresponds to residual on the rhs
     // K . DT = - R_n+1 = - R_n - (fint_n+1 - fext_n+1)
-    Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     // blank RHS on DBC DOFs
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), rhs);
@@ -609,7 +609,7 @@ void THR::TimInt::OutputEnergy()
   //  double kinergy = 0.0;  // total kinetic energy
   //  {
   //    Teuchos::RCP<Epetra_Vector> linmom
-  //      = LINALG::CreateVector(*dofrowmap_, true);
+  //      = CORE::LINALG::CreateVector(*dofrowmap_, true);
   //    capa_->Multiply(false, (*rate_)[0], *linmom);
   //    linmom->Dot((*rate_)[0], &kinergy);
   //    kinergy *= 0.5;
@@ -684,11 +684,11 @@ void THR::TimInt::ApplyForceExternal(const double time,  //!< evaluation time
  | evaluate convection boundary conditions at t_{n+1}        dano 01/11 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternalConv(Teuchos::ParameterList& p,
-    const double time,                         //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> tempn,   //!< temperature state T_n
-    const Teuchos::RCP<Epetra_Vector> temp,    //!< temperature state T_n+1
-    Teuchos::RCP<Epetra_Vector>& fext,         //!< external force
-    Teuchos::RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
+    const double time,                               //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> tempn,         //!< temperature state T_n
+    const Teuchos::RCP<Epetra_Vector> temp,          //!< temperature state T_n+1
+    Teuchos::RCP<Epetra_Vector>& fext,               //!< external force
+    Teuchos::RCP<CORE::LINALG::SparseOperator> tang  //!< tangent at time n+1
 )
 {
   // for heat convection von Neumann boundary conditions, i.e. q_c^, the
@@ -731,10 +731,10 @@ void THR::TimInt::ApplyForceExternalConv(Teuchos::ParameterList& p,
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal(
     Teuchos::ParameterList& p, const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperature
-    Teuchos::RCP<Epetra_Vector> fint,         //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix> tang   //!< tangent matrix
+    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
+    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // type of calling time integrator
@@ -779,11 +779,11 @@ void THR::TimInt::ApplyForceTangInternal(
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal(
     Teuchos::ParameterList& p, const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-    const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperature
-    Teuchos::RCP<Epetra_Vector> fcap,         //!< capacity force
-    Teuchos::RCP<Epetra_Vector> fint,         //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix> tang   //!< tangent matrix
+    const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
+    const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperature
+    Teuchos::RCP<Epetra_Vector> fcap,              //!< capacity force
+    Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tang  //!< tangent matrix
 )
 {
   // type of calling time integrator

@@ -37,8 +37,8 @@ CONTACT::CoTSIInterface::CoTSIInterface(
 {
   return;
 }
-void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-    LINALG::SparseMatrix& linstickDISglobal, LINALG::SparseMatrix& linstickTEMPglobal,
+void CONTACT::CoTSIInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+    CORE::LINALG::SparseMatrix& linstickDISglobal, CORE::LINALG::SparseMatrix& linstickTEMPglobal,
     Epetra_Vector& linstickRHSglobal)
 {
   CONTACT::CoInterface::AssembleLinStick(linstickLMglobal, linstickDISglobal, linstickRHSglobal);
@@ -52,8 +52,8 @@ void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMg
 
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = LINALG::SplitMap(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = LINALG::SplitMap(*activet_, *slipt_);
+  Teuchos::RCP<Epetra_Map> sticknodes = CORE::LINALG::SplitMap(*activenodes_, *slipnodes_);
+  Teuchos::RCP<Epetra_Map> stickt = CORE::LINALG::SplitMap(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -88,13 +88,13 @@ void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMg
     if (cnode->Owner() != Comm().MyPID())
       dserror("AssembleLinStick: Node ownership inconsistency!");
 
-    const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
     const double wgap = cnode->CoData().Getg();
-    LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
-    LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
-    LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
+    CORE::LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
+    CORE::LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
+    CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     double jump_txi = jump.Dot(txi);
     double jump_teta = jump.Dot(teta);
 
@@ -155,8 +155,8 @@ void CONTACT::CoTSIInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMg
 
   return;
 }
-void CONTACT::CoTSIInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-    LINALG::SparseMatrix& linslipDISglobal, LINALG::SparseMatrix& linslipTEMPglobal,
+void CONTACT::CoTSIInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+    CORE::LINALG::SparseMatrix& linslipDISglobal, CORE::LINALG::SparseMatrix& linslipTEMPglobal,
     Epetra_Vector& linslipRHSglobal)
 {
   CONTACT::CoInterface::AssembleLinSlip(linslipLMglobal, linslipDISglobal, linslipRHSglobal);
@@ -211,13 +211,13 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglo
     if (cnode->Owner() != Comm().MyPID())
       dserror("AssembleLinStick: Node ownership inconsistency!");
 
-    const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = n.Dot(lm);
     const double wgap = cnode->CoData().Getg();
-    LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
-    LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
-    LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
+    CORE::LINALG::Matrix<3, 1> txi(cnode->CoData().txi(), true);
+    CORE::LINALG::Matrix<3, 1> teta(cnode->CoData().teta(), true);
+    CORE::LINALG::Matrix<3, 1> jump(cnode->FriData().jump(), true);
     const double jump_txi = jump.Dot(txi);
     const double jump_teta = jump.Dot(teta);
     const double lm_txi = lm.Dot(txi);
@@ -282,9 +282,10 @@ void CONTACT::CoTSIInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglo
 }
 
 
-void CONTACT::CoTSIInterface::AssembleLinConduct(LINALG::SparseMatrix& linConductDISglobal,
-    LINALG::SparseMatrix& linConductTEMPglobal, LINALG::SparseMatrix& linConductThermoLMglobal,
-    LINALG::SparseMatrix& linConductContactLMglobal)
+void CONTACT::CoTSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& linConductDISglobal,
+    CORE::LINALG::SparseMatrix& linConductTEMPglobal,
+    CORE::LINALG::SparseMatrix& linConductThermoLMglobal,
+    CORE::LINALG::SparseMatrix& linConductContactLMglobal)
 {
   // nothing to do if no active contact nodes
   if (activenodes_->NumMyElements() == 0) return;
@@ -308,7 +309,7 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(LINALG::SparseMatrix& linConduc
 
 
 void CONTACT::CoTSIInterface::AssembleDualMassLumped(
-    LINALG::SparseMatrix& dualMassGlobal, LINALG::SparseMatrix& linDualMassGlobal)
+    CORE::LINALG::SparseMatrix& dualMassGlobal, CORE::LINALG::SparseMatrix& linDualMassGlobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -383,8 +384,8 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
-    LINALG::SparseMatrix* linM_X, const double fac, const LinDM_X_mode mode,
+void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X,
+    CORE::LINALG::SparseMatrix* linM_X, const double fac, const LinDM_X_mode mode,
     const Teuchos::RCP<Epetra_Map> node_rowmap)
 {
   // get out if there's nothing to do
@@ -426,9 +427,9 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
             continue;
           else
             cnode->MoData().GetD()[cnode->Id()];
-          const LINALG::Matrix<3, 1> lmc(cnode->MoData().lm(), true);
-          const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-          const LINALG::Matrix<3, 1> jump(frnode->FriData().jump(), true);
+          const CORE::LINALG::Matrix<3, 1> lmc(cnode->MoData().lm(), true);
+          const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+          const CORE::LINALG::Matrix<3, 1> jump(frnode->FriData().jump(), true);
           double diss = (-lmc.Dot(jump) + lmc.Dot(n) * jump.Dot(n)) / (dt * dval);
           lm = diss;
         }
@@ -436,8 +437,8 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
       }
       case linDM_ContactLMnormal:
       {
-        const LINALG::Matrix<3, 1> contact_LM(cnode->MoData().lm(), true);
-        const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+        const CORE::LINALG::Matrix<3, 1> contact_LM(cnode->MoData().lm(), true);
+        const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
         lm = contact_LM.Dot(n);
         break;
       }
@@ -545,9 +546,9 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDissDISP,
-    LINALG::SparseMatrix* m_LinDissDISP, LINALG::SparseMatrix* d_LinDissContactLM,
-    LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
+void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_LinDissDISP,
+    CORE::LINALG::SparseMatrix* m_LinDissDISP, CORE::LINALG::SparseMatrix* d_LinDissContactLM,
+    CORE::LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
 {
   // get out if there's nothing to do
   if (d_LinDissDISP == NULL && m_LinDissDISP == NULL && d_LinDissContactLM == NULL &&
@@ -574,10 +575,10 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
     if (fnode == NULL) continue;
 
     // get nodal normal
-    const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
 
     // projection into tangential plane = 1 - n \otimes n
-    LINALG::Matrix<3, 3> tang_proj(true);
+    CORE::LINALG::Matrix<3, 3> tang_proj(true);
     for (int i = 0; i < 3; ++i) tang_proj(i, i) = 1.;
     tang_proj.MultiplyNT(-1., n, n, 1.);
 
@@ -588,13 +589,13 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
     const double dval = cnode->MoData().GetD()[cnode->Id()];
 
     // get nodal values
-    LINALG::Matrix<3, 1> jump(fnode->FriData().jump());
-    const LINALG::Matrix<3, 1> lm(cnode->MoData().lm());
-    LINALG::Matrix<3, 1> lm_t;
+    CORE::LINALG::Matrix<3, 1> jump(fnode->FriData().jump());
+    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm());
+    CORE::LINALG::Matrix<3, 1> lm_t;
     lm_t.Multiply(tang_proj, lm);
     const double lm_n = lm.Dot(n);
     const double jump_n = jump.Dot(n);
-    LINALG::Matrix<3, 1> jump_tan;
+    CORE::LINALG::Matrix<3, 1> jump_tan;
     jump_tan.Multiply(tang_proj, jump);
 
 
@@ -676,7 +677,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(LINALG::SparseMatrix* d_LinDiss
 }
 
 void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
-    const double fac, LINALG::SparseMatrix* lin_disp, LINALG::SparseMatrix* lin_lm)
+    const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm)
 {
   // get out if there's nothing to do
   if (lin_disp == NULL) dserror("called to assemble something but didn't provide a matrix");
@@ -693,8 +694,8 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     for (_cimm k = cnode->CoData().GetDerivD().begin(); k != cnode->CoData().GetDerivD().end(); ++k)
@@ -754,7 +755,7 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
   return;
 }
 
-void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMatrix* DM_LMn)
+void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::SparseMatrix* DM_LMn)
 {
   // get out if there's nothing to do
   if (DM_LMn == NULL) dserror("called to assemble something but didn't provide a matrix");
@@ -770,8 +771,8 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
     if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    const LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
-    const LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
+    const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
+    const CORE::LINALG::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const double lm_n = lm.Dot(n);
 
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
@@ -796,14 +797,14 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
 }
 
 
-void CONTACT::CoTSIInterface::AssembleInactive(LINALG::SparseMatrix* linConductThermoLM)
+void CONTACT::CoTSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linConductThermoLM)
 {
   // get out if there's nothing to do
   if (linConductThermoLM == NULL)
     dserror("called to assemble something but didn't provide a matrix");
 
   // inactive nodes
-  Teuchos::RCP<Epetra_Map> inactivenodes = LINALG::SplitMap(*snoderowmap_, *activenodes_);
+  Teuchos::RCP<Epetra_Map> inactivenodes = CORE::LINALG::SplitMap(*snoderowmap_, *activenodes_);
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < inactivenodes->NumMyElements(); ++j)

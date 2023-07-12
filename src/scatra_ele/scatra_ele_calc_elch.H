@@ -83,7 +83,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
           ) = 0;
@@ -128,7 +128,7 @@ namespace DRT
       //! Calculate quantities used for stabilization
       virtual void PrepareStabilization(
           std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
-          std::vector<LINALG::Matrix<nen_, 1>>&
+          std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
@@ -166,9 +166,10 @@ namespace DRT
       //! evaluate an electrode boundary kinetics point condition
       virtual void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
           Epetra_SerialDenseMatrix& emat,                                      ///< element matrix
-          Epetra_SerialDenseVector& erhs,                      ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<nen_, 1>>&
+          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+              ephinp,  ///< state variables at element nodes
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ehist,                          ///< history variables at element nodes
           double timefac,                     ///< time factor
           Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
@@ -186,8 +187,10 @@ namespace DRT
           Epetra_SerialDenseVector& scalars,                      ///< scalars to be integrated
           Teuchos::ParameterList& params,                         ///< parameter list
           Teuchos::RCP<DRT::Condition> cond,                      ///< condition
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+              ephinp,  ///< state variables at element nodes
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
+              ephidtnp,                   ///< nodal time derivative vector
           const int kinetics,             ///< desired electrode kinetics model
           const std::vector<int> stoich,  ///< stoichiometry of the reaction
           const int nume,                 ///< number of transferred electrons
@@ -207,15 +210,15 @@ namespace DRT
           ) = 0;
 
       //! calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateFlux(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,             //!< type fo flux
-          const int k                                         //!< index of current scalar
+      virtual void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                   //!< type fo flux
+          const int k                                               //!< index of current scalar
           ) = 0;
 
       //! calculate weighted current flux (no reactive flux so far) -> elch-specific implementation
-      virtual void CalculateCurrent(LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
-          const INPAR::SCATRA::FluxType fluxtype,                //!< type fo flux
-          const double fac                                       //!< integration factor
+      virtual void CalculateCurrent(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
+          const INPAR::SCATRA::FluxType fluxtype,                      //!< type fo flux
+          const double fac                                             //!< integration factor
       ){};
 
       //! calculate error of numerical solution with respect to analytical solution
@@ -342,11 +345,12 @@ namespace DRT
        * @param ehist          history vector of transported scalars
        * @param do_setfrt      should FRT be set?
        */
-      void SetInternalVariablesElch(const LINALG::Matrix<NEN, 1>& funct,
-          const LINALG::Matrix<NSD, NEN>& derxy, const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,
-          const LINALG::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
+      void SetInternalVariablesElch(const CORE::LINALG::Matrix<NEN, 1>& funct,
+          const CORE::LINALG::Matrix<NSD, NEN>& derxy,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephinp,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,
+          const CORE::LINALG::Matrix<NSD, NEN>& econvelnp,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
       {
         // call base class (scatra)
         my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
@@ -387,10 +391,10 @@ namespace DRT
       const std::vector<double>& ConIntInv() const { return conintinv_; };
 
       //! return gradient of electric potential
-      const LINALG::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
+      const CORE::LINALG::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
 
       //! return subgrid velocity
-      const LINALG::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
+      const CORE::LINALG::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
 
       //! set factor F/RT
       virtual void SetFRT() { frt_ = parameters_->FRT(); }
@@ -417,9 +421,9 @@ namespace DRT
       //! 1/concentration at GP
       std::vector<double> conintinv_;
       //! gradient of electric potential
-      LINALG::Matrix<NSD, 1> gradpot_;
+      CORE::LINALG::Matrix<NSD, 1> gradpot_;
       // subgrid velocity
-      LINALG::Matrix<NEN, 1> sgconv_;
+      CORE::LINALG::Matrix<NEN, 1> sgconv_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

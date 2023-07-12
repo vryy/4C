@@ -23,7 +23,7 @@
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntCardiacMonodomainHDG::TimIntCardiacMonodomainHDG(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -140,7 +140,7 @@ void SCATRA::TimIntCardiacMonodomainHDG::OutputState()
 
 
   // copy values from node to dof vector
-  Teuchos::RCP<Epetra_Vector> dofphi = LINALG::CreateVector(*dofmap_);
+  Teuchos::RCP<Epetra_Vector> dofphi = CORE::LINALG::CreateVector(*dofmap_);
 
   for (int i = 0; i < dofphi->MyLength(); ++i)
   {

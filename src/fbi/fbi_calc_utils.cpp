@@ -56,10 +56,10 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
 void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
     const DRT::Discretization& discretization1, const DRT::Discretization& discretization2,
     std::vector<int> const& elegid,
-    std::vector<LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
-    std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
-    std::vector<LINALG::SerialDenseVector>* eleforce,
-    std::vector<std::vector<LINALG::SerialDenseMatrix>>* elestiff)
+    std::vector<CORE::LINALG::SerialDenseVector> const& eleforce_centerlineDOFs,
+    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elestiff_centerlineDOFs,
+    std::vector<CORE::LINALG::SerialDenseVector>* eleforce,
+    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>* elestiff)
 {
   std::vector<unsigned int> numdof_ele(2);
   std::vector<std::vector<unsigned int>> ele_centerlinedofindices(2);

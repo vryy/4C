@@ -137,13 +137,13 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Unpack(const std::vector<char>
   // invJ_
   int size = 0;
   so3_ele::ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<numdim_, numdim_>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<numdim_, numdim_>(true));
   for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, invJ_[i]);
 
   // xsi_
   size = 0;
   so3_ele::ExtractfromPack(position, data, size);
-  xsi_.resize(size, LINALG::Matrix<numdim_, 1>(true));
+  xsi_.resize(size, CORE::LINALG::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) so3_ele::ExtractfromPack(position, data, xsi_[i]);
 
   // extract base class Element

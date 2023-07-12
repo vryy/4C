@@ -31,7 +31,7 @@ namespace INPAR::SSI
   enum class FieldCoupling;
 }  // namespace INPAR::SSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }

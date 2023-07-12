@@ -676,20 +676,20 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
     sele.DerivShapeDual(dualmap);
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 1);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol, 1);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector mval(ncol);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 1);
 
-  LINALG::SerialDenseVector m2val(ncol);
-  LINALG::SerialDenseMatrix m2deriv(ncol, 1);
-  LINALG::SerialDenseVector lm2val(ncol);
-  LINALG::SerialDenseMatrix lm2deriv(ncol, 1);
+  CORE::LINALG::SerialDenseVector m2val(ncol);
+  CORE::LINALG::SerialDenseMatrix m2deriv(ncol, 1);
+  CORE::LINALG::SerialDenseVector lm2val(ncol);
+  CORE::LINALG::SerialDenseMatrix lm2deriv(ncol, 1);
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseMatrix ssecderiv(nrow, 1);
+  CORE::LINALG::SerialDenseMatrix ssecderiv(nrow, 1);
 
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
@@ -840,8 +840,8 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
     {
       // declare and compute shape functions as well as derivatives for computation of gap
       // -> standard quadratic functions instead of only linear functions
-      LINALG::SerialDenseVector svalgap(nrow);
-      LINALG::SerialDenseMatrix sderivgap(nrow, 1);
+      CORE::LINALG::SerialDenseVector svalgap(nrow);
+      CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 1);
       sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
       Gap_2D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp, dmxigp, dgapgp,
@@ -1476,10 +1476,10 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
   int ndof = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
 
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
@@ -1574,8 +1574,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
         DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
 
         int nmnode = meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(nmnode);
-        LINALG::SerialDenseMatrix mderiv(nmnode, 2, true);
+        CORE::LINALG::SerialDenseVector mval(nmnode);
+        CORE::LINALG::SerialDenseMatrix mderiv(nmnode, 2, true);
 
 
         // project Gauss point onto master element
@@ -1634,8 +1634,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
           {
             // declare and compute shape functions as well as derivatives for computation of gap
             // -> standard quadratic functions instead of only linear functions
-            LINALG::SerialDenseVector svalgap(nrow);
-            LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
+            CORE::LINALG::SerialDenseVector svalgap(nrow);
+            CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
             sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
             Gap_3D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
@@ -1736,14 +1736,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
   if (!mynodes) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
-  LINALG::SerialDenseVector lmvalScale(nrow);
-  LINALG::SerialDenseMatrix lmderivScale(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector mval(ncol);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector lmvalScale(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderivScale(nrow, 2, true);
 
 
 
@@ -1877,11 +1877,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
-    static LINALG::Matrix<3, 1> svalcell;
-    static LINALG::Matrix<3, 2> sderivcell;
+    static CORE::LINALG::Matrix<3, 1> svalcell;
+    static CORE::LINALG::Matrix<3, 2> sderivcell;
     cell->EvaluateShape(eta, svalcell, sderivcell);
 
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
 
     for (int v = 0; v < 3; ++v)
       for (int d = 0; d < 3; ++d)
@@ -1973,12 +1973,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
   if (!mnodes) dserror("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  LINALG::SerialDenseVector mval(ncolL);
-  LINALG::SerialDenseMatrix mderiv(ncolL, 1, true);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector mval(ncolL);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncolL, 1, true);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
 
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
@@ -2119,11 +2119,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
-    static LINALG::Matrix<3, 1> svalcell;
-    static LINALG::Matrix<3, 2> sderivcell;
+    static CORE::LINALG::Matrix<3, 1> svalcell;
+    static CORE::LINALG::Matrix<3, 2> sderivcell;
     cell->EvaluateShape(eta, svalcell, sderivcell);
 
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp(100 * (nrow + ncolP) * ndof);
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp(100 * (nrow + ncolP) * ndof);
 
     for (int v = 0; v < 2; ++v)
       for (int d = 0; d < 3; ++d)
@@ -2720,12 +2720,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     dserror("IntegrateDerivCell3DAuxPlaneLTS: Cannot access master nodes. Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrowL);
-  LINALG::SerialDenseMatrix sderiv(nrowL, 1, true);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
-  LINALG::SerialDenseVector lmval(nrowL);
-  LINALG::SerialDenseMatrix lmderiv(nrowL, 1, true);
+  CORE::LINALG::SerialDenseVector sval(nrowL);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrowL, 1, true);
+  CORE::LINALG::SerialDenseVector mval(ncol);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
+  CORE::LINALG::SerialDenseVector lmval(nrowL);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrowL, 1, true);
 
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
@@ -2892,11 +2892,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
     // evaluate linearizations *******************************************
 
     // evaluate global GP coordinate derivative
-    static LINALG::Matrix<3, 1> svalcell;
-    static LINALG::Matrix<3, 2> sderivcell;
+    static CORE::LINALG::Matrix<3, 1> svalcell;
+    static CORE::LINALG::Matrix<3, 2> sderivcell;
     cell->EvaluateShape(eta, svalcell, sderivcell);
 
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nrowS + ncol) * ndof + linsize);
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrowS + ncol) * ndof + linsize);
 
     for (int v = 0; v < 2; ++v)
       for (int d = 0; d < 3; ++d)
@@ -3753,37 +3753,37 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   int nintrow = sintele.NumNode();
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
-  LINALG::SerialDenseVector svalmod(nrow);
-  LINALG::SerialDenseMatrix sderivmod(nrow, 2, true);
-  LINALG::SerialDenseVector mval(ncol);
-  LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
-  LINALG::SerialDenseVector lmintval(nintrow);
-  LINALG::SerialDenseMatrix lmintderiv(nintrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector svalmod(nrow);
+  CORE::LINALG::SerialDenseMatrix sderivmod(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector mval(ncol);
+  CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2, true);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector lmintval(nintrow);
+  CORE::LINALG::SerialDenseMatrix lmintderiv(nintrow, 2, true);
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseMatrix ssecderiv(nrow, 3);
+  CORE::LINALG::SerialDenseMatrix ssecderiv(nrow, 3);
 
   // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3, sele.NumNode());
+  CORE::LINALG::SerialDenseMatrix scoord(3, sele.NumNode());
   sele.GetNodalCoords(scoord);
-  LINALG::SerialDenseMatrix mcoord(3, mele.NumNode());
+  CORE::LINALG::SerialDenseMatrix mcoord(3, mele.NumNode());
   mele.GetNodalCoords(mcoord);
 
   // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult;
 
   // get them in the case of wear
   if (wear or DRT::INPUT::IntegralValue<int>(imortar_, "GP_SLIP_INCR") == true)
   {
-    scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele.NumNode()));
-    mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, mele.NumNode()));
-    lagmult = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele.NumNode()));
+    scoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.NumNode()));
+    mcoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, mele.NumNode()));
+    lagmult = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.NumNode()));
     sele.GetNodalCoordsOld(*scoordold);
     mele.GetNodalCoordsOld(*mcoordold);
     sele.GetNodalLagMult(*lagmult);
@@ -4022,11 +4022,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
     sele.Evaluate2ndDerivShape(psxi, ssecderiv, nrow);
 
     // evaluate global GP coordinate derivative
-    LINALG::Matrix<3, 1> svalcell;
-    LINALG::Matrix<3, 2> sderivcell;
+    CORE::LINALG::Matrix<3, 1> svalcell;
+    CORE::LINALG::Matrix<3, 2> sderivcell;
     cell->EvaluateShape(eta, svalcell, sderivcell);
 
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nrow + ncol) * ndof);
 
     for (int v = 0; v < 3; ++v)
       for (int d = 0; d < 3; ++d)
@@ -4104,8 +4104,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
         {
           // declare and compute shape functions as well as derivatives for computation of gap
           // -> standard quadratic functions instead of only linear functions
-          LINALG::SerialDenseVector svalgap(nrow);
-          LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
+          CORE::LINALG::SerialDenseVector svalgap(nrow);
+          CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 2, true);
           sele.EvaluateShape(psxi, svalgap, sderivgap, nrow);
 
           Gap_3D(sele, mele, svalgap, mval, sderivgap, mderiv, &gap, gpn, dpsxigp, dpmxigp, dgapgp,
@@ -4237,19 +4237,19 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 1);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, 1);
 
   // get slave nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3, nrow);
+  CORE::LINALG::SerialDenseMatrix scoord(3, nrow);
   sele.GetNodalCoords(scoord);
 
   // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold;
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult;
 
   // map iterator
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
@@ -4355,11 +4355,11 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           ncol = meles[nummaster]->NumNode();
           ;
 
-          LINALG::SerialDenseVector mval(ncol);
-          LINALG::SerialDenseMatrix mderiv(ncol, 1);
+          CORE::LINALG::SerialDenseVector mval(ncol);
+          CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
 
           // get master nodal coords for Jacobian / GP evaluation
-          LINALG::SerialDenseMatrix mcoord(3, ncol);
+          CORE::LINALG::SerialDenseMatrix mcoord(3, ncol);
           meles[nummaster]->GetNodalCoords(mcoord);
 
           // evaluate trace space shape functions
@@ -4406,8 +4406,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           {
             // declare and compute shape functions as well as derivatives for computation of gap
             // -> standard quadratic functions instead of only linear functions
-            LINALG::SerialDenseVector svalgap(nrow);
-            LINALG::SerialDenseMatrix sderivgap(nrow, 1);
+            CORE::LINALG::SerialDenseVector svalgap(nrow);
+            CORE::LINALG::SerialDenseMatrix sderivgap(nrow, 1);
             sele.EvaluateShape(sxi, svalgap, sderivgap, nrow);
 
             Gap_2D(sele, *meles[nummaster], svalgap, mval, sderivgap, mderiv, &gap, gpn, dsxigp,
@@ -4458,10 +4458,10 @@ void CONTACT::CoIntegrator::IntegrateD(
   if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, ndof - 1);
-  LINALG::SerialDenseVector lmval(nrow);
-  LINALG::SerialDenseMatrix lmderiv(nrow, ndof - 1);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, ndof - 1);
+  CORE::LINALG::SerialDenseVector lmval(nrow);
+  CORE::LINALG::SerialDenseMatrix lmderiv(nrow, ndof - 1);
 
   int linsize = 0;
   for (int i = 0; i < nrow; ++i)
@@ -4648,8 +4648,8 @@ void CONTACT::CoIntegrator::IntegrateKappaPenaltyLTS(MORTAR::MortarElement& ele)
   int nrow = ele.NumNode();
 
   // create empty objects for shape fct. evaluation
-  LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector val(nrow);
+  CORE::LINALG::SerialDenseMatrix deriv(nrow, 2, true);
 
   // get slave element nodes themselves
   DRT::Node** mynodes = ele.Nodes();
@@ -4708,8 +4708,8 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, d
   int nrow = sele.NumNode();
 
   // create empty objects for shape fct. evaluation
-  LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector val(nrow);
+  CORE::LINALG::SerialDenseMatrix deriv(nrow, 2, true);
 
   // map iterator
   // typedef std::map<int,double>::const_iterator CI;
@@ -4786,10 +4786,10 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
   int nintrow = sintele.NumNode();
 
   // create empty objects for shape fct. evaluation
-  LINALG::SerialDenseVector val(nrow);
-  LINALG::SerialDenseMatrix deriv(nrow, 2, true);
-  LINALG::SerialDenseVector intval(nintrow);
-  LINALG::SerialDenseMatrix intderiv(nintrow, 2, true);
+  CORE::LINALG::SerialDenseVector val(nrow);
+  CORE::LINALG::SerialDenseMatrix deriv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector intval(nintrow);
+  CORE::LINALG::SerialDenseMatrix intderiv(nintrow, 2, true);
 
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -4885,14 +4885,14 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
   double psxib[2] = {sxib, 0.0};
   double pmxia[2] = {mxia, 0.0};
   double pmxib[2] = {mxib, 0.0};
-  LINALG::SerialDenseVector valsxia(numsnode);
-  LINALG::SerialDenseVector valsxib(numsnode);
-  LINALG::SerialDenseVector valmxia(nummnode);
-  LINALG::SerialDenseVector valmxib(nummnode);
-  LINALG::SerialDenseMatrix derivsxia(numsnode, 1);
-  LINALG::SerialDenseMatrix derivsxib(numsnode, 1);
-  LINALG::SerialDenseMatrix derivmxia(nummnode, 1);
-  LINALG::SerialDenseMatrix derivmxib(nummnode, 1);
+  CORE::LINALG::SerialDenseVector valsxia(numsnode);
+  CORE::LINALG::SerialDenseVector valsxib(numsnode);
+  CORE::LINALG::SerialDenseVector valmxia(nummnode);
+  CORE::LINALG::SerialDenseVector valmxib(nummnode);
+  CORE::LINALG::SerialDenseMatrix derivsxia(numsnode, 1);
+  CORE::LINALG::SerialDenseMatrix derivsxib(numsnode, 1);
+  CORE::LINALG::SerialDenseMatrix derivmxia(nummnode, 1);
+  CORE::LINALG::SerialDenseMatrix derivmxib(nummnode, 1);
 
   sele.EvaluateShape(psxia, valsxia, derivsxia, numsnode, false);
   sele.EvaluateShape(psxib, valsxib, derivsxib, numsnode, false);
@@ -4919,8 +4919,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxia, derivN);
 
-    LINALG::SerialDenseVector* mval = NULL;
-    LINALG::SerialDenseMatrix* mderiv = NULL;
+    CORE::LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseMatrix* mderiv = NULL;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
     {
       mval = &valmxib;
@@ -4998,8 +4998,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxib, derivN);
 
-    LINALG::SerialDenseVector* mval = NULL;
-    LINALG::SerialDenseMatrix* mderiv = NULL;
+    CORE::LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseMatrix* mderiv = NULL;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
     {
       mval = &valmxia;
@@ -5076,7 +5076,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double fac_nx_a = 0.0;
     double fac_ny_a = 0.0;
 
-    LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseVector* mval = NULL;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
       mval = &valmxib;
     else
@@ -5157,7 +5157,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double fac_nx_b = 0.0;
     double fac_ny_b = 0.0;
 
-    LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseVector* mval = NULL;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
       mval = &valmxia;
     else
@@ -5265,10 +5265,10 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   // we also need shape function derivs in A and B
   double psxigp[2] = {sxigp, 0.0};
   double pmxigp[2] = {mxigp, 0.0};
-  LINALG::SerialDenseVector valsxigp(numsnode);
-  LINALG::SerialDenseVector valmxigp(nummnode);
-  LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
-  LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
+  CORE::LINALG::SerialDenseVector valsxigp(numsnode);
+  CORE::LINALG::SerialDenseVector valmxigp(nummnode);
+  CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
+  CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
 
   sele.EvaluateShape(psxigp, valsxigp, derivsxigp, numsnode, false);
   mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
@@ -5456,10 +5456,10 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
   }
 
   // we also need shape function derivs at the GP
-  LINALG::SerialDenseVector valsxigp(numsnode);
-  LINALG::SerialDenseVector valmxigp(nummnode);
-  LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
-  LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
+  CORE::LINALG::SerialDenseVector valsxigp(numsnode);
+  CORE::LINALG::SerialDenseVector valmxigp(nummnode);
+  CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
+  CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
 
   sele.EvaluateShape(sxigp, valsxigp, derivsxigp, numsnode);
   mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
@@ -5475,7 +5475,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
     }
 
   // build 3x3 factor matrix L
-  LINALG::Matrix<3, 3> lmatrix(true);
+  CORE::LINALG::Matrix<3, 3> lmatrix(true);
   for (int k = 0; k < 3; ++k) lmatrix(k, 2) = -sgpn[k];
   for (int z = 0; z < nummnode; ++z)
     for (int k = 0; k < 3; ++k)
@@ -5615,7 +5615,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
 void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, double* xigp,
     double* auxn, std::vector<CORE::GEN::pairedvector<int, double>>& derivxi, double& alpha,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivauxn,
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>>& derivgp)
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>>& derivgp)
 {
   // check for problem dimension
   if (Dim() != 3) dserror("3D integration method called for non-3D problem");
@@ -5632,12 +5632,12 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
   }
 
   // we also need shape function derivs at the GP
-  LINALG::SerialDenseVector valxigp(numnode);
-  LINALG::SerialDenseMatrix derivxigp(numnode, 2, true);
+  CORE::LINALG::SerialDenseVector valxigp(numnode);
+  CORE::LINALG::SerialDenseMatrix derivxigp(numnode, 2, true);
   ele.EvaluateShape(xigp, valxigp, derivxigp, numnode);
 
   // build 3x3 factor matrix L
-  LINALG::Matrix<3, 3> lmatrix(true);
+  CORE::LINALG::Matrix<3, 3> lmatrix(true);
   for (int k = 0; k < 3; ++k) lmatrix(k, 2) = -auxn[k];
   for (int z = 0; z < numnode; ++z)
     for (int k = 0; k < 3; ++k)
@@ -5677,13 +5677,13 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
   }
 
   // (2) Gauss point coordinates part
-  for (CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>>::const_iterator p = derivgp.begin();
+  for (CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>>::const_iterator p = derivgp.begin();
        p != derivgp.end(); ++p)
   {
     const int pf = p->first;
     double& derivxi0 = derivxi[0][pf];
     double& derivxi1 = derivxi[1][pf];
-    const LINALG::Matrix<3, 1>& tmp = p->second;
+    const CORE::LINALG::Matrix<3, 1>& tmp = p->second;
     for (int d = 0; d < 3; ++d)
     {
       derivxi0 += lmatrix(0, d) * tmp(d);
@@ -5730,9 +5730,9 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
     CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -5810,8 +5810,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
             (mele.NumNode() * Dim()) + linsize);  // deriv. of slip for wear
         CORE::GEN::pairedvector<int, double> dweargp(
             (mele.NumNode() * Dim()) + linsize);  // wear lin. without lm and jac.
-        Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult =
-            Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele.NumNode()));
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.NumNode()));
         sele.GetNodalLagMult(*lagmult);
 
         GP_3D_Wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
@@ -5829,8 +5829,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
         // both-sided discr wear specific stuff
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
           mele.EvaluateShapeLagMult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.NumNode());
 
           GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, jumpval, Comm_);
@@ -5839,8 +5839,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
         // both-sided wear specific stuff
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_intstate)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), 2, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), 2, true);
           mele.EvaluateShapeLagMult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.NumNode());
 
           GP_D2(sele, mele, lm2val, mval, jac, wgt, Comm_);
@@ -5857,8 +5857,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar and
             wearimpl_ == true)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
           CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> dual2map(
               (sele.NumNode() + mele.NumNode()) * Dim(), 0,
               Epetra_SerialDenseMatrix(mele.NumNode(), mele.NumNode()));
@@ -5908,9 +5908,9 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
     CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -5995,8 +5995,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       if (wearlaw_ != INPAR::WEAR::wear_none)
       {
         // nodal Lagrange mulitplier
-        Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult =
-            Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele.NumNode()));
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele.NumNode()));
         sele.GetNodalLagMult(*lagmult);
 
         int linsize = 0;
@@ -6022,8 +6022,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
         // both-sided discr wear specific stuff
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
           mele.EvaluateShapeLagMult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.NumNode());
 
           GP_TE_Master(sele, mele, lmval, lm2val, mval, jac, wgt, &jumpval, Comm_);
@@ -6032,8 +6032,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
         // both-sided map wear specific stuff
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_intstate)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), 2, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), 2, true);
           mele.EvaluateShapeLagMult(ShapeFcn(), mxi, lm2val, lm2deriv, mele.NumNode());
 
           GP_D2(sele, mele, lm2val, mval, jac, wgt, Comm_);
@@ -6054,8 +6054,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
         if (WearSide() == INPAR::WEAR::wear_both and WearType() == INPAR::WEAR::wear_primvar and
             wearimpl_ == true)
         {
-          LINALG::SerialDenseVector lm2val(mele.NumNode());
-          LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
+          CORE::LINALG::SerialDenseVector lm2val(mele.NumNode());
+          CORE::LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(), Dim() - 1, true);
           CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> dual2map(
               (sele.NumNode() + mele.NumNode()) * Dim(), 0,
               Epetra_SerialDenseMatrix(mele.NumNode(), mele.NumNode()));
@@ -6106,8 +6106,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
  |  Compute entries for D and M matrix at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, double& jac, double& wgt, bool& bound)
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, double& jac, double& wgt, bool& bound)
 {
   int nrow;
   int ncol;
@@ -6297,10 +6297,10 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, MORTAR::IntElement& sintele, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseVector& lmintval, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, const double& jac, double& wgt, const int& nrow,
-    const int& nintrow, const int& ncol, const int& ndof, bool& bound)
+    MORTAR::MortarElement& mele, MORTAR::IntElement& sintele,
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lmintval,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval, const double& jac,
+    double& wgt, const int& nrow, const int& nintrow, const int& ncol, const int& ndof, bool& bound)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -6454,8 +6454,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval, double* gap, double& jac,
-    double& wgt)
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
+    double& jac, double& wgt)
 {
   DRT::Node** mynodes = NULL;
   int nrow = 0;
@@ -6491,9 +6491,9 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& lmval, double* gap, double& jac, double& wgt, bool quadratic,
-    int nintrow)
+void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
+    double& jac, double& wgt, bool quadratic, int nintrow)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -6606,9 +6606,9 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele, LINALG::Seri
 }
 
 void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap, double* gpn,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
+    double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     CORE::GEN::pairedvector<int, double>& dgapgp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit)
@@ -6919,9 +6919,9 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
 }
 
 void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap, double* gpn,
-    std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
+    double* gpn, std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     CORE::GEN::pairedvector<int, double>& dgapgp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit)
@@ -6946,11 +6946,11 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   mnodes = mele.Nodes();
 
   // get slave nodal coords for GP evaluation
-  LINALG::SerialDenseMatrix scoord(3, nrow);
+  CORE::LINALG::SerialDenseMatrix scoord(3, nrow);
   sele.GetNodalCoords(scoord);
 
   // get master nodal coords for GP evaluation
-  LINALG::SerialDenseMatrix mcoord(3, ncol);
+  CORE::LINALG::SerialDenseMatrix mcoord(3, ncol);
   mele.GetNodalCoords(mcoord);
 
   std::array<double, 2> sgpx = {0.0, 0.0};
@@ -7151,11 +7151,11 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
  |  Compute entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sele,
-    MORTAR::IntElement& sintele, MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmintval,
-    LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv, double* gap, double* gpn,
-    double* lengthn, double& jac, double& wgt,
+    MORTAR::IntElement& sintele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmintval,
+    CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* gap,
+    double* gpn, double* lengthn, double& jac, double& wgt,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     CORE::GEN::pairedvector<int, double>& dgapgp,
@@ -7463,10 +7463,10 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
-    CORE::GEN::pairedvector<int, double>& dgapgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
+    double* gpn, double& jac, double& wgt, CORE::GEN::pairedvector<int, double>& dgapgp,
     CORE::GEN::pairedvector<int, double>& jacintcellmap,
     std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -7577,9 +7577,10 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
  |  Do lin. entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::IntElement& sintele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmintval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmintderiv, double& gap,
-    double* gpn, double& jac, double& wgt, const CORE::GEN::pairedvector<int, double>& dgapgp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmintval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmintderiv,
+    double& gap, double* gpn, double& jac, double& wgt,
+    const CORE::GEN::pairedvector<int, double>& dgapgp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp)
 {
@@ -7630,10 +7631,11 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::Int
  |  Do lin. entries for weighted Gap at GP                   farah 12/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& svalmod, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn,
-    double& jac, double& wgt, bool& duallin, const CORE::GEN::pairedvector<int, double>& dgapgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
+    double* gpn, double& jac, double& wgt, bool& duallin,
+    const CORE::GEN::pairedvector<int, double>& dgapgp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d)
@@ -7758,10 +7760,10 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEle
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac, double& wgt,
-    CORE::GEN::pairedvector<int, double>& dgapgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap,
+    double* gpn, double& jac, double& wgt, CORE::GEN::pairedvector<int, double>& dgapgp,
     CORE::GEN::pairedvector<int, double>& jacintcellmap,
     std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -7877,9 +7879,10 @@ void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
  |  Compute entries for bound DM                             farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& lmderiv, LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
@@ -8229,9 +8232,10 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
  |  Compute entries for weighted Gap at GP                   farah 07/16|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi,
@@ -8548,9 +8552,9 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& mderiv, double& dxdsxi, double& wgt,
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, double& dxdsxi, double& wgt,
     const CORE::GEN::pairedvector<int, double>& dmxigp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -8696,10 +8700,10 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& linlm,
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
@@ -8970,11 +8974,11 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
  |  Lin D and M matrix entries at GP - pwlin                 farah 12/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& sintele, MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmintval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseMatrix& lmintderiv, double& wgt, double& jac,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    MORTAR::MortarElement& sintele, MORTAR::MortarElement& mele,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmintderiv,
+    double& wgt, double& jac, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dpmxigp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap)
@@ -9077,11 +9081,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mo
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& svalmod, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& wgt, double& jac,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& svalmod, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& wgt,
+    double& jac, const std::vector<CORE::GEN::pairedvector<int, double>>& dpsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dpmxigp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, bool dualquad3d)
@@ -9442,9 +9446,10 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& wgt, double& jac,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& lmderiv, double& wgt, double& jac,
     std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     CORE::GEN::pairedvector<int, double>& jacintcellmap,
@@ -9606,8 +9611,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(MORTAR::MortarElement& sele,
  |  Compute entries for D2 matrix at GP                      farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& lm2val, LINALG::SerialDenseVector& m2val, double& jac, double& wgt,
-    const Epetra_Comm& comm)
+    CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseVector& m2val, double& jac,
+    double& wgt, const Epetra_Comm& comm)
 {
   int ncol = mele.NumNode();
   int ndof = Dim();
@@ -9663,11 +9668,12 @@ void inline CONTACT::CoIntegrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::Mo
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& lmderiv,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
-    double* jumpval, double* wearval, CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& lmderiv, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult,
+    double* gpn, double& jac, double& wgt, double* jumpval, double* wearval,
+    CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
     CORE::GEN::pairedvector<int, double>& dweargp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
@@ -9996,11 +10002,12 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
  |  Compute wear at GP (for expl/impl algor.)                farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& lmderiv,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
-    double* jumpval, double* wearval, CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& lmderiv, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult,
+    double* gpn, double& jac, double& wgt, double* jumpval, double* wearval,
+    CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
     CORE::GEN::pairedvector<int, double>& dweargp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
@@ -10027,11 +10034,11 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
   //***********************************************************************
 
   // wear-lin
-  LINALG::Matrix<3, 1> jump;
-  LINALG::Matrix<3, 1> jumptan;
-  LINALG::Matrix<3, 1> lm;
-  LINALG::Matrix<3, 1> lmtan;
-  LINALG::Matrix<3, 3> tanplane;
+  CORE::LINALG::Matrix<3, 1> jump;
+  CORE::LINALG::Matrix<3, 1> jumptan;
+  CORE::LINALG::Matrix<3, 1> lm;
+  CORE::LINALG::Matrix<3, 1> lmtan;
+  CORE::LINALG::Matrix<3, 3> tanplane;
 
   std::array<double, 3> gplm = {0.0, 0.0, 0.0};
   double lm_lin = 0.0;
@@ -10446,8 +10453,8 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(MORTAR::MortarElement& sele,
  |  Compute entries for E and T matrix at GP (Slave)         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_TE(MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseVector& sval, double& jac, double& wgt,
-    double* jumpval)
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& sval, double& jac,
+    double& wgt, double* jumpval)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
@@ -10513,9 +10520,9 @@ void inline CONTACT::CoIntegrator::GP_TE(MORTAR::MortarElement& sele,
  |  Compute entries for E and T matrix at GP (Master)        farah 11/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_TE_Master(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseVector& lm2val, LINALG::SerialDenseVector& mval, double& jac, double& wgt,
-    double* jumpval, const Epetra_Comm& comm)
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseVector& mval, double& jac,
+    double& wgt, double* jumpval, const Epetra_Comm& comm)
 {
   if (sele.Owner() != comm.MyPID()) return;
 
@@ -10601,10 +10608,10 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(MORTAR::MortarElement& sele,
  |  Compute lin for T and E matrix -- discr. wear            farah 11/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(int& iter,  // like k
-    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv, double& dsxideta,
-    double& dxdsxi, double& dxdsxidsxi, double& wgt, double* jumpval,
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
+    double& dsxideta, double& dxdsxi, double& dxdsxidsxi, double& wgt, double* jumpval,
     const CORE::GEN::pairedvector<int, double>& dsxigp,
     const CORE::GEN::pairedvector<int, double>& dmxigp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
@@ -10738,9 +10745,9 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(int& iter,  // like k
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
-    double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double& wgt, double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -10939,9 +10946,9 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
-    double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double& wgt, double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -11185,11 +11192,12 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement
  |  Compute lin for T and E matrix -- discr. wear (master)   farah 11/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseVector& lm2val,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseMatrix& lmderiv, LINALG::SerialDenseMatrix& lm2deriv, double& jac,
-    double& wgt, double* jumpval, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseVector& lm2val, CORE::LINALG::SerialDenseMatrix& sderiv,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
+    CORE::LINALG::SerialDenseMatrix& lm2deriv, double& jac, double& wgt, double* jumpval,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const CORE::GEN::pairedvector<int, double>& dsliptmatrixgp,
@@ -11424,10 +11432,10 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Mortar
  |  Compute entries for weighted slip increment at GP        farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double& jac,
+    double& wgt, double* jumpvalv, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     CORE::GEN::pairedvector<int, double>& dslipgp, int& linsize)
 {
@@ -11595,10 +11603,10 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
  |  Compute entries for slip increment at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, double& jac, double& wgt, double* jumpvalv,
-    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double& jac,
+    double& wgt, double* jumpvalv, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     std::vector<CORE::GEN::pairedvector<int, double>>& dslipgp)
 {
@@ -11974,9 +11982,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
  |  Compute slipincr lin at GP                               farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
-    double* jumpvalv, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double& wgt, double* jumpvalv, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, double>& dslipgp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -12029,9 +12037,9 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarE
  |  Compute slipincr lin at   GP                             farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double& wgt,
-    double* jumpvalv, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double& wgt, double* jumpvalv, const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dslipgp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap)
@@ -12112,9 +12120,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(int& iter, MORTAR::MortarE
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double* gpn,
-    double& wgt, double& wearval, double* jumpval,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double* gpn, double& wgt, double& wearval, double* jumpval,
     const CORE::GEN::pairedvector<int, double>& dweargp,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -12214,9 +12222,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(int& iter, MORTAR::MortarEleme
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& sderiv, LINALG::SerialDenseMatrix& lmderiv, double& jac, double* gpn,
-    double& wgt, double& wearval, double* jumpval,
+    CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv, double& jac,
+    double* gpn, double& wgt, double& wearval, double* jumpval,
     const CORE::GEN::pairedvector<int, double>& dweargp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
@@ -12327,10 +12335,11 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(int& iter, MORTAR::MortarEleme
  |  Compute entries for poro normal coupling condition      07/14 ager  |
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, double* ncoup, double* gpn, double& jac, double& wgt,
-    double* gpcoord, const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv, double* ncoup,
+    double* gpn, double& jac, double& wgt, double* gpcoord,
+    const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
     std::map<int, double>& dncoupgp, std::map<int, double>& dvelncoupgp,
     std::map<int, double>& dpresncoupgp,
@@ -12678,11 +12687,11 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
  |  modified by h.Willmann 2015                                                |
  *----------------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& lmderiv, double& ncoup, double* gpn, double& jac, double& wgt,
-    const std::map<int, double>& dncoupgp, const std::map<int, double>& dvelncoupgp,
-    const std::map<int, double>& dpresncoupgp,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseVector& lmval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
+    double& ncoup, double* gpn, double& jac, double& wgt, const std::map<int, double>& dncoupgp,
+    const std::map<int, double>& dvelncoupgp, const std::map<int, double>& dpresncoupgp,
     const CORE::GEN::pairedvector<int, double>& jacintcellmap,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxigp,
@@ -12862,13 +12871,13 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
   intpoints.Append(gpcoord[0], gpcoord[1], 0.0, wgt);
 
   // get coordinates of gauss point w.r.t. local parent coordinate system
-  LINALG::SerialDenseMatrix pqxg(1, dim);
-  LINALG::Matrix<dim, dim> derivtrafo(true);
+  CORE::LINALG::SerialDenseMatrix pqxg(1, dim);
+  CORE::LINALG::Matrix<dim, dim> derivtrafo(true);
 
   CORE::DRT::UTILS::BoundaryGPToParentGP<dim>(pqxg, derivtrafo, intpoints,
       sele.ParentElement()->Shape(), sele.Shape(), sele.FaceParentNumber());
 
-  LINALG::Matrix<dim, 1> pxsi(true);
+  CORE::LINALG::Matrix<dim, 1> pxsi(true);
 
   // coordinates of the current integration point in parent coordinate system
   for (int idim = 0; idim < dim; idim++)
@@ -12876,7 +12885,7 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
     pxsi(idim) = pqxg(0, idim);
   }
 
-  LINALG::Matrix<dim, numnodes> pderiv_loc(
+  CORE::LINALG::Matrix<dim, numnodes> pderiv_loc(
       true);  // derivatives of parent element shape functions in parent element coordinate system
 
   // evaluate derivatives of parent element shape functions at current integration point in parent
@@ -12896,11 +12905,11 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
   //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
   //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
   //
-  LINALG::Matrix<dim, dim> xjm;
-  LINALG::Matrix<dim, dim> Jmat;
+  CORE::LINALG::Matrix<dim, dim> xjm;
+  CORE::LINALG::Matrix<dim, dim> Jmat;
 
-  LINALG::Matrix<dim, numnodes> xrefe(true);  // material coord. of parent element
-  LINALG::Matrix<dim, numnodes> xcurr(true);  // current  coord. of parent element
+  CORE::LINALG::Matrix<dim, numnodes> xrefe(true);  // material coord. of parent element
+  CORE::LINALG::Matrix<dim, numnodes> xcurr(true);  // current  coord. of parent element
 
   // update element geometry of parent element
   {
@@ -12927,8 +12936,8 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
   // Linearisation of Jacobian (atm missing!)
   // D J[d] = J div(d) = J div(N_i d_i) = J dN_i/dx_j d_ij = J dN_i/dzeta_k dzeta_k/dx_j d_ij
 
-  //  LINALG::Matrix<dim,numnodes>  auxJLin (true);   // matrix to be filled with linearization
-  //  scalars
+  //  CORE::LINALG::Matrix<dim,numnodes>  auxJLin (true);   // matrix to be filled with
+  //  linearization scalars
   xjm.Invert();
   {
     //    DRT::Node** nodes = sele.ParentElement()->Nodes();

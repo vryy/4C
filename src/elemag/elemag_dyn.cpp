@@ -96,7 +96,7 @@ void electromagnetics_drt()
         "There is not any linear solver defined for electromagnetic problem. Please set "
         "LINEAR_SOLVER in ELECTROMAGNETIC DYNAMIC to a valid number!");
 
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
       problem->SolverParams(linsolvernumber_elemag), comm, problem->ErrorFile()->Handle()));
 
   // declare output writer
@@ -278,7 +278,7 @@ void electromagnetics_drt()
               scatraparams->set<int>("LINEAR_SOLVER", elemagparams.get<int>("LINEAR_SOLVER"));
 
             // create solver
-            Teuchos::RCP<LINALG::Solver> scatrasolver = Teuchos::rcp(new LINALG::Solver(
+            Teuchos::RCP<CORE::LINALG::Solver> scatrasolver = Teuchos::rcp(new CORE::LINALG::Solver(
                 DRT::Problem::Instance()->SolverParams(scatraparams->get<int>("LINEAR_SOLVER")),
                 scatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 

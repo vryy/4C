@@ -269,7 +269,7 @@ namespace DRT
 
         /// compute material matrix
         void ComputeMaterialMatrix(const Teuchos::RCP<MAT::Material>& mat,
-            const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& D_L,
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& D_L,
             Epetra_SerialDenseMatrix& D_w);
 
         /// compute interior residual
@@ -422,12 +422,12 @@ namespace DRT
       void ReadAleVectors(const DRT::Element& ele, DRT::Discretization& discretization);
 
       /// evaluate mixed variable, density and momentum
-      void EvaluateAll(const int funcnum, const LINALG::Matrix<nsd_, 1>& xyz, const double t,
-          LINALG::Matrix<msd_, 1>& L, double& r, LINALG::Matrix<nsd_, 1>& w) const;
+      void EvaluateAll(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz, const double t,
+          CORE::LINALG::Matrix<msd_, 1>& L, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// evaluate density and momentum
-      void EvaluateDensityMomentum(const int funcnum, const LINALG::Matrix<nsd_, 1>& xyz,
-          const double t, double& r, LINALG::Matrix<nsd_, 1>& u) const;
+      void EvaluateDensityMomentum(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
+          const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& u) const;
 
       /// local data object
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;

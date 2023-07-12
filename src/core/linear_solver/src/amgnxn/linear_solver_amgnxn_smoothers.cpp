@@ -62,7 +62,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::GenericSmoother::Richardson(Teuchos::RCP<Gener
 void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BgsSmoother::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BgsSmoother::Solve");
 
   unsigned NumSuperBlocks = superblocks_.size();
 
@@ -104,7 +104,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::BgsSmoother::Solve(
 void CORE::LINEAR_SOLVER::AMGNXN::SimpleSmoother::Solve(
     const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::SimpleSmoother::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::SimpleSmoother::Solve");
 
   BlockedVector Yp = Y.GetBlockedVector(BlocksPred_);
   BlockedVector Ys = Y.GetBlockedVector(BlocksSchur_);
@@ -174,18 +174,19 @@ void CORE::LINEAR_SOLVER::AMGNXN::SimpleSmoother::Solve(
 
 void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::MergeAndSolve::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MergeAndSolve::Setup");
 
   if (matrix.GetMatrix(0, 0)->Comm().MyPID() == 0)
   {
-    std::cout << "Warning!!!: We are going to build a LINALG::BlockSparseMatrix. If this is a "
-                 "coarse level matrix, make sure that you have fixed the coarse maps of your AMG "
-                 "hierarchies (for all the blocks). Otherwise expect problems."
-              << std::endl;
+    std::cout
+        << "Warning!!!: We are going to build a CORE::LINALG::BlockSparseMatrix. If this is a "
+           "coarse level matrix, make sure that you have fixed the coarse maps of your AMG "
+           "hierarchies (for all the blocks). Otherwise expect problems."
+        << std::endl;
   }
 
   // Set matrix
-  block_sparse_matrix_ = matrix.GetBlockSparseMatrix(LINALG::View);
+  block_sparse_matrix_ = matrix.GetBlockSparseMatrix(CORE::LINALG::View);
   sparse_matrix_ = block_sparse_matrix_->Merge();
   A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(sparse_matrix_->EpetraMatrix());
   Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
@@ -197,7 +198,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Setup(BlockedMatrix matrix)
   b_ = Teuchos::rcp(new Epetra_MultiVector(A_->OperatorRangeMap(), 1));
 
   // Create linear solver
-  solver_ = Teuchos::rcp(new LINALG::Solver(A_->Comm(), nullptr));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(A_->Comm(), nullptr));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);
@@ -213,11 +214,11 @@ void CORE::LINEAR_SOLVER::AMGNXN::MergeAndSolve::Solve(
   // TODO the memory allocation in this function can be improved
   // Seems that we are allocating too many vectors
 
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::MergeAndSolve::Solve");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::MergeAndSolve::Solve");
   if (not(isSetUp_)) dserror("The MergeAndSolve class should be set up before calling Apply");
 
-  const LINALG::MultiMapExtractor& range_ex = block_sparse_matrix_->RangeExtractor();
-  const LINALG::MultiMapExtractor& domain_ex = block_sparse_matrix_->DomainExtractor();
+  const CORE::LINALG::MultiMapExtractor& range_ex = block_sparse_matrix_->RangeExtractor();
+  const CORE::LINALG::MultiMapExtractor& domain_ex = block_sparse_matrix_->DomainExtractor();
 
   int NV = X.GetVector(0)->NumVectors();
   Epetra_MultiVector Xmv(*(range_ex.FullMap()), NV);
@@ -258,7 +259,7 @@ CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::CoupledAmg(Teuchos::RCP<AMGNXN::Blocked
 
 void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::CoupledAmg::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::CoupledAmg::Setup");
 
   std::string verbosity = amgnxn_params_.get<std::string>("verbosity", "off");
 
@@ -269,7 +270,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
   if (verbosity == "on")
   {
     std::cout << "===============================================" << std::endl;
-    std::cout << "LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (begin)" << std::endl;
+    std::cout << "CORE::LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (begin)" << std::endl;
     std::cout << std::endl;
     std::cout << ">>>>>> Creating MueLu AMG Hierarchies for each one of the blocks" << std::endl;
     std::cout << std::endl;
@@ -330,7 +331,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::CoupledAmg::Setup()
   if (verbosity == "on")
   {
     std::cout << std::endl;
-    std::cout << "LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (end)" << std::endl;
+    std::cout << "CORE::LINALG::SOLVER::AMGNXN::CoupledAmg : debug info  (end)" << std::endl;
     std::cout << "===============================================" << std::endl;
   }
 
@@ -410,9 +411,9 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluHierarchyWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::MueluAMGWrapper(Teuchos::RCP<LINALG::SparseMatrix> A,
-    int num_pde, int null_space_dim, Teuchos::RCP<std::vector<double>> null_space_data,
-    const Teuchos::ParameterList& muelu_list)
+CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::MueluAMGWrapper(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+    Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list)
     : A_(std::move(A)),
       num_pde_(num_pde),
       null_space_dim_(null_space_dim),
@@ -489,7 +490,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 /*------------------------------------------------------------------------------*/
 void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::MueluAMGWrapper::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::MueluAMGWrapper::Setup");
 
   Teuchos::Time timer("", true);
   timer.reset();
@@ -503,7 +504,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Setup()
   double elaptime = timer.totalElapsedTime(true);
   if (muelu_list_.sublist("Hierarchy").get<std::string>("verbosity", "None") != "None" and
       A_->Comm().MyPID() == 0)
-    std::cout << "       Calling LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes "
+    std::cout << "       Calling CORE::LINALG::SOLVER::AMGNXN::MueluAMGWrapper::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
 
@@ -520,9 +521,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapper::Apply(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(Teuchos::RCP<LINALG::SparseMatrix> A,
-    int num_pde, int null_space_dim, Teuchos::RCP<std::vector<double>> null_space_data,
-    const Teuchos::ParameterList& muelu_list, const Teuchos::ParameterList& fine_smoother_list)
+CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int num_pde, int null_space_dim,
+    Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
+    const Teuchos::ParameterList& fine_smoother_list)
     : MueluAMGWrapper(A, num_pde, null_space_dim, null_space_data, muelu_list),
       fine_smoother_list_(fine_smoother_list)
 {
@@ -534,7 +536,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::SingleFieldAMG(Teuchos::RCP<LINALG:
 /*------------------------------------------------------------------------------*/
 void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::SingleFieldAMG::Setup");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::SingleFieldAMG::Setup");
 
   using MueLuUtils = MueLu::Utilities<double, int, int, Node>;
 
@@ -554,13 +556,13 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> myA = Teuchos::null;
   Teuchos::RCP<Epetra_CrsMatrix> myAcrs = Teuchos::null;
-  Teuchos::RCP<LINALG::SparseMatrix> myAspa = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> myAspa = Teuchos::null;
   Teuchos::RCP<MueLu::SmootherBase<Scalar, LocalOrdinal, GlobalOrdinal, Node>> myS = Teuchos::null;
   Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::MueluSmootherWrapper> mySWrap = Teuchos::null;
 
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Avec(NumLevels, Teuchos::null);
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Pvec(NumLevels - 1, Teuchos::null);
-  std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Rvec(NumLevels - 1, Teuchos::null);
+  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec(NumLevels, Teuchos::null);
+  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec(NumLevels - 1, Teuchos::null);
+  std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec(NumLevels - 1, Teuchos::null);
   std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre(NumLevels, Teuchos::null);
   std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos(NumLevels - 1, Teuchos::null);
 
@@ -578,7 +580,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
               "A");
       myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
       myAspa = Teuchos::rcp(
-          new LINALG::SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
+          new CORE::LINALG::SparseMatrix(myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
       Avec[level] = myAspa;
     }
     else
@@ -592,8 +594,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("P");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(
-            new LINALG::SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
+        myAspa = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+            myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
         Pvec[level - 1] = myAspa;
       }
       else
@@ -605,8 +607,8 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
             this_level
                 ->Get<Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>>("R");
         myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-        myAspa = Teuchos::rcp(
-            new LINALG::SparseMatrix(myAcrs, LINALG::Copy, explicitdirichlet, savegraph));
+        myAspa = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+            myAcrs, CORE::LINALG::Copy, explicitdirichlet, savegraph));
         Rvec[level - 1] = myAspa;
       }
       else
@@ -652,7 +654,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Setup()
 
   double elaptime = timer.totalElapsedTime(true);
   if (A_->Comm().MyPID() == 0)
-    std::cout << "       Calling LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup takes "
+    std::cout << "       Calling CORE::LINALG::SOLVER::AMGNXN::SingleFieldAMG::Setup takes "
               << std::setw(16) << std::setprecision(6) << elaptime << " s" << std::endl;
 }
 
@@ -671,7 +673,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMG::Apply(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapper::IfpackWrapper(
-    Teuchos::RCP<LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list)
+    Teuchos::RCP<CORE::LINALG::SparseMatrixBase> A, Teuchos::ParameterList& list)
     : A_(std::move(A))
 {
   // Determine the preconditioner type
@@ -753,7 +755,7 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::DirectSolverWrapper()
 /*------------------------------------------------------------------------------*/
 
 void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
-    Teuchos::RCP<LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix, Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // Set matrix
   A_ = Teuchos::rcp_dynamic_cast<Epetra_Operator>(matrix->EpetraMatrix());
@@ -769,7 +771,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapper::Setup(
   if (solvertype != "umfpack" and solvertype != "superlu")
     dserror("Solver type not supported as direct solver in AMGNXN framework");
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(params, A_->Comm(), nullptr));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(params, A_->Comm(), nullptr));
 
   // Set up solver
   solver_->Setup(A_, x_, b_, true, true);
@@ -1290,7 +1292,7 @@ CORE::LINEAR_SOLVER::AMGNXN::IfpackWrapperFactory::Create()
   // Build the smoother
   if (not GetOperator()->HasOnlyOneBlock())
     dserror("This smoother can be built only for single block matrices");
-  Teuchos::RCP<LINALG::SparseMatrixBase> Op = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<CORE::LINALG::SparseMatrixBase> Op = GetOperator()->GetMatrix(0, 0);
   if (Op == Teuchos::null) dserror("I dont want a null pointer here");
   Teuchos::ParameterList myParams = GetParams();
   return Teuchos::rcp(new IfpackWrapper(Op, myParams));
@@ -1410,7 +1412,7 @@ CORE::LINEAR_SOLVER::AMGNXN::MueluAMGWrapperFactory::Create()
   // Recover info
   if (not GetOperator()->HasOnlyOneBlock())
     dserror("This smoother can be built only for single block matrices");
-  Teuchos::RCP<LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
   if (Op2 == Teuchos::null) dserror("I dont want a null pointer here");
   int num_pde = GetNullSpace().GetNumPDEs();
   int null_space_dim = GetNullSpace().GetNullSpaceDim();
@@ -1521,7 +1523,7 @@ CORE::LINEAR_SOLVER::AMGNXN::SingleFieldAMGFactory::Create()
   // Recover info
   if (not GetOperator()->HasOnlyOneBlock())
     dserror("This smoother can be built only for single block matrices");
-  Teuchos::RCP<LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> Op2 = GetOperator()->GetMatrix(0, 0);
   if (Op2 == Teuchos::null) dserror("I dont want a null pointer here");
   int num_pde = GetNullSpace().GetNumPDEs();
   int null_space_dim = GetNullSpace().GetNullSpaceDim();
@@ -2116,12 +2118,14 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ComputeSchurComplement(
   {
     if (Ass.HasOnlyOneBlock())
     {
-      Teuchos::RCP<LINALG::SparseMatrix> invApp_sp = invApp.GetMatrix(0, 0);
-      Teuchos::RCP<LINALG::SparseMatrix> Asp_sp = Asp.GetMatrix(0, 0);
-      Teuchos::RCP<LINALG::SparseMatrix> Aps_sp = Aps.GetMatrix(0, 0);
-      Teuchos::RCP<LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
-      Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*Asp_sp, *invApp_sp, true);
-      Teuchos::RCP<LINALG::SparseMatrix> S_sp = LINALG::MLMultiply(*temp, *Aps_sp, false);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> invApp_sp = invApp.GetMatrix(0, 0);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Asp_sp = Asp.GetMatrix(0, 0);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Aps_sp = Aps.GetMatrix(0, 0);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
+          CORE::LINALG::MLMultiply(*Asp_sp, *invApp_sp, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp =
+          CORE::LINALG::MLMultiply(*temp, *Aps_sp, false);
       S_sp->Add(*Ass_sp, false, 1.0, -1.0);
       S_sp->Complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2140,21 +2144,21 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ComputeSchurComplement(
     if (Ass.HasOnlyOneBlock())
     {
       int NumBlocks_pp = invApp.GetNumRows();
-      Teuchos::RCP<LINALG::SparseMatrix> S_sp = Teuchos::null;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp = Teuchos::null;
       for (int b = 0; b < NumBlocks_pp; b++)
       {
-        Teuchos::RCP<LINALG::SparseMatrix> temp =
-            LINALG::MLMultiply(*(Asp.GetMatrix(0, b)), *(invApp.GetMatrix(b, b)), true);
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
+            CORE::LINALG::MLMultiply(*(Asp.GetMatrix(0, b)), *(invApp.GetMatrix(b, b)), true);
         if (b == 0)
-          S_sp = LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), false);
+          S_sp = CORE::LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), false);
         else
         {
-          Teuchos::RCP<LINALG::SparseMatrix> S_sp_tmp =
-              LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), true);
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> S_sp_tmp =
+              CORE::LINALG::MLMultiply(*temp, *(Aps.GetMatrix(b, 0)), true);
           S_sp->Add(*S_sp_tmp, false, 1.0, 1.0);
         }
       }
-      Teuchos::RCP<LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Ass_sp = Ass.GetMatrix(0, 0);
       S_sp->Add(*Ass_sp, false, 1.0, -1.0);
       S_sp->Complete();
       Sout = Teuchos::rcp(new BlockedMatrix(1, 1));
@@ -2178,9 +2182,9 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ComputeSchurComplement(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
 CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ApproximateInverse(
-    const LINALG::SparseMatrixBase& A, const std::string& method)
+    const CORE::LINALG::SparseMatrixBase& A, const std::string& method)
 {
   Teuchos::RCP<Epetra_Vector> invAVector = Teuchos::rcp(new Epetra_Vector(A.RowMap()));
   if (method == "diagonal")
@@ -2196,7 +2200,8 @@ CORE::LINEAR_SOLVER::AMGNXN::SimpleSmootherFactory::ApproximateInverse(
   }
   else
     dserror("Invalid value for \"predictor inverse\". Fix your xml file.");
-  Teuchos::RCP<LINALG::SparseMatrix> S = Teuchos::rcp(new LINALG::SparseMatrix(*invAVector));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> S =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*invAVector));
   S->Complete(A.RowMap(), A.RowMap());
   return S;
 }
@@ -2220,7 +2225,7 @@ CORE::LINEAR_SOLVER::AMGNXN::DirectSolverWrapperFactory::Create()
 
   Teuchos::RCP<DirectSolverWrapper> S = Teuchos::rcp(new DirectSolverWrapper);
   if (not GetOperator()->HasOnlyOneBlock()) dserror("We spect here a matrix with only one block");
-  Teuchos::RCP<LINALG::SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> matrix = GetOperator()->GetMatrix(0, 0);
   if (matrix == Teuchos::null) dserror("We expect here a sparse matrix");
   S->Setup(matrix, Teuchos::rcp(new Teuchos::ParameterList(GetParams())));
 

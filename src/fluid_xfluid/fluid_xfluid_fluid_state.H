@@ -15,7 +15,7 @@ fluid meshes
 #include "fluid_xfluid_state.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -55,18 +55,19 @@ namespace FLD
         const Teuchos::RCP<DRT::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
-    void CreateMergedDBCMapExtractor(Teuchos::RCP<const LINALG::MapExtractor> embfluiddbcmaps);
+    void CreateMergedDBCMapExtractor(
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> embfluiddbcmaps);
 
     //! @name Accessors
     //@{
 
-    Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor() { return xffluiddbcmaps_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> DBCMapExtractor() { return xffluiddbcmaps_; }
 
-    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return xffluidvelpressplitter_; }
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return xffluidvelpressplitter_; }
 
     virtual bool Destroy();
 
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<Epetra_Vector>& Residual() { return xffluidresidual_; }
     Teuchos::RCP<Epetra_Vector>& Zeros() { return xffluidzeros_; }
     Teuchos::RCP<Epetra_Vector>& IncVel() { return xffluidincvel_; }
@@ -87,13 +88,13 @@ namespace FLD
     Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
     /// extractor used for splitting between velocity and pressure dof from the combined background
     /// & embedded fluid dof-map
-    Teuchos::RCP<LINALG::MapExtractor> xffluidvelpressplitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> xffluidvelpressplitter_;
     /// combined background and embedded fluid map extractor for dirichlet-constrained dof
-    Teuchos::RCP<LINALG::MapExtractor> xffluiddbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> xffluiddbcmaps_;
     //@}
 
     /// full system matrix for coupled background and embedded fluid
-    Teuchos::RCP<LINALG::SparseOperator> xffluidsysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> xffluidsysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> xffluidzeros_;

@@ -70,9 +70,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
    public:
     VcycleSingle(int NumLevels, int NumSweeps, int FirstLevel);
 
-    void SetOperators(std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Avec);
-    void SetProjectors(std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Pvec);
-    void SetRestrictors(std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Rvec);
+    void SetOperators(std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec);
+    void SetProjectors(std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec);
+    void SetRestrictors(std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec);
     void SetPreSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
     void SetPosSmoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
 
@@ -87,9 +87,9 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     int NumSweeps_;
     int FirstLevel_;
 
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Avec_;
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Pvec_;
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Rvec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec_;
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec_;
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre_;
     std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos_;
 

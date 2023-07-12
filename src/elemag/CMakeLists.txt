@@ -9,7 +9,6 @@ set(_elemag_dependencies
     inpar
     io
     lib
-    linalg
     mat
     scatra
     scatra_ele

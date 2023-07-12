@@ -62,9 +62,9 @@ namespace BEAMINTERACTION
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const ::DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
-        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
-        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, CORE::LINALG::SparseMatrix& global_G_B,
+        CORE::LINALG::SparseMatrix& global_G_S, CORE::LINALG::SparseMatrix& global_FB_L,
+        CORE::LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -88,10 +88,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the local mortar matrices for this contact element pair.
      */
-    void EvaluateDM(LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-        LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
-        LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-        LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
+    void EvaluateDM(CORE::LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+        CORE::LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
+        CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+        CORE::LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
 
     /**
      * \brief For the mortar pairs it does not make sense to calculate forces at the integration
@@ -100,9 +100,9 @@ namespace BEAMINTERACTION
      * @param r_solid (in) Position on the solid.
      * @param force (out) Return 0 by default.
      */
-    void EvaluatePenaltyForceDouble(const LINALG::Matrix<3, 1, double>& r_beam,
-        const LINALG::Matrix<3, 1, double>& r_solid,
-        LINALG::Matrix<3, 1, double>& force) const override;
+    void EvaluatePenaltyForceDouble(const CORE::LINALG::Matrix<3, 1, double>& r_beam,
+        const CORE::LINALG::Matrix<3, 1, double>& r_solid,
+        CORE::LINALG::Matrix<3, 1, double>& force) const override;
 
    protected:
     //! Number of rotational Lagrange multiplier DOFS.

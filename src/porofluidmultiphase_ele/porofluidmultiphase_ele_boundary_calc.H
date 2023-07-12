@@ -80,8 +80,9 @@ namespace DRT
       //! evaluate shape functions and derivatives at int. point
       double EvalShapeFuncAndIntFac(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-          const int iquad,                               ///< id of current Gauss point
-          LINALG::Matrix<1 + nsd_, 1>* normalvec = NULL  ///< normal vector at Gauss point(optional)
+          const int iquad,  ///< id of current Gauss point
+          CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec =
+              NULL  ///< normal vector at Gauss point(optional)
       );
 
      private:
@@ -95,23 +96,23 @@ namespace DRT
       const int numdofpernode_;
 
       //! node coordinates
-      LINALG::Matrix<nsd_ + 1, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_ + 1, nen_> xyze_;
       //! nodal displacement values for ALE
-      LINALG::Matrix<nsd_ + 1, nen_> edispnp_;
+      CORE::LINALG::Matrix<nsd_ + 1, nen_> edispnp_;
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_, 1> xsi_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
       //! unit normal vector at integration point
-      LINALG::Matrix<nsd_ + 1, 1> normal_;
+      CORE::LINALG::Matrix<nsd_ + 1, 1> normal_;
       //! velocity vector in gausspoint
-      LINALG::Matrix<nsd_ + 1, 1> velint_;
+      CORE::LINALG::Matrix<nsd_ + 1, 1> velint_;
       //! metric tensor at integration point
-      LINALG::Matrix<nsd_, nsd_> metrictensor_;
+      CORE::LINALG::Matrix<nsd_, nsd_> metrictensor_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

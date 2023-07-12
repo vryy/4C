@@ -50,8 +50,8 @@ namespace FLD
       Teuchos::ParameterList& params, const double eosfac)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
-    LINALG::Matrix<4 * iel, 1> temp(temperature.data(), true);
+    CORE::LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    CORE::LINALG::Matrix<4 * iel, 1> temp(temperature.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -112,7 +112,7 @@ namespace FLD
         params.get<Teuchos::RCP<std::vector<double>>>("mean value wT");
 
     // get node coordinates of element
-    LINALG::Matrix<3, iel> xyze;
+    CORE::LINALG::Matrix<3, iel> xyze;
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
@@ -232,11 +232,11 @@ namespace FLD
       }
 
       // allocate vector for shapefunctions
-      LINALG::Matrix<iel, 1> funct;
+      CORE::LINALG::Matrix<iel, 1> funct;
       // allocate vector for shapederivatives
-      LINALG::Matrix<3, iel> deriv;
+      CORE::LINALG::Matrix<3, iel> deriv;
       // space for the jacobian
-      LINALG::Matrix<3, 3> xjm;
+      CORE::LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(
@@ -460,8 +460,8 @@ namespace FLD
       Teuchos::ParameterList& params)
   {
     // get view of solution vector
-    LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
-    LINALG::Matrix<4 * iel, 1> phi(scalar.data(), true);
+    CORE::LINALG::Matrix<4 * iel, 1> velpre(velocitypressure.data(), true);
+    CORE::LINALG::Matrix<4 * iel, 1> phi(scalar.data(), true);
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
@@ -514,7 +514,7 @@ namespace FLD
         params.get<Teuchos::RCP<std::vector<double>>>("mean value wphi");
 
     // get node coordinates of element
-    LINALG::Matrix<3, iel> xyze;
+    CORE::LINALG::Matrix<3, iel> xyze;
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < iel; inode++)
     {
@@ -637,11 +637,11 @@ namespace FLD
       }
 
       // allocate vector for shapefunctions
-      LINALG::Matrix<iel, 1> funct;
+      CORE::LINALG::Matrix<iel, 1> funct;
       // allocate vector for shapederivatives
-      LINALG::Matrix<3, iel> deriv;
+      CORE::LINALG::Matrix<3, iel> deriv;
       // space for the jacobian
-      LINALG::Matrix<3, 3> xjm;
+      CORE::LINALG::Matrix<3, 3> xjm;
 
       // get the quad9 gaussrule for the in-plane integration
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(
@@ -876,12 +876,12 @@ namespace FLD
     const int NSD = 3;
 
     // alloc a fixed size array for nodal velocities and temperature
-    LINALG::Matrix<NSD, iel> evel;
-    LINALG::Matrix<1, iel> etemp;
+    CORE::LINALG::Matrix<NSD, iel> evel;
+    CORE::LINALG::Matrix<1, iel> etemp;
 
     // wrap matrix objects in fixed-size arrays
-    LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(myvel.data(), true);
-    LINALG::Matrix<iel, 1> mytempvec(mytemp.data(), true);
+    CORE::LINALG::Matrix<(NSD + 1) * iel, 1> myvelvec(myvel.data(), true);
+    CORE::LINALG::Matrix<iel, 1> mytempvec(mytemp.data(), true);
 
     // split velocity and throw away  pressure, insert into element array
     for (int i = 0; i < iel; ++i)
@@ -899,21 +899,21 @@ namespace FLD
     const DRT::Element::DiscretizationType distype = ele->Shape();
 
     // allocate arrays for shape functions, derivatives and the transposed jacobian
-    LINALG::Matrix<iel, 1> funct;
-    LINALG::Matrix<NSD, NSD> xjm;
-    LINALG::Matrix<NSD, NSD> xji;
-    LINALG::Matrix<NSD, iel> deriv;
-    LINALG::Matrix<NSD, iel> derxy;
+    CORE::LINALG::Matrix<iel, 1> funct;
+    CORE::LINALG::Matrix<NSD, NSD> xjm;
+    CORE::LINALG::Matrix<NSD, NSD> xji;
+    CORE::LINALG::Matrix<NSD, iel> deriv;
+    CORE::LINALG::Matrix<NSD, iel> derxy;
 
     // useful variables
-    LINALG::Matrix<NSD, 1> velint;
+    CORE::LINALG::Matrix<NSD, 1> velint;
     double vdiv = 0.0;
-    LINALG::Matrix<NSD, NSD> vderxy;
-    LINALG::Matrix<NSD, NSD> epsilon;
+    CORE::LINALG::Matrix<NSD, NSD> vderxy;
+    CORE::LINALG::Matrix<NSD, NSD> epsilon;
     double rateofstrain = 0.0;
 
     // get node coordinates of element
-    LINALG::Matrix<NSD, iel> xyze;
+    CORE::LINALG::Matrix<NSD, iel> xyze;
     for (int inode = 0; inode < iel; inode++)
     {
       xyze(0, inode) = ele->Nodes()[inode]->X()[0];
@@ -1043,7 +1043,7 @@ namespace FLD
     //                   +-----
     //                   node j
     //
-    // LINALG::Matrix<NSD,1> velint;
+    // CORE::LINALG::Matrix<NSD,1> velint;
     for (int rr = 0; rr < NSD; ++rr)
     {
       velint(rr) = funct(0) * evel(rr, 0);
@@ -1066,7 +1066,7 @@ namespace FLD
       //
       // j : direction of derivative x/y/z
       //
-      // LINALG::Matrix<NSD,NSD> vderxy;
+      // CORE::LINALG::Matrix<NSD,NSD> vderxy;
       for (int nn = 0; nn < NSD; ++nn)
       {
         for (int rr = 0; rr < NSD; ++rr)
@@ -1090,7 +1090,7 @@ namespace FLD
               \   / ij    2.0   |       dx              dx        |
                                 +-        j               i      -+
       */
-      // LINALG::Matrix<NSD,NSD> epsilon;
+      // CORE::LINALG::Matrix<NSD,NSD> epsilon;
       for (int nn = 0; nn < NSD; ++nn)
       {
         for (int rr = 0; rr < NSD; ++rr)
@@ -1208,7 +1208,7 @@ namespace FLD
         }
       }
 
-      // LINALG::Matrix<NSD,NSD> epsilon;
+      // CORE::LINALG::Matrix<NSD,NSD> epsilon;
       for (int nn = 0; nn < NSD; ++nn)
       {
         for (int rr = 0; rr < NSD; ++rr)
@@ -1343,13 +1343,13 @@ namespace FLD
       double& CI_numerator, double& CI_denominator, double& xcenter, double& ycenter,
       double& zcenter)
   {
-    LINALG::Matrix<3, iel> evel_hat;
-    LINALG::Matrix<9, iel> ereynoldsstress_hat;
-    LINALG::Matrix<9, iel> efiltered_modeled_subgrid_stress_hat;
+    CORE::LINALG::Matrix<3, iel> evel_hat;
+    CORE::LINALG::Matrix<9, iel> ereynoldsstress_hat;
+    CORE::LINALG::Matrix<9, iel> efiltered_modeled_subgrid_stress_hat;
     // loma specific quantities
-    LINALG::Matrix<3, iel> edensvel_hat;
-    LINALG::Matrix<1, iel> edens_hat;
-    LINALG::Matrix<1, iel> edensstrainrate_hat;
+    CORE::LINALG::Matrix<3, iel> edensvel_hat;
+    CORE::LINALG::Matrix<1, iel> edens_hat;
+    CORE::LINALG::Matrix<1, iel> edensstrainrate_hat;
 
     for (int nn = 0; nn < iel; ++nn)
     {
@@ -1391,8 +1391,8 @@ namespace FLD
     const DRT::Element::DiscretizationType distype = ele->Shape();
 
     // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-    LINALG::Matrix<iel, 1> funct;
-    LINALG::Matrix<3, iel> deriv;
+    CORE::LINALG::Matrix<iel, 1> funct;
+    CORE::LINALG::Matrix<3, iel> deriv;
 
     // this will be the elements center
     xcenter = 0.0;
@@ -1400,7 +1400,7 @@ namespace FLD
     zcenter = 0.0;
 
     // get node coordinates of element
-    LINALG::Matrix<3, iel> xyze;
+    CORE::LINALG::Matrix<3, iel> xyze;
     for (int inode = 0; inode < iel; inode++)
     {
       xyze(0, inode) = ele->Nodes()[inode]->X()[0];
@@ -1444,7 +1444,7 @@ namespace FLD
     CORE::DRT::UTILS::shape_function_3D(funct, e1, e2, e3, distype);
     CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, e1, e2, e3, distype);
 
-    LINALG::Matrix<3, 3> xjm;
+    CORE::LINALG::Matrix<3, 3> xjm;
     // get Jacobian matrix and its determinant
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -1464,7 +1464,7 @@ namespace FLD
     //
     //             compute global first derivates
     //
-    LINALG::Matrix<3, iel> derxy;
+    CORE::LINALG::Matrix<3, iel> derxy;
     /*
       Use the Jacobian and the known derivatives in element coordinate
       directions on the right hand side to compute the derivatives in
@@ -1485,7 +1485,7 @@ namespace FLD
             +-                 -+     +-    -+      +-    -+
 
     */
-    LINALG::Matrix<3, 3> xji;
+    CORE::LINALG::Matrix<3, 3> xji;
     xji(0, 0) = (xjm(1, 1) * xjm(2, 2) - xjm(2, 1) * xjm(1, 2)) / det;
     xji(1, 0) = (-xjm(1, 0) * xjm(2, 2) + xjm(2, 0) * xjm(1, 2)) / det;
     xji(2, 0) = (xjm(1, 0) * xjm(2, 1) - xjm(2, 0) * xjm(1, 1)) / det;
@@ -1518,7 +1518,7 @@ namespace FLD
     //                    +-----
     //                    node j
     //
-    LINALG::Matrix<3, 1> velint_hat;
+    CORE::LINALG::Matrix<3, 1> velint_hat;
     for (int rr = 0; rr < 3; ++rr)
     {
       velint_hat(rr) = funct(0) * evel_hat(rr, 0);
@@ -1539,7 +1539,7 @@ namespace FLD
     //
     // j : direction of derivative x/y/z
     //
-    LINALG::Matrix<3, 3> vderxy_hat;
+    CORE::LINALG::Matrix<3, 3> vderxy_hat;
 
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -1566,7 +1566,7 @@ namespace FLD
     //
     // restress_ij = rho*vel_i*vel_j
     // remark: this quantity is density weighted for loma
-    LINALG::Matrix<3, 3> restress_hat;
+    CORE::LINALG::Matrix<3, 3> restress_hat;
 
     for (int nn = 0; nn < 3; ++nn)
     {
@@ -1598,7 +1598,7 @@ namespace FLD
     //
     // filtered_modeled_subgrid_stress_hat_ij = rho*strainrate*(epsilon_ij - 1/3*div_vel*delta_ij)
     // remark: this quantity is density weighted for loma
-    LINALG::Matrix<3, 3> filtered_modeled_subgrid_stress_hat;
+    CORE::LINALG::Matrix<3, 3> filtered_modeled_subgrid_stress_hat;
     for (int nn = 0; nn < 3; ++nn)
     {
       for (int rr = 0; rr < 3; ++rr)
@@ -1617,7 +1617,7 @@ namespace FLD
 
     // get additional loma related quantities
     //----------------------------------
-    LINALG::Matrix<3, 1> densvelint_hat;
+    CORE::LINALG::Matrix<3, 1> densvelint_hat;
     double densint_hat = 0.0;
     double densstrainrateint_hat = 0.0;
 
@@ -1703,7 +1703,7 @@ namespace FLD
                               +-        j               i        -+
     */
 
-    LINALG::Matrix<3, 3> epsilon_hat;
+    CORE::LINALG::Matrix<3, 3> epsilon_hat;
     for (int nn = 0; nn < 3; ++nn)
     {
       for (int rr = 0; rr < 3; ++rr)
@@ -1738,8 +1738,8 @@ namespace FLD
     rateofstrain_hat *= 2.0;
     rateofstrain_hat = sqrt(rateofstrain_hat);
 
-    LINALG::Matrix<3, 3> L_ij;
-    LINALG::Matrix<3, 3> M_ij;
+    CORE::LINALG::Matrix<3, 3> L_ij;
+    CORE::LINALG::Matrix<3, 3> M_ij;
 
     for (int rr = 0; rr < 3; rr++)
     {
@@ -1811,12 +1811,12 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>& col_filtered_alpha2, double& cv_numerator,
       double& cv_denominator, double& volume)
   {
-    LINALG::Matrix<9, iel> estrainrate_hat(true);
-    LINALG::Matrix<9, iel> ealphaij_hat(true);
-    LINALG::Matrix<1, iel> eexpression_hat(true);
-    LINALG::Matrix<1, iel> ealpha2_hat(true);
-    LINALG::Matrix<3, 3> strainrate_hat(true);
-    LINALG::Matrix<3, 3> alphaij_hat(true);
+    CORE::LINALG::Matrix<9, iel> estrainrate_hat(true);
+    CORE::LINALG::Matrix<9, iel> ealphaij_hat(true);
+    CORE::LINALG::Matrix<1, iel> eexpression_hat(true);
+    CORE::LINALG::Matrix<1, iel> ealpha2_hat(true);
+    CORE::LINALG::Matrix<3, 3> strainrate_hat(true);
+    CORE::LINALG::Matrix<3, 3> alphaij_hat(true);
     double alpha2_hat = 0.0;
     double expression_hat = 0.0;
 
@@ -1852,15 +1852,15 @@ namespace FLD
 
     // set element data
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    LINALG::Matrix<iel, 1> funct(true);
+    CORE::LINALG::Matrix<iel, 1> funct(true);
     // allocate arrays for shape functions, derivatives and the transposed jacobian
-    LINALG::Matrix<NSD, NSD> xjm(true);
-    LINALG::Matrix<NSD, iel> deriv(true);
+    CORE::LINALG::Matrix<NSD, NSD> xjm(true);
+    CORE::LINALG::Matrix<NSD, iel> deriv(true);
 
 
 
     // get node coordinates of element
-    LINALG::Matrix<NSD, iel> xyze(true);
+    CORE::LINALG::Matrix<NSD, iel> xyze(true);
     for (int inode = 0; inode < iel; inode++)
     {
       xyze(0, inode) = ele->Nodes()[inode]->X()[0];
@@ -2022,8 +2022,8 @@ namespace FLD
     bool withscatra = params.get<bool>("scalar");
 
     // allocate a fixed size array for nodal velocities
-    LINALG::Matrix<NSD, NEN> evel;
-    LINALG::Matrix<NSD, NEN> efsvel;
+    CORE::LINALG::Matrix<NSD, NEN> evel;
+    CORE::LINALG::Matrix<NSD, NEN> efsvel;
 
     // split velocity and throw away  pressure, insert into element array
     for (int inode = 0; inode < NEN; inode++)
@@ -2052,19 +2052,19 @@ namespace FLD
     }
 
     // allocate array for gauss-point velocities and derivatives
-    LINALG::Matrix<NSD, 1> velint;
-    LINALG::Matrix<NSD, NSD> velintderxy;
-    LINALG::Matrix<NSD, 1> fsvelint;
-    LINALG::Matrix<NSD, NSD> fsvelintderxy;
+    CORE::LINALG::Matrix<NSD, 1> velint;
+    CORE::LINALG::Matrix<NSD, NSD> velintderxy;
+    CORE::LINALG::Matrix<NSD, 1> fsvelint;
+    CORE::LINALG::Matrix<NSD, NSD> fsvelintderxy;
 
     // allocate arrays for shape functions and derivatives
-    LINALG::Matrix<NEN, 1> funct;
-    LINALG::Matrix<NSD, NEN> deriv;
-    LINALG::Matrix<NSD, NEN> derxy;
+    CORE::LINALG::Matrix<NEN, 1> funct;
+    CORE::LINALG::Matrix<NSD, NEN> deriv;
+    CORE::LINALG::Matrix<NSD, NEN> derxy;
     double vol = 0.0;
 
     // array for element coordinates in physical space
-    LINALG::Matrix<NSD, NEN> xyze;
+    CORE::LINALG::Matrix<NSD, NEN> xyze;
     // this will be the y-coordinate of the element center
     double center = 0;
     // get node coordinates of element
@@ -2077,7 +2077,7 @@ namespace FLD
     center /= NEN;
 
     // evaluate shape functions and derivatives at element center
-    LINALG::Matrix<NSD, NSD> xji;
+    CORE::LINALG::Matrix<NSD, NSD> xji;
     {
       // use one-point Gauss rule
       CORE::DRT::UTILS::IntPointsAndWeights<NSD> intpoints(
@@ -2085,7 +2085,7 @@ namespace FLD
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.IP().qxg)[0];
-      LINALG::Matrix<NSD, 1> xsi;
+      CORE::LINALG::Matrix<NSD, 1> xsi;
       for (int idim = 0; idim < NSD; idim++)
       {
         xsi(idim) = gpcoord[idim];
@@ -2097,8 +2097,8 @@ namespace FLD
       CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
       // get Jacobian matrix and determinant
-      LINALG::Matrix<NSD, NSD> xjm;
-      // LINALG::Matrix<NSD,NSD> xji;
+      CORE::LINALG::Matrix<NSD, NSD> xjm;
+      // CORE::LINALG::Matrix<NSD,NSD> xji;
       xjm.MultiplyNT(deriv, xyze);
       double det = xji.Invert(xjm);
       // check for degenerated elements
@@ -2141,7 +2141,7 @@ namespace FLD
     //          +-                                 -+
     //
     velintderxy.MultiplyNT(evel, derxy);
-    LINALG::Matrix<NSD, NSD> twoeps;
+    CORE::LINALG::Matrix<NSD, NSD> twoeps;
     for (int idim = 0; idim < NSD; idim++)
     {
       for (int jdim = 0; jdim < NSD; jdim++)
@@ -2196,7 +2196,7 @@ namespace FLD
         {
           // a) streamlength due to Tezduyar et al. (1992)
           // normed velocity vector
-          LINALG::Matrix<NSD, 1> velino(true);
+          CORE::LINALG::Matrix<NSD, 1> velino(true);
           if (vel_norm >= 1e-6)
             velino.Update(1.0 / vel_norm, velint);
           else
@@ -2204,7 +2204,7 @@ namespace FLD
             velino.Clear();
             velino(0, 0) = 1.0;
           }
-          LINALG::Matrix<NEN, 1> tmp;
+          CORE::LINALG::Matrix<NEN, 1> tmp;
           tmp.MultiplyTN(derxy, velino);
           const double val = tmp.Norm1();
           hk = 2.0 / val;
@@ -2234,7 +2234,7 @@ namespace FLD
                       |    i     j  |   |    i     j  |   |    i     j  |
                       +-           -+   +-           -+   +-           -+
           */
-          LINALG::Matrix<3, 3> G;
+          CORE::LINALG::Matrix<3, 3> G;
 
           for (int nn = 0; nn < 3; ++nn)
           {
@@ -2270,7 +2270,7 @@ namespace FLD
         case INPAR::FLUID::gradient_based:
         {
           velintderxy.MultiplyNT(evel, derxy);
-          LINALG::Matrix<3, 1> normed_velgrad;
+          CORE::LINALG::Matrix<3, 1> normed_velgrad;
 
           for (int rr = 0; rr < 3; ++rr)
           {
@@ -2455,7 +2455,7 @@ namespace FLD
     // calculate coefficient of subgrid-velocity
     // allocate array for coefficient B
     // B may depend on the direction (if N depends on it)
-    LINALG::Matrix<NSD, 1> B(true);
+    CORE::LINALG::Matrix<NSD, 1> B(true);
     //                                  1
     //          |       1              |2
     //  kappa = | -------------------- |
@@ -2625,7 +2625,7 @@ namespace FLD
       //          |          \   / ij        \   / ij |
       //          +-                                 -+
       //
-      LINALG::Matrix<NSD, NSD> velderxy(true);
+      CORE::LINALG::Matrix<NSD, NSD> velderxy(true);
       velintderxy.MultiplyNT(evel, derxy);
       fsvelintderxy.MultiplyNT(efsvel, derxy);
 
@@ -2646,7 +2646,7 @@ namespace FLD
       }
       velderxy = mffsvelintderxy;
 #endif
-      LINALG::Matrix<NSD, NSD> two_epsilon;
+      CORE::LINALG::Matrix<NSD, NSD> two_epsilon;
       double rateofstrain = 0.0;
       for (int idim = 0; idim < NSD; idim++)
       {
@@ -2757,8 +2757,8 @@ namespace FLD
       const double& thermpress)
   {
     // allocate a fixed size array for nodal velocities an scalars
-    LINALG::Matrix<NSD, NEN> evel;
-    LINALG::Matrix<1, NEN> esca;
+    CORE::LINALG::Matrix<NSD, NEN> evel;
+    CORE::LINALG::Matrix<1, NEN> esca;
 
     // split velocity and throw away  pressure, insert into element array
     // insert scalar
@@ -2771,18 +2771,18 @@ namespace FLD
     if (fldpara->AdaptCsgsPhi())
     {
       // allocate array for gauss-point velocities and derivatives
-      LINALG::Matrix<NSD, 1> velint;
-      LINALG::Matrix<NSD, NSD> velintderxy;
+      CORE::LINALG::Matrix<NSD, 1> velint;
+      CORE::LINALG::Matrix<NSD, NSD> velintderxy;
 
       // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-      LINALG::Matrix<NEN, 1> funct;
-      LINALG::Matrix<NSD, NSD> xjm;
-      LINALG::Matrix<NSD, NSD> xji;
-      LINALG::Matrix<NSD, NEN> deriv;
-      LINALG::Matrix<NSD, NEN> derxy;
+      CORE::LINALG::Matrix<NEN, 1> funct;
+      CORE::LINALG::Matrix<NSD, NSD> xjm;
+      CORE::LINALG::Matrix<NSD, NSD> xji;
+      CORE::LINALG::Matrix<NSD, NEN> deriv;
+      CORE::LINALG::Matrix<NSD, NEN> derxy;
 
       // get node coordinates of element
-      LINALG::Matrix<NSD, NEN> xyze;
+      CORE::LINALG::Matrix<NSD, NEN> xyze;
       for (int inode = 0; inode < NEN; inode++)
       {
         for (int idim = 0; idim < NSD; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
@@ -2794,7 +2794,7 @@ namespace FLD
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.IP().qxg)[0];
-      LINALG::Matrix<NSD, 1> xsi;
+      CORE::LINALG::Matrix<NSD, 1> xsi;
       for (int idim = 0; idim < NSD; idim++) xsi(idim) = gpcoord[idim];
 
       double wquad = intpoints.IP().qwgt[0];
@@ -2887,7 +2887,7 @@ namespace FLD
             // get norm of velocity
             const double vel_norm = velint.Norm2();
             // normed velocity vector
-            LINALG::Matrix<NSD, 1> velino(true);
+            CORE::LINALG::Matrix<NSD, 1> velino(true);
             if (vel_norm >= 1e-6)
               velino.Update(1.0 / vel_norm, velint);
             else
@@ -2895,7 +2895,7 @@ namespace FLD
               velino.Clear();
               velino(0, 0) = 1.0;
             }
-            LINALG::Matrix<NEN, 1> tmp;
+            CORE::LINALG::Matrix<NEN, 1> tmp;
             tmp.MultiplyTN(derxy, velino);
             const double val = tmp.Norm1();
             hk = 2.0 / val;
@@ -2925,7 +2925,7 @@ namespace FLD
                         |    i     j  |   |    i     j  |   |    i     j  |
                         +-           -+   +-           -+   +-           -+
             */
-            LINALG::Matrix<3, 3> G;
+            CORE::LINALG::Matrix<3, 3> G;
 
             for (int nn = 0; nn < 3; ++nn)
             {
@@ -2961,7 +2961,7 @@ namespace FLD
           case INPAR::FLUID::gradient_based:
           {
             velintderxy.MultiplyNT(evel, derxy);
-            LINALG::Matrix<3, 1> normed_velgrad;
+            CORE::LINALG::Matrix<3, 1> normed_velgrad;
 
             for (int rr = 0; rr < 3; ++rr)
             {
@@ -3009,7 +3009,7 @@ namespace FLD
         //          +-                                 -+
         //
         velintderxy.MultiplyNT(evel, derxy);
-        LINALG::Matrix<NSD, NSD> twoeps;
+        CORE::LINALG::Matrix<NSD, NSD> twoeps;
         for (int idim = 0; idim < NSD; idim++)
         {
           for (int jdim = 0; jdim < NSD; jdim++)
@@ -3074,7 +3074,7 @@ namespace FLD
 
     /*
     // create matrix objects for nodal values
-    LINALG::Matrix<3,iel>       edispnp;
+    CORE::LINALG::Matrix<3,iel>       edispnp;
 
     if (is_ale_)
     {
@@ -3110,13 +3110,13 @@ namespace FLD
     //----------------------------------------------------------------------------
     //                         ELEMENT GEOMETRY
     //----------------------------------------------------------------------------
-    // LINALG::Matrix<3,iel>  xyze;
-    LINALG::Matrix<nsd, iel> xyze;
+    // CORE::LINALG::Matrix<3,iel>  xyze;
+    CORE::LINALG::Matrix<nsd, iel> xyze;
 
     // get node coordinates
     // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
     // element!)
-    CORE::GEO::fillInitialPositionArray<DISTYPE, nsd, LINALG::Matrix<nsd, iel>>(ele, xyze);
+    CORE::GEO::fillInitialPositionArray<DISTYPE, nsd, CORE::LINALG::Matrix<nsd, iel>>(ele, xyze);
 
     /*
     // get node coordinates
@@ -3133,7 +3133,7 @@ namespace FLD
     {
       // --------------------------------------------------
       // create matrix objects for nodal values
-      LINALG::Matrix<nsd, iel> edispnp(true);
+      CORE::LINALG::Matrix<nsd, iel> edispnp(true);
 
       // get most recent displacements
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
@@ -3174,14 +3174,14 @@ namespace FLD
     //------------------------------------------------------------------
     //                       INTEGRATION LOOP
     //------------------------------------------------------------------
-    // LINALG::Matrix<iel,1  > funct;
-    // LINALG::Matrix<3,  iel> deriv;
-    // LINALG::Matrix<3,  3  > xjm;
-    // LINALG::Matrix<3,  3  > xji;
+    // CORE::LINALG::Matrix<iel,1  > funct;
+    // CORE::LINALG::Matrix<3,  iel> deriv;
+    // CORE::LINALG::Matrix<3,  3  > xjm;
+    // CORE::LINALG::Matrix<3,  3  > xji;
 
-    LINALG::Matrix<iel, 1> funct(true);
-    LINALG::Matrix<nsd, iel> deriv(true);
-    // LINALG::Matrix<6,6>   bm(true);
+    CORE::LINALG::Matrix<iel, 1> funct(true);
+    CORE::LINALG::Matrix<nsd, iel> deriv(true);
+    // CORE::LINALG::Matrix<6,6>   bm(true);
 
     // get Gaussrule
     const CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
@@ -3194,7 +3194,7 @@ namespace FLD
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {
       // local Gauss point coordinates
-      LINALG::Matrix<nsd, 1> xsi(true);
+      CORE::LINALG::Matrix<nsd, 1> xsi(true);
 
       // local coordinates of the current integration point
       const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -3204,7 +3204,7 @@ namespace FLD
       }
       /*
           // set gauss point coordinates
-          LINALG::Matrix<3,1> gp;
+          CORE::LINALG::Matrix<3,1> gp;
 
           gp(0)=intpoints.qxg[iquad][0];
           gp(1)=intpoints.qxg[iquad][1];
@@ -3237,8 +3237,8 @@ namespace FLD
       else
         dserror("Nurbs are not implemented yet");
 
-      LINALG::Matrix<nsd, nsd> xjm(true);
-      LINALG::Matrix<nsd, nsd> xji(true);
+      CORE::LINALG::Matrix<nsd, nsd> xjm(true);
+      CORE::LINALG::Matrix<nsd, nsd> xji(true);
 
       // compute jacobian matrix
       // determine jacobian at point r,s,t

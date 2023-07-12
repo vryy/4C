@@ -240,13 +240,13 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<3, 3>& permeabilitytensor) const = 0;
+            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<2, 2>& permeabilitytensor) const = 0;
+            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const = 0;
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<1, 1>& permeabilitytensor) const = 0;
+            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const = 0;
 
         //! check for constant relpermeability
         virtual bool HasConstantRelPermeability(int phasenum) const = 0;
@@ -291,23 +291,23 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<3, 3>& difftensorvolfrac) const = 0;
+            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<2, 2>& difftensorvolfrac) const = 0;
+            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const = 0;
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<1, 1>& difftensorvolfrac) const = 0;
+            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const = 0;
 
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const = 0;
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const = 0;
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const = 0;
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const = 0;
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const = 0;
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const = 0;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         virtual bool HasAddScalarDependentFlux(int volfracnum) const = 0;
@@ -575,19 +575,19 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<3, 3>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const
         {
           dserror("Diffusion tensor (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<2, 2>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const
         {
           dserror("Diffusion tensor (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<1, 1>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const
         {
           dserror("Diffusion tensor (1D) not available for this phase manager!");
         };
@@ -687,45 +687,45 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<3, 3>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const
         {
           dserror(
               "Diffusion tensor for volume fractions (3D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<2, 2>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const
         {
           dserror(
               "Diffusion tensor for volume fractions (2D) not available for this phase manager!");
         };
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<1, 1>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const
         {
           dserror(
               "Diffusion tensor for volume fractions (1D) not available for this phase manager!");
         };
 
         //! get the permeabilty tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const
         {
           dserror(
               "Permeability tensor for volume fraction pressures (3D) not available for this phase "
               "manager!");
         };
         //! get the permeabilty tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const
         {
           dserror(
               "Permeability tensor for volume fraction pressures (2D) not available for this phase "
               "manager!");
         };
         //! get the permeabilty tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const
         {
           dserror(
               "Permeability tensor for volume fraction pressures (1D) not available for this phase "
@@ -1053,19 +1053,19 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<3, 3>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<3, 3>& permeabilitytensor) const
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<2, 2>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<2, 2>& permeabilitytensor) const
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
         //! get the diffusion tensor
         virtual void PermeabilityTensor(
-            int phasenum, LINALG::Matrix<1, 1>& permeabilitytensor) const
+            int phasenum, CORE::LINALG::Matrix<1, 1>& permeabilitytensor) const
         {
           phasemanager_->PermeabilityTensor(phasenum, permeabilitytensor);
         };
@@ -1151,40 +1151,40 @@ namespace DRT
 
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<3, 3>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<3, 3>& difftensorvolfrac) const
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<2, 2>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<2, 2>& difftensorvolfrac) const
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
         //! get the diffusion tensor
         virtual void DiffTensorVolFrac(
-            int volfracnum, LINALG::Matrix<1, 1>& difftensorvolfrac) const
+            int volfracnum, CORE::LINALG::Matrix<1, 1>& difftensorvolfrac) const
         {
           phasemanager_->DiffTensorVolFrac(volfracnum, difftensorvolfrac);
         };
 
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<3, 3>& permeabilitytensorvolfracpressure) const
         {
           phasemanager_->PermeabilityTensorVolFracPressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
         };
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<2, 2>& permeabilitytensorvolfracpressure) const
         {
           phasemanager_->PermeabilityTensorVolFracPressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
         };
         //! get the permeability tensor for volume fraction pressures
-        virtual void PermeabilityTensorVolFracPressure(
-            int volfracpressnum, LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const
+        virtual void PermeabilityTensorVolFracPressure(int volfracpressnum,
+            CORE::LINALG::Matrix<1, 1>& permeabilitytensorvolfracpressure) const
         {
           phasemanager_->PermeabilityTensorVolFracPressure(
               volfracpressnum, permeabilitytensorvolfracpressure);
@@ -1470,7 +1470,7 @@ namespace DRT
 
       This class is a decorator for a phase manager, including evaluation of
       the diffusion tensor (inverse permeability). As the tensor is saved
-      as a LINALG::Matrix, it is templated by the number of space dimensions
+      as a CORE::LINALG::Matrix, it is templated by the number of space dimensions
 
       \author vuong
       */
@@ -1501,7 +1501,8 @@ namespace DRT
         //! @name Access methods
 
         //! get the diffusion tensor
-        void PermeabilityTensor(int phasenum, LINALG::Matrix<nsd, nsd>& permeabilitytensor) const;
+        void PermeabilityTensor(
+            int phasenum, CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensor) const;
 
         //! check for constant relpermeability
         bool HasConstantRelPermeability(int phasenum) const;
@@ -1525,8 +1526,8 @@ namespace DRT
             const MAT::Material& material, int phasenum, double abspressgrad) const;
 
         //! get the permeability tensor for volume fraction pressures
-        void PermeabilityTensorVolFracPressure(
-            int volfracnum, LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const;
+        void PermeabilityTensorVolFracPressure(int volfracnum,
+            CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const;
 
         //! check for constant dynamic viscosity of volume fraction pressure
         virtual bool HasConstantDynViscosityVolFracPressure(int volfracpressnum) const;
@@ -1550,7 +1551,7 @@ namespace DRT
 
        private:
         //! diffusion tensor
-        std::vector<LINALG::Matrix<nsd, nsd>> permeabilitytensors_;
+        std::vector<CORE::LINALG::Matrix<nsd, nsd>> permeabilitytensors_;
         //! relative diffusivities
         std::vector<double> relpermeabilities_;
         //! derivative of relative permeabilities w.r.t. saturation
@@ -1560,7 +1561,7 @@ namespace DRT
         //! check for constant dynamic viscosities of phase
         std::vector<bool> constdynviscosity_;
         //! permeability tensors
-        std::vector<LINALG::Matrix<nsd, nsd>> permeabilitytensorsvolfracpress_;
+        std::vector<CORE::LINALG::Matrix<nsd, nsd>> permeabilitytensorsvolfracpress_;
         //! check for constant dynamic viscosities of volume fraction pressure
         std::vector<bool> constdynviscosityvolfracpress_;
       };
@@ -1604,7 +1605,8 @@ namespace DRT
         //! @name Access methods
 
         //! get the diffusion tensor
-        void DiffTensorVolFrac(int volfracnum, LINALG::Matrix<nsd, nsd>& difftensorvolfrac) const;
+        void DiffTensorVolFrac(
+            int volfracnum, CORE::LINALG::Matrix<nsd, nsd>& difftensorvolfrac) const;
 
         //! check if volume frac 'volfracnum' has additional scalar dependent flux
         virtual bool HasAddScalarDependentFlux(int volfracnum) const;
@@ -1629,7 +1631,7 @@ namespace DRT
 
        private:
         //! diffusion tensors
-        std::vector<LINALG::Matrix<nsd, nsd>> difftensorsvolfrac_;
+        std::vector<CORE::LINALG::Matrix<nsd, nsd>> difftensorsvolfrac_;
         //! does the material have additional scalar dependent flux
         std::vector<bool> hasaddscalardpendentflux_;
         //! matrix for scalar diffusivities

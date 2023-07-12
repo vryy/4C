@@ -344,7 +344,7 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       virtual bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary* ele,
-          const std::vector<double>& mydispnp, LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
+          const std::vector<double>& mydispnp, CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity)
       {
         return false;
       };
@@ -367,8 +367,8 @@ namespace DRT
       \param save (in)           : flag whether the porosity is to be saved for later access
       */
       virtual void ComputePorosityAtGP(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::FluidBoundary* ele, const LINALG::Matrix<Base::bdrynen_, 1>& funct,
-          const LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
+          DRT::ELEMENTS::FluidBoundary* ele, const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
+          const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
 
     };  // class FluidEleBoundaryCalcPoro
@@ -407,7 +407,7 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary* ele,
-          const std::vector<double>& mydispnp, LINALG::Matrix<Base::bdrynen_, 1>& eporosity);
+          const std::vector<double>& mydispnp, CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity);
 
       /*!
       \brief compute the porosity at nodes
@@ -420,8 +420,8 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       void ComputePorosityAtGP(Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
-          const LINALG::Matrix<Base::bdrynen_, 1>& funct,
-          const LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
+          const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
+          const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
     };
 

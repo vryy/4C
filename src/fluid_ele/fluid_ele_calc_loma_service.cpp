@@ -25,8 +25,9 @@
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEq(
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam, bool isale)
+    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
+    bool isale)
 {
   //----------------------------------------------------------------------
   // compute additional Galerkin terms on right-hand side of continuity
@@ -110,7 +111,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEq(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEqWeakComp(
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epredtam, bool isale)
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epredtam,
+    bool isale)
 {
   //----------------------------------------------------------------------
   // compute additional Galerkin terms on right-hand side of continuity
@@ -157,7 +159,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEqWeakComp(
   // Kostas D. Housiadas, Georgios C. Georgiou
 
   // correction term in gausspoint
-  LINALG::Matrix<1, 1> correctionterm;
+  CORE::LINALG::Matrix<1, 1> correctionterm;
 
   // get the correction term at integration point
   correctionterm.Multiply(ecorrectionterm_, funct_);
@@ -194,8 +196,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEqWeakComp(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEqArtComp(
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epren,
-    const LINALG::Matrix<nen_, 1>& escadtam)
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& escadtam)
 {
   //----------------------------------------------------------------------
   // compute additional Galerkin terms on right-hand side of continuity
@@ -245,7 +247,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeGalRHSContEqArtComp(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleScalar(
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nen_, 1>& escaam)
+    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam)
 {
   //----------------------------------------------------------------------
   // compute residual of scalar equation
@@ -256,7 +258,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleScalar(
   double scares_old = 0.0;
 
   // compute diffusive term at n+alpha_F/n+1 for higher-order elements
-  LINALG::Matrix<nen_, 1> diff;
+  CORE::LINALG::Matrix<nen_, 1> diff;
   double diff_scaaf = 0.0;
   if (is_higher_order_ele_)
   {
@@ -310,9 +312,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleScalar(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::UpdateMaterialParams(
-    Teuchos::RCP<const MAT::Material> material, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epream,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nen_, 1>& escaam,
+    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
+    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
     const double thermpressaf, const double thermpressam, const double sgsca)
 {
   if (material->MaterialType() == INPAR::MAT::m_mixfrac)
@@ -725,7 +727,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::RecomputeGalAndComputeCrossR
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LomaGalPart(
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, 1>& preforce,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& rhsfac)
 {
   //----------------------------------------------------------------------
@@ -815,7 +817,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::LomaGalPart(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ArtCompPressureInertiaGalPartandContStab(
-    LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, LINALG::Matrix<nen_, nen_>& ppmat)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nen_, nen_>& ppmat)
 {
   /* pressure inertia term if not is_stationary */
   /*
@@ -866,7 +868,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ArtCompPressureInertiaGalPar
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::WeakCompPressureInertiaGalPart(
-    LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, LINALG::Matrix<nen_, nen_>& ppmat)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nen_, nen_>& ppmat)
 {
   /* pressure inertia term for instationary fluids */
   /*

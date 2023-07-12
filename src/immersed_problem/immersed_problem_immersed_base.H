@@ -211,7 +211,7 @@ namespace IMMERSED
     void EvaluateImmersed(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> dis,
         DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action,
         bool evaluateonlyboundary = false);
 
 
@@ -225,7 +225,7 @@ namespace IMMERSED
     void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
         Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action);
 
 
     /*!
@@ -239,8 +239,8 @@ namespace IMMERSED
         const Teuchos::RCP<const DRT::Discretization> idis, DRT::AssembleStrategy* strategy,
         std::map<int, std::set<int>>* elementstoeval,
         Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-        std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
-        bool evaluateonlyboundary = false);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct,
+        Teuchos::ParameterList& params, bool evaluateonlyboundary = false);
 
 
     /*!
@@ -266,8 +266,8 @@ namespace IMMERSED
     void SearchPotentiallyCoveredBackgrdElements(
         std::map<int, std::set<int>>* current_subset_tofill,
         Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        const LINALG::Matrix<3, 1>& point, const double radius, const int label);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label);
 
 
     /*!
@@ -511,7 +511,7 @@ namespace IMMERSED
       //
       /////////////////////////////////////////////////////////////////////
       std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-      LINALG::Matrix<source_dim, 1> xi(true);
+      CORE::LINALG::Matrix<source_dim, 1> xi(true);
       if (!matched and mysearchboxgeomsize > 0)
       {
         // every proc that has searchboxgeom elements
@@ -1010,7 +1010,7 @@ namespace IMMERSED
       // if the current proc can already match the given point xi (xvec)
       //
       /////////////////////////////////////////////////////////////////////
-      LINALG::Matrix<source_dim, 1> xi(true);
+      CORE::LINALG::Matrix<source_dim, 1> xi(true);
       if (matched == 0)
       {
         for (std::map<int, std::set<int>>::const_iterator closele =
@@ -1032,7 +1032,7 @@ namespace IMMERSED
             // construct bounding box around current source element
             Teuchos::RCP<CORE::GEO::CUT::BoundingBox> bbside =
                 Teuchos::rcp(CORE::GEO::CUT::BoundingBox::Create());
-            LINALG::Matrix<3, 1> nodalpos;
+            CORE::LINALG::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->NumNode()); ++i)
             {
               nodalpos(0, 0) = (sourceele->Nodes())[i]->X()[0] + mysourcedispnp[i * 3 + 0];
@@ -1264,7 +1264,7 @@ namespace IMMERSED
         CORE::DRT::UTILS::GaussRule2D::quad_36point);
 
     // initialize structural shape functions matrix
-    LINALG::Matrix<4, 1> shapefcts(true);
+    CORE::LINALG::Matrix<4, 1> shapefcts(true);
 
     // declarations and definitions for round robin loop
     int numproc = comm.NumProc();
@@ -1349,7 +1349,7 @@ namespace IMMERSED
       std::vector<char> rdata;
 
       // local coordinates of structrual surface point in parameter space of the fluid element
-      LINALG::Matrix<fluid_dim, 1> fluid_xi(true);
+      CORE::LINALG::Matrix<fluid_dim, 1> fluid_xi(true);
 
       // loop over points that are not yet matched
       if (matched == 0)
@@ -1437,7 +1437,7 @@ namespace IMMERSED
                   struct_xsi[1] = intpoints.IP().qxg[igp][1];
 
                   // get local coordinates of gp as matrix
-                  LINALG::Matrix<struct_dim, 1> struct_xi(true);
+                  CORE::LINALG::Matrix<struct_dim, 1> struct_xi(true);
                   for (int i = 0; i < struct_dim; ++i) struct_xi(i) = struct_xsi[i];
 
                   // declare vector of global current coordinates
@@ -1461,13 +1461,13 @@ namespace IMMERSED
 
                     // evaluate shape functions of structure dis at gp
                     CORE::DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
-                    LINALG::Matrix<4, 3> myvelocitynp(true);
+                    CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)
                         myvelocitynp(node, dim) = myvelnp[node * 3 + dim];
 
                     // calculate velocity in gp
-                    LINALG::Matrix<3, 1> vel_at_gp(true);
+                    CORE::LINALG::Matrix<3, 1> vel_at_gp(true);
                     vel_at_gp.MultiplyTN(myvelocitynp, shapefcts);
 
                     // update velocity and position
@@ -1630,7 +1630,7 @@ namespace IMMERSED
       DRT::Element::DiscretizationType targetdistype>
   double IntersectLineWithBoundary(Teuchos::RCP<DRT::Discretization> evaldis,
       const Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::ParameterList& params,
-      LINALG::Matrix<3, 1>& searchdirection, LINALG::Matrix<3, 1>& spacepoint,
+      CORE::LINALG::Matrix<3, 1>& searchdirection, CORE::LINALG::Matrix<3, 1>& spacepoint,
       const std::string& condstring, const int condid)
   {
     // is to be set 1 if intersection is found
@@ -1682,12 +1682,12 @@ namespace IMMERSED
 
           // loop over all geometry elements and check for intersection with
           // boundary along search direction
-          LINALG::Matrix<3, 1> p;
-          LINALG::Matrix<3, 1> m1;
-          LINALG::Matrix<3, 1> m2;
-          LINALG::Matrix<3, 3> A;
-          LINALG::Matrix<3, 1> b;
-          LINALG::Matrix<3, 1> parameters;
+          CORE::LINALG::Matrix<3, 1> p;
+          CORE::LINALG::Matrix<3, 1> m1;
+          CORE::LINALG::Matrix<3, 1> m2;
+          CORE::LINALG::Matrix<3, 3> A;
+          CORE::LINALG::Matrix<3, 1> b;
+          CORE::LINALG::Matrix<3, 1> parameters;
           double determinant = -1234.0;
 
           // round robin loop

@@ -64,13 +64,14 @@ void SCATRA::MeshtyingStrategyStd::InitMeshtying()
 /*-----------------------------------------------------------------------------*
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+void SCATRA::MeshtyingStrategyStd::Solve(
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,                //!< solver
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>& phinp,                        //!< state vector at time n+1
     const int& iteration,  //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
 ) const
 {
   solver->Solve(
@@ -83,7 +84,7 @@ void SCATRA::MeshtyingStrategyStd::Solve(const Teuchos::RCP<LINALG::Solver>& sol
 /*-------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   fang 01/18 |
  *-------------------------------------------------------------------------*/
-const LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
+const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyStd::Solver() const
 {
   if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
   return *scatratimint_->Solver();

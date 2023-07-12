@@ -151,7 +151,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // get node coordinates (we have a nsd_+1 dimensional domain!)
-    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
         ele, xyze_);
 
     // determine constant normal to this element
@@ -188,12 +188,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   else if (action == THR::calc_thermo_fextconvection)
   {
     // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
-    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+    CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
         ele, xyze_);
 
     // set views, here we assemble on the boundary dofs only!
-    LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.A(), true);  // view only!
-    LINALG::Matrix<nen_, 1> efext(elevec1_epetra.A(), true);     // view only!
+    CORE::LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.A(), true);     // view only!
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -249,8 +249,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
-        etemp_.Update(etemp);                                  // copy
+        CORE::LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+        etemp_.Update(etemp);                                        // copy
       }  // discretization.HasState("temperature")
       else
         dserror("No old temperature T_n+1 available");
@@ -267,8 +267,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
-        LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
-        etemp_.Update(etemp);                                 // copy
+        CORE::LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+        etemp_.Update(etemp);                                       // copy
       }  // discretization.HasState("old temperature")
       else
         dserror("No old temperature T_n available");
@@ -315,7 +315,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     if ((kintype == INPAR::STR::kinem_nonlinearTotLag) and (la.Size() > 1))  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
-      LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(elemat2_epetra.A(), true);  // view only!
+      CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
+          elemat2_epetra.A(), true);  // view only!
 
       // and now get the current displacements/velocities
       if (discretization.HasState(1, "displacement"))
@@ -402,11 +403,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
       if (discretization.HasState(1, "displacement"))
       {
         // get node coordinates (nsd_+1: domain, nsd_: boundary)
-        CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
-            ele, xyze_);
+        CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1,
+            CORE::LINALG::Matrix<nsd_ + 1, nen_>>(ele, xyze_);
 
         // set views, here we assemble on the boundary dofs only!
-        LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(elemat1_epetra.A(), true);  // view only!
+        CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
+            elemat1_epetra.A(), true);  // view only!
 
         // get current condition
         Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -462,8 +464,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
-            etemp_.Update(etemp);                                  // copy
+            CORE::LINALG::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
+            etemp_.Update(etemp);                                        // copy
           }  // discretization.HasState("temperature")
           else
             dserror("No old temperature T_n+1 available");
@@ -480,8 +482,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
             DRT::UTILS::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
-            LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
-            etemp_.Update(etemp);                                 // copy
+            CORE::LINALG::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
+            etemp_.Update(etemp);                                       // copy
           }  // discretization.HasState("old temperature")
           else
             dserror("No old temperature T_n available");
@@ -582,7 +584,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
   PrepareNurbsEval(ele, discretization);
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   // integration points and weights
@@ -610,7 +612,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
     // determine global coordinates of current Gauss point
 
     const int nsd_vol_ele = nsd_ + 1;
-    LINALG::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
+    CORE::LINALG::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
     coordgp.MultiplyNN(xyze_, funct_);
 
     int functnum = -1;
@@ -657,8 +659,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* el
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
-    const DRT::Element* ele, LINALG::Matrix<nen_, nen_>* econd, LINALG::Matrix<nen_, 1>* efext,
-    const double coeff, const double surtemp, const std::string tempstate)
+    const DRT::Element* ele, CORE::LINALG::Matrix<nen_, nen_>* econd,
+    CORE::LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
+    const std::string tempstate)
 {
   // ------------------------------- integration loop for one element
 
@@ -687,11 +690,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     // theoretic part
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
-    LINALG::Matrix<1, 1> Ntemp(false);
+    CORE::LINALG::Matrix<1, 1> Ntemp(false);
     Ntemp.MultiplyTN(funct_, etemp_);
 
     // substract the surface temperature: Ntemp -=  T_surf
-    LINALG::Matrix<1, 1> Tsurf(true);
+    CORE::LINALG::Matrix<1, 1> Tsurf(true);
     for (int i = 0; i < 1; ++i)
     {
       Tsurf(i) = (surtemp);
@@ -739,13 +742,13 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(DRT::Element* ele,
     std::vector<double>& disp,  // current displacements
-    LINALG::Matrix<nen_, nen_>* econd, LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl,
-    LINALG::Matrix<nen_, 1>* efext, const double coeff, const double surtemp,
-    const std::string tempstate)
+    CORE::LINALG::Matrix<nen_, nen_>* econd,
+    CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl, CORE::LINALG::Matrix<nen_, 1>* efext,
+    const double coeff, const double surtemp, const std::string tempstate)
 {
   // update element geometry
   // get node coordinates of full dimensions, i.e. nsd_+1
-  LINALG::Matrix<nen_, (nsd_ + 1)> xcurr;  // current  coord. of boundary element
+  CORE::LINALG::Matrix<nen_, (nsd_ + 1)> xcurr;  // current  coord. of boundary element
 
   for (int i = 0; i < nen_; ++i)
   {
@@ -776,7 +779,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
   // interfacial area, i.e. current element area
   double A = 0.0;
   // first partial derivatives VECTOR
-  LINALG::Matrix<(nsd_ + 1) * nen_, 1> Adiff(true);  // (12x1)
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> Adiff(true);  // (12x1)
 
   // ----------------------------------------- loop over Gauss Points
   // with ngp = intpoints.IP().nquad
@@ -789,7 +792,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
 
     // calculate the current normal vector normal and the area
-    LINALG::Matrix<nsd_ + 1, 1> normal;  // (3x1)
+    CORE::LINALG::Matrix<nsd_ + 1, 1> normal;  // (3x1)
     double detA = 0.0;
     SurfaceIntegration(detA, normal, xcurr);
     // the total surface corresponds to the sum over all GPs.
@@ -798,17 +801,17 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     A = detA * intpoints.IP().qwgt[iquad];  // here is the current area included
 
     // initialise the matrices
-    LINALG::Matrix<(nsd_ + 1), (nsd_ + 1) * nen_> ddet(true);  // (3x12)
-    LINALG::Matrix<((nsd_ + 1) * (nsd_ + 1) * nen_), (nsd_ + 1) * nen_> ddet2(
-        true);                                                  // (3*2*4x2*4)=(24x8)
-    LINALG::Matrix<((nsd_ + 1) * nen_), 1> jacobi_deriv(true);  // (3*4x1)=(12x1)
+    CORE::LINALG::Matrix<(nsd_ + 1), (nsd_ + 1) * nen_> ddet(true);  // (3x12)
+    CORE::LINALG::Matrix<((nsd_ + 1) * (nsd_ + 1) * nen_), (nsd_ + 1) * nen_> ddet2(
+        true);                                                        // (3*2*4x2*4)=(24x8)
+    CORE::LINALG::Matrix<((nsd_ + 1) * nen_), 1> jacobi_deriv(true);  // (3*4x1)=(12x1)
 
     // with derxy_ (2x4) --> (nsd_xnen_)
     // derxy_== (LENA) dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
     // compute global derivatives
     // (nsd_x(nsd_+1)) = (nsdxnen_) . (nen_x(nsd_+1))
     // (2x3) = (2x4) . (4x3)
-    LINALG::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);  // (2x3)
+    CORE::LINALG::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);  // (2x3)
     dxyzdrs.Multiply(deriv_, xcurr);
 
     // derivation of minor determiants of the Jacobian with respect to the
@@ -868,11 +871,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // theoretic part
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
-    LINALG::Matrix<1, 1> Ntemp(false);
+    CORE::LINALG::Matrix<1, 1> Ntemp(false);
     Ntemp.MultiplyTN(funct_, etemp_);
 
     // T - T_surf
-    LINALG::Matrix<1, 1> Tsurf(false);
+    CORE::LINALG::Matrix<1, 1> Tsurf(false);
     Tsurf(0, 0) = (surtemp);
 
     // Ntemp -= T_surf
@@ -918,7 +921,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       // --> must be insert in balance equation as positive term,
       // but fext is included as negative --> scale with (-1)
 
-      LINALG::Matrix<nen_, 1> NNtemp;
+      CORE::LINALG::Matrix<nen_, 1> NNtemp;
       NNtemp.Multiply(funct_, Ntemp);
       etangcoupl->MultiplyNT((-1.0) * coeffA, NNtemp, Adiff, 1.0);
     }
@@ -977,8 +980,9 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
  | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(LINALG::Matrix<nsd_ + 1, 1>& normal,
-    const LINALG::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
+    CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
+    const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  // node coordinates
 )
 {
   // determine normal to this element
@@ -990,7 +994,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(LINALG::Matrix<n
   {
     case 2:
     {
-      LINALG::Matrix<3, 1> dist1(true), dist2(true);
+      CORE::LINALG::Matrix<3, 1> dist1(true), dist2(true);
       for (int i = 0; i < 3; i++)
       {
         dist1(i) = xyze(i, 1) - xyze(i, 0);
@@ -1037,7 +1041,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
   double boundaryint = params.get<double>("boundaryint");
 
   // get node coordinates (we have a nsd_+1 dimensional domain!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, LINALG::Matrix<nsd_ + 1, nen_>>(
+  CORE::GEO::fillInitialPositionArray<distype, nsd_ + 1, CORE::LINALG::Matrix<nsd_ + 1, nen_>>(
       ele, xyze_);
 
   // integrations points and weights
@@ -1078,12 +1082,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const D
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
-    double& detA, LINALG::Matrix<nsd_ + 1, 1>& normal,
-    const LINALG::Matrix<nen_, nsd_ + 1>& xcurr  // current coordinates of nodes
+    double& detA, CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,
+    const CORE::LINALG::Matrix<nen_, nsd_ + 1>& xcurr  // current coordinates of nodes
 )
 {
   // determine normal to this element
-  LINALG::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);
+  CORE::LINALG::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);
   dxyzdrs.MultiplyNN(deriv_, xcurr);
 
   /* compute covariant metric tensor G for surface element
@@ -1097,7 +1101,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   **        dr     dr            dr     ds            ds     ds
   */
 
-  LINALG::Matrix<(nsd_ + 1), nen_> xcurr_T(false);
+  CORE::LINALG::Matrix<(nsd_ + 1), nen_> xcurr_T(false);
   xcurr_T.UpdateT(xcurr);
 
   // the metric tensor and the area of an infinitesimal surface/line element

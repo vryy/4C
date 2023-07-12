@@ -21,7 +21,7 @@ namespace SCATRA
    public:
     /// Standard Constructor
     TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<LINALG::Solver> solver,                      //!< linear solver
+        Teuchos::RCP<CORE::LINALG::Solver> solver,                //!< linear solver
         Teuchos::RCP<Teuchos::ParameterList> params,              //!< parameter list
         Teuchos::RCP<Teuchos::ParameterList> extraparams,         //!< supplementary parameter list
         Teuchos::RCP<IO::DiscretizationWriter> output,            //!< output writer

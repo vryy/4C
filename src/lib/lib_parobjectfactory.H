@@ -21,7 +21,7 @@
 #include <Epetra_Vector.h>
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -111,8 +111,8 @@ namespace DRT
 
     /// preevaluate elements (via element types)
     void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3);
 

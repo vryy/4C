@@ -24,7 +24,8 @@
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
 FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       alphaM_(params_->get<double>("alpha_M")),
@@ -209,7 +210,7 @@ void FLD::TimIntGenAlpha::GenAlphaUpdateAcceleration()
     onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
     // copy back into global vector
-    LINALG::Export(*onlyaccnp, *accnp_);
+    CORE::LINALG::Export(*onlyaccnp, *accnp_);
   }
 
 }  // TimIntGenAlpha::GenAlphaUpdateAcceleration
@@ -248,7 +249,7 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues()
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    LINALG::Export(*onlyaccam, *accam_);
+    CORE::LINALG::Export(*onlyaccam, *accam_);
   }
 
   // set intermediate values for velocity
@@ -289,10 +290,10 @@ void FLD::TimIntGenAlpha::GenAlphaIntermediateValues(
   Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
       vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
 
-  Teuchos::RCP<Epetra_Vector> vecam = LINALG::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecam = CORE::LINALG::CreateVector(*vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> vecaf = LINALG::CreateVector(*vecmap, true);
+  Teuchos::RCP<Epetra_Vector> vecaf = CORE::LINALG::CreateVector(*vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors

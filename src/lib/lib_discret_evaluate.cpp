@@ -29,9 +29,10 @@
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   DRT::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -107,7 +108,8 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
  |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> systemvector)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+    Teuchos::RCP<Epetra_Vector> systemvector)
 {
   Evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
@@ -153,7 +155,7 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
-    Epetra_Vector& systemvector, LINALG::SparseOperator* systemmatrix)
+    Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -244,7 +246,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         if (!assemblemat)
         {
           ele->EvaluateNeumann(params, *this, *cond, lm, elevector);
-          LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
         }
         else
         {
@@ -254,7 +256,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
           else
             memset(elematrix.A(), 0, size * size * sizeof(double));
           ele->EvaluateNeumann(params, *this, *cond, lm, elevector, &elematrix);
-          LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(ele->Id(), lmstride, elematrix, lm, lmowner);
         }
       }
@@ -317,7 +319,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
       //-----if no stiffness matrix was given in-------
       else
         currele->EvaluateNeumann(params, *this, *cond, lm, elevector);
-      LINALG::Assemble(systemvector, elevector, lm, lmowner);
+      CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
     }
   }
 }
@@ -329,7 +331,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor)
 {
   DRT::UTILS::EvaluateDirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
@@ -340,10 +342,10 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
  |  evaluate a condition (public)                               tk 02/08|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3,
-    const std::string& condstring, const int condid)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
 {
   DRT::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);

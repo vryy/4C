@@ -23,7 +23,7 @@ namespace DRT::UTILS::BEAM
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+  void EvaluateShapeFunctionsAtXi(const T& xi, CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     I_i.Clear();
@@ -56,7 +56,8 @@ namespace DRT::UTILS::BEAM
    * [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionDerivsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+  void EvaluateShapeFunctionDerivsAtXi(const T& xi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     I_i_xi.Clear();
@@ -90,7 +91,7 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunction2ndDerivsAtXi(const T& xi,
-      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     I_i_xixi.Clear();
@@ -124,7 +125,7 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunction3rdDerivsAtXi(const T& xi,
-      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixixi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixixi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     I_i_xixixi.Clear();
@@ -158,8 +159,9 @@ namespace DRT::UTILS::BEAM
    *         parameter space [-1,1]
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
-  void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi, LINALG::Matrix<1, vpernode * nnode, T>& I_i,
-      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+  void EvaluateShapeFunctionsAndDerivsAtXi(const T& xi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
@@ -172,8 +174,9 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunctionsAndDerivsAnd2ndDerivsAtXi(const T& xi,
-      LINALG::Matrix<1, vpernode * nnode, T>& I_i, LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
-      LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xi,
+      CORE::LINALG::Matrix<1, vpernode * nnode, T>& I_i_xixi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0)
   {
     EvaluateShapeFunctionsAtXi<nnode, vpernode>(xi, I_i, distype, hermite_length_param);
@@ -187,7 +190,7 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunctionsAllGPs(const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
-      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
+      std::vector<CORE::LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
@@ -214,7 +217,7 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunctionDerivsAllGPs(const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
-      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
+      std::vector<CORE::LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
@@ -245,8 +248,8 @@ namespace DRT::UTILS::BEAM
   template <unsigned int nnode, unsigned int vpernode, typename T>
   void EvaluateShapeFunctionsAndDerivsAllGPs(
       const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
-      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
-      std::vector<LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
+      std::vector<CORE::LINALG::Matrix<1, vpernode * nnode, T>>& I_i,
+      std::vector<CORE::LINALG::Matrix<1, vpernode * nnode, T>>& I_i_xi,
       const DRT::Element::DiscretizationType& distype, double hermite_length_param = -1.0,
       double integration_interval_lower_limit = -1.0, double integration_interval_upper_limit = 1.0)
   {
@@ -259,8 +262,8 @@ namespace DRT::UTILS::BEAM
   /** \brief assemble one shape function matrix, such that: r=N*d
    */
   template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
-  void AssembleShapeFunctions(const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
-      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
+  void AssembleShapeFunctions(const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+      CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N)
   {
     // assembly_N is just an array to help assemble the matrices of the shape functions
     // it determines, which shape function is used in which column of N
@@ -305,12 +308,12 @@ namespace DRT::UTILS::BEAM
    */
   template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
   void AssembleShapeFunctionsAndDerivsAnd2ndDerivs(
-      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
-      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
-      const LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
-      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N,
-      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
-      LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
+      const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i,
+      const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xi,
+      const CORE::LINALG::Matrix<1, numnodes * numnodalvalues, T>& N_i_xixi,
+      CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N,
+      CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xi,
+      CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, T>& N_xixi)
   {
     AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i, N);
     AssembleShapeFunctions<numnodes, numnodalvalues, T>(N_i_xi, N_xi);
@@ -320,9 +323,9 @@ namespace DRT::UTILS::BEAM
   /** \brief interpolation of nodal DoFs based on given shape function values
    */
   template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, typename T, typename T2>
-  void CalcInterpolation(const LINALG::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
-      const LINALG::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
-      LINALG::Matrix<ndim, 1, T>& result)
+  void CalcInterpolation(const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1, T>& dof_vals,
+      const CORE::LINALG::Matrix<1, vpernode * nnode, T2>& shapefcn_vals,
+      CORE::LINALG::Matrix<ndim, 1, T>& result)
   {
     result.Clear();
 
@@ -336,11 +339,11 @@ namespace DRT::UTILS::BEAM
   template <unsigned int nnode, unsigned int vpernode>
   std::tuple<double, double> IntegrateCenterlineArcLengthAndArcLengthDerivative(
       const CORE::DRT::UTILS::IntegrationPoints1D& gausspoints,
-      const LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
+      const CORE::LINALG::Matrix<3 * vpernode * nnode, 1, double>& disp_centerline,
       const DRT::Element::DiscretizationType& distype, const double& reflength)
   {
-    std::vector<LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
-    LINALG::Matrix<3, 1> r_xi;
+    std::vector<CORE::LINALG::Matrix<1, nnode * vpernode, double>> H_i_xi(gausspoints.nquad);
+    CORE::LINALG::Matrix<3, 1> r_xi;
 
     EvaluateShapeFunctionDerivsAllGPs<nnode, vpernode>(gausspoints, H_i_xi, distype, reflength);
 

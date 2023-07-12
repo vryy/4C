@@ -19,7 +19,7 @@
 #include "utils_singleton_owner.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -62,9 +62,9 @@ namespace DRT
           std::vector<int>& nds_slave,             ///< nodal dofset w.r.t. slave element
           const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          DRT::DiscretizationFaces& discretization,         ///< faces discretization
-          Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+          DRT::DiscretizationFaces& discretization,               ///< faces discretization
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
@@ -133,9 +133,9 @@ namespace DRT
           std::vector<int>& nds_slave,             ///< nodal dofset w.r.t. slave element
           const INPAR::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
           Teuchos::ParameterList& params,          ///< parameter list
-          DRT::DiscretizationFaces& discretization,         ///< faces discretization
-          Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+          DRT::DiscretizationFaces& discretization,               ///< faces discretization
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
       );
 
       //! Evaluate internal faces

@@ -102,13 +102,13 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
   //-------------------------------------------------------------------------
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
-  A_ = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(A);
+  A_ = Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(A);
   if (A_ != Teuchos::null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
     // matrices.
-    A_ = A_->Clone(LINALG::View);
+    A_ = A_->Clone(CORE::LINALG::View);
     mmex_ = A_->RangeExtractor();
   }
 
@@ -131,7 +131,7 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
     Epetra_Vector diag(*mmex_.Map(0), false);
     Teuchos::RCP<Epetra_CrsMatrix> A00 = (*A_)(0, 0).EpetraMatrix();
     A00->InvRowSums(diag);
-    diagAinv_ = Teuchos::rcp(new LINALG::SparseMatrix(diag));
+    diagAinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
 #else
@@ -159,16 +159,16 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
     Teuchos::Time ltime("", true);
     // with Trilinos Q1/2013 there are some improvements in EpetraExt MM.
     // However, they lead to a crash here -> use MLMultiply instead.
-    // S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
-    S_ = LINALG::MLMultiply(*diagAinv_, (*A_)(0, 1), true);
+    // S_ = CORE::LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
+    S_ = CORE::LINALG::MLMultiply(*diagAinv_, (*A_)(0, 1), true);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = diagAinv * A(0,1) %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
-    S_ = LINALG::MLMultiply((*A_)(1, 0), *S_, false);
-    // The LINALG::Multiply method would consume a HUGE amount of memory!!!
-    // So always use LINALG::MLMultiply in the line above! Otherwise you won't be able
+    S_ = CORE::LINALG::MLMultiply((*A_)(1, 0), *S_, false);
+    // The CORE::LINALG::Multiply method would consume a HUGE amount of memory!!!
+    // So always use CORE::LINALG::MLMultiply in the line above! Otherwise you won't be able
     // to solve any large linear problem since you'll definitely run out of memory.
-    // S_ = LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
+    // S_ = CORE::LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
     if (!myrank && SIMPLER_TIMING)
       printf("*** S = A(1,0) * S (ML)   %10.3E\n", ltime.totalElapsedTime(true));
     ltime.reset();
@@ -355,27 +355,27 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
   //-------------------------------------------------------------------------
   {
     Teuchos::RCP<Teuchos::ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_, false);
-    vsolver_ = Teuchos::rcp(new LINALG::Solver(vrcplist, A_->Comm(), outfile_));
+    vsolver_ = Teuchos::rcp(new CORE::LINALG::Solver(vrcplist, A_->Comm(), outfile_));
     Teuchos::RCP<Teuchos::ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_, false);
-    psolver_ = Teuchos::rcp(new LINALG::Solver(prcplist, A_->Comm(), outfile_));
+    psolver_ = Teuchos::rcp(new CORE::LINALG::Solver(prcplist, A_->Comm(), outfile_));
   }
 #endif
 
   //-------------------------------------------------------------------------
   // Allocate velocity and pressure solution and rhs vectors
   //-------------------------------------------------------------------------
-  vx_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0), false));
-  vb_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0), false));
-  px_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
-  pb_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
+  vx_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(0), false));
+  vb_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(0), false));
+  px_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(1), false));
+  pb_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(1), false));
 
   //-------------------------------------------------------------------------
   // Allocate working vectors for velocity and pressure
   //-------------------------------------------------------------------------
-  vwork1_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0), false));
-  vwork2_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(0), false));
-  pwork1_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
-  pwork2_ = Teuchos::rcp(new LINALG::ANA::Vector(*mmex_.Map(1), false));
+  vwork1_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(0), false));
+  vwork2_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(0), false));
+  pwork1_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(1), false));
+  pwork2_ = Teuchos::rcp(new CORE::LINALG::ANA::Vector(*mmex_.Map(1), false));
 
   if (!myrank && SIMPLER_TIMING)
     printf("--- Time to do allocate mem %10.3E\n", time.totalElapsedTime(true));
@@ -421,15 +421,16 @@ int CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::ApplyInverse(
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx,
-    LINALG::ANA::Vector& px, LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
+void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(CORE::LINALG::ANA::Vector& vx,
+    CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
+    CORE::LINALG::ANA::Vector& pb) const
 {
-  using namespace LINALG::ANA;
-  LINALG::SparseMatrix& A00 = (*A_)(0, 0);
-  LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  LINALG::SparseMatrix& diagAinv = *diagAinv_;
-  LINALG::SparseMatrix& S = *S_;
+  using namespace CORE::LINALG::ANA;
+  CORE::LINALG::SparseMatrix& A00 = (*A_)(0, 0);
+  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
+  CORE::LINALG::SparseMatrix& S = *S_;
 
   //-------------------------------------------------- L-solve / U-solve
 
@@ -454,15 +455,16 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simpler(LINALG::ANA::
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx,
-    LINALG::ANA::Vector& px, LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
+void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(CORE::LINALG::ANA::Vector& vx,
+    CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
+    CORE::LINALG::ANA::Vector& pb) const
 {
-  using namespace LINALG::ANA;
-  LINALG::SparseMatrix& A00 = (*A_)(0, 0);
-  LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  LINALG::SparseMatrix& diagAinv = *diagAinv_;
-  LINALG::SparseMatrix& S = *S_;
+  using namespace CORE::LINALG::ANA;
+  CORE::LINALG::SparseMatrix& A00 = (*A_)(0, 0);
+  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
+  CORE::LINALG::SparseMatrix& S = *S_;
 
 
   //------------------------------------------------------------ L-solve
@@ -489,12 +491,13 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Simple(LINALG::ANA::V
  |                                                                      |
  | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(LINALG::ANA::Vector& vx,
-    LINALG::ANA::Vector& px, LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
+void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSimple(
+    CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px, CORE::LINALG::ANA::Vector& vb,
+    CORE::LINALG::ANA::Vector& pb) const
 {
-  LINALG::SparseMatrix& A10 = (*A_)(1, 0);
-  LINALG::SparseMatrix& A01 = (*A_)(0, 1);
-  LINALG::SparseMatrix& diagAinv = *diagAinv_;
+  CORE::LINALG::SparseMatrix& A10 = (*A_)(1, 0);
+  CORE::LINALG::SparseMatrix& A01 = (*A_)(0, 1);
+  CORE::LINALG::SparseMatrix& diagAinv = *diagAinv_;
 
   //------------------------------------------------------------ L-solve
   if (vdw_)

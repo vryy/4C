@@ -36,7 +36,7 @@ namespace FSI
   }
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Preconditioner;
 }
@@ -45,11 +45,11 @@ namespace FSI
 {
   /// Base class for all FSI block preconditioning matrices
   class BlockPreconditioningMatrix
-      : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+      : public CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
   {
    public:
     BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-        const LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
+        const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
         ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, int symmetric, double omega = 1.0,
         int iterations = 1, double somega = 1.0, int siterations = 0, double fomega = 1.0,
         int fiterations = 0, double aomega = 1.0, int aiterations = 0, FILE* err = NULL);
@@ -73,19 +73,19 @@ namespace FSI
     void MergeSolve(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
 
     /// Richardson iteration on one block using the given flags
-    static void LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
-        const LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
+    static void LocalBlockRichardson(Teuchos::RCP<CORE::LINALG::Preconditioner> solver,
+        const CORE::LINALG::SparseMatrix& innerOp, Teuchos::RCP<Epetra_Vector> x,
         Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx, int iterations,
         double omega, FILE* err, const Epetra_Comm& comm);
 
     /** \name Field solver objects */
     //@{
 
-    Teuchos::RCP<LINALG::Preconditioner> structuresolver_;
-    Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
-    Teuchos::RCP<LINALG::Preconditioner> alesolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> structuresolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> fluidsolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> alesolver_;
 
-    Teuchos::RCP<LINALG::Preconditioner> constalesolver_;
+    Teuchos::RCP<CORE::LINALG::Preconditioner> constalesolver_;
 
     //@}
 
@@ -114,7 +114,7 @@ namespace FSI
 
 #ifdef BLOCKMATRIXMERGE
     /// debug merged sparse
-    Teuchos::RCP<LINALG::SparseMatrix> sparse_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_;
 #endif
   };
 
@@ -129,7 +129,7 @@ namespace FSI
    public:
     /// construction
     OverlappingBlockMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,
-        const LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
+        const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::FSIStructureWrapper& structure,
         ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
         double omega = 1.0, int iterations = 1, double somega = 1.0, int siterations = 0,
         double fomega = 1.0, int fiterations = 0, double aomega = 1.0, int aiterations = 0,

@@ -202,7 +202,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
     case SCATRA::Action::micro_scale_solve:
     {
       // extract state variables at element nodes
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(
           *discretization.GetState("phinp"), my::ephinp_, la[0].lm_);
 
       const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(

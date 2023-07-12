@@ -96,7 +96,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   if (actmat->DiffusionAtEleCenter())
   {
     // get diffusivity at ele center
-    LINALG::Matrix<probdim, probdim> diff(true);
+    CORE::LINALG::Matrix<probdim, probdim> diff(true);
     actmat->Diffusivity(diff, 0);
     Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
@@ -114,8 +114,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 
     shapes->Evaluate(*ele);
 
-    std::vector<
-        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
+    std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
         shapefcns(shapes->nqpoints_);
 
     for (std::size_t q = 0; q < shapes->nqpoints_; ++q)
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     FIBER::NodalFiberHolder gpFiberHolder;
     DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
 
-    std::vector<LINALG::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
+    std::vector<CORE::LINALG::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
     DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
     {
       Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
-      LINALG::Matrix<probdim, probdim> diff(true);
+      CORE::LINALG::Matrix<probdim, probdim> diff(true);
       actmat->Diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
         for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   if (actmat->DiffusionAtEleCenter())
   {
     // get diffusivity at ele center
-    LINALG::Matrix<probdim, probdim> diff(true);
+    CORE::LINALG::Matrix<probdim, probdim> diff(true);
     actmat->Diffusivity(diff, 0);
     Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
@@ -201,11 +201,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
         intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
     const std::size_t numgp = intpoints.IP().nquad;
 
-    std::vector<
-        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
+    std::vector<CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
         shapefcns(numgp);
 
-    LINALG::Matrix<probdim, 1> gp_coord(true);
+    CORE::LINALG::Matrix<probdim, 1> gp_coord(true);
     for (std::size_t q = 0; q < numgp; ++q)
     {
       // gaussian points coordinates
@@ -218,7 +218,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     FIBER::NodalFiberHolder gpFiberHolder;
     DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
 
-    std::vector<LINALG::Matrix<probdim, 1>> fibergp(numgp);
+    std::vector<CORE::LINALG::Matrix<probdim, 1>> fibergp(numgp);
     DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
 
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     for (unsigned int q = 0; q < numgp; ++q)
     {
       Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
-      LINALG::Matrix<probdim, probdim> diff(true);
+      CORE::LINALG::Matrix<probdim, probdim> diff(true);
       actmat->Diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
         for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
       Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
 
   // coordinate of material gauss points
-  LINALG::Matrix<probdim, 1> mat_gp_coord(true);
+  CORE::LINALG::Matrix<probdim, 1> mat_gp_coord(true);
   // values of shape function at material gauss points
   Epetra_SerialDenseVector values_mat_gp(this->shapes_->ndofs_);
 
@@ -690,7 +690,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
 
   // coordinate of material gauss points
-  LINALG::Matrix<probdim, 1> mat_gp_coord(true);
+  CORE::LINALG::Matrix<probdim, 1> mat_gp_coord(true);
 
   for (int q = 0; q < intpoints_old.IP().nquad; ++q)
   {

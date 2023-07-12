@@ -358,8 +358,8 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SlaveIntElement().NumNode();
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
@@ -497,8 +497,8 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SlaveIntElement().NumNode();
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SlaveIntElement().EvaluateShape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
@@ -1700,10 +1700,10 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // initialize matrices de and me
-  LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
-  CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
+  CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
       (nnodes + mnodes) * ndof);
 
   // two-dim arrays of maps for linearization of me/de
@@ -1780,8 +1780,8 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
           for (int i = 0; i < 2; ++i) psxi[i] = sxi[i];
 
         // create vector for shape function evaluation
-        LINALG::SerialDenseVector sval(nnodes);
-        LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
+        CORE::LINALG::SerialDenseVector sval(nnodes);
+        CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
 
         // evaluate trace space shape functions at Gauss point
         if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
@@ -1796,11 +1796,11 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         // GP slave coordinate derivatives
         std::vector<CORE::GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
         // global GP coordinate derivative on integration element
-        CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
+        CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
 
         // compute global GP coordinate derivative
-        static LINALG::Matrix<3, 1> svalcell;
-        static LINALG::Matrix<3, 2> sderivcell;
+        static CORE::LINALG::Matrix<3, 1> svalcell;
+        static CORE::LINALG::Matrix<3, 2> sderivcell;
         currcell->EvaluateShape(eta, svalcell, sderivcell);
 
         for (int v = 0; v < 3; ++v)
@@ -1830,7 +1830,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         double fac = 0.;
         for (_CI p = derivjaccell.begin(); p != derivjaccell.end(); ++p)
         {
-          LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+          CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
           const double& ps = p->second;
           for (int j = 0; j < nnodes; ++j)
           {
@@ -1843,7 +1843,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int i = 0; i < 2; ++i)
           for (_CI p = dpsxigp[i].begin(); p != dpsxigp[i].end(); ++p)
           {
-            LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+            CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -1883,25 +1883,25 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
   // declare dual shape functions coefficient matrix and
   // inverse of matrix M_e
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
   // compute matrix A_e and inverse of matrix M_e for
   // linear interpolation of quadratic element
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
   {
     // declare and initialize to zero inverse of Matrix M_e
-    LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+    CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
     if (SlaveElement().Shape() == DRT::Element::tri6)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<3, 3> melin;
+      CORE::LINALG::Matrix<3, 3> melin;
       for (int j = 0; j < 3; ++j)
         for (int k = 0; k < 3; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse(melin);
+      CORE::LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 3; ++j)
@@ -1911,12 +1911,12 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
              SlaveElement().Shape() == DRT::Element::quad9)
     {
       // reduce me to non-zero nodes before inverting
-      LINALG::Matrix<4, 4> melin;
+      CORE::LINALG::Matrix<4, 4> melin;
       for (int j = 0; j < 4; ++j)
         for (int k = 0; k < 4; ++k) melin(j, k) = me(j, k);
 
       // invert bi-ortho matrix melin
-      LINALG::Inverse(melin);
+      CORE::LINALG::Inverse(melin);
 
       // re-inflate inverse of melin to full size
       for (int j = 0; j < 4; ++j)
@@ -1930,17 +1930,17 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
-    meinv = LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+    meinv = CORE::LINALG::InvertAndMultiplyByCholesky(me, de, ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-  typedef CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator
-      _CIM;
+  typedef CORE::GEN::pairedvector<int,
+      CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
-    LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+    CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
     Epetra_SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
@@ -1953,7 +1953,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   }
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 
   return;
 }

@@ -53,14 +53,15 @@ namespace XFEM
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    virtual void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
     virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling);
+        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
 
     //! Update (Perform after Each Timestep) -- nothing to do here
     virtual void Update(double scaling) { return; }

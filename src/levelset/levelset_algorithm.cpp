@@ -28,7 +28,7 @@
  | constructor                                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
@@ -132,7 +132,7 @@ void SCATRA::LevelSetAlgorithm::Setup()
     if (reinitaction_ == INPAR::SCATRA::reinitaction_sussman)
     {
       // vector for initial phi (solution of level-set equation) of reinitialization process
-      initialphireinit_ = LINALG::CreateVector(*dofrowmap, true);
+      initialphireinit_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
       // get pseudo-time step size
       dtau_ = levelsetparams_->sublist("REINITIALIZATION").get<double>("TIMESTEPREINIT");

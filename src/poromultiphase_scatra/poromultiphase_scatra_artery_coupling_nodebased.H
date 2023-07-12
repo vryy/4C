@@ -22,12 +22,12 @@ namespace FSI
 {
   class Monolithic;
 }  // namespace FSI
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 namespace POROMULTIPHASESCATRA
@@ -44,18 +44,18 @@ namespace POROMULTIPHASESCATRA
 
     //! Evaluate the 1D-3D coupling
     virtual void Evaluate(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
     {
       // nothing to do here, is done in SetupSystem for this type of coupling
     }
 
     //! set-up linear system of equations of coupled problem
-    void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-        Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art);
+    void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art);
 
     /*!
      * @brief setup global vector
@@ -108,9 +108,9 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Vector> rhs_art);
 
     //! set-up of global matrix of coupled problem
-    void SetupMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art);
+    void SetupMatrix(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art);
 
     /*!
      * @brief setup map extractor for artery mesh tying
@@ -123,7 +123,7 @@ namespace POROMULTIPHASESCATRA
      * @param[in]   dis discretization
      * @param[in]   coupleddofs vector with DOFs to couple
      */
-    void SetupMapExtractor(Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor,
+    void SetupMapExtractor(Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapextractor,
         Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& coupleddofs);
 
     /*!
@@ -139,20 +139,20 @@ namespace POROMULTIPHASESCATRA
     const std::string condname_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! extractors for continous field and artery field, maps(0) -> Coupled Dofs, maps(1) uncoupled
     //! Dofs
-    Teuchos::RCP<LINALG::MultiMapExtractor> contfieldex_;
-    Teuchos::RCP<LINALG::MultiMapExtractor> artex_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> contfieldex_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> artex_;
 
     //! coupling adapter
     Teuchos::RCP<CORE::ADAPTER::Coupling> artcontfieldcoup_;
 
     //! needed for matrix transforms
-    Teuchos::RCP<LINALG::MatrixRowColTransform> sbbtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> sbitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> sibtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sbbtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sbitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sibtransform_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

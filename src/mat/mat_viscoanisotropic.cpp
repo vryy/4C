@@ -179,14 +179,14 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 
   // unpack history
   ExtractfromPack(position, data, numhist);
-  histstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  histstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  artstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
   for (int var = 0; var < numhist; var++)
   {
     // current vectors have to be initialized
-    LINALG::Matrix<NUM_STRESS_3D, 1> tmp(true);
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1> tmp(true);
     histstresscurr_->push_back(tmp);
     artstresscurr_->push_back(tmp);
 
@@ -228,7 +228,7 @@ void MAT::ViscoAnisotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
   linedef->ExtractDoubleVector("AXI", axi);
   linedef->ExtractDoubleVector("CIR", cir);
 
-  LINALG::Matrix<3, 3> locsys;
+  CORE::LINALG::Matrix<3, 3> locsys;
   // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
   double radnorm = 0.;
   double axinorm = 0.;
@@ -271,11 +271,11 @@ void MAT::ViscoAnisotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
     dserror("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
-  histstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  const LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
+  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  histstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  artstresslast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
 
   // how many stress types are used?
   const int numst = params_->numstresstypes_;
@@ -317,7 +317,7 @@ void MAT::ViscoAnisotropic::Setup(const int numgp, const std::vector<double> thi
     std::vector<double> axi = thickvec;
     std::vector<double> cir = thickvec;
 
-    LINALG::Matrix<3, 3> locsys;
+    CORE::LINALG::Matrix<3, 3> locsys;
     // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
     double radnorm = 0.;
     double axinorm = 0.;
@@ -367,9 +367,9 @@ void MAT::ViscoAnisotropic::Update()
   artstresslast_ = artstresscurr_;
 
   // empty vectors of current data
-  const LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
-  histstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  const CORE::LINALG::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
+  histstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
+  artstresscurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>);
   const int histsize = histstresslast_->size();
   histstresscurr_->resize(histsize);
   artstresscurr_->resize(histsize);
@@ -384,14 +384,14 @@ void MAT::ViscoAnisotropic::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, LINALG::Matrix<3, 3>* defgrad)
+void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, CORE::LINALG::Matrix<3, 3>* defgrad)
 {
   // Loop over all gp and update fiber directions
   ca1_->at(gp).resize(3);
   ca2_->at(gp).resize(3);
-  LINALG::DENSEFUNCTIONS::multiply<double, 3, 3, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiply<double, 3, 3, 1>(
       ca1_->at(gp).data(), defgrad->A(), a1_->at(gp).data());
-  LINALG::DENSEFUNCTIONS::multiply<double, 3, 3, 1>(
+  CORE::LINALG::DENSEFUNCTIONS::multiply<double, 3, 3, 1>(
       ca2_->at(gp).data(), defgrad->A(), a2_->at(gp).data());
   // std::cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] <<
   // std::endl; std::cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<
@@ -401,9 +401,10 @@ void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, LINALG::Matrix<3, 3>* 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::ViscoAnisotropic::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   const double mue = params_->mue_;
   const double kappa = params_->kappa_;
@@ -413,9 +414,9 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
-  LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
   C.Scale(2.0);
   C += Id;
 
@@ -428,7 +429,7 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   const double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 
   // invert C
-  LINALG::Matrix<NUM_STRESS_3D, 1> Cinv(6);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Cinv(6);
 
   Cinv(0) = C(1) * C(2) - 0.25 * C(4) * C(4);
   Cinv(1) = C(0) * C(2) - 0.25 * C(5) * C(5);
@@ -447,7 +448,7 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // Isochoric (deviatoric) part via projection PP:Sbar, see Holzapfel p. 230
   // Siso = J^{-2/3}  Dev[Sbar] = J^{-2/3} [Sbar - 1/3 trace(Sbar C) Cinv
   // for this Wiso trace(C Sbar) = trace(mue I C) = mue I1
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_nh;  // isochoric elastic S from NeoHooke
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_nh;  // isochoric elastic S from NeoHooke
   const double third = 1. / 3.;
   const double p = kappa * (J - 1);
   for (int i = 0; i < 6; ++i)
@@ -462,7 +463,7 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // Cvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
   // Ciso = 0 + 2/3 J^{-2/3} Sbar:C Psl - 2/3 (Cinv x Siso + Siso x Cinv)
   // Cvol not affected by viscosity
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_nh(
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_nh(
       true);  // isochoric elastic C from NeoHooke
 
   AddtoCmatHolzapfelProduct((*cmat), Cinv, (-2 * J * p));  // -2 J p Cinv o Cinv
@@ -470,8 +471,9 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   const double fac = 2 * third * incJ * mue * I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
 
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  AddtoCmatHolzapfelProduct(Psl, Cinv, 1.0);               // first part Psl = Cinv o Cinv
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> Psl(
+      true);                                  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
+  AddtoCmatHolzapfelProduct(Psl, Cinv, 1.0);  // first part Psl = Cinv o Cinv
 
   for (int i = 0; i < 6; ++i)
   {
@@ -491,8 +493,8 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // W_aniso=(k1/(2.0*k2))*(exp(k2*pow((Ibar_{4,6} - 1.0),2)-1.0)); fiber SEF
 
   // structural tensors in voigt notation
-  LINALG::Matrix<NUM_STRESS_3D, 1> A1;
-  LINALG::Matrix<NUM_STRESS_3D, 1> A2;
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> A1;
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> A2;
   for (int i = 0; i < 3; ++i)
   {
     A1(i) = a1_->at(gp)[i] * a1_->at(gp)[i];
@@ -533,8 +535,8 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
 
   // PK2 fiber part in splitted formulation, see Holzapfel p. 271
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib1(A1);  // first compute Sfbar1 = dWf/dJ4 A1
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib2(A2);  // first compute Sfbar2 = dWf/dJ6 A2
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib1(A1);  // first compute Sfbar1 = dWf/dJ4 A1
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib2(A2);  // first compute Sfbar2 = dWf/dJ6 A2
   const double exp1 = exp(k2 * (J4 - 1.) * (J4 - 1.));
   const double exp2 = exp(k2 * (J6 - 1.) * (J6 - 1.));
   const double fib1 = 2. * (k1 * (J4 - 1.) * exp1);  // 2 dWf/dJ4
@@ -565,8 +567,8 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       fib2_tension * 4. *
       (k1 * exp2 + 2. * k1 * k2 * (J6 - 1.) * (J6 - 1.) * exp2);  // 4 d^2Wf/dJ6dJ6
 
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_fib1;  // isochoric elastic C from Fib1
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_fib2;  // isochoric elastic C from Fib2
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_fib1;  // isochoric elastic C from Fib1
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_fib2;  // isochoric elastic C from Fib2
 
   for (int i = 0; i < 6; ++i)
   {
@@ -604,12 +606,12 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // read history
   const int numst = params_->numstresstypes_;
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_nh_old(histstresslast_->at(numst * gp + 0));
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib1_old(histstresslast_->at(numst * gp + 1));
-  LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib2_old(histstresslast_->at(numst * gp + 2));
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_nh_old(artstresslast_->at(numst * gp + 0));
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib1_old(artstresslast_->at(numst * gp + 1));
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib2_old(artstresslast_->at(numst * gp + 2));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_nh_old(histstresslast_->at(numst * gp + 0));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib1_old(histstresslast_->at(numst * gp + 1));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> SisoEla_fib2_old(histstresslast_->at(numst * gp + 2));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_nh_old(artstresslast_->at(numst * gp + 0));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib1_old(artstresslast_->at(numst * gp + 1));
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib2_old(artstresslast_->at(numst * gp + 2));
 
   // visco parameters
   /*
@@ -661,11 +663,11 @@ void MAT::ViscoAnisotropic::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
 
   // evaluate current Q's
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_nh(SisoEla_nh);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_nh(SisoEla_nh);
   Q_nh.Scale(artscalar2_nh * beta_nh);
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib1(SisoEla_fib1);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib1(SisoEla_fib1);
   Q_fib1.Scale(beta_fib * artscalar2_fib);
-  LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib2(SisoEla_fib2);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> Q_fib2(SisoEla_fib2);
   Q_fib2.Scale(beta_fib * artscalar2_fib);
 
   // scale history

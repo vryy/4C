@@ -336,17 +336,18 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
+          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
           Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
           Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
-          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
-          double* d_cauchyndir_dc) override;
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
+          const double* concentration, double* d_cauchyndir_dc) override;
       //@}
 
      protected:
@@ -383,7 +384,7 @@ namespace DRT
       //! volume of the element
       double V_;
 
-      LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> nxyz_;
+      CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> nxyz_;
 
       /// prestressing switch & time
       INPAR::STR::PreStress pstype_;
@@ -405,8 +406,8 @@ namespace DRT
        * \param xdisp Displacement vectir for each node (3x4)
        * \param gp Gauss point
        */
-      void ComputeDeformationGradient(LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
-          const LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, int gp) const;
+      void ComputeDeformationGradient(CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
+          const CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, int gp) const;
 
 
       // internal calculation methods
@@ -421,14 +422,16 @@ namespace DRT
           std::vector<double>* acc,                    // current accelerations
           std::vector<double>& residual,               // current residual displ
           std::vector<double>& dispmat,                // current material displacements
-          LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* massmatrix,   // element mass matrix
-          LINALG::Matrix<NUMDOF_SOTET4, 1>* force,       // element internal force vector
-          LINALG::Matrix<NUMDOF_SOTET4, 1>* forceinert,  // element inertial force vector
-          LINALG::Matrix<NUMDOF_SOTET4, 1>* force_str,   // element structural force vector
-          LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
-          LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
-          LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>*
+              stiffmatrix,  // element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* massmatrix,  // element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, 1>* force,       // element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, 1>* forceinert,  // element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, 1>* force_str,   // element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D>*
+              eleplstrain,                   // plastic strains at GP
           Teuchos::ParameterList& params,    // algorithmic parameters e.g. time
           INPAR::STR::StressType iostress,   // stress output option
           INPAR::STR::StrainType iostrain,   // strain output option
@@ -437,7 +440,7 @@ namespace DRT
 
       //! lump mass matrix (bborn 07/08)
       void so_tet4_lumpmass(
-          LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass);  //!< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass);  //!< element mass matrix
 
       //! remodeling for fibers at the end of time step (st 01/10)
       void so_tet4_remodel(std::vector<int>& lm,    // location matrix
@@ -446,16 +449,18 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
       //! Evaluate Tet4 Derivs at 1 gausspoint to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_1gp_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+      so_tet4_1gp_derivs();
       //! Evaluate Tet4 Weights at 1 gausspoint to keep them static
       const std::vector<double> so_tet4_1gp_weights();
 
       //! Evaluate Tet4 Shapefcts at 4 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_4gp_shapefcts();
       //! Evaluate Tet4 Derivs at 4 gausspoints to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>> so_tet4_4gp_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET4 + 1, NUMNOD_SOTET4>>
+      so_tet4_4gp_derivs();
       //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
       const std::vector<double> so_tet4_4gp_weights();
 

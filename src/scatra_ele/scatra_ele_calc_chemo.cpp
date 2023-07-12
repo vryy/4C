@@ -73,8 +73,8 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double densnp, const double scatrares, const LINALG::Matrix<nen_, 1>& sgconv,
-    const LINALG::Matrix<nen_, 1>& diff)
+    const double densnp, const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+    const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
 
@@ -87,13 +87,13 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
     {
       // Standard Galerkin terms
 
-      LINALG::Matrix<nen_, nen_> gradgradmatrix(true);
-      LINALG::Matrix<nen_, 1> bigterm(true);
+      CORE::LINALG::Matrix<nen_, nen_> gradgradmatrix(true);
+      CORE::LINALG::Matrix<nen_, 1> bigterm(true);
 
       const double chemofac = timefacfac * densnp;
       const int partner = GetPartner(pair);  // Get attracting partner ID
 
-      const LINALG::Matrix<nsd_, 1> gradattractant =
+      const CORE::LINALG::Matrix<nsd_, 1> gradattractant =
           varmanager->GradPhi(partner);  // Gradient of attracting parnter
 
       bigterm.MultiplyTN(my::derxy_, gradattractant);
@@ -156,8 +156,8 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
 
       const int partner = GetPartner(pair);
 
-      LINALG::Matrix<nen_, 1> gradfunctattr(true);
-      LINALG::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
+      CORE::LINALG::Matrix<nen_, 1> gradfunctattr(true);
+      CORE::LINALG::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
 
       gradfunctattr.MultiplyTN(my::derxy_, attractant);
 
@@ -340,13 +340,13 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
       if (my::use2ndderiv_)
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-        LINALG::Matrix<nen_, 1> laplace(true);
+        CORE::LINALG::Matrix<nen_, 1> laplace(true);
         ;
         my::GetLaplacianStrongForm(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);
       }
 
-      LINALG::Matrix<1, 1> chemoderivattr(true);
+      CORE::LINALG::Matrix<1, 1> chemoderivattr(true);
       chemoderivattr.MultiplyTN(varmanager->GradPhi(partner), varmanager->GradPhi(k));
 
       chemo_phi += chemocoeff * (chemoderivattr(0, 0) + laplattractant * varmanager->Phinp(k));

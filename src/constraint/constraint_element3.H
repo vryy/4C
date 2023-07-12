@@ -224,7 +224,8 @@ namespace DRT
       /*!
       \brief Create matrix with material configuration for 3 dimensions and 4 nodes
       */
-      inline void MaterialConfiguration(LINALG::Matrix<4, 3>& x  ///< nodal coords in material frame
+      inline void MaterialConfiguration(
+          CORE::LINALG::Matrix<4, 3>& x  ///< nodal coords in material frame
       ) const
       {
         const int numnode = 4;
@@ -242,8 +243,9 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 3 dimensions and 4 nodes
       */
-      inline void SpatialConfiguration(LINALG::Matrix<4, 3>& x,  ///< nodal coords in spatial frame
-          const std::vector<double> disp                         ///< displacements
+      inline void SpatialConfiguration(
+          CORE::LINALG::Matrix<4, 3>& x,  ///< nodal coords in spatial frame
+          const std::vector<double> disp  ///< displacements
       ) const
       {
         const int numnode = 4;
@@ -261,8 +263,9 @@ namespace DRT
       /*!
       \brief Create matrix with spatial configuration for 3 dimensions and 2 nodes
       */
-      inline void SpatialConfiguration(LINALG::Matrix<2, 3>& x,  ///< nodal coords in spatial frame
-          const std::vector<double> disp                         ///< displacements
+      inline void SpatialConfiguration(
+          CORE::LINALG::Matrix<2, 3>& x,  ///< nodal coords in spatial frame
+          const std::vector<double> disp  ///< displacements
       ) const
       {
         const int numnode = 2;
@@ -278,25 +281,28 @@ namespace DRT
       }
 
       /// compute normal for 3D case using the first three nodes to specify a plane
-      void ComputeNormal(const LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          LINALG::Matrix<3, 1>& elenormal                 ///< resulting element normal
+      void ComputeNormal(const CORE::LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
+          CORE::LINALG::Matrix<3, 1>& elenormal                 ///< resulting element normal
       );
 
       /// Compute normal distance between plane and fourth node
-      double ComputeNormalDist(const LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          const LINALG::Matrix<3, 1>& elenormal                 ///< element normal
+      double ComputeNormalDist(
+          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
-      void ComputeFirstDeriv(const LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector,                ///< vector to store results into
-          const LINALG::Matrix<3, 1>& elenormal               ///< element normal
+      void ComputeFirstDeriv(
+          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          Epetra_SerialDenseVector& elevector,         ///< vector to store results into
+          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
-      void ComputeSecondDeriv(const LINALG::Matrix<4, 3>& xc,  ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elematrix,                 ///< vector to store results into
-          const LINALG::Matrix<3, 1>& elenormal                ///< element normal
+      void ComputeSecondDeriv(
+          const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
+          Epetra_SerialDenseMatrix& elematrix,         ///< vector to store results into
+          const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute difference of nodal displacement to masternode in given direction
@@ -313,7 +319,7 @@ namespace DRT
 
       /// Compute difference of spatial configuration to masternode in given direction
       double ComputeWeightedDistance(
-          const LINALG::Matrix<2, 3> x, const std::vector<double> direct);
+          const CORE::LINALG::Matrix<2, 3> x, const std::vector<double> direct);
     };  // class ConstraintElement3
 
 

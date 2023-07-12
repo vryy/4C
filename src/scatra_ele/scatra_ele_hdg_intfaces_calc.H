@@ -16,7 +16,7 @@
 
 #include "utils_singleton_owner.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -53,13 +53,13 @@ namespace DRT
 
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
-          DRT::ELEMENTS::ScaTraHDGIntFace* intface,         //!< internal face element
-          std::vector<int>& nds_master,                     //!< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                      //!< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,                   //!< parameter list
-          DRT::DiscretizationFaces& discretization,         //!< faces discretization
-          Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  //!< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector          //!< systemvector
+          DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
+          std::vector<int>& nds_master,              //!< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,               //!< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,            //!< parameter list
+          DRT::DiscretizationFaces& discretization,  //!< faces discretization
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  //!< systemmatrix
+          Teuchos::RCP<Epetra_Vector> systemvector                //!< systemvector
           ) = 0;
 
       //! Evaluate internal faces
@@ -122,13 +122,13 @@ namespace DRT
 
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
-          DRT::ELEMENTS::ScaTraHDGIntFace* intface,         //!< internal face element
-          std::vector<int>& nds_master,                     //!< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                      //!< nodal dofset w.r.t. slave element
-          Teuchos::ParameterList& params,                   //!< parameter list
-          DRT::DiscretizationFaces& discretization,         //!< faces discretization
-          Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  //!< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector          //!< systemvector
+          DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
+          std::vector<int>& nds_master,              //!< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,               //!< nodal dofset w.r.t. slave element
+          Teuchos::ParameterList& params,            //!< parameter list
+          DRT::DiscretizationFaces& discretization,  //!< faces discretization
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  //!< systemmatrix
+          Teuchos::RCP<Epetra_Vector> systemvector                //!< systemvector
       );
 
       //! Evaluate internal faces

@@ -19,12 +19,12 @@ namespace ADAPTER
   class FluidFluidFSI;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FSI
 {
@@ -133,13 +133,13 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> figtransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<LINALG::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fmgitransform_;
-    Teuchos::RCP<LINALG::MatrixRowColTransform> fmggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> fgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> figtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> aigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> fmiitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> fmggtransform_;
 
     //@}
 
@@ -151,28 +151,28 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! block \f$F_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggprev_;
 
     //! block \f$F_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgiprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgiprev_;
 
     //! block \f$F^G_{\Gamma\Gamma,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggprev_;
 
     //! block \f$F^G_{\Gamma I,i}\f$ of fluid matrix at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgiprev_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgiprev_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fggcur_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fgicur_;
 
     //! block \f$F^G_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmggcur_;
 
     //! block \f$F^G_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> fmgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> fmgicur_;
 
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX
     //! iteration \f$i+1\f$

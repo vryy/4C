@@ -47,7 +47,7 @@ namespace ADAPTER
     //@}
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor();
 
     /// evaluate and assemble residual and jacobian matrix
     void Evaluate(

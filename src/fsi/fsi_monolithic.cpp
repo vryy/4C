@@ -879,7 +879,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
@@ -1029,7 +1029,7 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(f));
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(f.Map(), true));
-    LINALG::ApplyDirichlettoSystem(rhs, zeros, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(rhs, zeros, *(dbcmaps_->CondMap()));
     f.Update(1.0, *rhs, 0.0);
   }
 
@@ -1094,7 +1094,8 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector& x, Epetra_Operat
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
   Evaluate(Teuchos::rcp(&x, false));
-  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
+  CORE::LINALG::BlockSparseMatrixBase& mat =
+      Teuchos::dyn_cast<CORE::LINALG::BlockSparseMatrixBase>(Jac);
   SetupSystemMatrix(mat);
   return true;
 }
@@ -1140,7 +1141,7 @@ void FSI::BlockMonolithic::PrepareTimeStepPreconditioner()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::CreateSystemMatrix(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1225,8 +1226,9 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
     }
     case INPAR::FSI::LinalgSolver:
     {
-      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          Extractor(), Extractor(), 81, false, true));
+      mat = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              Extractor(), Extractor(), 81, false, true));
       break;
     }
     default:
@@ -1280,7 +1282,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
       const Teuchos::ParameterList& fsisolverparams =
           DRT::Problem::Instance()->SolverParams(linsolvernumber);
 
-      auto solver = Teuchos::rcp(new LINALG::Solver(
+      auto solver = Teuchos::rcp(new CORE::LINALG::Solver(
           fsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       const auto azprectype =
@@ -1291,9 +1293,10 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
         case INPAR::SOLVER::PreconditionerType::multigrid_muelu_fsi:
         {
           solver->PutSolverParamsToSubParams("Inverse1", fsisolverparams);
-          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
-          // on correct map solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null
-          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
+          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // nullspace on correct map
+          // solver->Params().sublist("Inverse1").set<Teuchos::RCP<Epetra_Map>>("null space: map",
+          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(0,0).RowMap())));
           StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse1"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure",
@@ -1302,9 +1305,10 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
               solver->Params().sublist("Inverse1"));
 
           solver->PutSolverParamsToSubParams("Inverse2", fsisolverparams);
-          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
-          // on correct map solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null
-          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
+          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // nullspace on correct map
+          // solver->Params().sublist("Inverse2").set<Teuchos::RCP<Epetra_Map>>("null space: map",
+          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(1,1).RowMap())));
           FluidField()->Discretization()->ComputeNullSpaceIfNecessary(
               solver->Params().sublist("Inverse2"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid",
@@ -1313,10 +1317,11 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
               solver->Params().sublist("Inverse2"));
 
           solver->PutSolverParamsToSubParams("Inverse3", fsisolverparams);
-          // This might be an alternative to "LINALG::FixNullspace()", directly calculate nullspace
-          // on correct map solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null
-          // space: map", Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we
-          // have to cast the const on the ale discretization away!
+          // This might be an alternative to "CORE::LINALG::FixNullspace()", directly calculate
+          // nullspace on correct map
+          // solver->Params().sublist("Inverse3").set<Teuchos::RCP<Epetra_Map>>("null space: map",
+          // Teuchos::rcp(new Epetra_Map(SystemMatrix()->Matrix(2,2).RowMap()))); we have to cast
+          // the const on the ale discretization away!
           const_cast<DRT::Discretization&>(*(AleField()->Discretization()))
               .ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse3"));
           CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale",

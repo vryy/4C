@@ -44,7 +44,7 @@ namespace FLD
     //! ctor
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
         const Teuchos::RCP<DRT::Discretization>& xfluiddis,  ///< background fluid discretization
-        const Teuchos::RCP<LINALG::Solver>& solver,          ///< fluid solver
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         bool ale_xfluid = false,  ///< background (XFEM) fluid in ALE-formulation
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
@@ -54,8 +54,8 @@ namespace FLD
     XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& embedded_fluid,  ///< embedded fluid
         const Teuchos::RCP<DRT::Discretization>& xfluiddis,  ///< background fluid discretization
         const Teuchos::RCP<DRT::Discretization>&
-            soliddis,                                ///< structure discretization to couple with
-        const Teuchos::RCP<LINALG::Solver>& solver,  ///< fluid solver
+            soliddis,  ///< structure discretization to couple with
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,    ///< fluid solver
         const Teuchos::RCP<Teuchos::ParameterList>& params,  ///< xfluid params
         bool ale_xfluid = false,  ///< background (XFEM) fluid in ALE-formulation
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
@@ -109,7 +109,8 @@ namespace FLD
      * in the merged fluid-fluid-dof-map
      * \param (in) condelements map of conditioned elements
      */
-    void PrepareShapeDerivatives(const Teuchos::RCP<const LINALG::MultiMapExtractor> fsiextractor,
+    void PrepareShapeDerivatives(
+        const Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> fsiextractor,
         const Teuchos::RCP<std::set<int>> condelements);
 
     /*!
@@ -119,7 +120,7 @@ namespace FLD
      * \param (in) condmap map of fsi interface dof
      * \return coupled fluid-fluid block system matrix
      */
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix(
         Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap);
 
     Teuchos::RCP<const Epetra_Vector> RHS() { return xff_state_->xffluidresidual_; }
@@ -139,7 +140,7 @@ namespace FLD
     }
 
     /// get merged vel-pres-splitter
-    Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter()
+    Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter()
     {
       return xff_state_->xffluidvelpressplitter_;
     }
@@ -149,22 +150,23 @@ namespace FLD
     // get merged velocity dof-map
     Teuchos::RCP<const Epetra_Map> VelocityRowMap();
 
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ExtendedShapeDerivatives()
     {
       return extended_shapederivatives_;
     }
 
     /// get the combined fluid-fluid system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(xff_state_->xffluidsysmat_);
     }
 
     /// get the combined fluid-fluid system matrix in block form (embedded and background fluid
     /// blocks)
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(xff_state_->xffluidsysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
+          xff_state_->xffluidsysmat_);
     }
 
     /// get map extractor for background/embedded fluid
@@ -174,7 +176,7 @@ namespace FLD
     }
 
     //! get combined background and embedded fluid dirichlet map extractor
-    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       return xff_state_->xffluiddbcmaps_;
     }
@@ -250,7 +252,7 @@ namespace FLD
 
     /// shape derivatives matrix (linearization with respect to mesh motion),
     /// including background fluid dof (set to zero)
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> extended_shapederivatives_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> extended_shapederivatives_;
 
     /// flag, that indicates active shape derivatives
     bool active_shapederivatives_;

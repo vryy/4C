@@ -124,10 +124,10 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_) printerrfile_ = true;
 
-  blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
-  vel_ = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+  vel_ = CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
 
   // --------------------------------- TSI solver: create a linear solver
 
@@ -148,8 +148,8 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(*solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+        *solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   }  // end BlockMatrixMerge
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
@@ -297,8 +297,8 @@ void TSI::Monolithic::CreateLinearSolver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(
-      new LINALG::Solver(tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   const auto azprectype =
       Teuchos::getIntegralValue<INPAR::SOLVER::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -350,7 +350,8 @@ void TSI::Monolithic::CreateLinearSolver()
 
       if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
       {
-        // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
+        // Tell to the CORE::LINALG::SOLVER::SimplePreconditioner that we use the general
+        // implementation
         solver_->Params().set<bool>("GENERAL", true);
       }
 
@@ -462,10 +463,10 @@ void TSI::Monolithic::NewtonFull()
   iter_ = 0;
 
   // incremental solution vector with length of all TSI dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
   // compute residual forces #rhs_ and tangent #systemmatrix_
@@ -707,10 +708,10 @@ void TSI::Monolithic::PTC()
   iter_ = 0;
 
   // incremental solution vector with length of all TSI dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
   // compute residual forces #rhs_ and tangent #systemmatrix_
@@ -783,10 +784,10 @@ void TSI::Monolithic::PTC()
     // modify structural diagonal block k_ss
     {
       Teuchos::RCP<Epetra_Vector> tmp_SS =
-          LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(), false);
+          CORE::LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(), false);
       tmp_SS->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag_SS =
-          LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(), false);
+          CORE::LINALG::CreateVector(StructureField()->SystemMatrix()->RowMap(), false);
       StructureField()->SystemMatrix()->ExtractDiagonalCopy(*diag_SS);
 
       diag_SS->Update(1.0, *tmp_SS, 1.0);
@@ -796,10 +797,10 @@ void TSI::Monolithic::PTC()
     // modify thermal diagonal block k_tt
     {
       Teuchos::RCP<Epetra_Vector> tmp_tt =
-          LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
+          CORE::LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
       tmp_tt->PutScalar(dti);
       Teuchos::RCP<Epetra_Vector> diag_tt =
-          LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
+          CORE::LINALG::CreateVector(ThermoField()->SystemMatrix()->RowMap(), false);
       ThermoField()->SystemMatrix()->ExtractDiagonalCopy(*diag_tt);
       diag_tt->Update(1.0, *tmp_tt, 1.0);
       ThermoField()->SystemMatrix()->ReplaceDiagonalValues(*diag_tt);
@@ -1112,16 +1113,17 @@ void TSI::Monolithic::SetupSystem()
 
   /*----------------------------------------------------------------------*/
   // initialise TSI-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *Extractor(), *Extractor(), 81, false, true));
+  systemmatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *Extractor(), *Extractor(), 81, false, true));
 
   // create empty matrix
-  k_st_ = Teuchos::rcp(new LINALG::SparseMatrix(
+  k_st_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *(StructureField()->Discretization()->DofRowMap(0)), 81, false, true));
 
   // create empty matrix
-  k_ts_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(ThermoField()->Discretization()->DofRowMap(0)), 81, false, true));
+  k_ts_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(ThermoField()->Discretization()->DofRowMap(0)), 81, false, true));
 
 }  // SetupSystem()
 
@@ -1141,7 +1143,7 @@ void TSI::Monolithic::SetDofRowMaps()
   if (vecSpaces[0]->NumGlobalElements() == 0) dserror("No structure equation. Panic.");
   if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No temperature equation. Panic.");
 
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
 
   // full TSI-blockmap
   Extractor()->Setup(*fullmap, vecSpaces);
@@ -1168,10 +1170,10 @@ void TSI::Monolithic::SetupSystemMatrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
   // assign structure part to the TSI matrix
-  systemmatrix_->Assign(0, 0, LINALG::View, *k_ss);
+  systemmatrix_->Assign(0, 0, CORE::LINALG::View, *k_ss);
 
   /*----------------------------------------------------------------------*/
   // structural block k_st (3nxn)
@@ -1191,7 +1193,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   k_st_->UnComplete();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(0, 1, LINALG::View, *(k_st_));
+  systemmatrix_->Assign(0, 1, CORE::LINALG::View, *(k_st_));
 
   /*----------------------------------------------------------------------*/
   // pure thermo part k_tt (nxn)
@@ -1201,10 +1203,10 @@ void TSI::Monolithic::SetupSystemMatrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix systemmatrix_
-  Teuchos::RCP<LINALG::SparseMatrix> k_tt = ThermoField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_tt = ThermoField()->SystemMatrix();
 
   // assign thermo part to the TSI matrix
-  systemmatrix_->Assign(1, 1, LINALG::View, *(k_tt));
+  systemmatrix_->Assign(1, 1, CORE::LINALG::View, *(k_tt));
 
   /*----------------------------------------------------------------------*/
   // thermo part k_ts (nx3n)
@@ -1223,7 +1225,7 @@ void TSI::Monolithic::SetupSystemMatrix()
 
   if (!matchinggrid_) k_ts_ = volcoupl_->ApplyMatrixMapping21(k_ts_);
 
-  systemmatrix_->Assign(1, 0, LINALG::View, *k_ts_);
+  systemmatrix_->Assign(1, 0, CORE::LINALG::View, *k_ts_);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
@@ -1322,7 +1324,7 @@ void TSI::Monolithic::LinearSolve()
   else  // (merge_tsi_blockmatrix_ == true)
   {
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // standard solver call
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -1903,7 +1905,7 @@ void TSI::Monolithic::PrintNewtonConv()
  | evaluate mechanical-thermal system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyStrCouplMatrix(
-    Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -1993,7 +1995,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
  | evaluate thermal-mechanical system matrix at state        dano 03/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyThrCouplMatrix(
-    Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -2111,7 +2113,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
  | evaluate thermal-mechanical system matrix at state        dano 12/12 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
-    Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
 )
 {
 #ifdef TSI_DEBUG
@@ -2208,7 +2210,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> tcondmap = ThermoField()->GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(scondmap, tcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(scondmap, tcondmap, false);
   return condmap;
 
 }  // CombinedDBCMap()
@@ -2241,7 +2243,7 @@ void TSI::Monolithic::RecoverStructThermLM()
  | scale system, i.e. apply infnorm scaling to linear        dano 02/13 |
  | block system before solving system                                   |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void TSI::Monolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(tsidynmono_, "INFNORMSCALING");
@@ -2286,7 +2288,7 @@ void TSI::Monolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vec
  | unscale solution after solving the linear system          dano 02/13 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::UnscaleSolution(
-    LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(tsidynmono_, "INFNORMSCALING");
 
@@ -2641,7 +2643,7 @@ void TSI::Monolithic::CalculateNeckingTSIResults()
                                                   // all DOFs at top surf with DBC
           false));
   // copy the structural reaction force to tension
-  LINALG::Export(*(StructureField()->Freact()), *tension);
+  CORE::LINALG::Export(*(StructureField()->Freact()), *tension);
   double top_force_local = 0.0;  // local force
   for (int i = 0; i < tension->MyLength(); i++) top_force_local -= (*tension)[i];
 
@@ -2919,15 +2921,15 @@ void TSI::Monolithic::FixTimeIntegrationParams()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyDBC()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> k_ss =
-      Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0, 0).EpetraMatrix(),
-          LINALG::Copy, true, false, LINALG::SparseMatrix::CRS_MATRIX));
-  Teuchos::RCP<LINALG::SparseMatrix> k_st =
-      Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
-  Teuchos::RCP<LINALG::SparseMatrix> k_ts =
-      Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1, 0)));
-  Teuchos::RCP<LINALG::SparseMatrix> k_tt =
-      Teuchos::rcp(new LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 0).EpetraMatrix(),
+          CORE::LINALG::Copy, true, false, CORE::LINALG::SparseMatrix::CRS_MATRIX));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_st =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ts =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 0)));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_tt =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
   if (locsysman_ != Teuchos::null)
   {
     {
@@ -2953,10 +2955,10 @@ void TSI::Monolithic::ApplyDBC()
 
 
   systemmatrix_->UnComplete();
-  systemmatrix_->Assign(0, 0, LINALG::View, *k_ss);
-  systemmatrix_->Assign(0, 1, LINALG::View, *k_st);
-  systemmatrix_->Assign(1, 0, LINALG::View, *k_ts);
-  systemmatrix_->Assign(1, 1, LINALG::View, *k_tt);
+  systemmatrix_->Assign(0, 0, CORE::LINALG::View, *k_ss);
+  systemmatrix_->Assign(0, 1, CORE::LINALG::View, *k_st);
+  systemmatrix_->Assign(1, 0, CORE::LINALG::View, *k_ts);
+  systemmatrix_->Assign(1, 1, CORE::LINALG::View, *k_tt);
   systemmatrix_->Complete();
 
 
@@ -2965,20 +2967,22 @@ void TSI::Monolithic::ApplyDBC()
     Teuchos::RCP<Epetra_Vector> s_rhs, t_rhs;
     ExtractFieldVectors(rhs_, s_rhs, t_rhs);
     locsysman_->RotateGlobalToLocal(s_rhs);
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         s_rhs, zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
     locsysman_->RotateLocalToGlobal(s_rhs);
 
-    LINALG::ApplyDirichlettoSystem(t_rhs, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichlettoSystem(
+        t_rhs, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
 
     Extractor()->InsertVector(*s_rhs, 0, *rhs_);
     Extractor()->InsertVector(*t_rhs, 1, *rhs_);
   }
   else
   {
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         rhs_, zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
-    LINALG::ApplyDirichlettoSystem(rhs_, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichlettoSystem(
+        rhs_, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
   }
 }
 

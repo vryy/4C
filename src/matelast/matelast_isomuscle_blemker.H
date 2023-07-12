@@ -97,16 +97,16 @@ namespace MAT
        * Computation of the 2nd PK-stress and elasticity tensor with respect to the modified strains
        */
       void AddStressAnisoModified(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-                                            ///< in strain-like-voigt-Notation
-          const LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
-                                            ///< in stress-like-voigt-notation
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
-          double I3,                        ///< third principal invariant
-          int gp,                           ///< Gauss point
-          int eleGID,                       ///< element GID
-          Teuchos::ParameterList& params    ///< Container for additional information
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+                                                  ///< in strain-like-voigt-Notation
+          const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
+                                                  ///< in stress-like-voigt-notation
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          double I3,                              ///< third principal invariant
+          int gp,                                 ///< Gauss point
+          int eleGID,                             ///< element GID
+          Teuchos::ParameterList& params          ///< Container for additional information
           ) override;
 
       /// Specify the formulation as anisomod

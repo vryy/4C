@@ -13,7 +13,6 @@ set(_structure_dependencies
     inpar
     io
     lib
-    linalg
     mat
     mor
     mortar

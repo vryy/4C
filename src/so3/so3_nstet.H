@@ -69,8 +69,8 @@ namespace DRT
       int Initialize(DRT::Discretization& dis) override;
 
       void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-          Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+          Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
           Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
@@ -202,23 +202,25 @@ namespace DRT
           std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
           const INPAR::STR::StrainType iostrain);
 
-      void SelectMaterial(const Teuchos::RCP<MAT::Material>& mat, LINALG::Matrix<6, 1>& stress,
-          LINALG::Matrix<6, 6>& cmat, double& density, LINALG::Matrix<6, 1>& glstrain,
-          LINALG::Matrix<3, 3>& defgrd, int gp, const int eleGID);
+      void SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
+          CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
+          CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd, int gp,
+          const int eleGID);
 
       // compute deviatoric stresses and tangent
-      static void DevStressTangent(LINALG::Matrix<6, 1>& Sdev, LINALG::Matrix<6, 6>& CCdev,
-          LINALG::Matrix<6, 6>& CC, const LINALG::Matrix<6, 1>& S, const LINALG::Matrix<3, 3>& C);
+      static void DevStressTangent(CORE::LINALG::Matrix<6, 1>& Sdev,
+          CORE::LINALG::Matrix<6, 6>& CCdev, CORE::LINALG::Matrix<6, 6>& CC,
+          const CORE::LINALG::Matrix<6, 1>& S, const CORE::LINALG::Matrix<3, 3>& C);
 
       void StrainOutput(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
-          LINALG::Matrix<3, 3>& F, const double& detF, const double volweight,
+          CORE::LINALG::Matrix<3, 3>& F, const double& detF, const double volweight,
           const double devweight);
 
       void StrainOutput(const INPAR::STR::StrainType iostrain, std::vector<double>& nodalstrain,
-          LINALG::Matrix<3, 3>& F, LINALG::Matrix<6, 1>& glstrain, const double weight);
+          CORE::LINALG::Matrix<3, 3>& F, CORE::LINALG::Matrix<6, 1>& glstrain, const double weight);
 
       void StressOutput(const INPAR::STR::StressType iostress, std::vector<double>& nodalstress,
-          LINALG::Matrix<6, 1>& stress, LINALG::Matrix<3, 3>& F, const double& detF);
+          CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<3, 3>& F, const double& detF);
     };
 
     /*!
@@ -454,10 +456,10 @@ namespace DRT
       double V_;
 
       //! derivs of shape functions wrt to material coords
-      LINALG::Matrix<4, 3> nxyz_;
+      CORE::LINALG::Matrix<4, 3> nxyz_;
 
       //! element's def-gradient
-      LINALG::Matrix<3, 3> F_;
+      CORE::LINALG::Matrix<3, 3> F_;
 
       // internal calculation methods
 
@@ -465,14 +467,15 @@ namespace DRT
       inline double Vol() { return V_; }
 
      public:
-      inline LINALG::Matrix<4, 3>& Nxyz() { return nxyz_; }
+      inline CORE::LINALG::Matrix<4, 3>& Nxyz() { return nxyz_; }
 
      protected:
-      inline LINALG::Matrix<3, 3>& F() { return F_; }
+      inline CORE::LINALG::Matrix<3, 3>& F() { return F_; }
 
-      static LINALG::Matrix<3, 3> BuildF(LINALG::Matrix<4, 3>& xdisp, LINALG::Matrix<4, 3>& nxyz)
+      static CORE::LINALG::Matrix<3, 3> BuildF(
+          CORE::LINALG::Matrix<4, 3>& xdisp, CORE::LINALG::Matrix<4, 3>& nxyz)
       {
-        LINALG::Matrix<3, 3> F(false);
+        CORE::LINALG::Matrix<3, 3> F(false);
         F.MultiplyTN(xdisp, nxyz);
         F(0, 0) += 1.0;
         F(1, 1) += 1.0;
@@ -481,10 +484,10 @@ namespace DRT
       }
 
       template <typename T>
-      static LINALG::Matrix<3, 3, T> BuildF(
-          LINALG::Matrix<4, 3, T>& xdisp, LINALG::Matrix<4, 3>& nxyz)
+      static CORE::LINALG::Matrix<3, 3, T> BuildF(
+          CORE::LINALG::Matrix<4, 3, T>& xdisp, CORE::LINALG::Matrix<4, 3>& nxyz)
       {
-        LINALG::Matrix<3, 3, T> F(true);
+        CORE::LINALG::Matrix<3, 3, T> F(true);
         for (int i = 0; i < 3; ++i)
         {
           for (int j = 0; j < 3; ++j)
@@ -502,8 +505,8 @@ namespace DRT
       virtual void InitElement();
 
       //! Shape functions
-      inline void ShapeFunction(LINALG::Matrix<4, 1>& funct, const double& e1, const double& e2,
-          const double& e3, const double& e4)
+      inline void ShapeFunction(CORE::LINALG::Matrix<4, 1>& funct, const double& e1,
+          const double& e2, const double& e3, const double& e4)
       {
         // shape function is N_i = xsi_i
         funct(0) = e1;
@@ -514,7 +517,7 @@ namespace DRT
       }
 
       //! Shape function derivatives
-      inline void ShapeFunctionDerivatives(LINALG::Matrix<4, 4>& deriv)
+      inline void ShapeFunctionDerivatives(CORE::LINALG::Matrix<4, 4>& deriv)
       {
         // Ni,j = 1.0 for i==j, otherwise 0.0
         deriv.Clear();
@@ -527,22 +530,24 @@ namespace DRT
 
       //! standards displ. tet4 calc routine
       virtual void nstetnlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
-          std::vector<double>& residual, LINALG::Matrix<12, 12>* stiffmatrix,
-          LINALG::Matrix<12, 12>* massmatrix, LINALG::Matrix<12, 1>* force,
-          LINALG::Matrix<1, 6>* elestress, LINALG::Matrix<1, 6>* elestrain,
+          std::vector<double>& residual, CORE::LINALG::Matrix<12, 12>* stiffmatrix,
+          CORE::LINALG::Matrix<12, 12>* massmatrix, CORE::LINALG::Matrix<12, 1>* force,
+          CORE::LINALG::Matrix<1, 6>* elestress, CORE::LINALG::Matrix<1, 6>* elestrain,
           const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain);
 
 
       //! lump mass matrix (bborn 07/08)
-      void nstetlumpmass(LINALG::Matrix<12, 12>* emass);
+      void nstetlumpmass(CORE::LINALG::Matrix<12, 12>* emass);
 
 
-      void so_nstet_expol(LINALG::Matrix<1, 6>& stresses, LINALG::Matrix<4, 6>& nodalstresses);
+      void so_nstet_expol(
+          CORE::LINALG::Matrix<1, 6>& stresses, CORE::LINALG::Matrix<4, 6>& nodalstresses);
 
 
 
-      void SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, double& density,
-          LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<3, 3>& defgrd, int gp);
+      void SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat,
+          double& density, CORE::LINALG::Matrix<6, 1>& glstrain, CORE::LINALG::Matrix<3, 3>& defgrd,
+          int gp);
 
 
       //! @name Multi-scale related stuff

@@ -8,7 +8,6 @@ set(_two_phase_flow_dependencies
     inpar
     levelset
     lib
-    linalg
     scatra
     scatra_ele
     )

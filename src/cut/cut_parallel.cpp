@@ -563,11 +563,11 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
       while (posinData < dataRecv.size())
       {
         // unpack volumecell
-        int set_index = -1;                                   // set index for Volumecell
-        int inside_cell = false;                              // inside or outside cell
-        std::vector<LINALG::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
-        int peid = -1;                                        // parent element id for volume cell
-        std::map<int, int> node_dofsetnumber_map;             // map <nid, current dofset number>
+        int set_index = -1;                                         // set index for Volumecell
+        int inside_cell = false;                                    // inside or outside cell
+        std::vector<CORE::LINALG::Matrix<3, 1>> cut_points_coords;  // coordinates of cut points
+        int peid = -1;                             // parent element id for volume cell
+        std::map<int, int> node_dofsetnumber_map;  // map <nid, current dofset number>
 
         // unpack volumecell data
         ::DRT::ParObject::ExtractfromPack(posinData, dataRecv, set_index);
@@ -703,7 +703,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
                 CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "MyVC");
                 CORE::GEO::CUT::OUTPUT::GmshVolumecellDump(file, my_vc);
                 CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPointsVC", true);
-                for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it =
+                for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
                          ((*vc_data)->cut_points_coords_).begin();
                      rec_it != ((*vc_data)->cut_points_coords_).end(); rec_it++)
                 {
@@ -901,7 +901,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
       {
         bool point_found = true;
 
-        for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it =
+        for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
              rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
@@ -933,7 +933,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
       if (vc_found)
       {
         // brute force search for identical point coords
-        for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it =
+        for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
                  (vc_data.cut_points_coords_).begin();
              rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
         {
@@ -988,8 +988,9 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
   //  {
   //    //identify by center
   //    std::cout << "==| Do center idendification |== " << std::endl;
-  //    LINALG::Matrix<3,1> vc_center(true);
-  //    for(std::vector<LINALG::Matrix<3,1> >::iterator rec_it=(vc_data.cut_points_coords_).begin();
+  //    CORE::LINALG::Matrix<3,1> vc_center(true);
+  //    for(std::vector<CORE::LINALG::Matrix<3,1> >::iterator
+  //    rec_it=(vc_data.cut_points_coords_).begin();
   //       rec_it != (vc_data.cut_points_coords_).end();
   //       rec_it++)
   //    {
@@ -1013,11 +1014,11 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
   //       std::copy(facetpoints.begin(), facetpoints.end(), std::inserter(my_cut_points,
   //       my_cut_points.begin()));
   //     }
-  //     LINALG::Matrix<3,1> my_center(true);
+  //     CORE::LINALG::Matrix<3,1> my_center(true);
   //     for(plain_point_set::iterator my_it=my_cut_points.begin(); my_it!=my_cut_points.end();
   //     my_it++)
   //     {
-  //       LINALG::Matrix<3,1> coord((*my_it)->X(),true);
+  //       CORE::LINALG::Matrix<3,1> coord((*my_it)->X(),true);
   //       my_center.Update(1.0,coord,1.0);
   //     }
   //     my_center.Scale(1.0/(my_cut_points.size()));
@@ -1043,7 +1044,8 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
     std::ofstream file(str.str());
 
     CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "OtherPoints");
-    for (std::vector<LINALG::Matrix<3, 1>>::iterator rec_it = (vc_data.cut_points_coords_).begin();
+    for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator rec_it =
+             (vc_data.cut_points_coords_).begin();
          rec_it != (vc_data.cut_points_coords_).end(); rec_it++)
     {
       CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, (*rec_it), 0);
@@ -1066,7 +1068,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
       for (plain_point_set::iterator my_it = my_cut_points.begin(); my_it != my_cut_points.end();
            my_it++)
       {
-        LINALG::Matrix<3, 1> coord((*my_it)->X(), true);
+        CORE::LINALG::Matrix<3, 1> coord((*my_it)->X(), true);
         CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, coord, 0);
       }
     }
@@ -1139,12 +1141,12 @@ void CORE::GEO::CUT::Parallel::ReplaceNdsVectors(ElementHandle* e,
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Parallel::packPoints(
-    ::DRT::PackBuffer& dataSend, std::vector<LINALG::Matrix<3, 1>>& points_coords) const
+    ::DRT::PackBuffer& dataSend, std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const
 {
   // pack number of points for current volumecell
   ::DRT::ParObject::AddtoPack(dataSend, (int)points_coords.size());
 
-  for (std::vector<LINALG::Matrix<3, 1>>::iterator p = points_coords.begin();
+  for (std::vector<CORE::LINALG::Matrix<3, 1>>::iterator p = points_coords.begin();
        p != points_coords.end(); p++)
   {
     // pack xyz-coordinates
@@ -1160,7 +1162,7 @@ void CORE::GEO::CUT::Parallel::packPoints(
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Parallel::unpackPoints(std::vector<char>::size_type& posinData,
-    std::vector<char>& dataRecv, std::vector<LINALG::Matrix<3, 1>>& points_coords) const
+    std::vector<char>& dataRecv, std::vector<CORE::LINALG::Matrix<3, 1>>& points_coords) const
 {
   const int nsd = 3;  // dimension
 
@@ -1170,7 +1172,7 @@ void CORE::GEO::CUT::Parallel::unpackPoints(std::vector<char>::size_type& posinD
   ::DRT::ParObject::ExtractfromPack(posinData, dataRecv, num_points);
 
 
-  LINALG::Matrix<nsd, 1> coords(true);
+  CORE::LINALG::Matrix<nsd, 1> coords(true);
 
   for (int i = 0; i < num_points; i++)
   {

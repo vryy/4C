@@ -219,20 +219,23 @@ namespace XFEM
 
     virtual bool HasMovingInterface() = 0;
 
-    virtual void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond)
     {
       dserror("EvaluateCouplingConditions should be implemented by derived class");
     };
 
-    virtual void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<6, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    virtual void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond)
     {
       dserror("EvaluateCouplingConditions should be implemented by derived class");
     };
 
-    virtual void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    virtual void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond)
     {
       dserror("EvaluateCouplingConditionsOldState should be implemented by derived class");
     };
@@ -245,28 +248,28 @@ namespace XFEM
 
     /// get the sliplength for the specific coupling condition
     virtual void GetSlipCoefficient(
-        double& slipcoeff, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
     {
       slipcoeff = 0.0;
     }
 
     std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>& GetConfigurationmap(
-        double& kappa_m,                //< fluid sided weighting
-        double& visc_m,                 //< master sided dynamic viscosity
-        double& visc_s,                 //< slave sided dynamic viscosity
-        double& density_m,              //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& kappa_m,                      //< fluid sided weighting
+        double& visc_m,                       //< master sided dynamic viscosity
+        double& visc_s,                       //< slave sided dynamic viscosity
+        double& density_m,                    //< master sided density
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     )
     {
       UpdateConfigurationMap_GP(kappa_m, visc_m, visc_s, density_m, visc_stab_tang, full_stab, x,
@@ -475,32 +478,32 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     ){};
 
     virtual void InitStateVectors(){};
 
     virtual void PerpareCutterOutput(){};
 
-    void EvaluateDirichletFunction(LINALG::Matrix<3, 1>& ivel, const LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond, double time);
+    void EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
+        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
 
-    void EvaluateNeumannFunction(LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond, double time);
+    void EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
+        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
 
-    void EvaluateNeumannFunction(LINALG::Matrix<6, 1>& itraction, const LINALG::Matrix<3, 1>& x,
-        const DRT::Condition* cond, double time);
+    void EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
+        const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time);
 
     void EvaluateFunction(std::vector<double>& final_values, const double* x,
         const DRT::Condition* cond, const double time);

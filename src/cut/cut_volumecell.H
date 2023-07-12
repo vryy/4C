@@ -55,7 +55,7 @@ namespace CORE::GEO
       */
       bool Contains(Point* p);
 
-      bool Contains(LINALG::Matrix<3, 1>& x);
+      bool Contains(CORE::LINALG::Matrix<3, 1>& x);
 
       bool IsEqual(const plain_facet_set& vcell) const;
 
@@ -231,7 +231,7 @@ namespace CORE::GEO
       \brief Create boundary cell which contains more than 4 corner points
       */
       void NewArbitraryCell(Mesh& mesh, Facet* f, const std::vector<Point*>& x,
-          const CORE::DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal);
+          const CORE::DRT::UTILS::GaussIntegration& gp, const CORE::LINALG::Matrix<3, 1>& normal);
 
       /*!
       \brief Return the volume of the cell
@@ -311,7 +311,7 @@ namespace CORE::GEO
       \brief Chcek whether this Global coordinate point is inside, outside or on boundary of this
       this volumecell. The output std::string will be either "outside", "inside" or "onBoundary"
        */
-      std::string IsThisPointInside(LINALG::Matrix<3, 1>& x);
+      std::string IsThisPointInside(CORE::LINALG::Matrix<3, 1>& x);
 
       /*!
       \brief Integrate specific predifined functions over the volumecell by integrating over each of

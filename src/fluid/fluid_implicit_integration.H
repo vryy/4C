@@ -60,7 +60,7 @@ namespace IO
 {
   class DiscretizationWriter;
 }
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -68,7 +68,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace ADAPTER
 {
@@ -112,7 +112,7 @@ namespace FLD
 
     */
     FluidImplicitTimeInt(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
@@ -385,7 +385,7 @@ namespace FLD
   \brief solve linearised fluid
 
   */
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; };
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; };
 
     /*!
     \brief preparatives for solver
@@ -560,7 +560,7 @@ namespace FLD
     \brief get access to map extractor for velocity and pressure
 
     */
-    virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()
+    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
     {
       return velpressplitter_;
     };
@@ -667,7 +667,7 @@ namespace FLD
     }
 
     /// access to Dirichlet maps
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() { return dbcmaps_; }
 
     /// Expand the Dirichlet DOF set
     ///
@@ -733,7 +733,7 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> CreateDispnp()
     {
       const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
-      dispnp_ = LINALG::CreateVector(*aledofrowmap, true);
+      dispnp_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
       return dispnp_;
     }
 
@@ -744,27 +744,27 @@ namespace FLD
     virtual Teuchos::RCP<Epetra_Vector> CreateDispn()
     {
       const Epetra_Map* aledofrowmap = discret_->DofRowMap(ndsale_);
-      dispn_ = LINALG::CreateVector(*aledofrowmap, true);
+      dispn_ = CORE::LINALG::CreateVector(*aledofrowmap, true);
       return dispn_;
     }
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     }
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge();
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_)->Merge();
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_);
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
     {
       return shapederivatives_;
     }
 
-    virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; };
+    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; };
     virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
     //  virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
@@ -871,21 +871,23 @@ namespace FLD
 
     /// switch fluid field to block matrix
     virtual void UseBlockMatrix(
-        Teuchos::RCP<std::set<int>> condelements,     ///< conditioned elements of fluid
-        const LINALG::MultiMapExtractor& domainmaps,  ///< domain maps for split of fluid matrix
-        const LINALG::MultiMapExtractor& rangemaps,   ///< range maps for split of fluid matrix
-        bool splitmatrix = true                       ///< flag for split of matrices
+        Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
+        const CORE::LINALG::MultiMapExtractor&
+            domainmaps,  ///< domain maps for split of fluid matrix
+        const CORE::LINALG::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
+        bool splitmatrix = true                            ///< flag for split of matrices
     );
 
     /// switch fluid field to block matrix (choose maps for shape derivatives separately)
     virtual void UseBlockMatrix(
-        Teuchos::RCP<std::set<int>> condelements,        ///< conditioned elements of fluid
-        const LINALG::MultiMapExtractor& domainmaps,     ///< domain maps for split of fluid matrix
-        const LINALG::MultiMapExtractor& rangemaps,      ///< range maps for split of fluid matrix
-        Teuchos::RCP<std::set<int>> condelements_shape,  ///< conditioned elements
-        const LINALG::MultiMapExtractor&
+        Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
+        const CORE::LINALG::MultiMapExtractor&
+            domainmaps,  ///< domain maps for split of fluid matrix
+        const CORE::LINALG::MultiMapExtractor& rangemaps,  ///< range maps for split of fluid matrix
+        Teuchos::RCP<std::set<int>> condelements_shape,    ///< conditioned elements
+        const CORE::LINALG::MultiMapExtractor&
             domainmaps_shape,  ///< domain maps for split of shape deriv. matrix
-        const LINALG::MultiMapExtractor&
+        const CORE::LINALG::MultiMapExtractor&
             rangemaps_shape,     ///< domain maps for split of shape deriv. matrix
         bool splitmatrix = true  ///< flag for split of matrices
     );
@@ -976,7 +978,7 @@ namespace FLD
      * \param[in] matrix (size fluid_dof x fluid_dof) linear matrix containing entries that need
      * to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const CORE::LINALG::SparseOperator> matrix);
 
     void ResetExternalForces();
 
@@ -1201,13 +1203,13 @@ namespace FLD
     double dtsolve_;
 
     /// (standard) system matrix
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     /// linearization with respect to mesh motion
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> shapederivatives_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
@@ -1283,7 +1285,7 @@ namespace FLD
     //@}
 
     /// only necessary for AVM3: scale-separation matrix
-    Teuchos::RCP<LINALG::SparseMatrix> Sep_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Sep_;
 
     /// only necessary for AVM3: fine-scale solution vector
     Teuchos::RCP<Epetra_Vector> fsvelaf_;
@@ -1333,7 +1335,7 @@ namespace FLD
     //!
     //! velocities  = OtherVector
     //! pressure    = CondVector
-    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_;
 
     /// row dof map extractor
     const UTILS::MapExtractor* surfacesplitter_;
@@ -1346,9 +1348,9 @@ namespace FLD
 
     bool inrelaxation_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> dirichletlines_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dirichletlines_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> meshmatrix_;
 
     /// coupling of fluid-fluid at an internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;
@@ -1414,7 +1416,7 @@ namespace FLD
     virtual void RecomputeMeanCsgsB();
 
     /// prepares and evalutes egde-based internal face integrals
-    void EvaluateFluidEdgeBased(Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    void EvaluateFluidEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
@@ -1431,7 +1433,7 @@ namespace FLD
     virtual void EvaluateMassMatrix();
 
     /// mass matrix (not involved in standard Evaluate() since it is invluded in #sysmat_)
-    Teuchos::RCP<LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
 
     /// output stream for energy-file
     Teuchos::RCP<std::ofstream> logenergy_;
@@ -1440,7 +1442,7 @@ namespace FLD
      * arise from meshtying methods or in general weak Dirichlet conditions
      *
      */
-    Teuchos::RCP<const LINALG::SparseOperator> couplingcontributions_;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> couplingcontributions_;
     double meshtyingnorm_;
 
   };  // class FluidImplicitTimeInt

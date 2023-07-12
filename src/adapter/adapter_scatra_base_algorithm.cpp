@@ -99,7 +99,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // TODO: TAW use of solverparams???
   // change input parameter to solver number instead of parameter list?
   // -> no default paramter possible any more
-  auto solver = Teuchos::rcp(new LINALG::Solver(
+  auto solver = Teuchos::rcp(new CORE::LINALG::Solver(
       solverparams, discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // -------------------------------------------------------------------

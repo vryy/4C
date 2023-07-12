@@ -240,10 +240,10 @@ void MAT::Membrane_ActiveStrain::Setup(int numgp, DRT::INPUT::LineDefinition* li
  | active strain and hyperelastic stress response plus elasticity tensor|
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-    const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress, LINALG::Matrix<3, 3>& cmat,
-    const int gp, const int eleGID)
+void MAT::Membrane_ActiveStrain::EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+    const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
+    CORE::LINALG::Matrix<3, 3>& cmat, const int gp, const int eleGID)
 {
   // blank resulting quantities
   stress.Clear();
@@ -266,11 +266,11 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& de
   voltage_->at(gp) = gpvoltage;
 
   // structural tensor in local coordinates
-  std::vector<LINALG::Matrix<3, 3>> structural_tensors_loc;
+  std::vector<CORE::LINALG::Matrix<3, 3>> structural_tensors_loc;
 
   // loop over all fiber vectors
-  LINALG::Matrix<3, 1> fibervector(true);
-  LINALG::Matrix<3, 3> structuraltensor(true);
+  CORE::LINALG::Matrix<3, 1> fibervector(true);
+  CORE::LINALG::Matrix<3, 3> structuraltensor(true);
   for (unsigned int p = 0; p < 3; ++p)
   {
     fibervector.MultiplyTN(1.0, Q_trafo, fibervecs_[p], 0.0);
@@ -281,7 +281,7 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& de
   //******************
   // ACTIVE deformation gradient in local coordinates
   //******************
-  LINALG::Matrix<3, 3> defgrd_active_inv_loc(true);
+  CORE::LINALG::Matrix<3, 3> defgrd_active_inv_loc(true);
 
   // set defgrd_active to identity tensor
   for (int i = 0; i < 3; i++) defgrd_active_inv_loc(i, i) = 1.0;
@@ -314,14 +314,14 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& de
   //******************
   // PASSIVE cauchy green in local coordinates
   //******************
-  LINALG::Matrix<3, 3> cauchygreen_passive_local(true);
-  LINALG::Matrix<3, 3> defgrd_passive_local(true);
+  CORE::LINALG::Matrix<3, 3> cauchygreen_passive_local(true);
+  CORE::LINALG::Matrix<3, 3> defgrd_passive_local(true);
   defgrd_passive_local.MultiplyNN(1.0, defgrd, defgrd_active_inv_loc, 0.0);
   cauchygreen_passive_local.MultiplyTN(1.0, defgrd_passive_local, defgrd_passive_local, 0.0);
 
   // compute passive green lagrange strain
-  LINALG::Matrix<3, 3> cmatpassive_loc(true);
-  LINALG::Matrix<3, 1> S_passive_loc_voigt(true);
+  CORE::LINALG::Matrix<3, 3> cmatpassive_loc(true);
+  CORE::LINALG::Matrix<3, 1> S_passive_loc_voigt(true);
   Teuchos::rcp_dynamic_cast<MAT::Membrane_ElastHyper>(matpassive_, true)
       ->EvaluateMembrane(defgrd_passive_local, cauchygreen_passive_local, params, Q_trafo,
           S_passive_loc_voigt, cmatpassive_loc, gp, eleGID);
@@ -329,20 +329,20 @@ void MAT::Membrane_ActiveStrain::EvaluateMembrane(const LINALG::Matrix<3, 3>& de
   //******************
   // FULL PART
   //******************
-  LINALG::Matrix<2, 2> S_tot(true);
-  LINALG::Matrix<2, 2> S_passive_loc(true);
+  CORE::LINALG::Matrix<2, 2> S_tot(true);
+  CORE::LINALG::Matrix<2, 2> S_passive_loc(true);
   S_passive_loc(0, 0) = S_passive_loc_voigt(0);
   S_passive_loc(1, 1) = S_passive_loc_voigt(1);
   S_passive_loc(1, 0) = S_passive_loc_voigt(2);
   S_passive_loc(0, 1) = S_passive_loc_voigt(2);
 
-  LINALG::Matrix<2, 2> defgrd_active_inv_loc_red(true);
+  CORE::LINALG::Matrix<2, 2> defgrd_active_inv_loc_red(true);
   defgrd_active_inv_loc_red(0, 0) = defgrd_active_inv_loc(0, 0);
   defgrd_active_inv_loc_red(1, 0) = defgrd_active_inv_loc(1, 0);
   defgrd_active_inv_loc_red(0, 1) = defgrd_active_inv_loc(0, 1);
   defgrd_active_inv_loc_red(1, 1) = defgrd_active_inv_loc(1, 1);
 
-  LINALG::Matrix<2, 2> temp2(true);
+  CORE::LINALG::Matrix<2, 2> temp2(true);
   temp2.MultiplyNT(1.0, S_passive_loc, defgrd_active_inv_loc_red, 0.0);
   S_tot.MultiplyNN(1.0, defgrd_active_inv_loc_red, temp2, 0.0);
 
@@ -431,7 +431,7 @@ bool MAT::Membrane_ActiveStrain::VisData(
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  LINALG::Matrix<3, 1> dir;
+  CORE::LINALG::Matrix<3, 1> dir;
 
   // CIR-AXI-RAD nomenclature
   if (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR"))
@@ -493,7 +493,7 @@ void MAT::Membrane_ActiveStrain::SetupFiberVectors(int numgp, DRT::INPUT::LineDe
  * Function which reads in the fiber direction
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::ReadDir(
-    DRT::INPUT::LineDefinition* linedef, std::string specifier, LINALG::Matrix<3, 1>& dir)
+    DRT::INPUT::LineDefinition* linedef, std::string specifier, CORE::LINALG::Matrix<3, 1>& dir)
 {
   std::vector<double> fiber;
   linedef->ExtractDoubleVector(specifier, fiber);
@@ -518,9 +518,9 @@ void MAT::Membrane_ActiveStrain::SetupNormalDirection()
     dserror("Wrong number of fiber vectors to calculate a normal direction.");
   }
 
-  LINALG::Matrix<3, 1> dir1 = fibervecs_[0];
-  LINALG::Matrix<3, 1> dir2 = fibervecs_[1];
-  LINALG::Matrix<3, 1> normaldir;
+  CORE::LINALG::Matrix<3, 1> dir1 = fibervecs_[0];
+  CORE::LINALG::Matrix<3, 1> dir2 = fibervecs_[1];
+  CORE::LINALG::Matrix<3, 1> normaldir;
 
   normaldir(0) = dir1(1) * dir2(2) - dir1(2) * dir2(1);
   normaldir(1) = dir1(2) * dir2(0) - dir1(0) * dir2(2);
@@ -537,8 +537,9 @@ void MAT::Membrane_ActiveStrain::SetupNormalDirection()
  | Pullback of the tangent from intermediate to reference configuration|
  *---------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::Pullback4thTensorVoigt(
-    const LINALG::Matrix<2, 2>& defgrd_active_inv_red,
-    const LINALG::Matrix<3, 3>& cmat_passive_intermediate, LINALG::Matrix<3, 3>& cmat_reference)
+    const CORE::LINALG::Matrix<2, 2>& defgrd_active_inv_red,
+    const CORE::LINALG::Matrix<3, 3>& cmat_passive_intermediate,
+    CORE::LINALG::Matrix<3, 3>& cmat_reference)
 {
   int i;
   int j;

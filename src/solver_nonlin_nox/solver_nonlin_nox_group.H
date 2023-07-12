@@ -27,10 +27,10 @@
 // forward declarations
 class Epetra_BlockMap;
 class Epetra_Map;
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace NOX
 {
   namespace NLN
@@ -144,8 +144,8 @@ namespace NOX
       /// @name access the eigenvalue data
       /// @{
 
-      const LINALG::SerialDenseVector& getJacoianRealEigenvalues() const;
-      const LINALG::SerialDenseVector& getJacoianImaginaryEigenvalues() const;
+      const CORE::LINALG::SerialDenseVector& getJacoianRealEigenvalues() const;
+      const CORE::LINALG::SerialDenseVector& getJacoianImaginaryEigenvalues() const;
       double getJacobianMaxRealEigenvalue() const;
       double getJacobianMinRealEigenvalue() const;
 
@@ -238,7 +238,7 @@ namespace NOX
       Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
 
       // Get element based scaling operator
-      Teuchos::RCP<LINALG::SparseMatrix> GetContributionsFromElementLevel();
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetContributionsFromElementLevel();
       //! @}
 
       //! @name XFEM related methods
@@ -308,10 +308,10 @@ namespace NOX
         Eigenvalues& operator=(const Eigenvalues& src);
 
         /// real part of the eigenvalues
-        LINALG::SerialDenseVector realpart_;
+        CORE::LINALG::SerialDenseVector realpart_;
 
         /// imaginary part of the eigenvalues
-        LINALG::SerialDenseVector imaginarypart_;
+        CORE::LINALG::SerialDenseVector imaginarypart_;
 
         /// maximal real part
         double real_max_ = 0.0;

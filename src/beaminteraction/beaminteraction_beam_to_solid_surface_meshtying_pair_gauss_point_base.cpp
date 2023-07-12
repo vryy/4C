@@ -51,8 +51,8 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
   if (this->line_to_3D_segments_.size() == 0) return 0.0;
 
   // Initialize variables for position and potential.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> coupling_vector;
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> coupling_vector;
   scalar_type potential = 0.0;
 
   // Initialize scalar variables.

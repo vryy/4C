@@ -172,10 +172,10 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6, 1> xcurr;
+  CORE::LINALG::Matrix<6, 1> xcurr;
 
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<3, 1> aux;
+  CORE::LINALG::Matrix<3, 1> aux;
 
   const int ndof = 6;
 
@@ -338,7 +338,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // auxiliary vector for both internal force and stiffness matrix
-  LINALG::Matrix<6, 1> aux;
+  CORE::LINALG::Matrix<6, 1> aux;
 
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
@@ -387,13 +387,13 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
     const std::map<std::string, std::vector<double>>& ele_state,
-    LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
-    LINALG::Matrix<6, 1>& dN_dx)
+    CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
+    CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx)
 {
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
   const int ndof = 6;
-  static LINALG::Matrix<6, 1> xcurr;
+  static CORE::LINALG::Matrix<6, 1> xcurr;
   // current nodal position
   for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
 
@@ -435,9 +435,9 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
     dserror("only linear elastic material supported for truss element");
 
-  static LINALG::Matrix<6, 1> truss_disp;
-  static LINALG::Matrix<6, 6> dtruss_disp_du;
-  static LINALG::Matrix<6, 1> dN_dx;
+  static CORE::LINALG::Matrix<6, 1> truss_disp;
+  static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
+  static CORE::LINALG::Matrix<6, 1> dN_dx;
 
   PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
@@ -504,9 +504,9 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
-  static LINALG::Matrix<6, 1> curr_nodal_coords;
-  static LINALG::Matrix<6, 6> dtruss_disp_du;
-  static LINALG::Matrix<6, 1> dN_dx;
+  static CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
+  static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
+  static CORE::LINALG::Matrix<6, 1> dN_dx;
 
   PrepCalcInternalForceStiffTotLag(ele_state, curr_nodal_coords, dtruss_disp_du, dN_dx);
 

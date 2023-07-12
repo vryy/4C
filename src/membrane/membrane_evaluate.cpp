@@ -39,11 +39,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // determine size of each element matrix
-  LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.A(), true);
-  LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.A(), true);
 
   // set params interface pointer
   SetParamsInterfacePtr(params);
@@ -95,7 +95,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
+      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, NULL, &elevec1, NULL, NULL, params,
@@ -113,7 +113,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
+      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, &elemat2, &elevec1, NULL, NULL, params,
@@ -203,8 +203,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
 
-        LINALG::Matrix<numgpt_post_, 6> stress;
-        LINALG::Matrix<numgpt_post_, 6> strain;
+        CORE::LINALG::Matrix<numgpt_post_, 6> stress;
+        CORE::LINALG::Matrix<numgpt_post_, 6> strain;
 
         // determine strains and/or stresses
         mem_nlnstiffmass(
@@ -247,7 +247,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
         if (thickdata == Teuchos::null) dserror("Cannot get 'thickness' data");
 
-        LINALG::Matrix<numgpt_post_, 1> thickness;
+        CORE::LINALG::Matrix<numgpt_post_, 1> thickness;
         for (int i = 0; i < numgpt_post_; ++i) thickness(i) = cur_thickness_[i];
 
         // add data to pack
@@ -277,8 +277,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // get reference configuration and determine current configuration
-      LINALG::Matrix<numnod_, noddof_> xrefe(true);
-      LINALG::Matrix<numnod_, noddof_> xcurr(true);
+      CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);
+      CORE::LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
       mem_configuration(mydisp, xrefe, xcurr);
 
@@ -287,7 +287,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
        *===============================================================================*/
 
       // allocate matrix for shape function derivatives at gp
-      LINALG::Matrix<numdim_, numnod_> derivs(true);
+      CORE::LINALG::Matrix<numdim_, numnod_> derivs(true);
 
       for (int gp = 0; gp < intpoints_.nquad; ++gp)
       {
@@ -305,13 +305,13 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
          | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
          *===============================================================================*/
 
-        LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
+        CORE::LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
         double G1G2_cn;
-        LINALG::Matrix<noddof_, 1> dXds1(true);
-        LINALG::Matrix<noddof_, 1> dXds2(true);
-        LINALG::Matrix<noddof_, 1> dxds1(true);
-        LINALG::Matrix<noddof_, 1> dxds2(true);
-        LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
+        CORE::LINALG::Matrix<noddof_, 1> dXds1(true);
+        CORE::LINALG::Matrix<noddof_, 1> dXds2(true);
+        CORE::LINALG::Matrix<noddof_, 1> dxds1(true);
+        CORE::LINALG::Matrix<noddof_, 1> dxds2(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
         mem_orthonormalbase(xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2,
             Q_localToGlobal);
@@ -321,10 +321,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
          *===============================================================================*/
 
         // surface deformation gradient in 3 dimensions in global coordinates
-        LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
 
         // surface deformation gradient in 3 dimensions in local coordinates
-        LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
 
         // principle stretch in thickness direction
         double lambda3 = 1.0;
@@ -351,7 +351,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
          *===============================================================================*/
 
         // calculate three dimensional right cauchy-green strain tensor in orthonormal base
-        LINALG::Matrix<noddof_, noddof_> cauchygreen_loc(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_loc(true);
         cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
 
         /*===============================================================================*
@@ -404,7 +404,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
       int gid = Id();
-      LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->A(), true);
+      CORE::LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->A(), true);
 
       Teuchos::RCP<Epetra_MultiVector> postthick =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("postthick", Teuchos::null);
@@ -414,10 +414,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       {
         // extrapolation matrix: static because equal for all elements of the same discretization
         // type
-        static LINALG::Matrix<numnod_, numgpt_post_> extrapol(mem_extrapolmat());
+        static CORE::LINALG::Matrix<numnod_, numgpt_post_> extrapol(mem_extrapolmat());
 
         // extrapolate the nodal thickness for current element
-        LINALG::Matrix<numnod_, 1> nodalthickness;
+        CORE::LINALG::Matrix<numnod_, 1> nodalthickness;
         nodalthickness.Multiply(1.0, extrapol, gpthick, 0.0);
 
         // "assembly" of extrapolated nodal thickness
@@ -521,8 +521,8 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
   DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
   // get reference configuration and determine current configuration
-  LINALG::Matrix<numnod_, noddof_> xrefe(true);
-  LINALG::Matrix<numnod_, noddof_> xcurr(true);
+  CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);
+  CORE::LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
   mem_configuration(mydisp, xrefe, xcurr);
 
@@ -531,8 +531,8 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
    *===============================================================================*/
 
   // allocate vector for shape functions and matrix for derivatives at gp
-  LINALG::Matrix<numnod_, 1> shapefcts(true);
-  LINALG::Matrix<numdim_, numnod_> derivs(true);
+  CORE::LINALG::Matrix<numnod_, 1> shapefcts(true);
+  CORE::LINALG::Matrix<numdim_, numnod_> derivs(true);
 
   for (int gp = 0; gp < intpoints_.nquad; ++gp)
   {
@@ -551,25 +551,25 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
      *===============================================================================*/
 
-    LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
+    CORE::LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
     double G1G2_cn;
-    LINALG::Matrix<noddof_, 1> dXds1(true);
-    LINALG::Matrix<noddof_, 1> dXds2(true);
-    LINALG::Matrix<noddof_, 1> dxds1(true);
-    LINALG::Matrix<noddof_, 1> dxds2(true);
-    LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
+    CORE::LINALG::Matrix<noddof_, 1> dXds1(true);
+    CORE::LINALG::Matrix<noddof_, 1> dXds2(true);
+    CORE::LINALG::Matrix<noddof_, 1> dxds1(true);
+    CORE::LINALG::Matrix<noddof_, 1> dxds2(true);
+    CORE::LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
     mem_orthonormalbase(
         xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
 
     // determine cross product x,1 x x,2
-    LINALG::Matrix<noddof_, 1> xcurr_cross(true);
+    CORE::LINALG::Matrix<noddof_, 1> xcurr_cross(true);
     xcurr_cross(0) = dxds1(1) * dxds2(2) - dxds1(2) * dxds2(1);
     xcurr_cross(1) = dxds1(2) * dxds2(0) - dxds1(0) * dxds2(2);
     xcurr_cross(2) = dxds1(0) * dxds2(1) - dxds1(1) * dxds2(0);
 
     // determine cross product X,1 x X,2
-    LINALG::Matrix<noddof_, 1> xrefe_cross(true);
+    CORE::LINALG::Matrix<noddof_, 1> xrefe_cross(true);
     xrefe_cross(0) = dXds1(1) * dXds2(2) - dXds1(2) * dXds2(1);
     xrefe_cross(1) = dXds1(2) * dXds2(0) - dXds1(0) * dXds2(2);
     xrefe_cross(2) = dXds1(0) * dXds2(1) - dXds1(1) * dXds2(0);
@@ -621,19 +621,19 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  // location matrix
-    std::vector<double>& disp,                      // current displacements
-    LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
-    LINALG::Matrix<numdof_, numdof_>* massmatrix,   // element mass matrix
-    LINALG::Matrix<numdof_, 1>* force,              // element internal force vector
-    LINALG::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
-    LINALG::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
-    Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
-    const INPAR::STR::StressType iostress,          // stress output option
-    const INPAR::STR::StrainType iostrain)          // strain output option
+    std::vector<double>& disp,                            // current displacements
+    CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<numdof_, numdof_>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<numdof_, 1>* force,              // element internal force vector
+    CORE::LINALG::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
+    CORE::LINALG::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
+    Teuchos::ParameterList& params,                       // algorithmic parameters e.g. time
+    const INPAR::STR::StressType iostress,                // stress output option
+    const INPAR::STR::StrainType iostrain)                // strain output option
 {
   // get reference configuration and determine current configuration
-  LINALG::Matrix<numnod_, noddof_> xrefe(true);
-  LINALG::Matrix<numnod_, noddof_> xcurr(true);
+  CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);
+  CORE::LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
   auto material_local_coordinates =
       Teuchos::rcp_dynamic_cast<MAT::MembraneMaterialLocalCoordinates>(DRT::Element::Material());
@@ -649,8 +649,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
    *===============================================================================*/
 
   // allocate vector for shape functions and matrix for derivatives at gp
-  LINALG::Matrix<numnod_, 1> shapefcts(true);
-  LINALG::Matrix<numdim_, numnod_> derivs(true);
+  CORE::LINALG::Matrix<numnod_, 1> shapefcts(true);
+  CORE::LINALG::Matrix<numdim_, numnod_> derivs(true);
 
   for (int gp = 0; gp < intpoints_.nquad; ++gp)
   {
@@ -669,13 +669,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
      | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
      *===============================================================================*/
 
-    LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
+    CORE::LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
     double G1G2_cn;
-    LINALG::Matrix<noddof_, 1> dXds1(true);
-    LINALG::Matrix<noddof_, 1> dXds2(true);
-    LINALG::Matrix<noddof_, 1> dxds1(true);
-    LINALG::Matrix<noddof_, 1> dxds2(true);
-    LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
+    CORE::LINALG::Matrix<noddof_, 1> dXds1(true);
+    CORE::LINALG::Matrix<noddof_, 1> dXds2(true);
+    CORE::LINALG::Matrix<noddof_, 1> dxds1(true);
+    CORE::LINALG::Matrix<noddof_, 1> dxds2(true);
+    CORE::LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
     mem_orthonormalbase(
         xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
@@ -685,10 +685,10 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
      *===============================================================================*/
 
     // surface deformation gradient in 3 dimensions in global coordinates
-    LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
+    CORE::LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
 
     // surface deformation gradient in 3 dimensions in local coordinates
-    LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
+    CORE::LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
 
     // principle stretch in thickness direction
     double lambda3 = 1.0;
@@ -720,7 +720,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
      *===============================================================================*/
 
     // calculate three dimensional right cauchy-green strain tensor in orthonormal base
-    LINALG::Matrix<noddof_, noddof_> cauchygreen_loc(true);
+    CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_loc(true);
     cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
 
     /*===============================================================================*
@@ -728,23 +728,23 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
      *===============================================================================*/
 
     // 2nd piola kirchhoff stress vector under plane stress assumption
-    LINALG::Matrix<3, 1> pk2red_loc(true);
+    CORE::LINALG::Matrix<3, 1> pk2red_loc(true);
 
     // material tangent matrix for plane stress
-    LINALG::Matrix<3, 3> cmatred_loc(true);
+    CORE::LINALG::Matrix<3, 3> cmatred_loc(true);
 
     // The growth remodel elast hyper material needs some special quantities for its evaluation
     if (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // Gauss-point coordinates in reference configuration
-      LINALG::Matrix<1, noddof_> gprefecoord(true);
+      CORE::LINALG::Matrix<1, noddof_> gprefecoord(true);
       gprefecoord.MultiplyTN(shapefcts, xrefe);
       params.set("gprefecoord", gprefecoord);
 
       // center of element in reference configuration
-      LINALG::Matrix<numnod_, 1> funct_center;
+      CORE::LINALG::Matrix<numnod_, 1> funct_center;
       CORE::DRT::UTILS::shape_function_2D(funct_center, 0.0, 0.0, distype);
-      LINALG::Matrix<1, noddof_> midpoint;
+      CORE::LINALG::Matrix<1, noddof_> midpoint;
       midpoint.MultiplyTN(funct_center, xrefe);
       params.set("elecenter", midpoint);
     }
@@ -773,19 +773,19 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     }
     else if (material_global_coordinates != Teuchos::null)
     {
-      LINALG::Matrix<3, 3> pk2M_glob(true);
-      LINALG::Matrix<6, 6> cmat_glob(true);
+      CORE::LINALG::Matrix<3, 3> pk2M_glob(true);
+      CORE::LINALG::Matrix<6, 6> cmat_glob(true);
 
       // Evaluate material with quantities in the global coordinate system
       material_global_coordinates->EvaluateMembrane(
           defgrd_glob, params, pk2M_glob, cmat_glob, gp, Id());
 
       // Transform stress and elasticity into the local membrane coordinate system
-      LINALG::Matrix<3, 3> pk2M_loc(true);
+      CORE::LINALG::Matrix<3, 3> pk2M_loc(true);
       ::UTILS::TENSOR::InverseTensorRotation<3>(Q_localToGlobal, pk2M_glob, pk2M_loc);
       MEMBRANE::LocalPlaneStressToStressLikeVoigt(pk2M_loc, pk2red_loc);
 
-      LINALG::Matrix<6, 6> cmat_loc(true);
+      CORE::LINALG::Matrix<6, 6> cmat_loc(true);
       ::UTILS::TENSOR::InverseFourthTensorRotation(Q_localToGlobal, cmat_glob, cmat_loc);
       MEMBRANE::LocalFourthTensorPlaneStressToStressLikeVoigt(cmat_loc, cmatred_loc);
     }
@@ -806,7 +806,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (stiffmatrix == NULL && force != NULL)
     {
       // determine B matrix for all 4 nodes, Gruttmann1992 equation (36)
-      LINALG::Matrix<noddof_, numdof_> B_matrix(true);
+      CORE::LINALG::Matrix<noddof_, numdof_> B_matrix(true);
 
       for (int i = 0; i < numnod_; ++i)
       {
@@ -836,8 +836,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     if (stiffmatrix != NULL && force != NULL)
     {
       // determine B matrix and G matrix for all 4 nodes, Gruttmann1992 equation (36) and (40)
-      LINALG::Matrix<noddof_, numdof_> B_matrix(true);
-      LINALG::Matrix<numdof_, numdof_> G_matrix(true);
+      CORE::LINALG::Matrix<noddof_, numdof_> B_matrix(true);
+      CORE::LINALG::Matrix<numdof_, numdof_> G_matrix(true);
       double g_ij;
 
       for (int i = 0; i < numnod_; ++i)
@@ -875,9 +875,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // determine force and stiffness matrix, Gruttmann1992 equation (37) and (39)
       force->MultiplyTN(fac, B_matrix, pk2red_loc, 1.0);
 
-      LINALG::Matrix<numdof_, noddof_> temp(true);
+      CORE::LINALG::Matrix<numdof_, noddof_> temp(true);
       temp.MultiplyTN(1.0, B_matrix, cmatred_loc, 0.0);
-      LINALG::Matrix<numdof_, numdof_> temp2(true);
+      CORE::LINALG::Matrix<numdof_, numdof_> temp2(true);
       temp2.Multiply(1.0, temp, B_matrix, 0.0);
       temp2.Update(1.0, G_matrix, 1.0);
 
@@ -927,11 +927,11 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         if (elestrain == NULL) dserror("strain data not available");
 
         // transform local cauchygreen to global coordinates
-        LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
         ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
-        LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
         glstrain_glob(0, 0) = 0.5 * (cauchygreen_glob(0, 0) - 1.0);
         glstrain_glob(1, 1) = 0.5 * (cauchygreen_glob(1, 1) - 1.0);
         glstrain_glob(2, 2) = 0.5 * (cauchygreen_glob(2, 2) - 1.0);
@@ -956,11 +956,11 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         if (elestrain == NULL) dserror("strain data not available");
 
         // transform local cauchygreen to global coordinates
-        LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
         ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // green-lagrange strain tensor in global coordinates
-        LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> glstrain_glob(true);
         glstrain_glob(0, 0) = 0.5 * (cauchygreen_glob(0, 0) - 1);
         glstrain_glob(1, 1) = 0.5 * (cauchygreen_glob(1, 1) - 1);
         glstrain_glob(2, 2) = 0.5 * (cauchygreen_glob(2, 2) - 1);
@@ -972,7 +972,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         glstrain_glob(2, 1) = glstrain_glob(1, 2);
 
         // pushforward of gl strains to ea strains
-        LINALG::Matrix<noddof_, noddof_> euler_almansi(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> euler_almansi(true);
         mem_GLtoEA(glstrain_glob, defgrd_glob, euler_almansi);
 
         (*elestrain)(gp, 0) = euler_almansi(0, 0);
@@ -996,25 +996,25 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         // logarithmic strain and stress measures, Eq. 70
 
         // transform local cauchygreen to global coordinates
-        LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
         ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, cauchygreen_loc, cauchygreen_glob);
 
         // eigenvalue decomposition (from elasthyper.cpp)
-        LINALG::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
-        LINALG::Matrix<noddof_, 1> prstr(true);         // principal stretch
-        LINALG::Matrix<noddof_, noddof_> prdir(true);   // principal directions
-        LINALG::SYEV(cauchygreen_glob, prstr2, prdir);
+        CORE::LINALG::Matrix<noddof_, noddof_> prstr2(true);  // squared principal stretches
+        CORE::LINALG::Matrix<noddof_, 1> prstr(true);         // principal stretch
+        CORE::LINALG::Matrix<noddof_, noddof_> prdir(true);   // principal directions
+        CORE::LINALG::SYEV(cauchygreen_glob, prstr2, prdir);
 
         // THE principal stretches
         for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
 
         // populating the logarithmic strain matrix
-        LINALG::Matrix<noddof_, noddof_> lnv(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> lnv(true);
 
         // checking if cauchy green is correctly determined to ensure eigenvectors in correct
         // direction i.e. a flipped eigenvector is also a valid solution C = \sum_{i=1}^3
         // (\lambda_i^2) \mathbf{n}_i \otimes \mathbf{n}_i
-        LINALG::Matrix<noddof_, noddof_> tempCG(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> tempCG(true);
 
         for (int k = 0; k < 3; ++k)
         {
@@ -1055,7 +1055,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
         // compare CG computed with deformation gradient with CG computed
         // with eigenvalues and -vectors to determine/ensure the correct
         // orientation of the eigen vectors
-        LINALG::Matrix<noddof_, noddof_> diffCG(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> diffCG(true);
 
         for (int i = 0; i < 3; ++i)
         {
@@ -1101,14 +1101,14 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2
-        LINALG::Matrix<noddof_, noddof_> pkstressM_local(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> pkstressM_local(true);
         pkstressM_local(0, 0) = pk2red_loc(0);
         pkstressM_local(1, 1) = pk2red_loc(1);
         pkstressM_local(0, 1) = pk2red_loc(2);
         pkstressM_local(1, 0) = pk2red_loc(2);
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
-        LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
         ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_local, pkstress_glob);
 
         (*elestress)(gp, 0) = pkstress_glob(0, 0);
@@ -1126,17 +1126,17 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2
-        LINALG::Matrix<noddof_, noddof_> pkstressM_loc(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> pkstressM_loc(true);
         pkstressM_loc(0, 0) = pk2red_loc(0);
         pkstressM_loc(1, 1) = pk2red_loc(1);
         pkstressM_loc(0, 1) = pk2red_loc(2);
         pkstressM_loc(1, 0) = pk2red_loc(2);
 
         // determine 2nd Piola-Kirchhoff stresses in global coordinates
-        LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> pkstress_glob(true);
         ::UTILS::TENSOR::TensorRotation<3>(Q_localToGlobal, pkstressM_loc, pkstress_glob);
 
-        LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
+        CORE::LINALG::Matrix<noddof_, noddof_> cauchy_glob(true);
         mem_PK2toCauchy(pkstress_glob, defgrd_glob, cauchy_glob);
 
         (*elestress)(gp, 0) = cauchy_glob(0, 0);
@@ -1206,7 +1206,7 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<double>& disp,
-    LINALG::Matrix<numnod_, noddof_>& xrefe, LINALG::Matrix<numnod_, noddof_>& xcurr)
+    CORE::LINALG::Matrix<numnod_, noddof_>& xrefe, CORE::LINALG::Matrix<numnod_, noddof_>& xcurr)
 {
   // get reference configuration and determine current configuration
   DRT::Node** nodes = Nodes();
@@ -1234,11 +1234,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
  *------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
-    const LINALG::Matrix<numnod_, noddof_>& xrefe, const LINALG::Matrix<numnod_, noddof_>& xcurr,
-    const LINALG::Matrix<numdim_, numnod_>& derivs, LINALG::Matrix<numdim_, numnod_>& derivs_ortho,
-    double& G1G2_cn, LINALG::Matrix<noddof_, 1>& dXds1, LINALG::Matrix<noddof_, 1>& dXds2,
-    LINALG::Matrix<noddof_, 1>& dxds1, LINALG::Matrix<noddof_, 1>& dxds2,
-    LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const
+    const CORE::LINALG::Matrix<numnod_, noddof_>& xrefe,
+    const CORE::LINALG::Matrix<numnod_, noddof_>& xcurr,
+    const CORE::LINALG::Matrix<numdim_, numnod_>& derivs,
+    CORE::LINALG::Matrix<numdim_, numnod_>& derivs_ortho, double& G1G2_cn,
+    CORE::LINALG::Matrix<noddof_, 1>& dXds1, CORE::LINALG::Matrix<noddof_, 1>& dXds2,
+    CORE::LINALG::Matrix<noddof_, 1>& dxds1, CORE::LINALG::Matrix<noddof_, 1>& dxds2,
+    CORE::LINALG::Matrix<noddof_, noddof_>& Q_localToGlobal) const
 {
   /*===============================================================================*
    | introduce an orthonormal base in the undeformed configuration as proposed in: |
@@ -1246,22 +1248,22 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
    | shells using principal stretches", 1992                                       |
    *===============================================================================*/
 
-  LINALG::Matrix<noddof_, numdim_> G12(true);
+  CORE::LINALG::Matrix<noddof_, numdim_> G12(true);
   G12.MultiplyTT(1.0, xrefe, derivs, 0.0);
 
   // G1 and G2 Gruttmann1992 equation (43)
-  LINALG::Matrix<noddof_, 1> G1(true);
+  CORE::LINALG::Matrix<noddof_, 1> G1(true);
   G1(0) = G12(0, 0);
   G1(1) = G12(1, 0);
   G1(2) = G12(2, 0);
 
-  LINALG::Matrix<noddof_, 1> G2(true);
+  CORE::LINALG::Matrix<noddof_, 1> G2(true);
   G2(0) = G12(0, 1);
   G2(1) = G12(1, 1);
   G2(2) = G12(2, 1);
 
   // cross product G1xG2
-  LINALG::Matrix<noddof_, 1> G1G2_cross(true);
+  CORE::LINALG::Matrix<noddof_, 1> G1G2_cross(true);
   G1G2_cross(0) = G1(1) * G2(2) - G1(2) * G2(1);
   G1G2_cross(1) = G1(2) * G2(0) - G1(0) * G2(2);
   G1G2_cross(2) = G1(0) * G2(1) - G1(1) * G2(0);
@@ -1271,22 +1273,22 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   double G1_n = G1.Norm2();
 
   // Gruttmann1992 equation (44), orthonormal base vectors
-  LINALG::Matrix<noddof_, 1> tn(true);
+  CORE::LINALG::Matrix<noddof_, 1> tn(true);
   tn(0) = G1G2_cross(0) / G1G2_cn;
   tn(1) = G1G2_cross(1) / G1G2_cn;
   tn(2) = G1G2_cross(2) / G1G2_cn;
 
-  LINALG::Matrix<noddof_, 1> t1(true);
+  CORE::LINALG::Matrix<noddof_, 1> t1(true);
   t1(0) = G1(0) / G1_n;
   t1(1) = G1(1) / G1_n;
   t1(2) = G1(2) / G1_n;
 
-  LINALG::Matrix<noddof_, 1> t2(true);
+  CORE::LINALG::Matrix<noddof_, 1> t2(true);
   t2(0) = tn(1) * t1(2) - tn(2) * t1(1);
   t2(1) = tn(2) * t1(0) - tn(0) * t1(2);
   t2(2) = tn(0) * t1(1) - tn(1) * t1(0);
 
-  LINALG::Matrix<noddof_, numdim_> t12(true);
+  CORE::LINALG::Matrix<noddof_, numdim_> t12(true);
   t12(0, 0) = t1(0);
   t12(1, 0) = t1(1);
   t12(2, 0) = t1(2);
@@ -1297,17 +1299,17 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   // Jacobian transformation matrix and its inverse, Gruttmann1992 equation (44b)
   // for the Trafo from local membrane orthonormal coordinates to global coordinates
   // It is not the Jacobian for the Trafo from the parameter space xi, eta to the global coords!
-  LINALG::Matrix<numdim_, numdim_> J(true);
+  CORE::LINALG::Matrix<numdim_, numdim_> J(true);
   J.MultiplyTN(1.0, G12, t12, 0.0);
 
-  LINALG::Matrix<numdim_, numdim_> Jinv(true);
+  CORE::LINALG::Matrix<numdim_, numdim_> Jinv(true);
   Jinv.Invert(J);
 
   // calclate derivatives of shape functions in orthonormal base, Gruttmann1992 equation (42)
   derivs_ortho.Multiply(1.0, Jinv, derivs, 0.0);
 
   // derivative of the reference position wrt the orthonormal base
-  LINALG::Matrix<noddof_, numdim_> dXds(true);
+  CORE::LINALG::Matrix<noddof_, numdim_> dXds(true);
   dXds.MultiplyTT(1.0, xrefe, derivs_ortho, 0.0);
 
   dXds1(0) = dXds(0, 0);
@@ -1319,7 +1321,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   dXds2(2) = dXds(2, 1);
 
   // derivative of the current position wrt the orthonormal base
-  LINALG::Matrix<noddof_, numdim_> dxds(true);
+  CORE::LINALG::Matrix<noddof_, numdim_> dxds(true);
   dxds.MultiplyTT(1.0, xcurr, derivs_ortho, 0.0);
 
   dxds1(0) = dxds(0, 0);
@@ -1350,9 +1352,9 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
-    const LINALG::Matrix<noddof_, noddof_>& pkstress_glob,
-    const LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
-    LINALG::Matrix<noddof_, noddof_>& cauchy) const
+    const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_glob,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
+    CORE::LINALG::Matrix<noddof_, noddof_>& cauchy) const
 {
   // calculate the Jacobi-deterinant
   const double detF = defgrd_glob.Determinant();
@@ -1361,7 +1363,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
   if (detF == 0) dserror("Zero Determinant of Deformation Gradient.");
 
   // determine the cauchy stresses
-  LINALG::Matrix<noddof_, noddof_> temp;
+  CORE::LINALG::Matrix<noddof_, noddof_> temp;
   temp.Multiply((1.0 / detF), defgrd_glob, pkstress_glob, 0.0);
   cauchy.MultiplyNT(1.0, temp, defgrd_glob, 1.0);
 
@@ -1374,20 +1376,20 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
-    const LINALG::Matrix<noddof_, noddof_>& glstrain_glob,
-    const LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
-    LINALG::Matrix<noddof_, noddof_>& euler_almansi) const
+    const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_glob,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
+    CORE::LINALG::Matrix<noddof_, noddof_>& euler_almansi) const
 {
   // check determinant of deformation gradient
   if (defgrd_glob.Determinant() == 0)
     dserror("Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
 
   // inverse of deformation gradient
-  LINALG::Matrix<noddof_, noddof_> invdefgrd(true);
+  CORE::LINALG::Matrix<noddof_, noddof_> invdefgrd(true);
   invdefgrd.Invert(defgrd_glob);
 
   // determine the euler-almansi strains
-  LINALG::Matrix<noddof_, noddof_> temp;
+  CORE::LINALG::Matrix<noddof_, noddof_> temp;
   temp.Multiply(1.0, glstrain_glob, invdefgrd, 0.0);
   euler_almansi.MultiplyTN(1.0, invdefgrd, temp, 1.0);
 
@@ -1399,16 +1401,16 @@ void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<noddof_, 1>& dXds1,
-    const LINALG::Matrix<noddof_, 1>& dXds2, const LINALG::Matrix<noddof_, 1>& dxds1,
-    const LINALG::Matrix<noddof_, 1>& dxds2, const double& lambda3,
-    LINALG::Matrix<noddof_, noddof_>& defgrd_glob) const
+void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(
+    const CORE::LINALG::Matrix<noddof_, 1>& dXds1, const CORE::LINALG::Matrix<noddof_, 1>& dXds2,
+    const CORE::LINALG::Matrix<noddof_, 1>& dxds1, const CORE::LINALG::Matrix<noddof_, 1>& dxds2,
+    const double& lambda3, CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_glob) const
 {
   // clear
   defgrd_glob.Clear();
 
   // determine cross product x,1 x x,2
-  LINALG::Matrix<noddof_, 1> xcurr_cross(true);
+  CORE::LINALG::Matrix<noddof_, 1> xcurr_cross(true);
   xcurr_cross(0) = dxds1(1) * dxds2(2) - dxds1(2) * dxds2(1);
   xcurr_cross(1) = dxds1(2) * dxds2(0) - dxds1(0) * dxds2(2);
   xcurr_cross(2) = dxds1(0) * dxds2(1) - dxds1(1) * dxds2(0);
@@ -1417,7 +1419,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
   xcurr_cross.Scale(1.0 / xcurr_cross.Norm2());
 
   // determine cross product X,1 x X,2, has unit length due to orthonormal basis
-  LINALG::Matrix<noddof_, 1> xrefe_cross(true);
+  CORE::LINALG::Matrix<noddof_, 1> xrefe_cross(true);
   xrefe_cross(0) = dXds1(1) * dXds2(2) - dXds1(2) * dXds2(1);
   xrefe_cross(1) = dXds1(2) * dXds2(0) - dXds1(0) * dXds2(2);
   xrefe_cross(2) = dXds1(0) * dXds2(1) - dXds1(1) * dXds2(0);
@@ -1435,13 +1437,13 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
     THR::DisTypeToNumGaussPoints<distype>::nquad>
 DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 {
   // extrapolation matrix
   // note: equal for all elements of the same discretization type
-  LINALG::Matrix<numnod_, numgpt_post_> extrapol;
+  CORE::LINALG::Matrix<numnod_, numgpt_post_> extrapol;
 
   // check for correct gaussrule
   if (intpoints_.nquad != numgpt_post_)
@@ -1449,7 +1451,7 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
         "number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
 
   // allocate vector for shape functions and matrix for derivatives at gp
-  LINALG::Matrix<numnod_, 1> shapefcts(true);
+  CORE::LINALG::Matrix<numnod_, 1> shapefcts(true);
 
   // loop over the nodes and gauss points
   // interpolation matrix, inverted later to be the extrapolation matrix
@@ -1460,14 +1462,14 @@ DRT::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
     const double e2 = intpoints_.qxg[nd][1];
 
     // shape functions for the extrapolated coordinates
-    LINALG::Matrix<numgpt_post_, 1> funct;
+    CORE::LINALG::Matrix<numgpt_post_, 1> funct;
     CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, Shape());
 
     for (int i = 0; i < numgpt_post_; ++i) extrapol(nd, i) = funct(i);
   }
 
   // fixedsizesolver for inverting extrapol
-  LINALG::FixedSizeSerialDenseSolver<numnod_, numgpt_post_, 1> solver;
+  CORE::LINALG::FixedSizeSerialDenseSolver<numnod_, numgpt_post_, 1> solver;
   solver.SetMatrix(extrapol);
   int err = solver.Invert();
   if (err != 0.) dserror("Matrix extrapol is not invertible");
@@ -1487,8 +1489,8 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
   if (SolidMaterial()->UsesExtendedUpdate())
   {
     // get reference configuration and determine current configuration
-    LINALG::Matrix<numnod_, noddof_> xrefe(true);
-    LINALG::Matrix<numnod_, noddof_> xcurr(true);
+    CORE::LINALG::Matrix<numnod_, noddof_> xrefe(true);
+    CORE::LINALG::Matrix<numnod_, noddof_> xcurr(true);
 
     mem_configuration(disp, xrefe, xcurr);
 
@@ -1497,7 +1499,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
      *===============================================================================*/
 
     // allocate vector for shape functions and matrix for derivatives at gp
-    LINALG::Matrix<numdim_, numnod_> derivs(true);
+    CORE::LINALG::Matrix<numdim_, numnod_> derivs(true);
 
     for (int gp = 0; gp < intpoints_.nquad; ++gp)
     {
@@ -1512,13 +1514,13 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
        | orthonormal base (t1,t2,tn) in the undeformed configuration at current GP     |
        *===============================================================================*/
 
-      LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
+      CORE::LINALG::Matrix<numdim_, numnod_> derivs_ortho(true);
       double G1G2_cn;
-      LINALG::Matrix<noddof_, 1> dXds1(true);
-      LINALG::Matrix<noddof_, 1> dXds2(true);
-      LINALG::Matrix<noddof_, 1> dxds1(true);
-      LINALG::Matrix<noddof_, 1> dxds2(true);
-      LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
+      CORE::LINALG::Matrix<noddof_, 1> dXds1(true);
+      CORE::LINALG::Matrix<noddof_, 1> dXds2(true);
+      CORE::LINALG::Matrix<noddof_, 1> dxds1(true);
+      CORE::LINALG::Matrix<noddof_, 1> dxds2(true);
+      CORE::LINALG::Matrix<noddof_, noddof_> Q_localToGlobal(true);
 
       mem_orthonormalbase(
           xrefe, xcurr, derivs, derivs_ortho, G1G2_cn, dXds1, dXds2, dxds1, dxds2, Q_localToGlobal);
@@ -1528,8 +1530,8 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
        *===============================================================================*/
 
       // surface deformation gradient in 3 dimensions in global coordinates
-      LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
-      LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
+      CORE::LINALG::Matrix<noddof_, noddof_> defgrd_glob(true);
+      CORE::LINALG::Matrix<noddof_, noddof_> defgrd_loc(true);
 
       // principle stretch in thickness direction
       double lambda3 = cur_thickness_[gp] / thickness_;

@@ -130,7 +130,7 @@ namespace INVANA
     //@{
 
     //! maps of the atoms of the final dictionary
-    Teuchos::RCP<LINALG::MultiMapExtractor> patchmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> patchmap_;
     //@}
 
     //! global optimization parameter id to patch id

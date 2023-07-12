@@ -45,11 +45,11 @@ void ADAPTER::StructureConstrMerged::Setup()
   if (structure_ == Teuchos::null) dserror("Failed to create the underlying structural adapter");
 
   // build merged dof row map
-  dofrowmap_ = LINALG::MergeMap(
+  dofrowmap_ = CORE::LINALG::MergeMap(
       *(structure_->DofRowMap()), *(structure_->GetConstraintManager()->GetConstraintMap()), false);
 
   // set up interface between merged and single maps
-  conmerger_ = Teuchos::rcp(new LINALG::MapExtractor);
+  conmerger_ = Teuchos::rcp(new CORE::LINALG::MapExtractor);
   conmerger_->Setup(
       *dofrowmap_, structure_->DofRowMap(), structure_->GetConstraintManager()->GetConstraintMap());
 
@@ -174,15 +174,15 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap() { ret
 /*----------------------------------------------------------------------*/
 /* stiffness, i.e. force residual R_{n+1} differentiated
  * by displacements D_{n+1} */
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix()
 {
   // create empty large matrix and get small ones from structure and constraints
-  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81));
-  Teuchos::RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mergedmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap_, 81));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
   strustiff->Complete();
 
-  Teuchos::RCP<LINALG::SparseOperator> constiff =
+  Teuchos::RCP<CORE::LINALG::SparseOperator> constiff =
       structure_->GetConstraintManager()->GetConstrMatrix();
   constiff->Complete();
 
@@ -199,7 +199,8 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix(
 
 
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::StructureConstrMerged::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+ADAPTER::StructureConstrMerged::BlockSystemMatrix()
 {
   dserror("constrained BlockSparseMatrix never to be implemented");
   return Teuchos::null;
@@ -233,7 +234,7 @@ void ADAPTER::StructureConstrMerged::Evaluate(Teuchos::RCP<const Epetra_Vector> 
 /* domain map */
 const Epetra_Map& ADAPTER::StructureConstrMerged::DomainMap() const
 {
-  return *(LINALG::MergeMap(
+  return *(CORE::LINALG::MergeMap(
       structure_->DomainMap(), *(structure_->GetConstraintManager()->GetConstraintMap()), false));
 }
 
@@ -243,13 +244,13 @@ void ADAPTER::StructureConstrMerged::ApplyInterfaceForcesTemporaryDeprecated(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
   // create vector with displacement and constraint DOFs
-  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
   // insert interface forces
   interface_->AddFSICondVector(iforce, fifc);
 
   // extract the force values from the displacement DOFs only
-  Teuchos::RCP<Epetra_Vector> fifcdisp = LINALG::CreateVector(*conmerger_->CondMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifcdisp = CORE::LINALG::CreateVector(*conmerger_->CondMap(), true);
   conmerger_->ExtractCondVector(fifc, fifcdisp);
 
   // set interface forces within the structural time integrator

@@ -173,9 +173,10 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int gp, const int eleGID) override = 0;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+        const int eleGID) override = 0;
 
     /*! \brief Evaluate mass change
      *
@@ -197,10 +198,10 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
-        const int eleGID) override = 0;
+    void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel,
+        const int gp, const int eleGID) override = 0;
 
     /*! \brief Evaluate elastic material stresses and cmat
      *
@@ -221,9 +222,9 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params,
-        int gp, int eleGID);
+    void EvaluateElastic(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, CORE::LINALG::Matrix<6, 1>* stress,
+        CORE::LINALG::Matrix<6, 6>* cmat, Teuchos::ParameterList& params, int gp, int eleGID);
     //@}
 
 
@@ -407,18 +408,19 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int gp, const int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+        const int eleGID) override;
 
     /// calculate stresses and elastic material tangent (both in Voigt notation)
-    void GetSAndCmatdach(const double theta, const LINALG::Matrix<3, 3>* defgrd,
-        LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmatdach,
+    void GetSAndCmatdach(const double theta, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmatdach,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
     void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
-        LINALG::Matrix<3, 1>& fiber_vector);
+        CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
     /*! \brief Evaluate mass change
      *
@@ -440,10 +442,10 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
-        const int eleGID) override;
+    void EvaluateNonLinMass(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel,
+        const int gp, const int eleGID) override;
 
     /*! \brief evaluate the volumetric growth factor
      *
@@ -470,8 +472,8 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* dthetadC,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+    void EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6, 1>* dthetadC,
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     //@}
@@ -499,19 +501,19 @@ namespace MAT
 
     /// a reference direction (i.e., a fiber direction or a surface normal etc...), for anisotropic
     /// growth laws
-    LINALG::Matrix<3, 1> refdir_;
+    CORE::LINALG::Matrix<3, 1> refdir_;
 
     /// some current direction, used for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<LINALG::Matrix<3, 1>> curdir_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> curdir_;
 
     /// normal direction, used for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<LINALG::Matrix<3, 1>> curdir_for_update_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> curdir_for_update_;
 
     /// history of growth matrix, needed for anisotropic scalar-dependent growth in current radial
     /// direction...
-    std::vector<LINALG::Matrix<3, 3>> F_g_hist_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> F_g_hist_;
 
   };  // class GrowthVolumetric
 

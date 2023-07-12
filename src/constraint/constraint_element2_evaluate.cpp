@@ -60,9 +60,9 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
-      LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+      CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
-      LINALG::Matrix<numdim, 1> elementnormal;
+      CORE::LINALG::Matrix<numdim, 1> elementnormal;
       ComputeNormal(xscurr, elementnormal);
       double normaldistance = ComputeNormalDist(xscurr, elementnormal);
       ComputeFirstDerivDist(xscurr, elevec1, elementnormal);
@@ -80,7 +80,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numnode = 3;
       const int numdim = 2;
-      LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+      CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
 
       double angle = ComputeAngle(xscurr);
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  * compute 2d normal */
 void DRT::ELEMENTS::ConstraintElement2::ComputeNormal(
-    const LINALG::Matrix<3, 2>& xc, LINALG::Matrix<2, 1>& elenorm)
+    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::Matrix<2, 1>& elenorm)
 {
   elenorm(0, 0) = xc(0, 1) - xc(1, 1);
   elenorm(1, 0) = -xc(0, 0) + xc(1, 0);
@@ -126,7 +126,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeNormal(
 /*----------------------------------------------------------------------*
  * normal distance between third point and line */
 double DRT::ELEMENTS::ConstraintElement2::ComputeNormalDist(
-    const LINALG::Matrix<3, 2>& xc, const LINALG::Matrix<2, 1>& normal)
+    const CORE::LINALG::Matrix<3, 2>& xc, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   return (normal(0, 0) * (-xc(0, 0) + xc(2, 0)) - normal(1, 0) * (xc(0, 1) - xc(2, 1))) /
          normal.Norm2();
@@ -134,7 +134,7 @@ double DRT::ELEMENTS::ConstraintElement2::ComputeNormalDist(
 
 /*----------------------------------------------------------------------*
  * compute angle at second point */
-double DRT::ELEMENTS::ConstraintElement2::ComputeAngle(const LINALG::Matrix<3, 2>& xc)
+double DRT::ELEMENTS::ConstraintElement2::ComputeAngle(const CORE::LINALG::Matrix<3, 2>& xc)
 {
   return (acos((xc(0, 1) * (xc(1, 0) - xc(2, 0)) + xc(1, 1) * xc(2, 0) - xc(1, 0) * xc(2, 1) +
                    xc(0, 0) * (-xc(1, 1) + xc(2, 1))) /
@@ -146,8 +146,8 @@ double DRT::ELEMENTS::ConstraintElement2::ComputeAngle(const LINALG::Matrix<3, 2
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const LINALG::Matrix<3, 2>& xc,
-    Epetra_SerialDenseVector& elevector, const LINALG::Matrix<2, 1>& normal)
+void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const CORE::LINALG::Matrix<3, 2>& xc,
+    Epetra_SerialDenseVector& elevector, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   double normcube = pow(normal.Norm2(), 3);
 
@@ -179,13 +179,13 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const LINALG::Matr
 /*----------------------------------------------------------------------*
  * first derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivAngle(
-    const LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseVector& elevector)
+    const CORE::LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseVector& elevector)
 {
-  LINALG::SerialDenseVector vec1(2);
+  CORE::LINALG::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);
   vec1[0] = -(xc(0, 1) - xc(1, 1));
 
-  LINALG::SerialDenseVector vec2(2);
+  CORE::LINALG::SerialDenseVector vec2(2);
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
@@ -250,8 +250,8 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivAngle(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const LINALG::Matrix<3, 2>& xc,
-    Epetra_SerialDenseMatrix& elematrix, const LINALG::Matrix<2, 1>& normal)
+void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const CORE::LINALG::Matrix<3, 2>& xc,
+    Epetra_SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -462,13 +462,13 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const LINALG::Mat
 /*----------------------------------------------------------------------*
  * second derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle(
-    const LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseMatrix& elematrix)
+    const CORE::LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseMatrix& elematrix)
 {
-  LINALG::SerialDenseVector vec1(2);
+  CORE::LINALG::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);
   vec1[0] = -(xc(0, 1) - xc(1, 1));
 
-  LINALG::SerialDenseVector vec2(2);
+  CORE::LINALG::SerialDenseVector vec2(2);
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 

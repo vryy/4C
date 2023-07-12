@@ -45,7 +45,7 @@ void MIXTURE::IterativePrestressStrategy::Setup(
 
 void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
+    MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
@@ -54,11 +54,11 @@ void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& m
 
 void MIXTURE::IterativePrestressStrategy::UpdatePrestress(
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
-    LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
+    MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
+    CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Compute isochoric part of the deformation
-  LINALG::Matrix<3, 3> F_bar;
+  CORE::LINALG::Matrix<3, 3> F_bar;
   if (params_->isochoric_)
   {
     F_bar.Update(std::pow(F.Determinant(), -1.0 / 3.0), F);
@@ -69,21 +69,21 @@ void MIXTURE::IterativePrestressStrategy::UpdatePrestress(
   }
 
   // Compute new predeformation gradient
-  LINALG::Matrix<3, 3> G_old(G);
+  CORE::LINALG::Matrix<3, 3> G_old(G);
   G.MultiplyNN(F_bar, G_old);
 
 
   // Compute polar decomposition of the prestretch deformation gradient
 
   // Singular value decomposition of F = RU
-  LINALG::Matrix<3, 3> Q(true);
-  LINALG::Matrix<3, 3> S(true);
-  LINALG::Matrix<3, 3> VT(true);
+  CORE::LINALG::Matrix<3, 3> Q(true);
+  CORE::LINALG::Matrix<3, 3> S(true);
+  CORE::LINALG::Matrix<3, 3> VT(true);
 
-  LINALG::SVD<3, 3>(G, Q, S, VT);
+  CORE::LINALG::SVD<3, 3>(G, Q, S, VT);
 
   // Compute stretch tensor G = U = V * S * VT
-  LINALG::Matrix<3, 3> VS;
+  CORE::LINALG::Matrix<3, 3> VS;
 
   VS.MultiplyTN(VT, S);
   G.MultiplyNN(VS, VT);

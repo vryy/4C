@@ -74,22 +74,24 @@ namespace MIXTURE
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(
-        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void Update(const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
-    void UpdateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFext,
-        Teuchos::ParameterList& params, double dt, int gp, int eleGID) override;
+    void UpdateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<3, 3>& iFext, Teuchos::ParameterList& params, double dt, int gp,
+        int eleGID) override;
 
-    void UpdatePrestress(
-        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
-
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+    void UpdatePrestress(const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params,
         int gp, int eleGID) override;
 
-    void EvaluateElasticPart(const LINALG::Matrix<3, 3>& FM, const LINALG::Matrix<3, 3>& iFextin,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+
+    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& FM,
+        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) override;
 
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
 
@@ -100,12 +102,13 @@ namespace MIXTURE
         const std::string& name, Epetra_SerialDenseMatrix& data) const override;
 
    private:
-    [[nodiscard]] double EvaluateLambdaf(const LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
+    [[nodiscard]] double EvaluateLambdaf(
+        const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
     [[nodiscard]] double EvaluateLambdaExt(
-        const LINALG::Matrix<3, 3>& iFext, int gp, int eleGID) const;
+        const CORE::LINALG::Matrix<3, 3>& iFext, int gp, int eleGID) const;
 
-    [[nodiscard]] LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
-    [[nodiscard]] LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
 
     [[nodiscard]] double EvaluateDepositionStretch(double time) const;
     void UpdateHomeostaticValues(const Teuchos::ParameterList& params, int eleGID);

@@ -55,10 +55,10 @@ void SSI::ContactStrategyBase::ApplyContactToScatraResidual(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::ApplyContactToScatraScatra(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
 
   const auto& scatra_scatra_sparsematrix =
       CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra);
@@ -69,16 +69,16 @@ void SSI::ContactStrategySparse::ApplyContactToScatraScatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_block =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_scatra_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_scatra_matrix);
 
   // get scatra-scatra block matrix and complete split matrix
   const auto& scatra_scatra_blockmatrix =
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra)
-          ->Split<LINALG::DefaultBlockMatrixStrategy>(
+          ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapScaTra());
   scatra_scatra_blockmatrix->Complete();
 
@@ -88,10 +88,10 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::ApplyContactToScatraStructure(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
   scatra_structure_matrix_sparse->UnComplete();
 
   const auto& scatra_struct_matrix =
@@ -103,16 +103,16 @@ void SSI::ContactStrategySparse::ApplyContactToScatraStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_block =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
 
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ)
-          ->Split<LINALG::DefaultBlockMatrixStrategy>(
+          ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapStructure(), *SSIMaps()->BlockMapScaTra());
   scatra_struct_blockmatrix->Complete();
 
@@ -123,10 +123,10 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::ApplyContactToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
   structure_scatra_matrix_sparse->UnComplete();
 
   const auto& struct_scatra_matrix =
@@ -138,16 +138,16 @@ void SSI::ContactStrategySparse::ApplyContactToStructureScatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_block =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
 
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra)
-          ->Split<LINALG::DefaultBlockMatrixStrategy>(
+          ->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
               *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapStructure());
   struct_scatra_blockmatrix->Complete();
 
@@ -158,20 +158,20 @@ void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::ContactStrategyBase> SSI::BuildContactStrategy(
     Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType matrixtype_scatra)
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, CORE::LINALG::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::ContactStrategyBase> contact_strategy(Teuchos::null);
 
   switch (matrixtype_scatra)
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       contact_strategy =
           Teuchos::rcp(new SSI::ContactStrategyBlock(contact_nitsche_strategy, ssi_maps));
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       contact_strategy =
           Teuchos::rcp(new SSI::ContactStrategySparse(contact_nitsche_strategy, ssi_maps));

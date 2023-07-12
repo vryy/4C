@@ -22,7 +22,7 @@
 DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthickdir()
 {
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     xrefe(i, 0) = this->Nodes()[i]->X()[0];
@@ -35,20 +35,20 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
       -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125, -0.125, +0.125, +0.125,
       +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
   jac0.MultiplyNN(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
   iJ0.Invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
   jac0stretch.MultiplyTN(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
@@ -106,11 +106,11 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
         max_stretch);
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
-  LINALG::Matrix<NUMDIM_SOH8, 1> loc_thickvec(true);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> loc_thickvec(true);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
-  LINALG::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
   glo_thickvec.MultiplyTN(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
@@ -127,7 +127,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
 double DRT::ELEMENTS::So_sh8::sosh8_calcaspectratio()
 {
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     xrefe(i, 0) = this->Nodes()[i]->X()[0];
@@ -140,20 +140,20 @@ double DRT::ELEMENTS::So_sh8::sosh8_calcaspectratio()
       -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125, -0.125, +0.125, +0.125,
       +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
   jac0.MultiplyNN(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
   iJ0.Invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
   jac0stretch.MultiplyTN(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
@@ -183,10 +183,10 @@ double DRT::ELEMENTS::So_sh8::sosh8_calcaspectratio()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickdir(
-    LINALG::Matrix<NUMDIM_SOH8, 1>& thickdirglo)
+    CORE::LINALG::Matrix<NUMDIM_SOH8, 1>& thickdirglo)
 {
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     xrefe(i, 0) = this->Nodes()[i]->X()[0];
@@ -199,16 +199,16 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
       -0.125, +0.125, +0.125, -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125,
       -0.125, +0.125, +0.125, +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0(false);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0(false);
   jac0.MultiplyNN(df0, xrefe);
 
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
   iJ0.Invert();
 
   // make enforced global thickness direction a unit vector
@@ -217,7 +217,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
 
   // pull thickness direction from global to contra-variant local
   // (dxi^i) = (Jinv0_A^i)^T . (dX^A)
-  LINALG::Matrix<NUMDIM_SOH8, 1> thickdirlocsharp(false);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> thickdirlocsharp(false);
   thickdirlocsharp.MultiplyTN(iJ0, thickdirglo);
 
   // identify parametric co-ordinate closest to enforced thickness direction
@@ -257,11 +257,11 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_enfthickd
   }
 
   // thickness-vector in parameter-space, has 1.0 in thickness-coord
-  LINALG::Matrix<NUMDIM_SOH8, 1> loc_thickvec(true);
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> loc_thickvec(true);
   loc_thickvec(thick_index) = 1.0;
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
-  LINALG::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
   glo_thickvec.MultiplyTN(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
@@ -318,10 +318,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
+const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
 DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
 {
-  std::vector<LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
+  std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
   const std::array<double, NUMNOD_SOH8> r = {-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0};
   const std::array<double, NUMNOD_SOH8> s = {-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0};

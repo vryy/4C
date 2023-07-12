@@ -108,8 +108,8 @@ void MAT::FourierIso::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  calculate for 1D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
-    LINALG::Matrix<1, 1>& heatflux) const
+void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp,
+    CORE::LINALG::Matrix<1, 1>& cmat, CORE::LINALG::Matrix<1, 1>& heatflux) const
 {
   // conductivity tensor
   cmat(0, 0) = params_->conduct_;
@@ -121,8 +121,8 @@ void MAT::FourierIso::Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Mat
 /*----------------------------------------------------------------------*
  |  calculate for 2D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
-    LINALG::Matrix<2, 1>& heatflux) const
+void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp,
+    CORE::LINALG::Matrix<2, 2>& cmat, CORE::LINALG::Matrix<2, 1>& heatflux) const
 {
   // conductivity tensor
   cmat.Clear();
@@ -135,8 +135,8 @@ void MAT::FourierIso::Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Mat
 /*----------------------------------------------------------------------*
  |  calculate for 3D                                         dano 09/09 |
  *----------------------------------------------------------------------*/
-void MAT::FourierIso::Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
-    LINALG::Matrix<3, 1>& heatflux) const
+void MAT::FourierIso::Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp,
+    CORE::LINALG::Matrix<3, 3>& cmat, CORE::LINALG::Matrix<3, 1>& heatflux) const
 {
   // conductivity tensor
   cmat.Clear();

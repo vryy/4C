@@ -93,8 +93,8 @@ namespace DRT
       //! \param[out] dN_dx                 derivative of shape functions
       void PrepCalcInternalForceStiffTotLag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          LINALG::Matrix<6, 1>& curr_nodal_coords, LINALG::Matrix<6, 6>& dcurr_nodal_coords_du,
-          LINALG::Matrix<6, 1>& dN_dx);
+          CORE::LINALG::Matrix<6, 1>& curr_nodal_coords,
+          CORE::LINALG::Matrix<6, 6>& dcurr_nodal_coords_du, CORE::LINALG::Matrix<6, 1>& dN_dx);
 
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
       //! positions (using kinematic type tr3_totlag)
@@ -132,20 +132,20 @@ namespace DRT
       double CrossSection() const { return crosssec_; }
 
       //! Return the current length of the truss from @p curr_nodal_coords
-      double CurrLength(const LINALG::Matrix<6, 1>& curr_nodal_coords) const
+      double CurrLength(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords) const
       {
         return curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
 
       //! Return the squared value of the current length of the truss from @p curr_nodal_coords
-      double CurrLength2(const LINALG::Matrix<6, 1>& curr_nodal_coords) const
+      double CurrLength2(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords) const
       {
         return CurrLength(curr_nodal_coords) * CurrLength(curr_nodal_coords);
       }
 
       //! derivative of current length w.r.t. nodal coordinate (entry @p col) from @p
       //! curr_nodal_coords
-      double dCurrLengthdu(const LINALG::Matrix<6, 1>& curr_nodal_coords, const int col) const
+      double dCurrLengthdu(const CORE::LINALG::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
         return curr_nodal_coords(col) / curr_nodal_coords.Norm2() * M_SQRT1_2;
       }
@@ -200,7 +200,7 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       //! coordinates of nodes in reference configuration
-      const LINALG::Matrix<6, 1>& X() const { return X_; }
+      const CORE::LINALG::Matrix<6, 1>& X() const { return X_; }
 
      protected:
       //! kind of integration to be performed
@@ -301,7 +301,7 @@ namespace DRT
       DRT::Container data_;
 
       //! reference tangent position
-      LINALG::Matrix<1, 3> diff_disp_ref_;
+      CORE::LINALG::Matrix<1, 3> diff_disp_ref_;
 
       //!  data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -322,7 +322,7 @@ namespace DRT
       int material_;
 
       //! reference node position
-      LINALG::Matrix<6, 1> X_;
+      CORE::LINALG::Matrix<6, 1> X_;
 
       // don't want = operator
       Truss3& operator=(const Truss3& old);

@@ -34,11 +34,11 @@ namespace UTILS
   class SurfStressManager;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -98,19 +98,19 @@ namespace STRUMULTI
     \brief Predictor step
 
     */
-    void Predictor(LINALG::Matrix<3, 3>* defgrd);
+    void Predictor(CORE::LINALG::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Predictor step
 
     */
-    void PredictConstDis(LINALG::Matrix<3, 3>* defgrd);
+    void PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd);
 
     /*!
    \brief Predictor step
 
    */
-    void PredictTangDis(LINALG::Matrix<3, 3>* defgrd);
+    void PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd);
 
     /*!
     \brief Full Newton iteration
@@ -142,7 +142,7 @@ namespace STRUMULTI
     associated macroscale deformation gradient
 
     */
-    void EvaluateMicroBC(LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
+    void EvaluateMicroBC(CORE::LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp);
 
     /*!
     \brief Set old state given from micromaterialgp
@@ -182,8 +182,8 @@ namespace STRUMULTI
     stresses and constitutive tensor by averaging over RVE
 
     */
-    void StaticHomogenization(LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        LINALG::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
+    void StaticHomogenization(CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat,
+        CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton, bool& build_stiff);
 
     /*!
     \brief Convert constitutive tensor relating first Piola-Kirchhoff
@@ -195,8 +195,8 @@ namespace STRUMULTI
     Marsden and Hughes, Mathematical Foundations of Elasticity,
     Dover, pg. 215
     */
-    void ConvertMat(const Epetra_MultiVector& cmatpf, const LINALG::Matrix<3, 3>& inv_defgrd,
-        const LINALG::Matrix<6, 1>& S, LINALG::Matrix<6, 6>& cmat);
+    void ConvertMat(const Epetra_MultiVector& cmatpf, const CORE::LINALG::Matrix<3, 3>& inv_defgrd,
+        const CORE::LINALG::Matrix<6, 1>& S, CORE::LINALG::Matrix<6, 6>& cmat);
 
 
     /*!
@@ -241,7 +241,7 @@ namespace STRUMULTI
     Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man_;
 
     Teuchos::RCP<DRT::Discretization> discret_;
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     int myrank_;
     int maxentriesperrow_;
 
@@ -285,8 +285,8 @@ namespace STRUMULTI
     double normchardis_;
     double normdisi_;
 
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_;
-    Teuchos::RCP<LINALG::SparseMatrix> stiff_dirich_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_dirich_;
 
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;
     Teuchos::RCP<Epetra_Vector> invtoggle_;

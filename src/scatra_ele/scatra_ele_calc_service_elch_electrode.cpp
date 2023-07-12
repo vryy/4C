@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetConductivit
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateCurrent(
-    LINALG::Matrix<nsd_, 1>& q,              //!< flux of species k
+    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const double fac                         //!< integration factor
 )
@@ -153,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
 
   // extract local nodal values from global state vectors
   DRT::UTILS::ExtractMyValues(*phinp, my::ephinp_, la[0].lm_);
-  static std::vector<LINALG::Matrix<nen_, 1>> ephidtnp(2);
+  static std::vector<CORE::LINALG::Matrix<nen_, 1>> ephidtnp(2);
   DRT::UTILS::ExtractMyValues(*phidtnp, ephidtnp, la[0].lm_);
 
   // initialize variables for integrals of concentration, its time derivative, and domain
@@ -224,7 +224,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
           my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
       // compute velocity and its divergence
-      static LINALG::Matrix<nsd_, 1> v;
+      static CORE::LINALG::Matrix<nsd_, 1> v;
       v.Multiply(my::evelnp_, my::funct_);
       double divv(0.);
       my::GetDivergence(divv, my::evelnp_);
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
-    LINALG::Matrix<nsd_, 1>& q,              //!< flux of species k
+    CORE::LINALG::Matrix<nsd_, 1>& q,        //!< flux of species k
     const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
     const int k                              //!< index of current scalar
 )

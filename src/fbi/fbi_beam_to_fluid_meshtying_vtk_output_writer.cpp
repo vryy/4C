@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputBeamToFlui
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Epetra_Vector> force_beam =
         Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(beam_dof_map, true));
-    LINALG::Export(*couplingenforcer->AssembleStructureCouplingResidual(), *force_beam);
+    CORE::LINALG::Export(*couplingenforcer->AssembleStructureCouplingResidual(), *force_beam);
 
 
     visualization->AddDiscretizationNodalData("force", force_beam);

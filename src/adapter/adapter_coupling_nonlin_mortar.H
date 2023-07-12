@@ -39,7 +39,7 @@ namespace CONTACT
   class CoInterface;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -87,31 +87,31 @@ namespace ADAPTER
 
     virtual void PrintInterface(std::ostream& os);
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> DLinMatrix()
     {
       if (DLin_ == Teuchos::null) dserror("ERROR: DLin Matrix is null pointer!");
       return DLin_;
     };
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> MLinMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> MLinMatrix()
     {
       if (MLin_ == Teuchos::null) dserror("ERROR: MLin Matrix is null pointer!");
       return MLin_;
     };
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> HMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> HMatrix()
     {
       if (H_ == Teuchos::null) dserror("ERROR: H Matrix is null pointer!");
       return H_;
     };
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> TMatrix()
     {
       if (T_ == Teuchos::null) dserror("ERROR: T Matrix is null pointer!");
       return T_;
     };
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> NMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix()
     {
       if (N_ == Teuchos::null) dserror("ERROR: N Matrix is null pointer!");
       return N_;
@@ -212,16 +212,17 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Map>
         psmdofrowmap_;  ///< map of sm merged row dofs (before parallel redist.)
 
-    Teuchos::RCP<LINALG::SparseMatrix> DLin_;  ///< linearization of D matrix
-    Teuchos::RCP<LINALG::SparseMatrix> MLin_;  ///< linearization of M matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> DLin_;  ///< linearization of D matrix
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MLin_;  ///< linearization of M matrix
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         H_;  ///< Matrix containing the tangent derivatives with respect to slave dofs
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         T_;  ///< Matrix containing the tangent vectors of the slave nodes
-    Teuchos::RCP<LINALG::SparseMatrix> N_;  ///< Matrix containing the (weighted) gap derivatives
-                                            ///< with respect to master and slave dofs
-    Teuchos::RCP<Epetra_Vector> gap_;       ///< gap vector
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        N_;                            ///< Matrix containing the (weighted) gap derivatives
+                                       ///< with respect to master and slave dofs
+    Teuchos::RCP<Epetra_Vector> gap_;  ///< gap vector
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;  ///< interface
   };

@@ -10,7 +10,8 @@ using NotationType = UTILS::VOIGT::NotationType;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void UTILS::VOIGT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& out)
+void UTILS::VOIGT::Matrix3x3to9x1(
+    CORE::LINALG::Matrix<3, 3> const& in, CORE::LINALG::Matrix<9, 1>& out)
 {
   for (int i = 0; i < 3; ++i) out(i) = in(i, i);
   out(3) = in(0, 1);
@@ -21,7 +22,8 @@ void UTILS::VOIGT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix
   out(8) = in(2, 0);
 }
 
-void UTILS::VOIGT::Matrix9x1to3x3(LINALG::Matrix<9, 1> const& in, LINALG::Matrix<3, 3>& out)
+void UTILS::VOIGT::Matrix9x1to3x3(
+    CORE::LINALG::Matrix<9, 1> const& in, CORE::LINALG::Matrix<3, 3>& out)
 {
   for (int i = 0; i < 3; ++i) out(i, i) = in(i);
   out(0, 1) = in(3);
@@ -33,7 +35,7 @@ void UTILS::VOIGT::Matrix9x1to3x3(LINALG::Matrix<9, 1> const& in, LINALG::Matrix
 }
 
 template <NotationType rows_notation, NotationType cols_notation>
-void UTILS::VOIGT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
+void UTILS::VOIGT::FourthOrderIdentityMatrix(CORE::LINALG::Matrix<6, 6>& id)
 {
   id.Clear();
 
@@ -48,12 +50,12 @@ void UTILS::VOIGT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<3, 1>& vec_a,
-    const LINALG::Matrix<3, 1>& vec_b, LINALG::Matrix<6, 1>& ab_ba)
+void UTILS::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(const CORE::LINALG::Matrix<3, 1>& vec_a,
+    const CORE::LINALG::Matrix<3, 1>& vec_b, CORE::LINALG::Matrix<6, 1>& ab_ba)
 {
   std::fill(ab_ba.A(), ab_ba.A() + 6, 0.0);
 
-  LINALG::Matrix<3, 3> outer_product;
+  CORE::LINALG::Matrix<3, 3> outer_product;
   outer_product.MultiplyNT(vec_a, vec_b);
 
   for (unsigned i = 0; i < 3; ++i)
@@ -67,8 +69,8 @@ void UTILS::VOIGT::VoigtUtils<type>::SymmetricOuterProduct(const LINALG::Matrix<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
-    const LINALG::Matrix<6, 1>& strain, const LINALG::Matrix<3, 1>& vec, LINALG::Matrix<3, 1>& res)
+void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(const CORE::LINALG::Matrix<6, 1>& strain,
+    const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& res)
 {
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = 0; j < 3; ++j)
@@ -81,8 +83,8 @@ void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
-    const unsigned pow, const LINALG::Matrix<6, 1>& strain, LINALG::Matrix<6, 1>& strain_pow)
+void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(const unsigned pow,
+    const CORE::LINALG::Matrix<6, 1>& strain, CORE::LINALG::Matrix<6, 1>& strain_pow)
 {
   std::copy(strain.A(), strain.A() + 6, strain_pow.A());
 
@@ -91,7 +93,7 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
     // unscale the off-diagonal values
     UnscaleOffDiagonalVals(strain_pow);
 
-    LINALG::Matrix<6, 1> prod(false);
+    CORE::LINALG::Matrix<6, 1> prod(false);
 
     for (unsigned p = 1; p < pow; ++p)
     {
@@ -117,7 +119,7 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(
  *----------------------------------------------------------------------------*/
 template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::InverseTensor(
-    const LINALG::Matrix<6, 1>& tens, LINALG::Matrix<6, 1>& tens_inv)
+    const CORE::LINALG::Matrix<6, 1>& tens, CORE::LINALG::Matrix<6, 1>& tens_inv)
 {
   double det = Determinant(tens);
   tens_inv(0) = (tens(1) * tens(2) - UnscaleFactor(4) * UnscaleFactor(4) * tens(4) * tens(4)) /
@@ -141,14 +143,14 @@ void UTILS::VOIGT::VoigtUtils<type>::InverseTensor(
  *----------------------------------------------------------------------------*/
 template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::ToStressLike(
-    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+    const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<6, 1>& vtensor_out)
 {
   for (unsigned i = 0; i < 6; ++i) vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i);
 }
 
 template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::ToStrainLike(
-    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<6, 1>& vtensor_out)
+    const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<6, 1>& vtensor_out)
 {
   for (unsigned i = 0; i < 6; ++i)
     vtensor_out(i) = UnscaleFactor(i) * vtensor_in(i) * Strains::ScaleFactor(i);
@@ -156,7 +158,7 @@ void UTILS::VOIGT::VoigtUtils<type>::ToStrainLike(
 
 template <NotationType type>
 void UTILS::VOIGT::VoigtUtils<type>::VectorToMatrix(
-    const LINALG::Matrix<6, 1>& vtensor_in, LINALG::Matrix<3, 3>& tensor_out)
+    const CORE::LINALG::Matrix<6, 1>& vtensor_in, CORE::LINALG::Matrix<3, 3>& tensor_out)
 {
   for (int i = 0; i < 3; ++i) tensor_out(i, i) = vtensor_in(i);
   tensor_out(0, 1) = tensor_out(1, 0) = UnscaleFactor(3) * vtensor_in(3);
@@ -167,7 +169,7 @@ void UTILS::VOIGT::VoigtUtils<type>::VectorToMatrix(
 template <NotationType type>
 template <typename T>
 void UTILS::VOIGT::VoigtUtils<type>::MatrixToVector(
-    const LINALG::Matrix<3, 3, T>& tensor_in, LINALG::Matrix<6, 1, T>& vtensor_out)
+    const CORE::LINALG::Matrix<3, 3, T>& tensor_in, CORE::LINALG::Matrix<6, 1, T>& vtensor_out)
 {
   for (int i = 0; i < 3; ++i) vtensor_out(i) = tensor_in(i, i);
   vtensor_out(3) = 0.5 * ScaleFactor(3) * (tensor_in(0, 1) + tensor_in(1, 0));
@@ -178,7 +180,7 @@ void UTILS::VOIGT::VoigtUtils<type>::MatrixToVector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
+void UTILS::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= ScaleFactor(i);
 }
@@ -186,7 +188,7 @@ void UTILS::VOIGT::VoigtUtils<type>::ScaleOffDiagonalVals(LINALG::Matrix<6, 1>& 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <NotationType type>
-void UTILS::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(LINALG::Matrix<6, 1>& strain)
+void UTILS::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain)
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);
 }
@@ -209,17 +211,17 @@ template class UTILS::VOIGT::VoigtUtils<NotationType::strain>;
 template class UTILS::VOIGT::VoigtUtils<NotationType::stress>;
 
 template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::MatrixToVector<double>(
-    LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
+    CORE::LINALG::Matrix<3, 3, double> const& in, CORE::LINALG::Matrix<6, 1, double>& out);
 template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::MatrixToVector<double>(
-    LINALG::Matrix<3, 3, double> const& in, LINALG::Matrix<6, 1, double>& out);
+    CORE::LINALG::Matrix<3, 3, double> const& in, CORE::LINALG::Matrix<6, 1, double>& out);
 
 using FAD = Sacado::Fad::DFad<double>;
 template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::MatrixToVector<FAD>(
-    LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
+    CORE::LINALG::Matrix<3, 3, FAD> const& in, CORE::LINALG::Matrix<6, 1, FAD>& out);
 template void UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::MatrixToVector<FAD>(
-    LINALG::Matrix<3, 3, FAD> const& in, LINALG::Matrix<6, 1, FAD>& out);
+    CORE::LINALG::Matrix<3, 3, FAD> const& in, CORE::LINALG::Matrix<6, 1, FAD>& out);
 
 template void UTILS::VOIGT::FourthOrderIdentityMatrix<NotationType::stress, NotationType::stress>(
-    LINALG::Matrix<6, 6>& id);
+    CORE::LINALG::Matrix<6, 6>& id);
 template void UTILS::VOIGT::FourthOrderIdentityMatrix<NotationType::stress, NotationType::strain>(
-    LINALG::Matrix<6, 6>& id);
+    CORE::LINALG::Matrix<6, 6>& id);

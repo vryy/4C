@@ -153,7 +153,7 @@ namespace ART
     // Teuchos::RCP<Epetra_Vector> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
@@ -169,9 +169,9 @@ namespace ART
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
     const Teuchos::RCP<const Epetra_Vector> InvDirichlet();
 
-    Teuchos::RCP<LINALG::SparseMatrix> MassMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> MassMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(massmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(massmat_);
     }
 
     //@}
@@ -179,7 +179,7 @@ namespace ART
 
    protected:
     /// (standard) mass matrix
-    Teuchos::RCP<LINALG::SparseOperator> massmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> massmat_;
 
     /// maps for scatra Dirichlet and free DOF sets
     Teuchos::RCP<Epetra_Vector> nodeIds_;

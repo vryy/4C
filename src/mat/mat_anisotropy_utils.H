@@ -42,7 +42,7 @@ namespace MAT
    * @param fiber_vector (out) : Fiber vector
    */
   void ReadAnisotropyFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
-      LINALG::Matrix<3, 1>& fiber_vector);
+      CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
   /*!
    * \brief Compute structural tensors of a 2D vector of fibers with the structural tensor
@@ -58,7 +58,7 @@ namespace MAT
    * \param strategy Reference to the structural tensor strategy
    */
   template <typename T, unsigned int numfib>
-  void ComputeStructuralTensors(std::vector<std::array<LINALG::Matrix<3, 1>, numfib>>& fibers,
+  void ComputeStructuralTensors(std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers,
       std::vector<std::array<T, numfib>>& structural_tensor,
       const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase>& strategy);
 

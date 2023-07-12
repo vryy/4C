@@ -140,7 +140,7 @@ void NOX::NLN::GlobalData::CheckInput() const
   // short input check
   if (linSolvers_.size() == 0) dserror("The linear solver map has the size 0! Required size > 0.");
 
-  typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>::const_iterator CI;
+  typedef std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>::const_iterator CI;
   for (CI iter = linSolvers_.begin(); iter != linSolvers_.end(); ++iter)
     if (iter->second.is_null())
     {

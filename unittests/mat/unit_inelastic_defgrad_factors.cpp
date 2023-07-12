@@ -282,24 +282,24 @@ namespace
     }
 
     // deformation gradient
-    LINALG::Matrix<3, 3> FM_;
+    CORE::LINALG::Matrix<3, 3> FM_;
     // derivative of second Piola-Kirchhoff stress tensor w.r.t. inverse inelastic deformation
     // gradient
-    LINALG::Matrix<6, 9> dSdiFin_;
+    CORE::LINALG::Matrix<6, 9> dSdiFin_;
     // reference solution of inverse inelastic deformation gradient using
     // InelasticDefgradLinScalarIso
-    LINALG::Matrix<3, 3> iFin_lin_scalar_iso_solution_;
+    CORE::LINALG::Matrix<3, 3> iFin_lin_scalar_iso_solution_;
     // reference solution of inverse inelastic deformation gradient using
     // InelasticDefgradLinScalarAniso
-    LINALG::Matrix<3, 3> iFin_lin_scalar_aniso_solution_;
+    CORE::LINALG::Matrix<3, 3> iFin_lin_scalar_aniso_solution_;
     // reference solution of inverse inelastic deformation gradient using
     // InelasticDefgradPolyIntercalFracIso
-    LINALG::Matrix<3, 3> iFin_poly_intercal_frac_iso_solution_;
+    CORE::LINALG::Matrix<3, 3> iFin_poly_intercal_frac_iso_solution_;
     // reference solution of inverse inelastic deformation gradient using
     // InelasticDefgradPolyIntercalFracAniso
-    LINALG::Matrix<3, 3> iFin_poly_intercal_frac_aniso_solution_;
+    CORE::LINALG::Matrix<3, 3> iFin_poly_intercal_frac_aniso_solution_;
     // reference solution of inverse inelastic deformation gradient using InelasticDefgradLinTempIso
-    LINALG::Matrix<3, 3> iFin_lin_temp_iso_solution_;
+    CORE::LINALG::Matrix<3, 3> iFin_lin_temp_iso_solution_;
     // pointer to object that evaluates a linear shape
     Teuchos::RCP<MAT::InelasticDefgradLinearShape> linear_shape_;
     // pointer to object that evaluates a polynomial shape
@@ -346,19 +346,19 @@ namespace
         {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}, {1.0, 0.5, 0.3}};
 
     // result of first growth direction
-    LINALG::Matrix<3, 3> growth_dir_1(true);
+    CORE::LINALG::Matrix<3, 3> growth_dir_1(true);
     growth_dir_1(0, 0) = 1.0;
 
     // result of second growth direction
-    LINALG::Matrix<3, 3> growth_dir_2(true);
+    CORE::LINALG::Matrix<3, 3> growth_dir_2(true);
     growth_dir_2(1, 1) = 1.0;
 
     // result of third growth direction
-    LINALG::Matrix<3, 3> growth_dir_3(true);
+    CORE::LINALG::Matrix<3, 3> growth_dir_3(true);
     growth_dir_3(2, 2) = 1.0;
 
     // result of fourth growth direction
-    LINALG::Matrix<3, 3> growth_dir_4(true);
+    CORE::LINALG::Matrix<3, 3> growth_dir_4(true);
     // clang-format off
     growth_dir_4(0, 0) = 0.74626865671641791044776119402985; growth_dir_4(0, 1) = 0.37313432835820895522388059701493; growth_dir_4(0, 2) = 0.22388059701492537313432835820896;
     growth_dir_4(1, 0) = growth_dir_4(0,1); growth_dir_4(1, 1) = 0.18656716417910447761194029850746; growth_dir_4(1, 2) = 0.11194029850746268656716417910448;
@@ -366,7 +366,7 @@ namespace
     // clang-format on
 
     // put all results together
-    const std::vector<LINALG::Matrix<3, 3>> growth_direction_solutions{
+    const std::vector<CORE::LINALG::Matrix<3, 3>> growth_direction_solutions{
         growth_dir_1, growth_dir_2, growth_dir_3, growth_dir_4};
 
     // loop over all growth directions to be tested and perform the test
@@ -405,8 +405,8 @@ namespace
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateInelasticDefGradDerivative)
   {
     const double detF = FM_.Determinant();
-    LINALG::Matrix<9, 1> DFinDx(true);
-    LINALG::Matrix<9, 1> DFinDx_ref(true);
+    CORE::LINALG::Matrix<9, 1> DFinDx(true);
+    CORE::LINALG::Matrix<9, 1> DFinDx_ref(true);
 
     lin_scalar_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
     DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 2.977205763668e-07;
@@ -454,7 +454,7 @@ namespace
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateInverseInelasticDefGrad)
   {
     // create matrix to be filled by tested methods
-    LINALG::Matrix<3, 3> iFin(true);
+    CORE::LINALG::Matrix<3, 3> iFin(true);
 
     // test InelasticDefgradLinScalarIso evaluate the method
     lin_scalar_iso_->EvaluateInverseInelasticDefGrad(&FM_, iFin);
@@ -502,16 +502,16 @@ namespace
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateAdditionalCmat)
   {
     // calculate the inverse Cauchy-Green tensor in voigt notation
-    LINALG::Matrix<3, 3> CM;
-    LINALG::Matrix<3, 3> iCM;
-    LINALG::Matrix<6, 1> iCV;
+    CORE::LINALG::Matrix<3, 3> CM;
+    CORE::LINALG::Matrix<3, 3> iCM;
+    CORE::LINALG::Matrix<6, 1> iCV;
     CM.MultiplyTN(1.0, FM_, FM_, 0.0);
     iCM.Invert(CM);
     UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
     // matrix to be filled by the methods
-    LINALG::Matrix<6, 6> CMatAdd(true);
-    LINALG::Matrix<6, 6> CMatAdd_ref_solution(true);
+    CORE::LINALG::Matrix<6, 6> CMatAdd(true);
+    CORE::LINALG::Matrix<6, 6> CMatAdd_ref_solution(true);
 
     // test InelasticDefgradLinScalarIso set up reference solution
     // clang-format off
@@ -606,8 +606,8 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateODStiffMat)
   {
-    LINALG::Matrix<6, 1> dSdc(true);
-    LINALG::Matrix<6, 1> dSdc_ref_solution(true);
+    CORE::LINALG::Matrix<6, 1> dSdc(true);
+    CORE::LINALG::Matrix<6, 1> dSdc_ref_solution(true);
 
     // test InelasticDefgradLinScalarIso set up reference solution
     // clang-format off

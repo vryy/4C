@@ -29,11 +29,11 @@ namespace IO
   class DiscretizationReader;
   class DiscretizationWriter;
 }  // namespace IO
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 namespace FLD
@@ -59,14 +59,15 @@ namespace FLD
         \brief Wrapper for FluidImpedacnceBc::UseBlockMatrix
       */
       void UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
-          const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps,
-          bool splitmatrix);
+          const CORE::LINALG::MultiMapExtractor& domainmaps,
+          const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
 
       /*!
       \brief Calculate impedance tractions and add it to fluid residual and linearisation
       */
       void AddImpedanceBCToResidualAndSysmat(const double dta, const double time,
-          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat);
+          Teuchos::RCP<Epetra_Vector>& residual,
+          Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat);
 
       /*!
       \brief Wrap for time update of impedance conditions
@@ -131,8 +132,8 @@ namespace FLD
       \brief Split linearization matrix to a BlockSparseMatrixBase
       */
       void UseBlockMatrix(Teuchos::RCP<std::set<int>> condelements,
-          const LINALG::MultiMapExtractor& domainmaps, const LINALG::MultiMapExtractor& rangemaps,
-          bool splitmatrix);
+          const CORE::LINALG::MultiMapExtractor& domainmaps,
+          const CORE::LINALG::MultiMapExtractor& rangemaps, bool splitmatrix);
 
       /*!
         \brief compute and store flow rate of all previous
@@ -145,7 +146,7 @@ namespace FLD
         to elements
       */
       void CalculateImpedanceTractionsAndUpdateResidualAndSysmat(
-          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<LINALG::SparseOperator>& sysmat,
+          Teuchos::RCP<Epetra_Vector>& residual, Teuchos::RCP<CORE::LINALG::SparseOperator>& sysmat,
           const double dta, const double time, const int condid);
 
       /*!
@@ -200,7 +201,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector> impedancetbc_;
 
       //! linearisation of traction vector
-      Teuchos::RCP<LINALG::SparseOperator> impedancetbcsysmat_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> impedancetbcsysmat_;
 
       //! Pressure at time step n+1
       double P_np_;

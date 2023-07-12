@@ -31,7 +31,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
   if (tempnp == Teuchos::null) dserror("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
 }
 
 
@@ -47,9 +47,9 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
     const double& diffcoeff,         //!< diffusion coefficient
     const double& diffcoeffderiv,    //!< derivative of diffusion coefficient w.r.t. concentration
     const double& temp,              //!< temperature
-    const LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-    const LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
-    const LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
+    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+    const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
+    const CORE::LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
 )
 {
   for (int vi = 0; vi < nen_; ++vi)
@@ -86,9 +86,9 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
     const double& concentration,     //!< concentration
     const double& diffcoeff,         //!< diffusion coefficient
     const double& temperature,       //!< temperature
-    const LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-    const LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
-    const LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
+    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+    const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
+    const CORE::LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
 )
 {
   for (int vi = 0; vi < nen_; ++vi)
@@ -129,8 +129,8 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
     const double& conc,       //!< concentration
     const double& diffcoeff,  //!< diffusion coefficient
     const double& temp,       //!< temperature
-    const LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
-    const LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
+    const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
+    const CORE::LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
 )
 {
   for (int vi = 0; vi < nen_; ++vi)
@@ -190,9 +190,9 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat,
     const int& numdofpernode, const double& timefacfac, const double& invF,
-    const LINALG::Matrix<nsd_, 1>& gradconc, const LINALG::Matrix<nsd_, 1>& gradpot,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradconc, const CORE::LINALG::Matrix<nsd_, 1>& gradpot,
     const double& tempderivisodiffcoef, const double& tempderivcond,
-    const LINALG::Matrix<nen_, 1>& funct, const LINALG::Matrix<nsd_, nen_>& derxy,
+    const CORE::LINALG::Matrix<nen_, 1>& funct, const CORE::LINALG::Matrix<nsd_, nen_>& derxy,
     const double& scalefac)
 {
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)

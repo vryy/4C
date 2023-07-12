@@ -98,7 +98,7 @@ void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition(
 DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner)
     : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  invJ_.resize(NUMGPT_SOH20, LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
+  invJ_.resize(NUMGPT_SOH20, CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::So_hex20::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // Extract prestress

@@ -16,11 +16,11 @@
 #include "utils_singleton_owner.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -209,19 +209,19 @@ namespace MORTAR
 
     */
     void inline GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::Matrix<ns_, 1>& lmval, LINALG::Matrix<ns_, 1>& sval, LINALG::Matrix<nm_, 1>& mval,
-        double& jac, double& wgt, int& nrow, int& ncol, int& ndof, bool& bound,
-        const Epetra_Comm& comm);
+        CORE::LINALG::Matrix<ns_, 1>& lmval, CORE::LINALG::Matrix<ns_, 1>& sval,
+        CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol,
+        int& ndof, bool& bound, const Epetra_Comm& comm);
 
     /*!
     \brief evaluate D/M-matrix entries at GP (3D and quadratic)
 
     */
     void inline GP_3D_DM_Quad(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        MORTAR::IntElement& sintele, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& lmintval, LINALG::Matrix<ns_, 1>& sval,
-        LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow, int& ncol,
-        int& ndof, bool& bound);
+        MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& lmintval, CORE::LINALG::Matrix<ns_, 1>& sval,
+        CORE::LINALG::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
+        int& ncol, int& ndof, bool& bound);
     //@}
 
     Teuchos::ParameterList imortar_;         // merged parameter list

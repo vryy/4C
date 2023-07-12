@@ -166,7 +166,7 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
   targetlidtosourcegidmapping_->PutValue(-1);
 
   // export to column map
-  LINALG::Export(*permsourcenodevec, *targetlidtosourcegidmapping_);
+  CORE::LINALG::Export(*permsourcenodevec, *targetlidtosourcegidmapping_);
 
   // filled.
   filled_ = true;

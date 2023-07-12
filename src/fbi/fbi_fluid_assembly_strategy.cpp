@@ -24,11 +24,11 @@
 
 void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discretization1,
     const DRT::Discretization& discretization2, std::vector<int> const& elegid,
-    std::vector<LINALG::SerialDenseVector> const& elevec,
-    std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
+    std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+    std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
     Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-    Teuchos::RCP<LINALG::SparseMatrix>& c11, Teuchos::RCP<LINALG::SparseOperator> c22,
-    Teuchos::RCP<LINALG::SparseMatrix>& c12, Teuchos::RCP<LINALG::SparseMatrix>& c21)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& c11, Teuchos::RCP<CORE::LINALG::SparseOperator> c22,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& c12, Teuchos::RCP<CORE::LINALG::SparseMatrix>& c21)
 {
   // the entries of elevecX  belong to the Dofs of the element with GID elegidX
   // the rows    of elematXY belong to the Dofs of the element with GID elegidX
@@ -78,10 +78,11 @@ void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discre
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::FBIAssemblyStrategy::AssembleFluidMatrix(Teuchos::RCP<LINALG::SparseOperator> cff,
-    int elegid, const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& elemat,
-    const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-    const std::vector<int>& lmcol)
+void FBI::UTILS::FBIAssemblyStrategy::AssembleFluidMatrix(
+    Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
+    const Epetra_SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
-  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(cff, true)->FEAssemble(elemat, lmrow, lmcol);
+  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true)->FEAssemble(
+      elemat, lmrow, lmcol);
 }

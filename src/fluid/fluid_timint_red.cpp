@@ -23,7 +23,8 @@
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
 FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       traction_vel_comp_adder_bc_(Teuchos::null),
@@ -423,7 +424,8 @@ void FLD::TimIntRedModels::AVM3Preparation()
   AVM3AssembleMatAndRHS(eleparams);
 
   // apply Womersley as a Dirichlet BC
-  LINALG::ApplyDirichlettoSystem(sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
+  CORE::LINALG::ApplyDirichlettoSystem(
+      sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();
@@ -437,7 +439,7 @@ void FLD::TimIntRedModels::AVM3Preparation()
 void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
-  LINALG::ApplyDirichlettoSystem(incvel_, residual_, relax, *(vol_surf_flow_bc_maps_));
+  CORE::LINALG::ApplyDirichlettoSystem(incvel_, residual_, relax, *(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
   sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
@@ -507,13 +509,14 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
   if (LocsysManager() != Teuchos::null)
   {
     // apply Womersley as a Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sysmat_, incvel_, residual_, locsysman_->Trafo(), zeros_, *(vol_surf_flow_bc_maps_));
   }
   else
   {
     // apply Womersley as a Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
+    CORE::LINALG::ApplyDirichlettoSystem(
+        sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
   }
   return;
 }

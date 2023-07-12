@@ -50,7 +50,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -58,7 +58,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FLD
 {
@@ -84,7 +84,7 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
+    TimIntImpl(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -157,7 +157,7 @@ namespace LUBRICATION
     virtual void PrintTimeStepInfo();
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
 
     //! update Newton step
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei);
@@ -189,7 +189,10 @@ namespace LUBRICATION
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const { return dbcmaps_; }
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
+    {
+      return dbcmaps_;
+    }
 
     //! right-hand side alias the dynamic force residual
     Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
@@ -359,7 +362,7 @@ namespace LUBRICATION
     /*========================================================================*/
 
     //! solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! parameter list
     const Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -457,13 +460,13 @@ namespace LUBRICATION
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;

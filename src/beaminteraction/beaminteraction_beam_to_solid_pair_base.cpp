@@ -53,7 +53,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
     // tangents
     if (beam::n_val_ == 2)
     {
-      LINALG::Matrix<3, 1> tan;
+      CORE::LINALG::Matrix<3, 1> tan;
       const DRT::ElementType& eot = Element1()->ElementType();
 
       if (eot == DRT::ELEMENTS::Beam3rType::Instance())
@@ -171,7 +171,7 @@ template <typename scalar_type, typename segments_scalar_type, typename beam, ty
 void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
     solid>::EvaluateBeamPositionDouble(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                            integration_point,
-    LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
+    CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
     GEOMETRYPAIR::EvaluatePosition<beam>(

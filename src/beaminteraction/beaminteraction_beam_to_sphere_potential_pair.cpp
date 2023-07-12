@@ -106,9 +106,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evaluate(
-    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
+    CORE::LINALG::SerialDenseVector* forcevec1, CORE::LINALG::SerialDenseVector* forcevec2,
+    CORE::LINALG::SerialDenseMatrix* stiffmat11, CORE::LINALG::SerialDenseMatrix* stiffmat12,
+    CORE::LINALG::SerialDenseMatrix* stiffmat21, CORE::LINALG::SerialDenseMatrix* stiffmat22,
     const std::vector<DRT::Condition*> chargeconds, const double k, const double m)
 {
   // nothing to do in case of k==0.0
@@ -236,14 +236,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
   // values at all gauss points are stored in advance
-  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
-  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
+  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
+  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
 
   // coords and derivatives of the two gauss points
-  LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
-  LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
-  LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
-  TYPE norm_dist = 0.0;                   // = |r1-r2|
+  CORE::LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
+  CORE::LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
+  CORE::LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
+  TYPE norm_dist = 0.0;                         // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
   GetShapeFunctions(N1_i, N1_i_xi, gausspoints);
@@ -273,7 +273,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
 
 
   // auxiliary variable
-  LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
+  CORE::LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
 
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
@@ -390,7 +390,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
     // auxiliary variables (same for both elements)
     TYPE norm_dist_exp2 = (m_ + 2) * std::pow(norm_dist, -m_ - 4);
 
-    LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
+    CORE::LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
 
     for (unsigned int i = 0; i < 3; ++i)
     {
@@ -514,8 +514,8 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetShapeFunctions(
-    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
-    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
@@ -557,8 +557,9 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::GetSh
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::ComputeCoords(
-    LINALG::Matrix<3, 1, TYPE>& r, const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
+    CORE::LINALG::Matrix<3, 1, TYPE>& r,
+    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+    const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
   r.Clear();
 

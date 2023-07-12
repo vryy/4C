@@ -24,7 +24,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -63,7 +63,7 @@ namespace FLD
 
     void BoundaryElementLoop(Teuchos::ParameterList& mhdbcparams,
         Teuchos::RCP<Epetra_Vector> velaf_, Teuchos::RCP<Epetra_Vector> velnp_,
-        Teuchos::RCP<Epetra_Vector> residual_, Teuchos::RCP<LINALG::SparseMatrix> sysmat_);
+        Teuchos::RCP<Epetra_Vector> residual_, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_);
 
 
    private:
@@ -74,7 +74,7 @@ namespace FLD
     //! dofrowmap for
     Teuchos::RCP<Epetra_Map> subdofrowmap_;
     //! (small) system FEmatrix for boundary discretisation
-    Teuchos::RCP<LINALG::SparseMatrix> bndmat_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> bndmat_;
   };
 
 }  // namespace FLD

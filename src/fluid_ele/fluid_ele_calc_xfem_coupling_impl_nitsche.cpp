@@ -95,15 +95,15 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::ApplyConvStabTerms(
           const Teuchos::RCP<SlaveElementInterface<distype>>&
-              slave_ele,                            ///< associated slave element coupling object
-          const LINALG::Matrix<nen_, 1>& funct_m,   ///< master shape functions
-          const LINALG::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
-          const LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
-          const double& density_m,                  ///< fluid density (master)
+              slave_ele,  ///< associated slave element coupling object
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< master shape functions
+          const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
+          const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
+          const double& density_m,                        ///< fluid density (master)
           const double&
               NIT_stab_fac_conv,  ///< full Nitsche's penalty term scaling (viscous+convective part)
           const double& timefacfac,  ///< theta*dt
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height for
                              ///< coupled problems
           const INPAR::XFEM::EleCouplingCondType& cond_type  ///< condition type
@@ -157,7 +157,7 @@ namespace DRT
                     SlaveElementRepresentation<distype, slave_distype, slave_numdof>>(slave_ele);
             if (ser == Teuchos::null)
               dserror("Failed to cast slave_ele to SlaveElementRepresentation!");
-            LINALG::Matrix<slave_nen_, 1> funct_s;
+            CORE::LINALG::Matrix<slave_nen_, 1> funct_s;
             ser->GetSlaveFunct(funct_s);
 
             // funct_s * timefac * fac * funct_s * kappa_s (dyadic product)
@@ -202,28 +202,29 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCoupling(
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
                        ///< determines the interface traction)
-          const double& timefacfac,                ///< theta*dt*fac
-          const double& pres_timefacfac,           ///< scaling for pressure part
-          const double& visceff_m,                 ///< viscosity in coupling master fluid
-          const double& visceff_s,                 ///< viscosity in coupling slave fluid
-          const double& density_m,                 ///< fluid density (master) USED IN XFF
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-          const LINALG::Matrix<nsd_, nen_>&
+          const double& timefacfac,                      ///< theta*dt*fac
+          const double& pres_timefacfac,                 ///< scaling for pressure part
+          const double& visceff_m,                       ///< viscosity in coupling master fluid
+          const double& visceff_s,                       ///< viscosity in coupling slave fluid
+          const double& density_m,                       ///< fluid density (master) USED IN XFF
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+          const CORE::LINALG::Matrix<nsd_, nen_>&
               derxy_m,  ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_, nsd_>&
+          const CORE::LINALG::Matrix<nsd_, nsd_>&
               vderxy_m,          ///< coupling master spatial velocity derivatives
           const double& pres_m,  ///< coupling master pressure
-          const LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+          const CORE::LINALG::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height for
                              ///< coupled problems
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-          const LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
-          const LINALG::Matrix<nsd_, nsd_>&
+          const CORE::LINALG::Matrix<nsd_, nsd_>&
+              proj_tangential,  ///< tangential projection matrix
+          const CORE::LINALG::Matrix<nsd_, nsd_>&
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
           const std::vector<Epetra_SerialDenseMatrix>&
               solid_stress,  ///< structural cauchy stress and linearization
@@ -284,7 +285,7 @@ namespace DRT
           velint_diff_.Update(-1.0, ivelint_jump, 1.0);
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-          LINALG::Matrix<nsd_, 1> tmp_pval;
+          CORE::LINALG::Matrix<nsd_, 1> tmp_pval;
           tmp_pval.Multiply(proj_normal_, normal_pres_timefacfac_);
           // Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //  Useful if smoothed normals are used (performs better for rotating cylinder case).
@@ -311,7 +312,7 @@ namespace DRT
           velint_diff_proj_normal_.MultiplyTN(proj_normal_, velint_diff_normal_);
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-          LINALG::Matrix<nsd_, 1> tmp_pval;
+          CORE::LINALG::Matrix<nsd_, 1> tmp_pval;
           tmp_pval.Multiply(proj_normal_, normal_pres_timefacfac_);
           // Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //  Useful if smoothed normals are used (performs better for rotating cylinder case).
@@ -606,11 +607,11 @@ namespace DRT
           // viscous consistency term
 
           // Shape function derivatives for slave side
-          LINALG::Matrix<nsd_, slave_nen_> derxy_s;
+          CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s;
           this->GetSlaveFunctDeriv(derxy_s);
 
           // Spatial velocity gradient for slave side
-          LINALG::Matrix<nsd_, nsd_> vderxy_s;
+          CORE::LINALG::Matrix<nsd_, nsd_> vderxy_s;
           this->GetInterfaceVelGradnp(vderxy_s);
 
           // 2 * mu_s * kappa_s * timefac * fac
@@ -636,7 +637,7 @@ namespace DRT
           //-----------------------------------------------------------------
           // viscous adjoint consistency term
 
-          LINALG::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
+          CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
           derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_ * ks_viscs_fac);
 
           // TODO: Needs added Projection. (If deemed necessary!)
@@ -673,10 +674,10 @@ namespace DRT
           if (configmap.at(INPAR::XFEM::F_LB_Rhs).first ||
               configmap.at(INPAR::XFEM::X_LB_Rhs).first)
           {
-            LINALG::Matrix<nsd_, slave_nen_> derxy_s_timefacfac_km(derxy_s);
+            CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s_timefacfac_km(derxy_s);
             derxy_s_timefacfac_km.Scale(configmap.at(INPAR::XFEM::X_LB_Rhs).second * timefacfac);
 
-            LINALG::Matrix<nsd_, nen_> derxy_m_timefacfac_ks(derxy_m);
+            CORE::LINALG::Matrix<nsd_, nen_> derxy_m_timefacfac_ks(derxy_m);
             derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::F_LB_Rhs).second * timefacfac);
 
             NIT_Projected_Traction_Consistency_Term(
@@ -693,15 +694,15 @@ namespace DRT
             configmap.at(INPAR::XFEM::XS_Adj_n_Row).first ||
             configmap.at(INPAR::XFEM::XS_Adj_t_Row).first)
         {
-          traction_ = LINALG::Matrix<nsd_, 1>(solid_stress[0].A(), true);
-          dtraction_vel_ = LINALG::Matrix<nsd_ * slave_nen_, nsd_>(solid_stress[1].A(), true);
+          traction_ = CORE::LINALG::Matrix<nsd_, 1>(solid_stress[0].A(), true);
+          dtraction_vel_ = CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>(solid_stress[1].A(), true);
 
           d2traction_vel_[0] =
-              LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[2].A(), true);
+              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[2].A(), true);
           d2traction_vel_[1] =
-              LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[3].A(), true);
+              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[3].A(), true);
           d2traction_vel_[2] =
-              LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[4].A(), true);
+              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[4].A(), true);
 
           if (configmap.at(INPAR::XFEM::XS_Con_Col).first)
           {
@@ -755,11 +756,11 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_solid_Consistency_SlaveTerms(
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
-          const double& timefacfac,                ///< theta*dt*fac
-          const std::pair<bool, double>& m_row,    ///< scaling for master row
-          const std::pair<bool, double>& s_row,    ///< scaling for slave row
-          const std::pair<bool, double>& s_col,    ///< scaling for slave col
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
+          const double& timefacfac,                      ///< theta*dt*fac
+          const std::pair<bool, double>& m_row,          ///< scaling for master row
+          const std::pair<bool, double>& s_row,          ///< scaling for slave row
+          const std::pair<bool, double>& s_col,          ///< scaling for slave col
           bool only_rhs)
       {
         const double facms = m_row.second * s_col.second;
@@ -824,16 +825,16 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype,
-          slave_numdof>::NIT_solid_Consistency_SlaveTerms_Projected(const LINALG::Matrix<nen_, 1>&
-                                                                        funct_m,  ///< funct_m
-          const LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
-          const double& timefacfac,                       ///< theta*dt*fac
-          const std::pair<bool, double>& m_row,           ///< scaling for master row
-          const std::pair<bool, double>& s_row,           ///< scaling for slave row
-          const std::pair<bool, double>& s_col,           ///< scaling for slave col
+          slave_numdof>::NIT_solid_Consistency_SlaveTerms_Projected(const CORE::LINALG::Matrix<nen_,
+                                                                        1>& funct_m,  ///< funct_m
+          const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
+          const double& timefacfac,                             ///< theta*dt*fac
+          const std::pair<bool, double>& m_row,                 ///< scaling for master row
+          const std::pair<bool, double>& s_row,                 ///< scaling for slave row
+          const std::pair<bool, double>& s_col,                 ///< scaling for slave col
           bool only_rhs)
       {
-        static LINALG::Matrix<nsd_, 1> proj_traction;
+        static CORE::LINALG::Matrix<nsd_, 1> proj_traction;
         proj_traction.MultiplyTN(proj_matrix, traction_);
 
         const double facms = m_row.second * s_col.second;
@@ -861,7 +862,7 @@ namespace DRT
 
         if (only_rhs) return;
 
-        static LINALG::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
+        static CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
         proj_dtraction_vel.Clear();
         for (unsigned col = 0; col < nsd_ * slave_nen_; ++col)
         {
@@ -909,11 +910,11 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype,
-          slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms(const LINALG::Matrix<nen_, 1>&
-                                                                     funct_m,  ///< funct_m
-          const double& timefacfac,                                            ///< theta*dt*fac
-          const LINALG::Matrix<nsd_, 1>& velint_diff,  ///< (velint_m - velint_s)
-          const LINALG::Matrix<nsd_ * slave_nen_, nsd_>&
+          slave_numdof>::NIT_solid_AdjointConsistency_SlaveTerms(const CORE::LINALG::Matrix<nen_,
+                                                                     1>& funct_m,  ///< funct_m
+          const double& timefacfac,                                                ///< theta*dt*fac
+          const CORE::LINALG::Matrix<nsd_, 1>& velint_diff,  ///< (velint_m - velint_s)
+          const CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>&
               dtraction_vel,                     ///< derivative of solid traction w.r.t. velocities
           const std::pair<bool, double>& s_row,  ///< scaling for slave row
           const std::pair<bool, double>& m_col,  ///< scaling for master col
@@ -978,18 +979,18 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_solid_AdjointConsistency_SlaveTerms_Projected(
-              const LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
-              const double& timefacfac,                         ///< theta*dt*fac
-              const LINALG::Matrix<nsd_, nsd_>& proj_matrix,    ///< projection matrix
-              const LINALG::Matrix<nsd_, 1>& proj_velint_diff,  ///< P^T*(velint_m - velint_s)
-              const LINALG::Matrix<nsd_ * slave_nen_, nsd_>&
+              const CORE::LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
+              const double& timefacfac,                               ///< theta*dt*fac
+              const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,    ///< projection matrix
+              const CORE::LINALG::Matrix<nsd_, 1>& proj_velint_diff,  ///< P^T*(velint_m - velint_s)
+              const CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>&
                   dtraction_vel,  ///< derivative of solid traction w.r.t. velocities
               const std::pair<bool, double>& s_row,  ///< scaling for slave row
               const std::pair<bool, double>& m_col,  ///< scaling for master col
               const std::pair<bool, double>& s_col,  ///< scaling for slave col
               bool only_rhs)
       {
-        static LINALG::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
+        static CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_> proj_dtraction_vel(true);
         if (!only_rhs)
         {
           proj_dtraction_vel.Clear();
@@ -1015,26 +1016,27 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_evaluateCouplingOldState(
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               normal,  ///< outward pointing normal (defined by the coupling partner, that
                        ///< determines the interface traction)
-          const double& timefacfac,                ///< dt*(1-theta)*fac
-          bool isImplPressure,                     ///< flag for implicit pressure treatment
-          const double& visceff_m,                 ///< viscosity in coupling master fluid
-          const double& visceff_s,                 ///< viscosity in coupling slave fluid
-          const double& density_m,                 ///< fluid density (master) USED IN XFF
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-          const LINALG::Matrix<nsd_, nen_>&
+          const double& timefacfac,                      ///< dt*(1-theta)*fac
+          bool isImplPressure,                           ///< flag for implicit pressure treatment
+          const double& visceff_m,                       ///< viscosity in coupling master fluid
+          const double& visceff_s,                       ///< viscosity in coupling slave fluid
+          const double& density_m,                       ///< fluid density (master) USED IN XFF
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+          const CORE::LINALG::Matrix<nsd_, nen_>&
               derxy_m,  ///< spatial derivatives of coupling master shape functions
-          const LINALG::Matrix<nsd_, nsd_>&
+          const CORE::LINALG::Matrix<nsd_, nsd_>&
               vderxy_m,          ///< coupling master spatial velocity derivatives
           const double& pres_m,  ///< coupling master pressure
-          const LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+          const CORE::LINALG::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height for
                              ///< coupled problems
-          const LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, nsd_>&
+              proj_tangential,  ///< tangential projection matrix
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
               configmap  ///< Interface Terms configuration map
@@ -1095,7 +1097,7 @@ namespace DRT
 
           //    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results
           //    with this commit
-          //      LINALG::Matrix<nsd_,1> tmp_pval;
+          //      CORE::LINALG::Matrix<nsd_,1> tmp_pval;
           //      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
           //      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //      //  Useful if smoothed normals are used (performs better for rotating cylinder
@@ -1123,7 +1125,7 @@ namespace DRT
 
           //    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results
           //    with this commit
-          //      LINALG::Matrix<nsd_,1> tmp_pval;
+          //      CORE::LINALG::Matrix<nsd_,1> tmp_pval;
           //      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
           //      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //      //  Useful if smoothed normals are used (performs better for rotating cylinder
@@ -1227,7 +1229,7 @@ namespace DRT
         if (configmap.at(INPAR::XFEM::F_Con_Col).first)
         {
 #ifndef ENFORCE_URQUIZA_GNBC
-          const LINALG::Matrix<nsd_, nen_>
+          const CORE::LINALG::Matrix<nsd_, nen_>
               dummy;  // as for the evaluation of the rhs this parameter is not used!
           // Comment: Here vderxy_m_normal_transposed_viscm_timefacfac_km_ is used!
           NIT_visc_Consistency_MasterTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
@@ -1281,7 +1283,7 @@ namespace DRT
           // viscous adjoint consistency term
           if (configmap.at(INPAR::XFEM::F_Adj_Row).first)
           {
-            const LINALG::Matrix<nsd_, nen_>
+            const CORE::LINALG::Matrix<nsd_, nen_>
                 dummy;  // as for the evaluation of the rhs this parameter is not used!
             NIT_visc_AdjointConsistency_MasterTerms(funct_m,  ///< funct * timefacfac
                 dummy,         ///< spatial derivatives of coupling master shape functions
@@ -1335,7 +1337,7 @@ namespace DRT
           // viscous consistency term
 
           // Spatial velocity gradient for slave side
-          LINALG::Matrix<nsd_, nsd_> vderxyn_s;
+          CORE::LINALG::Matrix<nsd_, nsd_> vderxyn_s;
           this->GetInterfaceVelGradn(vderxyn_s);
 
           // 2 * mu_s * kappa_s * timefac * fac
@@ -1348,7 +1350,7 @@ namespace DRT
 
           if (configmap.at(INPAR::XFEM::XF_Con_Col).first)
           {
-            const LINALG::Matrix<nsd_, slave_nen_>
+            const CORE::LINALG::Matrix<nsd_, slave_nen_>
                 dummy;  // as for the evaluation of the rhs this parameter is not used!
             NIT_visc_Consistency_SlaveTerms(dummy, funct_m, configmap.at(INPAR::XFEM::F_Con_Row),
                 configmap.at(INPAR::XFEM::X_Con_Row), configmap.at(INPAR::XFEM::XF_Con_Col), true);
@@ -1386,10 +1388,10 @@ namespace DRT
             //-----------------------------------------------------------------
             // viscous adjoint consistency term
             // Shape function derivatives for slave side
-            LINALG::Matrix<nsd_, slave_nen_> derxy_s;
+            CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s;
             this->GetSlaveFunctDeriv(derxy_s);
 
-            LINALG::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
+            CORE::LINALG::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
             derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_ * ks_viscs_fac);
 
             // TODO: Needs added Projection. (If deemed necessary!)
@@ -1429,10 +1431,10 @@ namespace DRT
           dserror(
               "Check if we need the (Laplace-Beltrami) for the old timestep, "
               "then you should not forget to add the LB_proj_matrix as member to this function?");
-          //    LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
+          //    CORE::LINALG::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
           //    derxy_s_timefacfac_km.Scale(configmap.at(INPAR::XFEM::F_LB_Rhs).second*timefacfac);
           //
-          //    LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
+          //    CORE::LINALG::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
           //    derxy_m_timefacfac_ks.Scale(configmap.at(INPAR::XFEM::X_LB_Rhs).second*timefacfac);
           //
           //    NIT_Projected_Traction_Consistency_Term(
@@ -1449,10 +1451,11 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Traction_Consistency_Term(
-          const LINALG::Matrix<nen_, 1>& funct_m_timefacfac_ks,  ///< funct * timefacfac *kappa_s
-          const LINALG::Matrix<slave_nen_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>&
+              funct_m_timefacfac_ks,  ///< funct * timefacfac *kappa_s
+          const CORE::LINALG::Matrix<slave_nen_, 1>&
               funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction, jump height for coupled problems
       )
       {
@@ -1510,13 +1513,13 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_Projected_Traction_Consistency_Term(
-              const LINALG::Matrix<nsd_, nen_>&
+              const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_timefacfac_ks,  ///< master shape function derivatives * timefacfac *
                                           ///< kappa_s
-              const LINALG::Matrix<nsd_, slave_nen_>&
+              const CORE::LINALG::Matrix<nsd_, slave_nen_>&
                   derxy_s_timefacfac_km,  ///< slave shape function derivatives * timefacfac *
                                           ///< kappa_m
-              const LINALG::Matrix<nsd_, nsd_>&
+              const CORE::LINALG::Matrix<nsd_, nsd_>&
                   itraction_jump_matrix  ///< prescribed projection matrix
           )
       {
@@ -1580,12 +1583,12 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_MasterTerms(
-          const double& pres_m,                              ///< master pressure
-          const LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
-          const LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
-          const std::pair<bool, double>& m_row,              ///< scaling for master row
-          const std::pair<bool, double>& s_row,              ///< scaling for slave row
-          const std::pair<bool, double>& m_col,              ///< scaling for master col
+          const double& pres_m,                                    ///< master pressure
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
+          const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
+          const std::pair<bool, double>& m_row,                    ///< scaling for master row
+          const std::pair<bool, double>& s_row,                    ///< scaling for slave row
+          const std::pair<bool, double>& m_col,                    ///< scaling for master col
           bool only_rhs)
       {
         TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_p_Consistency_MasterTerms");
@@ -1678,12 +1681,12 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_Consistency_SlaveTerms(
-          const double& pres_s,                              ///< slave pressure
-          const LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
-          const LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
-          const std::pair<bool, double>& m_row,              ///< scaling for master row
-          const std::pair<bool, double>& s_row,              ///< scaling for slave row
-          const std::pair<bool, double>& s_col,              ///< scaling for slave col
+          const double& pres_s,                                    ///< slave pressure
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
+          const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
+          const std::pair<bool, double>& m_row,                    ///< scaling for master row
+          const std::pair<bool, double>& s_row,                    ///< scaling for slave row
+          const std::pair<bool, double>& s_col,                    ///< scaling for slave col
           bool only_rhs)
       {
         const double facms = m_row.second * s_col.second;
@@ -1751,8 +1754,8 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_MasterTerms(
-          const LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
-          const LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,            ///< funct
+          const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
           const double&
               velint_diff_normal_timefacfac,     ///< (velint_m - velint_s) * normal * timefacfac
           const std::pair<bool, double>& m_row,  ///< scaling for master row
@@ -1799,7 +1802,7 @@ namespace DRT
         if (only_rhs) return;
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-        LINALG::Matrix<nsd_, 1> proj_norm_timefacfac;
+        CORE::LINALG::Matrix<nsd_, 1> proj_norm_timefacfac;
         proj_norm_timefacfac.Multiply(proj_normal_, normal_timefacfac);
 #endif
         //-----------------------------------------------
@@ -1862,7 +1865,7 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_p_AdjointConsistency_SlaveTerms(
-          const LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
+          const CORE::LINALG::Matrix<nsd_, 1>& normal_timefacfac,  ///< normal vector * timefacfac
           const double& velint_diff_normal_timefacfac,  ///< (velint_m - velint_s) * n * timefacfac
           const std::pair<bool, double>& s_row,         ///< scaling for slave row
           const std::pair<bool, double>& m_col,         ///< scaling for master col
@@ -1880,7 +1883,7 @@ namespace DRT
         \                        /     \                    */
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
-        LINALG::Matrix<nsd_, 1> proj_norm_timefacfac;
+        CORE::LINALG::Matrix<nsd_, 1> proj_norm_timefacfac;
         proj_norm_timefacfac.Multiply(proj_normal_, normal_timefacfac);
 #endif
 
@@ -1948,11 +1951,11 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_MasterTerms(
-          const LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
-          const LINALG::Matrix<nen_, 1>& funct_m,     ///< funct_m
-          const std::pair<bool, double>& m_row,       ///< scaling for master row
-          const std::pair<bool, double>& s_row,       ///< scaling for slave row
-          const std::pair<bool, double>& m_col,       ///< scaling for master col
+          const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,     ///< funct_m
+          const std::pair<bool, double>& m_row,             ///< scaling for master row
+          const std::pair<bool, double>& s_row,             ///< scaling for slave row
+          const std::pair<bool, double>& m_col,             ///< scaling for master col
           bool only_rhs)
       {
         // viscous consistency term
@@ -2043,13 +2046,13 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_Consistency_MasterTerms_Projected(
-              const LINALG::Matrix<nsd_, nen_>& derxy_m,      ///< master deriv
-              const LINALG::Matrix<nen_, 1>& funct_m,         ///< funct_m
-              const LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
-              const double& km_viscm_fac,                     ///< scaling factor
-              const std::pair<bool, double>& m_row,           ///< scaling for master row
-              const std::pair<bool, double>& s_row,           ///< scaling for slave row
-              const std::pair<bool, double>& m_col            ///< scaling for master col
+              const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,      ///< master deriv
+              const CORE::LINALG::Matrix<nen_, 1>& funct_m,         ///< funct_m
+              const CORE::LINALG::Matrix<nsd_, nsd_>& proj_matrix,  ///< projection matrix
+              const double& km_viscm_fac,                           ///< scaling factor
+              const std::pair<bool, double>& m_row,                 ///< scaling for master row
+              const std::pair<bool, double>& s_row,                 ///< scaling for slave row
+              const std::pair<bool, double>& m_col                  ///< scaling for master col
           )
       {
         // 1) No-split WDBC option:
@@ -2166,11 +2169,12 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_Consistency_SlaveTerms(
-          const LINALG::Matrix<nsd_, slave_nen_>& derxy_s,  ///< slave shape function derivatives
-          const LINALG::Matrix<nen_, 1>& funct_m,           ///< funct_m
-          const std::pair<bool, double>& m_row,             ///< scaling for master row
-          const std::pair<bool, double>& s_row,             ///< scaling for slave row
-          const std::pair<bool, double>& s_col,             ///< scaling for slave col
+          const CORE::LINALG::Matrix<nsd_, slave_nen_>&
+              derxy_s,                                   ///< slave shape function derivatives
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct_m
+          const std::pair<bool, double>& m_row,          ///< scaling for master row
+          const std::pair<bool, double>& s_row,          ///< scaling for slave row
+          const std::pair<bool, double>& s_col,          ///< scaling for slave col
           bool only_rhs)
       {
         // diagonal block (i,i): +/-2*ks*mus * ...
@@ -2260,14 +2264,14 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_AdjointConsistency_MasterTerms(
-              const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
-              const LINALG::Matrix<nsd_, nen_>&
+              const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
+              const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m,  ///< spatial derivatives of coupling master shape functions
-              const LINALG::Matrix<nsd_, 1>& normal,  ///< normal-vector
-              const double& viscm_fac,                ///< scaling factor
-              const std::pair<bool, double>& m_row,   ///< scaling for master row
-              const std::pair<bool, double>& m_col,   ///< scaling for master col
-              const std::pair<bool, double>& s_col,   ///< scaling for slave col
+              const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal-vector
+              const double& viscm_fac,                      ///< scaling factor
+              const std::pair<bool, double>& m_row,         ///< scaling for master row
+              const std::pair<bool, double>& m_col,         ///< scaling for master col
+              const std::pair<bool, double>& s_col,         ///< scaling for slave col
               bool only_rhs)
       {
         /*                                \       /                             i   \
@@ -2284,7 +2288,8 @@ namespace DRT
         derxy_m_viscm_timefacfac_.Update(tmp_fac, derxy_m);  // 2 * mu_m * timefacfac *
                                                              // derxy_m(k,ic)
 
-        static LINALG::Matrix<nsd_, nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
+        static CORE::LINALG::Matrix<nsd_, nsd_> velint_diff_dyad_normal,
+            velint_diff_dyad_normal_symm;
         velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
 
         for (unsigned jvel = 0; jvel < nsd_; ++jvel)
@@ -2364,14 +2369,15 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_AdjointConsistency_MasterTerms_Projected(
-              const LINALG::Matrix<nsd_, nen_>&
+              const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac
                                                 ///< * 2 * mu_m * kappa_m
-              const LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
-              const LINALG::Matrix<nsd_, 1>& normal,   ///< normal vector
-              const std::pair<bool, double>& m_row,    ///< scaling for master row
-              const std::pair<bool, double>& m_col,    ///< scaling for master col
-              const std::pair<bool, double>& s_col     ///< scaling for slave col
+              const CORE::LINALG::Matrix<nen_, 1>&
+                  funct_m,  ///< embedded element funct *mu*timefacfac
+              const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+              const std::pair<bool, double>& m_row,         ///< scaling for master row
+              const std::pair<bool, double>& m_col,         ///< scaling for master col
+              const std::pair<bool, double>& s_col          ///< scaling for slave col
           )
       {
         // 1) No-split WDBC option:
@@ -2447,7 +2453,7 @@ namespace DRT
         }
 
         // Can this be made more effective?
-        // static LINALG::Matrix<nsd_,nsd_> velint_proj_norm_diff_dyad_normal,
+        // static CORE::LINALG::Matrix<nsd_,nsd_> velint_proj_norm_diff_dyad_normal,
         // velint_proj_norm_diff_dyad_normal_symm;
         // velint_diff_proj_normal_ = (u^m_k - u^s_k) P^n_{kj} * n
         velint_proj_norm_diff_dyad_normal_.MultiplyNT(velint_diff_proj_matrix_, normal);
@@ -2490,11 +2496,11 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void
       NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_visc_AdjointConsistency_SlaveTerms(
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
-          const LINALG::Matrix<nsd_, slave_nen_>&
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
+          const CORE::LINALG::Matrix<nsd_, slave_nen_>&
               derxy_s_viscs_timefacfac_ks,  ///< master shape function derivatives * timefacfac * 2
                                             ///< * mu_m * kappa_m
-          const LINALG::Matrix<nsd_, 1>& normal,
+          const CORE::LINALG::Matrix<nsd_, 1>& normal,
           const std::pair<bool, double>& s_row,  ///< scaling for slave row
           const std::pair<bool, double>& m_col,  ///< scaling for master col
           const std::pair<bool, double>& s_col,  ///< scaling for slave col
@@ -2524,7 +2530,8 @@ namespace DRT
          *   dxj
          */
 
-        static LINALG::Matrix<nsd_, nsd_> velint_diff_dyad_normal, velint_diff_dyad_normal_symm;
+        static CORE::LINALG::Matrix<nsd_, nsd_> velint_diff_dyad_normal,
+            velint_diff_dyad_normal_symm;
         velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
 
         for (unsigned jvel = 0; jvel < nsd_; ++jvel)
@@ -2600,16 +2607,17 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
-              const LINALG::Matrix<nsd_, nen_>&
+              const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac
                                                 ///< * 2 * mu_m * kappa_m
-              const LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
-              const LINALG::Matrix<nsd_, nsd_>&
+              const CORE::LINALG::Matrix<nsd_, nen_>& derxy_m,  ///< master deriv
+              const CORE::LINALG::Matrix<nsd_, nsd_>&
                   vderxy_m,  ///< coupling master spatial velocity derivatives
-              const LINALG::Matrix<nen_, 1>& funct_m,  ///< embedded element funct *mu*timefacfac
-              const LINALG::Matrix<nsd_, 1>& normal,   ///< normal vector
-              const std::pair<bool, double>& m_row,    ///< scaling for master row
-              const std::pair<bool, double>& mstr_col  ///< scaling for master col
+              const CORE::LINALG::Matrix<nen_, 1>&
+                  funct_m,  ///< embedded element funct *mu*timefacfac
+              const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+              const std::pair<bool, double>& m_row,         ///< scaling for master row
+              const std::pair<bool, double>& mstr_col       ///< scaling for master col
           )
       {
         // 1) No-split WDBC option:
@@ -2643,24 +2651,24 @@ namespace DRT
         //  //                         = mu_m * alpha * timefacfac *km * c(ix)
         //  normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_km, half_normal_);
 
-        //  LINALG::Matrix<nen_,1> normal_deriv_m;
+        //  CORE::LINALG::Matrix<nen_,1> normal_deriv_m;
         normal_deriv_m_.MultiplyTN(derxy_m, half_normal_);
         normal_deriv_m_.Scale(2.0);  // 2.0 * half_normal(k) * derxy_m(k,ix) =c(ix)
 
-        //  LINALG::Matrix<nsd_,nen_> proj_tang_derxy_m_1;
+        //  CORE::LINALG::Matrix<nsd_,nen_> proj_tang_derxy_m_1;
         //  // proj_matrix_derxy_m_ = alpha * 2.0 * P^t_{jk} * derxy_m(k,IX) * mu_m * timefacfac *
         //  km
         //  //                      = 2.0 * mu_m * timefacefac * km * p_1(IX,j)
         //  // IF P^t_{jk} IS SYMMETRIC: p_1(IX,j) = p_2(IX,j)
         //  proj_tang_derxy_m_1.Multiply(proj_matrix_,derxy_m_viscm_timefacfac_km);
 
-        //  LINALG::Matrix<nsd_,nen_> proj_tang_derxy_m_2;
+        //  CORE::LINALG::Matrix<nsd_,nen_> proj_tang_derxy_m_2;
         //  // proj_tang_derxy_m = 2.0 * P^t_{jk} * derxy_m(k,IX) * mu_m * timefacfac * km
         //  //                   = 2.0 * mu_m * timefacefac * km * p_2(IX,j)
         //  // IF P^t_{jk} IS SYMMETRIC: p_1(IX,j) = p_2(IX,j)
         //  proj_tang_derxy_m_2.MultiplyTN(proj_matrix_,derxy_m_viscm_timefacfac_km);
 
-        //  LINALG::Matrix<nen_,nen_> derxy_m_P_derxy_m;
+        //  CORE::LINALG::Matrix<nen_,nen_> derxy_m_P_derxy_m;
         // derxy_m_P_derxy_m = 2.0 * derxy_m(j,IC) P^t_{jk} * derxy_m(k,IR) * mu_m * timefacfac * km
         //                   = 2.0 * C(IC,IR) * mu_m * timefacfac * km
         //  derxy_m_P_derxy_m.MultiplyTN(derxy_m,proj_tang_derxy_m_1);
@@ -2706,7 +2714,7 @@ namespace DRT
 
         // 2.0 * derxy_m(k,IX) * mu_m * timefacfac * km ( (\nabla u + (\nabla u)^T) * normal * P^t
         // )_k
-        static LINALG::Matrix<nen_, 1> tmp_rhs;
+        static CORE::LINALG::Matrix<nen_, 1> tmp_rhs;
         tmp_rhs.MultiplyTN(derxy_m_viscm_timefacfac_km, vderxy_m_normal_tang_);
 
         for (unsigned ir = 0; ir < nen_; ++ir)
@@ -2728,12 +2736,12 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty(
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
-          const double& timefacfac,                ///< time integration factor
-          const std::pair<bool, double>& m_row,    ///< scaling for master row
-          const std::pair<bool, double>& s_row,    ///< scaling for slave row
-          const std::pair<bool, double>& m_col,    ///< scaling for master col
-          const std::pair<bool, double>& s_col,    ///< scaling for slave col
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+          const double& timefacfac,                      ///< time integration factor
+          const std::pair<bool, double>& m_row,          ///< scaling for master row
+          const std::pair<bool, double>& s_row,          ///< scaling for slave row
+          const std::pair<bool, double>& m_col,          ///< scaling for master col
+          const std::pair<bool, double>& s_col,          ///< scaling for slave col
           bool only_rhs)
       {
         TEUCHOS_FUNC_TIME_MONITOR("FLD::NIT_Stab_Penalty");
@@ -2869,9 +2877,9 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_lin(
-          const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
-          const double& timefacfac,                ///< time integration factor
-          const std::pair<bool, double>& m_row,    ///< scaling for master row
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct
+          const double& timefacfac,                      ///< time integration factor
+          const std::pair<bool, double>& m_row,          ///< scaling for master row
           const std::pair<bool, double>&
               m_row_linm1,  ///< linearization of scaling for master row w.r.t. master comp. one
           const std::pair<bool, double>&
@@ -2916,9 +2924,9 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Penalty_Projected(
-          const LINALG::Matrix<nen_, 1>& funct_m,               ///< funct
-          const LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,               ///< funct
+          const CORE::LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
+          const CORE::LINALG::Matrix<nsd_, 1>&
               velint_diff_proj_matrix,           ///< velocity difference projected
           const double& timefacfac,              ///< time integration factor
           const std::pair<bool, double>& m_row,  ///< scaling for master row
@@ -3087,11 +3095,11 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::NIT_Stab_Inflow_AveragedTerm(
-          const LINALG::Matrix<nen_, 1>& funct_m,   ///< funct
-          const LINALG::Matrix<nsd_, 1>& velint_m,  ///< master velocity
-          const LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^m
-          const double& density,                    ///< fluid density
-          const double& timefacfac,                 ///< timefac * fac
+          const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< funct
+          const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< master velocity
+          const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^m
+          const double& density,                          ///< fluid density
+          const double& timefacfac,                       ///< timefac * fac
           bool only_rhs)
       {
         //
@@ -3168,10 +3176,10 @@ namespace DRT
        *----------------------------------------------------------------------*/
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
-      void NitscheCoupling<distype, slave_distype,
-          slave_numdof>::NIT_Create_Standard_Projection_Matrices(const LINALG::Matrix<nsd_, 1>&
-              normal  ///< normal vector n^b
-      )
+      void NitscheCoupling<distype, slave_distype, slave_numdof>::
+          NIT_Create_Standard_Projection_Matrices(
+              const CORE::LINALG::Matrix<nsd_, 1>& normal  ///< normal vector n^b
+          )
       {
         // Create the identity matrix (Probably not the fastest way...) Might make it global?
         proj_tangential_.Scale(0.0);
@@ -3197,20 +3205,20 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void NitscheCoupling<distype, slave_distype, slave_numdof>::
           Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
-              const LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
-              const LINALG::Matrix<nsd_, nen_>&
+              const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< funct * timefacfac
+              const CORE::LINALG::Matrix<nsd_, nen_>&
                   derxy_m,  ///< spatial derivatives of coupling master shape functions
-              const LINALG::Matrix<nsd_, nsd_>&
+              const CORE::LINALG::Matrix<nsd_, nsd_>&
                   vderxy_m,  ///< coupling master spatial velocity derivatives
-              const LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
-              const LINALG::Matrix<nsd_, 1>&
-                  velint_diff_proj_matrix,             ///< velocity difference projected
-              const LINALG::Matrix<nsd_, 1>& normal,   ///< normal-vector
-              const double& km_viscm_fac,              ///< scaling factor
-              const std::pair<bool, double>& m_row,    ///< scaling for master row
-              const std::pair<bool, double>& m_col,    ///< scaling for master col
-              const std::pair<bool, double>& s_col,    ///< scaling for slave col
-              const std::pair<bool, double>& mstr_col  ///< scaling for master stress col
+              const CORE::LINALG::Matrix<nsd_, nsd_>& projection_matrix,  ///< projection_matrix
+              const CORE::LINALG::Matrix<nsd_, 1>&
+                  velint_diff_proj_matrix,                  ///< velocity difference projected
+              const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal-vector
+              const double& km_viscm_fac,                   ///< scaling factor
+              const std::pair<bool, double>& m_row,         ///< scaling for master row
+              const std::pair<bool, double>& m_col,         ///< scaling for master col
+              const std::pair<bool, double>& s_col,         ///< scaling for slave col
+              const std::pair<bool, double>& mstr_col       ///< scaling for master stress col
           )
       {
         velint_diff_proj_matrix_ = velint_diff_proj_matrix;

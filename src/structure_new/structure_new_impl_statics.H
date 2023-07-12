@@ -39,11 +39,11 @@ namespace STR
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! (derived)
       bool AssembleForce(Epetra_Vector& f,
@@ -103,7 +103,7 @@ namespace STR
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
        * \remark Nothing needs to be done in the static case. */
-      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override{};
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override{};
 
       //! reset the time step dependent parameters for the element evaluation [derived]
       void ResetEvalParams() override;

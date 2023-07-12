@@ -97,10 +97,10 @@ namespace DRT
       );
 
       //! local nodal values of concentration
-      LINALG::Matrix<nen_, 1> econcnp_;
+      CORE::LINALG::Matrix<nen_, 1> econcnp_;
 
       //! local nodal values of electric potential
-      LINALG::Matrix<nen_, 1> epotnp_;
+      CORE::LINALG::Matrix<nen_, 1> epotnp_;
     };  // class ScaTraEleSTIElch
 
 
@@ -127,19 +127,20 @@ namespace DRT
       };
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesSTIElch(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
-          const LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+      void SetInternalVariablesSTIElch(
+          const CORE::LINALG::Matrix<NEN, 1>& funct,    //!< shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               etempnp,  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               etempn,  //!< nodal temperature values at time t_(n)
-          const LINALG::Matrix<NEN, 1>&
+          const CORE::LINALG::Matrix<NEN, 1>&
               econcnp,  //!< nodal concentration values at time t_(n+1) or t_(n+alpha_F)
-          const LINALG::Matrix<NEN, 1>&
+          const CORE::LINALG::Matrix<NEN, 1>&
               epotnp,  //!< nodal electric potential values at time t_(n+1) or t_(n+alpha_F)
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ehist  //!< nodal history values
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist  //!< nodal history values
       )
       {
         // call base class routine to set thermo variables
@@ -157,19 +158,19 @@ namespace DRT
       const double& Conc() const { return conc_; };
 
       //! return gradient of concentration
-      const LINALG::Matrix<NSD, 1>& GradConc() const { return gradconc_; };
+      const CORE::LINALG::Matrix<NSD, 1>& GradConc() const { return gradconc_; };
 
       //! return gradient of electric potential
-      const LINALG::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
+      const CORE::LINALG::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
 
       //! concentration
       double conc_;
 
       //! gradient of concentration
-      LINALG::Matrix<NSD, 1> gradconc_;
+      CORE::LINALG::Matrix<NSD, 1> gradconc_;
 
       //! gradient of electric potential
-      LINALG::Matrix<NSD, 1> gradpot_;
+      CORE::LINALG::Matrix<NSD, 1> gradpot_;
     };  // class ScaTraEleInternalVariableManagerSTIElch
   }     // namespace ELEMENTS
 }  // namespace DRT

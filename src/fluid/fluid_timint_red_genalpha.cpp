@@ -17,7 +17,8 @@
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
 FLD::TimIntRedModelsGenAlpha::TimIntRedModelsGenAlpha(
-    const Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::RCP<LINALG::Solver>& solver,
+    const Teuchos::RCP<DRT::Discretization>& actdis,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
     const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),

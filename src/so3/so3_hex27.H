@@ -354,7 +354,7 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
 
@@ -383,15 +383,17 @@ namespace DRT
       virtual void InitJacobianMapping();
 
       //! Calculate linear stiffness and mass matrix
-      virtual void soh27_linstiffmass(std::vector<int>& lm,         ///< location matrix
-          std::vector<double>& disp,                                ///< current displacements
-          std::vector<double>& residual,                            ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH27, 1>* force,  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+      virtual void soh27_linstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,                         ///< current displacements
+          std::vector<double>& residual,                     ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>*
+              eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,     ///< stress output option
           const INPAR::STR::StrainType iostrain,     ///< strain output option
@@ -404,34 +406,36 @@ namespace DRT
           std::vector<double>* acc,                          ///< current accelerations
           std::vector<double>& residual,                     ///< current residual displ
           std::vector<double>& dispmat,                      ///< current material displacements
-          LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH27, 1>* force,       ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOH27, 1>* forceinert,  ///< element inertial force vector
-          LINALG::Matrix<NUMDOF_SOH27, 1>* force_str,   ///< element structural force vector
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+          CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* forceinert,  ///< element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH27, 1>* force_str,   ///< element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH27, MAT::NUM_STRESS_3D>*
+              eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,     ///< stress output option
           const INPAR::STR::StrainType iostrain,     ///< strain output option
           const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);
+      void soh27_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);
 
       //! Evaluate Hex27 Shapefcts to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH27, 1>> soh27_shapefcts();
       //! Evaluate Hex27 Derivs to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> soh27_derivs();
       //! Evaluate Hex27 Weights to keep them static
       const std::vector<double> soh27_weights();
 
       //! Evaluate shapefunction, derivative and gaussweights
-      void soh27_shapederiv(
-          LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>** shapefct,  // pointer to pointer of shapefct
-          LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
-          LINALG::Matrix<NUMGPT_SOH27, 1>** weights);             // pointer to pointer of weights
+      void soh27_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>**
+                                shapefct,  // pointer to pointer of shapefct
+          CORE::LINALG::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,  // pointer to pointer of derivs
+          CORE::LINALG::Matrix<NUMGPT_SOH27, 1>** weights);  // pointer to pointer of weights
 
       //! @name Multi-scale related stuff
 

@@ -26,12 +26,12 @@ namespace CORE::GEO
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
   inline void computeNormalToSurfaceElementViaShape(
-      const M1& deriv, const M2& xyze, LINALG::Matrix<3, 1>& unrm)
+      const M1& deriv, const M2& xyze, CORE::LINALG::Matrix<3, 1>& unrm)
   {
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // compute dXYZ / drs
-    static LINALG::Matrix<3, 2> dxyzdrs;
+    static CORE::LINALG::Matrix<3, 2> dxyzdrs;
     dxyzdrs.Clear();
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 2; j++)
@@ -47,7 +47,7 @@ namespace CORE::GEO
     ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
     **        dr     dr            dr     ds            ds     ds
     */
-    static LINALG::Matrix<2, 2> metrictensor;
+    static CORE::LINALG::Matrix<2, 2> metrictensor;
     metrictensor.MultiplyTN(dxyzdrs, dxyzdrs);
 
     unrm(0) = dxyzdrs(1, 0) * dxyzdrs(2, 1) - dxyzdrs(2, 0) * dxyzdrs(1, 1);
@@ -72,12 +72,13 @@ namespace CORE::GEO
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
   inline void computeNormalAndTangentToSurfaceElementViaShape(const M1& deriv, const M2& xyze,
-      LINALG::Matrix<3, 1>& unrm, LINALG::Matrix<3, 1>& utang1, LINALG::Matrix<3, 1>& utang2)
+      CORE::LINALG::Matrix<3, 1>& unrm, CORE::LINALG::Matrix<3, 1>& utang1,
+      CORE::LINALG::Matrix<3, 1>& utang2)
   {
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // compute dXYZ / drs
-    static LINALG::Matrix<3, 2> dxyzdrs;
+    static CORE::LINALG::Matrix<3, 2> dxyzdrs;
     dxyzdrs.Clear();
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 2; j++)
@@ -93,7 +94,7 @@ namespace CORE::GEO
     ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
     **        dr     dr            dr     ds            ds     ds
     */
-    static LINALG::Matrix<2, 2> metrictensor;
+    static CORE::LINALG::Matrix<2, 2> metrictensor;
     metrictensor.MultiplyTN(dxyzdrs, dxyzdrs);
 
     unrm(0) = dxyzdrs(1, 0) * dxyzdrs(2, 1) - dxyzdrs(2, 0) * dxyzdrs(1, 1);
@@ -127,10 +128,10 @@ namespace CORE::GEO
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M, class V>
   inline void computeNormalToSurfaceElementT(
-      const M& xyze_surfaceElement, const V& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec)
+      const M& xyze_surfaceElement, const V& eleCoord, CORE::LINALG::Matrix<3, 1>& unitnormalvec)
   {
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<2, numnode> deriv_boundary;
+    static CORE::LINALG::Matrix<2, numnode> deriv_boundary;
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
 
     computeNormalToSurfaceElementViaShape<DISTYPE>(
@@ -149,11 +150,11 @@ namespace CORE::GEO
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   inline void computeNormalAndTangentToSurfaceElementT(const M& xyze_surfaceElement,
-      const LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec,
-      LINALG::Matrix<3, 1>& unittang1vec, LINALG::Matrix<3, 1>& unittang2vec)
+      const CORE::LINALG::Matrix<2, 1>& eleCoord, CORE::LINALG::Matrix<3, 1>& unitnormalvec,
+      CORE::LINALG::Matrix<3, 1>& unittang1vec, CORE::LINALG::Matrix<3, 1>& unittang2vec)
   {
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<2, numnode> deriv_boundary;
+    static CORE::LINALG::Matrix<2, numnode> deriv_boundary;
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, eleCoord(0), eleCoord(1), DISTYPE);
 
     computeNormalAndTangentToSurfaceElementViaShape<DISTYPE>(
@@ -171,7 +172,7 @@ namespace CORE::GEO
   */
   template <class M, class V>
   inline void computeNormalToSurfaceElement(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze_surfaceElement, const V& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec)
+      const M& xyze_surfaceElement, const V& eleCoord, CORE::LINALG::Matrix<3, 1>& unitnormalvec)
   {
     switch (distype)
     {
@@ -215,8 +216,8 @@ namespace CORE::GEO
   template <class M>
   inline void computeNormalAndTangentToSurfaceElement(
       const ::DRT::Element::DiscretizationType distype, const M& xyze_surfaceElement,
-      const LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& unitnormalvec,
-      LINALG::Matrix<3, 1>& unittang1vec, LINALG::Matrix<3, 1>& unittang2vec)
+      const CORE::LINALG::Matrix<2, 1>& eleCoord, CORE::LINALG::Matrix<3, 1>& unitnormalvec,
+      CORE::LINALG::Matrix<3, 1>& unittang1vec, CORE::LINALG::Matrix<3, 1>& unittang2vec)
   {
     switch (distype)
     {

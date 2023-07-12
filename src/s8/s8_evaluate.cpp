@@ -876,7 +876,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
   // (spatial) function business
   std::vector<double> sp_functfacs(6, 1.0);
   const std::vector<int>* sp_funct = condition.Get<std::vector<int>>("funct");
-  LINALG::Matrix<3, 1> xrefegp(false);
+  CORE::LINALG::Matrix<3, 1> xrefegp(false);
   bool have_sp_funct = false;
   if (sp_funct)
     for (int dim = 0; dim < 3; dim++)
@@ -1444,7 +1444,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
   {
     /*------------------------------------ make inverse of matrix Dtilde */
     Epetra_SerialDenseMatrix Dtildinv(Dtild);
-    LINALG::SymmetricInverse(Dtildinv, nhyb_);
+    CORE::LINALG::SymmetricInverse(Dtildinv, nhyb_);
     /*===================================================================*/
     /* estif(nd,nd) = estif(nd,nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * L(nd,nhyb) */
     /*===================================================================*/

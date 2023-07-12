@@ -97,8 +97,8 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
-    LINALG::SparseMatrix& ssi_structure_matrix,
-    Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix, const bool do_uncomplete)
+    CORE::LINALG::SparseMatrix& ssi_structure_matrix,
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_matrix, const bool do_uncomplete)
 {
   /* Transform and assemble the structure matrix into the ssi structure matrix block by block:
    * S_i:  structure interior dofs
@@ -121,20 +121,20 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
   auto master_dof_map = ssi_structure_meshtying_->FullMasterSideMap();
 
   // assemble derivatives of interior dofs w.r.t. interior dofs (block a)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
       *map_structure_interior, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of interior dofs w.r.t. master dofs (block b)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
       *master_dof_map, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of master dofs w.r.t. interior dofs (block e)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
       *map_structure_interior, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   // assemble derivatives of master dofs w.r.t. master dofs (block f)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map, *master_dof_map, 1.0,
-      nullptr, nullptr, ssi_structure_matrix, true, true);
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+      *master_dof_map, 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
   for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
   {
@@ -142,19 +142,19 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
     auto converter = meshtying->SlaveSideConverter();
 
     // assemble derivatives of slave dofs w.r.t. interior dofs (block i)
-    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
         *map_structure_interior, 1.0, &(*converter), nullptr, ssi_structure_matrix, true, true);
 
     // assemble derivatives of slave dofs w.r.t. master dofs (block j)
-    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
         *master_dof_map, 1.0, &(*converter), nullptr, ssi_structure_matrix, true, true);
 
     // assemble derivatives of interior w.r.t. slave dofs (block c)
-    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *map_structure_interior,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_structure_matrix, true, true);
 
     // assemble derivatives of master w.r.t. slave dofs (block g)
-    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *master_dof_map,
         *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_structure_matrix, true, true);
 
     for (const auto& meshtying2 : ssi_structure_meshtying_->MeshTyingHandlers())
@@ -163,7 +163,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
       auto converter2 = meshtying2->SlaveSideConverter();
 
       // assemble derivatives of slave dofs w.r.t. other slave dofs (block l)
-      LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
+      CORE::LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *cond_slave_dof_map,
           *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), ssi_structure_matrix, true,
           true);
     }
@@ -175,8 +175,8 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::ApplyMeshtyingToXXXStructure(
-    LINALG::SparseMatrix& ssi_xxx_structure_matrix,
-    const LINALG::SparseMatrix& xxx_structure_matrix)
+    CORE::LINALG::SparseMatrix& ssi_xxx_structure_matrix,
+    const CORE::LINALG::SparseMatrix& xxx_structure_matrix)
 {
   // uncomplete matrix first
   ssi_xxx_structure_matrix.UnComplete();
@@ -185,12 +185,14 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToXXXStructure(
   auto master_dof_map = ssi_structure_meshtying_->FullMasterSideMap();
 
   // assemble derivatives of x w.r.t. structure interior dofs
-  LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
-      *map_structure_interior, 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+      xxx_structure_matrix.RangeMap(), *map_structure_interior, 1.0, nullptr, nullptr,
+      ssi_xxx_structure_matrix, true, true);
 
   // assemble derivatives of x w.r.t. structure master dofs
-  LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
-      *master_dof_map, 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+      xxx_structure_matrix.RangeMap(), *master_dof_map, 1.0, nullptr, nullptr,
+      ssi_xxx_structure_matrix, true, true);
 
   auto meshtying_handlers = ssi_structure_meshtying_->MeshTyingHandlers();
 
@@ -200,8 +202,9 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToXXXStructure(
     auto converter = meshtying->SlaveSideConverter();
 
     // assemble derivatives of x w.r.t. structure slave dofs
-    LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
-        *cond_slave_dof_map, 1.0, nullptr, &(*converter), ssi_xxx_structure_matrix, true, true);
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix,
+        xxx_structure_matrix.RangeMap(), *cond_slave_dof_map, 1.0, nullptr, &(*converter),
+        ssi_xxx_structure_matrix, true, true);
   }
 }
 
@@ -213,7 +216,7 @@ Epetra_Vector SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureRHS(
   // make copy of structure right-hand side vector
   Epetra_Vector rhs_structure(*structure_rhs);
 
-  auto rhs_structure_master = LINALG::CreateVector(*ssi_maps_->StructureDofRowMap(), true);
+  auto rhs_structure_master = CORE::LINALG::CreateVector(*ssi_maps_->StructureDofRowMap(), true);
 
   for (const auto& meshtying : ssi_structure_meshtying_->MeshTyingHandlers())
   {
@@ -242,13 +245,13 @@ Epetra_Vector SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureRHS(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraManifoldStructure(
-    Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
 {
   temp_scatramanifold_struct_mat_->Zero();
   auto temp_scatramanifold_struct_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatramanifold_struct_mat_);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatramanifold_struct_mat_);
   auto manifold_structure_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(manifold_structure_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(manifold_structure_matrix);
 
   // apply mesh tying contributions to temp matrix and complete it
   ApplyMeshtyingToXXXStructure(
@@ -263,13 +266,13 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraManifoldStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraManifoldStructure(
-    Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
 {
   temp_scatramanifold_struct_mat_->Zero();
   auto temp_scatramanifold_struct_block_matrix =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatramanifold_struct_mat_);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatramanifold_struct_mat_);
   auto manifold_structure_matrix_block_matrix =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
@@ -287,13 +290,13 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraManifoldStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraStructure(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
 {
   temp_scatra_struct_mat_->Zero();
   auto temp_scatra_struct_domain_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_mat_);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_mat_);
   auto scatra_structure_matrix_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
 
   ApplyMeshtyingToXXXStructure(
       *temp_scatra_struct_domain_sparse_matrix, *scatra_structure_matrix_sparse);
@@ -307,13 +310,13 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraStructure(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
 {
   temp_scatra_struct_mat_->Zero();
   auto temp_scatra_struct_domain_block_sparse_matrix =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatra_struct_mat_);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatra_struct_mat_);
   auto scatra_structure_matrix_block_sparse =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
 
   // apply mesh tying for all blocks
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -331,13 +334,13 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
   auto temp_struct_scatra_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_struct_scatra_mat_);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(temp_struct_scatra_mat_);
   auto struct_scatra_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
+      CORE::LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix and complete it
   if (do_uncomplete) temp_struct_scatra_sparse_matrix->UnComplete();
@@ -352,13 +355,13 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
   auto temp_struct_scatra_block_matrix =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_struct_scatra_mat_);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_struct_scatra_mat_);
   auto structure_scatra_block_matrix =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
+      CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
   if (do_uncomplete) temp_struct_scatra_block_matrix->UnComplete();
@@ -376,18 +379,18 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToStructureScatra(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureXXX(
-    LINALG::SparseMatrix& ssi_structure_xxx_matrix,
-    const LINALG::SparseMatrix& structure_xxx_matrix)
+    CORE::LINALG::SparseMatrix& ssi_structure_xxx_matrix,
+    const CORE::LINALG::SparseMatrix& structure_xxx_matrix)
 {
   auto map_structure_interior = ssi_structure_meshtying_->InteriorMap();
   auto master_dof_map = ssi_structure_meshtying_->FullMasterSideMap();
 
   // assemble derivatives of structure interior dofs w.r.t. scatra dofs
-  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *map_structure_interior,
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *map_structure_interior,
       structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
   // assemble derivatives of structure master dofs w.r.t. scatra dofs
-  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *master_dof_map,
+  CORE::LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *master_dof_map,
       structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
 
@@ -397,7 +400,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureXXX(
     auto converter = meshtying->SlaveSideConverter();
 
     // assemble derivatives of structure slave dofs & interior dofs w.r.t. scatra dofs
-    LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *cond_slave_dof_map,
+    CORE::LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *cond_slave_dof_map,
         structure_xxx_matrix.DomainMap(), 1.0, &(*converter), nullptr, ssi_structure_xxx_matrix,
         true, true);
   }
@@ -406,7 +409,7 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureXXX(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
-    LINALG::SparseMatrix& ssi_structure_matrix)
+    CORE::LINALG::SparseMatrix& ssi_structure_matrix)
 {
   // map for slave side structure degrees of freedom
   auto slavemaps = ssi_structure_meshtying_->FullSlaveSideMap();
@@ -439,21 +442,21 @@ void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool is_scatra_manifold,
-    const LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    const CORE::LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
 {
   Teuchos::RCP<SSI::MeshtyingStrategyBase> meshtying_strategy = Teuchos::null;
 
   switch (matrixtype_scatra)
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       meshtying_strategy = Teuchos::rcp(
           new SSI::MeshtyingStrategyBlock(is_scatra_manifold, ssi_maps, ssi_structure_meshtying));
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       meshtying_strategy = Teuchos::rcp(
           new SSI::MeshtyingStrategySparse(is_scatra_manifold, ssi_maps, ssi_structure_meshtying));

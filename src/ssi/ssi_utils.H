@@ -28,7 +28,7 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
   class MapExtractor;
@@ -36,7 +36,7 @@ namespace LINALG
   class SparseMatrix;
   class SparseOperator;
   enum class MatrixType;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SSI
 {
@@ -86,7 +86,7 @@ namespace SSI
        * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
        */
       SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
-          LINALG::MatrixType ssi_matrixtype, LINALG::MatrixType scatra_matrixtype,
+          CORE::LINALG::MatrixType ssi_matrixtype, CORE::LINALG::MatrixType scatra_matrixtype,
           bool is_scatra_manifold);
 
       void CompleteScaTraManifoldScaTraMatrix();
@@ -106,30 +106,30 @@ namespace SSI
       void ClearMatrices();
 
       //! return the system matrix
-      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return system_matrix_; }
+      Teuchos::RCP<CORE::LINALG::SparseOperator> SystemMatrix() { return system_matrix_; }
 
       //! return sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
       {
         return scatramanifold_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraStructureMatrix()
       {
         return scatra_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> StructureScaTraMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> StructureScaTraMatrix()
       {
         return structure_scatra_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
-      Teuchos::RCP<LINALG::SparseOperator> ManifoldMatrix() { return manifold_matrix_; }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraScaTraManifoldMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ManifoldMatrix() { return manifold_matrix_; }
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraScaTraManifoldMatrix()
       {
         return scatra_scatramanifold_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldScaTraMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator> ScaTraManifoldScaTraMatrix()
       {
         return scatramanifold_scatra_matrix_;
       }
@@ -142,9 +142,9 @@ namespace SSI
        * @param[in] col_map  column map the block matrix is based on
        * @return pointer to block matrix
        */
-      static Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
-          Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
+      static Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
+          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map);
 
       /*!
        * @brief set up a pointer to a sparse matrix
@@ -152,7 +152,7 @@ namespace SSI
        * @param[in] row_map  row map the sparse matrix is based on
        * @return pointer to sparse matrix
        */
-      static Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
+      static Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupSparseMatrix(
           const Teuchos::RCP<const Epetra_Map> row_map);
 
      private:
@@ -176,14 +176,14 @@ namespace SSI
        * @param[in] ssi_maps         pointer to the ssi maps object containing all relevant maps
        * @param[in] ssi_matrixtype   the ssi matrix type
        */
-      void InitializeSystemMatrix(
-          Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType ssi_matrixtype);
+      void InitializeSystemMatrix(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
+          CORE::LINALG::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
 
       //! matrix type of scatra matrix
-      const LINALG::MatrixType scatra_matrixtype_;
+      const CORE::LINALG::MatrixType scatra_matrixtype_;
 
       //! the scalar transport dof row map
       Teuchos::RCP<const Epetra_Map> scatra_dofrowmap_;
@@ -195,17 +195,17 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> structure_dofrowmap_;
 
       //! system matrix
-      Teuchos::RCP<LINALG::SparseOperator> system_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_;
       //! sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> scatra_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> scatramanifold_structure_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix_;
-      Teuchos::RCP<LINALG::SparseMatrix> structure_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> manifold_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> scatra_scatramanifold_matrix_;
-      Teuchos::RCP<LINALG::SparseOperator> scatramanifold_scatra_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifold_structure_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_structure_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> structure_scatra_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> structure_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> manifold_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix_;
       //@}
     };
 
@@ -279,16 +279,16 @@ namespace SSI
       static int GetProblemPosition(Subproblem subproblem);
 
       //! the multi map extractor of the scalar transport field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
       //! the multi map extractor of the scalar transport on manifold field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
 
       //! the multi map extractor of the structure field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapStructure() const;
 
       //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
       {
         return block_map_system_matrix_;
       }
@@ -300,7 +300,7 @@ namespace SSI
        * @brief global map extractor
        * @note only access with GetProblemPosition method
        */
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> MapsSubProblems() const
       {
         return maps_sub_problems_;
       }
@@ -319,10 +319,11 @@ namespace SSI
       void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
 
       //! block maps of all sub problems organized in std map
-      std::map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>> block_maps_sub_problems_;
+      std::map<Subproblem, Teuchos::RCP<const CORE::LINALG::MultiMapExtractor>>
+          block_maps_sub_problems_;
 
       //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_system_matrix_;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> block_map_system_matrix_;
 
       //! all dofs of the SSI algorithm
       Teuchos::RCP<const Epetra_Map> map_system_matrix_;
@@ -331,23 +332,23 @@ namespace SSI
        * @brief global map extractor
        * @note only access with GetProblemPosition method
        */
-      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_sub_problems_;
+      Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> maps_sub_problems_;
 
       //! matrix type of scatra matrix
-      const LINALG::MatrixType scatra_matrixtype_;
+      const CORE::LINALG::MatrixType scatra_matrixtype_;
 
       //! matrix type of scatra manifold matrix
-      const LINALG::MatrixType scatra_manifold_matrixtype_;
+      const CORE::LINALG::MatrixType scatra_manifold_matrixtype_;
 
       //! matrix type of ssi matrix
-      const LINALG::MatrixType ssi_matrixtype_;
+      const CORE::LINALG::MatrixType ssi_matrixtype_;
     };
 
     class SSIMeshTyingHandler
     {
      public:
       explicit SSIMeshTyingHandler(Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling,
-          Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
+          Teuchos::RCP<CORE::LINALG::MultiMapExtractor> slave_master_extractor,
           Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation);
 
       //! coupling adapter between master and slave coupling
@@ -357,7 +358,7 @@ namespace SSI
       }
 
       //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
-      Teuchos::RCP<LINALG::MultiMapExtractor> SlaveMasterExtractor() const
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SlaveMasterExtractor() const
       {
         return slave_master_extractor_;
       }
@@ -379,7 +380,7 @@ namespace SSI
       Teuchos::RCP<CORE::ADAPTER::Coupling> slave_master_coupling_;
 
       //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
-      Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor_;
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> slave_master_extractor_;
 
       //! converter to convert slave dofs to master side
       Teuchos::RCP<CORE::ADAPTER::CouplingSlaveConverter> slave_side_converter_;

@@ -616,7 +616,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
     std::vector<double> normal_triag_midp;
     if (facet->OnCutSide())
     {
-      LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
+      CORE::LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
       if (facet->IsTriangulated())
       {
@@ -631,8 +631,8 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
         {
           std::vector<Point*> facet_triang_tri = *k;
 
-          LINALG::Matrix<3, 1> cur;
-          LINALG::Matrix<3, 1> f_triang_tri_midp(true);
+          CORE::LINALG::Matrix<3, 1> cur;
+          CORE::LINALG::Matrix<3, 1> f_triang_tri_midp(true);
           for (std::vector<Point*>::iterator i = facet_triang_tri.begin();
                i != facet_triang_tri.end(); i++)
           {
@@ -649,7 +649,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
       }
       else
       {
-        LINALG::Matrix<3, 1> cur;
+        CORE::LINALG::Matrix<3, 1> cur;
         std::vector<Point*> pts = facet->Points();
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
@@ -668,7 +668,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetGradientDump(
       std::vector<Point*> cornerpts = facet->CornerPoints();
       for (std::vector<Point*>::iterator i = cornerpts.begin(); i != cornerpts.end(); i++)
       {
-        LINALG::Matrix<3, 1> cornercoord;
+        CORE::LINALG::Matrix<3, 1> cornercoord;
         Point* p1 = *i;
         p1->Coordinates(cornercoord.A());
         std::vector<double> normal = ele->GetLevelSetGradient(cornercoord);
@@ -697,7 +697,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
 
     if (facet->OnCutSide())
     {
-      LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
+      CORE::LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
 
       if (facet->IsTriangulated())
       {
@@ -707,8 +707,8 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
         {
           std::vector<Point*> facet_triang_tri = *k;
 
-          LINALG::Matrix<3, 1> cur;
-          LINALG::Matrix<3, 1> f_triang_tri_midp(true);
+          CORE::LINALG::Matrix<3, 1> cur;
+          CORE::LINALG::Matrix<3, 1> f_triang_tri_midp(true);
           for (std::vector<Point*>::iterator i = facet_triang_tri.begin();
                i != facet_triang_tri.end(); i++)
           {
@@ -726,7 +726,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
       }
       else
       {
-        LINALG::Matrix<3, 1> cur;
+        CORE::LINALG::Matrix<3, 1> cur;
         std::vector<Point*> pts = facet->Points();
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
@@ -748,7 +748,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
     for (std::vector<Node*>::iterator j = nodes.begin(); j != nodes.end(); j++)
     {
       Node* node = *j;
-      LINALG::Matrix<3, 1> node_coord(true);
+      CORE::LINALG::Matrix<3, 1> node_coord(true);
       node->Coordinates(&node_coord(0, 0));
 
       GmshScalar(file, node_coord, node->LSV(), to_local, ele);
@@ -760,7 +760,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueDump(
  * Write GMSH output of given coord as point                                   ager 02/17
  *--------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::OUTPUT::GmshCoordDump(
-    std::ofstream& file, LINALG::Matrix<3, 1> coord, double idx, bool to_local, Element* ele)
+    std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord, double idx, bool to_local, Element* ele)
 {
   file << "SP (";
   GmshWriteCoords(file, coord, to_local, ele);
@@ -811,7 +811,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
   double tolerance = (lsv_max - lsv_min) * fac;  //(0.001;
 
   //  double* x(3);
-  LINALG::Matrix<3, 1> coord;
+  CORE::LINALG::Matrix<3, 1> coord;
 
   for (int i = 0; i < x_sp; i++)
   {
@@ -830,7 +830,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(
         double ls_value = ele->GetLevelSetValueAtLocalCoords(coord);
         if (fabs(ls_value) < tolerance)
         {
-          LINALG::Matrix<3, 1> coord_global;
+          CORE::LINALG::Matrix<3, 1> coord_global;
           ele->GlobalCoordinates(coord, coord_global);
           GmshScalar(file, coord_global, ls_value, to_local, ele);
         }
@@ -863,16 +863,16 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(
       BoundaryCell* bc = *j;
 
       //      Facet *facet = *bc->GetFacet();
-      LINALG::Matrix<3, 1> midpoint_bc;
+      CORE::LINALG::Matrix<3, 1> midpoint_bc;
       bc->ElementCenter(midpoint_bc);
 
-      LINALG::Matrix<3, 1> normal_bc;
-      LINALG::Matrix<2, 1> xsi;
+      CORE::LINALG::Matrix<3, 1> normal_bc;
+      CORE::LINALG::Matrix<2, 1> xsi;
       bc->Normal(xsi, normal_bc);
 
       std::vector<std::vector<double>> coords_bc = bc->CoordinatesV();
       // const Epetra_SerialDenseMatrix ls_coordEp = bc->Coordinates();
-      LINALG::Matrix<3, 1> ls_coord(true);
+      CORE::LINALG::Matrix<3, 1> ls_coord(true);
       ls_coord(0, 0) = coords_bc[1][0];
       ls_coord(1, 0) = coords_bc[1][1];
       ls_coord(2, 0) = coords_bc[1][2];
@@ -914,7 +914,7 @@ void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
 void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
     std::ofstream& file, Facet* facet, bool normalize, bool to_local, Element* ele)
 {
-  LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
+  CORE::LINALG::Matrix<3, 1> facet_triang_midpoint_coord(true);
   std::vector<Point*> f_cornpts = facet->CornerPoints();
   std::vector<double> eqn_plane = GetEqOfPlane(f_cornpts);
 
@@ -929,8 +929,8 @@ void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
     {
       std::vector<Point*> facet_triang_tri = *k;
 
-      LINALG::Matrix<3, 1> cur;
-      LINALG::Matrix<3, 1> f_triang_tri_midp(true);
+      CORE::LINALG::Matrix<3, 1> cur;
+      CORE::LINALG::Matrix<3, 1> f_triang_tri_midp(true);
       for (std::vector<Point*>::iterator i = facet_triang_tri.begin(); i != facet_triang_tri.end();
            i++)
       {
@@ -945,7 +945,7 @@ void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
   }
   else
   {
-    LINALG::Matrix<3, 1> cur;
+    CORE::LINALG::Matrix<3, 1> cur;
     std::vector<Point*> pts = facet->Points();
     for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
     {
@@ -962,7 +962,7 @@ void CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coord,
+void CORE::GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord,
     double scalar, bool to_local, Element* ele)  // use gmshpoint?
 {
   file << "SP(";
@@ -975,7 +975,7 @@ void CORE::GEO::CUT::OUTPUT::GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coord,
+void CORE::GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord,
     std::vector<double> vector, bool normalize, bool to_local, Element* ele)
 {
   file << "VP(";
@@ -1007,7 +1007,7 @@ void CORE::GEO::CUT::OUTPUT::GmshVector(std::ofstream& file, LINALG::Matrix<3, 1
 void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
     std::ofstream& file, std::vector<double> coord, bool to_local, Element* ele)
 {
-  LINALG::Matrix<3, 1> xyz(true);
+  CORE::LINALG::Matrix<3, 1> xyz(true);
 
   if (coord.size() <= 3)
     std::copy(coord.begin(), coord.end(), xyz.A());
@@ -1018,7 +1018,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
   {
     if (ele == NULL) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
-    LINALG::Matrix<3, 1> rst(true);
+    CORE::LINALG::Matrix<3, 1> rst(true);
 
     ele->LocalCoordinates(xyz, rst);
     GmshWriteCoords(file, rst, false, NULL);  // rst are already local coords!
@@ -1031,13 +1031,13 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
-    std::ofstream& file, LINALG::Matrix<3, 1> coord, bool to_local, Element* ele)
+    std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord, bool to_local, Element* ele)
 {
   if (to_local)
   {
     if (ele == NULL) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
-    LINALG::Matrix<3, 1> xyz = coord;
+    CORE::LINALG::Matrix<3, 1> xyz = coord;
     ele->LocalCoordinates(xyz, coord);
   }
   file << std::setprecision(15) << coord(0, 0) << "," << coord(1, 0) << "," << coord(2, 0);
@@ -1058,7 +1058,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
     std::ofstream& file, Point* point, bool to_local, Element* ele)
 {
-  LINALG::Matrix<3, 1> coord;
+  CORE::LINALG::Matrix<3, 1> coord;
   point->Coordinates(coord.A());
 
   GmshWriteCoords(file, coord, to_local, ele);
@@ -1106,7 +1106,7 @@ std::vector<double> CORE::GEO::CUT::OUTPUT::GetEqOfPlane(std::vector<Point*> pts
   for (std::vector<Point*>::iterator k = pts.begin(); k != pts.end(); k++)
   {
     Point* p1 = *k;
-    LINALG::Matrix<3, 1> cur;
+    CORE::LINALG::Matrix<3, 1> cur;
     p1->Coordinates(cur.A());
 
     std::vector<double> pt(3);

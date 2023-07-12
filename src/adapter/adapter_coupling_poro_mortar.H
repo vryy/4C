@@ -39,7 +39,7 @@ namespace CONTACT
   class CoInterface;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -63,8 +63,8 @@ namespace ADAPTER
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
-        const Teuchos::RCP<DRT::Discretization> sdis, Teuchos::RCP<LINALG::SparseMatrix>& f,
-        Teuchos::RCP<LINALG::SparseMatrix>& k_fs, Teuchos::RCP<Epetra_Vector>& frhs,
+        const Teuchos::RCP<DRT::Discretization> sdis, Teuchos::RCP<CORE::LINALG::SparseMatrix>& f,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fs, Teuchos::RCP<Epetra_Vector>& frhs,
         CORE::ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void UpdatePoroMt();

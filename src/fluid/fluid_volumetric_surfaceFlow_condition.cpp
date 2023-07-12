@@ -370,9 +370,9 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   // create cond_velocities and codition traction velocity terms
   // -------------------------------------------------------------------
-  cond_velocities_ = LINALG::CreateVector(*cond_dofrowmap_, true);
-  cond_traction_vel_ = LINALG::CreateVector(*dofrowmap, true);
-  drt_velocities_ = LINALG::CreateVector(*drt_dofrowMap, true);
+  cond_velocities_ = CORE::LINALG::CreateVector(*cond_dofrowmap_, true);
+  cond_traction_vel_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  drt_velocities_ = CORE::LINALG::CreateVector(*drt_dofrowMap, true);
 
   // -------------------------------------------------------------------
   // Evaluate the area of the design surface.
@@ -477,9 +477,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   //--------------------------------------------------------------------
   int myrank = discret_->Comm().MyPID();
 
-  local_radii_ = LINALG::CreateVector(*cond_surfnoderowmap_, true);
+  local_radii_ = CORE::LINALG::CreateVector(*cond_surfnoderowmap_, true);
 
-  border_radii_ = LINALG::CreateVector(*cond_surfnoderowmap_, true);
+  border_radii_ = CORE::LINALG::CreateVector(*cond_surfnoderowmap_, true);
   //--------------------------------------------------------------------
   // get all of the border nodes
   //--------------------------------------------------------------------
@@ -570,16 +570,16 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   const int dim = 3;
 
   // define the vector between center-of-mass and current-node
-  LINALG::Matrix<(dim), 1> c_cnd(true);
+  CORE::LINALG::Matrix<(dim), 1> c_cnd(true);
 
   // define the vector between center-of-mass and border-node
-  LINALG::Matrix<(dim), 1> c_bnd(true);
+  CORE::LINALG::Matrix<(dim), 1> c_bnd(true);
 
   // define the vector that is the nearest from right
-  LINALG::Matrix<(dim), 1> v_right(true);
+  CORE::LINALG::Matrix<(dim), 1> v_right(true);
 
   // define the vector that is the nearest from left
-  LINALG::Matrix<(dim), 1> v_left(true);
+  CORE::LINALG::Matrix<(dim), 1> v_left(true);
 
 
   // define a direction vector perpendicular to the vector
@@ -587,7 +587,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   // This vector is also used to define whether a certain vector
   // is in the [0,pi] or [pi,2pi] awy from the
   // "center-of-mass and current-node" vector.
-  LINALG::Matrix<(dim), 1> dir_vec(true);
+  CORE::LINALG::Matrix<(dim), 1> dir_vec(true);
 
   for (int lid = 0; lid < cond_surfnoderowmap_->NumMyElements(); lid++)
   {
@@ -648,7 +648,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
           // find the closest two vectors by calculating the norm of the
           // difference between the two vectors
           //--------------------------------------------------------------
-          LINALG::Matrix<(dim), 1> diff = c_cnd;
+          CORE::LINALG::Matrix<(dim), 1> diff = c_cnd;
           diff -= c_bnd;
 
           //--------------------------------------------------------------
@@ -1334,7 +1334,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(
   }
 
   // loop over all of the nodes
-  Teuchos::RCP<Epetra_Vector> correction_velnp = LINALG::CreateVector(*cond_dofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> correction_velnp = CORE::LINALG::CreateVector(*cond_dofrowmap_, true);
 
   params->set<int>("Number of Harmonics", 0);
   // condition id
@@ -1462,7 +1462,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
 
@@ -1498,7 +1498,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> flowrates = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   const std::string condstring(ds_condname);
   discret_->EvaluateCondition(eleparams, flowrates, condstring, condid);

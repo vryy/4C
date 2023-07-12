@@ -136,10 +136,10 @@ void DRT::ELEMENTS::DiscSh3Line::Print(std::ostream& os) const
  | Calculate change in angle from reference configuration         mukherjee 09/14|
  *-------------------------------------------------------------------------------*/
 FAD DRT::ELEMENTS::DiscSh3Line::CalcTheta(
-    LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2)
+    CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2)
 {
   FAD theta = 0;
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   FAD CosTheta = (vector1.Dot(vector2));
 
@@ -212,7 +212,7 @@ FAD DRT::ELEMENTS::DiscSh3Line::GetRefEdgeLength()
 FAD DRT::ELEMENTS::DiscSh3Line::GetCurrEdgeLength(DRT::Discretization& dis)
 {
   // 2 nodes, 3 dimensions
-  LINALG::Matrix<1, 6> x = SpatialConfiguration(dis);
+  CORE::LINALG::Matrix<1, 6> x = SpatialConfiguration(dis);
 
   std::vector<FAD> x_FAD(6, 0.0);
 
@@ -238,7 +238,7 @@ double DRT::ELEMENTS::DiscSh3Line::GetCurrEdgeLength(
     DRT::Discretization& dis, const Epetra_Vector& discol)
 {
   // 2 nodes, 3 dimensions
-  LINALG::Matrix<1, 6> x = SpatialConfiguration(dis, discol);
+  CORE::LINALG::Matrix<1, 6> x = SpatialConfiguration(dis, discol);
 
   std::vector<FAD> x_FAD(6, 0.0);
 
@@ -286,7 +286,7 @@ FAD DRT::ELEMENTS::DiscSh3Line::GetEdgeLengthPrevTimeStep()
     }
   }
 
-  LINALG::Matrix<1, 9> x_n_1 = master_ele->x_n_1_;
+  CORE::LINALG::Matrix<1, 9> x_n_1 = master_ele->x_n_1_;
 
   // In the reconstructed geometry, 3-4 is the edge
   std::vector<FAD> x_FAD(12, 0.0);
@@ -330,7 +330,7 @@ void DRT::ELEMENTS::DiscSh3Line::AddPrimaryDOFsMaster(DRT::ELEMENTS::DiscSh3& ma
     DRT::Discretization& dis, bool refconfig)
 {
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = master.MaterialConfiguration();
@@ -397,7 +397,7 @@ void DRT::ELEMENTS::DiscSh3Line::AddPrimaryDOFsSlave(DRT::ELEMENTS::DiscSh3& mas
     bool refconfig)
 {
   // 3 nodes, 3 dimensions
-  LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x(true);
   if (refconfig)  // reference config
   {
     x = slave.MaterialConfiguration();
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::DiscSh3Line::AddCurrVel(DRT::ELEMENTS::DiscSh3& master,
 {
   /********** Add vel DOFs of Master element  **************/
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3> v_master = master.GetVel(dis);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> v_master = master.GetVel(dis);
   int count = 0;
   for (int j = 0; j < master.NumNode(); j++)
   {
@@ -475,7 +475,7 @@ void DRT::ELEMENTS::DiscSh3Line::AddCurrVel(DRT::ELEMENTS::DiscSh3& master,
 
   /********** Add vel DOFs of Slave element  **************/
 
-  LINALG::Matrix<1, NUMDOF_DISCSH3> v_slave = slave.GetVel(dis);
+  CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> v_slave = slave.GetVel(dis);
 
 
   for (int j = 0; j < slave.NumNode(); j++)
@@ -520,21 +520,21 @@ void DRT::ELEMENTS::DiscSh3Line::SortPrimaryDOFs(DRT::Element& master, DRT::Elem
 /*-----------------------------------------------------------------------------*
  |  Calculate surface normal of the master element (private)    mukherjee 05/15|
  *-----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
+CORE::LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
     std::vector<FAD>& x_FAD)
 {
   // Element connectivity 134
-  LINALG::Matrix<1, 3, FAD> normal(true);
+  CORE::LINALG::Matrix<1, 3, FAD> normal(true);
 
-  LINALG::Matrix<1, 3, FAD> side1(true);  // side 31
-  LINALG::Matrix<1, 3, FAD> side2(true);  // side 41
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);  // side 31
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);  // side 41
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -551,21 +551,21 @@ LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalMaster(
 /*-----------------------------------------------------------------------------*
  |  Calculate surface normal of the slave element (private)    mukherjee 05/15 |
  *-----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSlave(
+CORE::LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSlave(
     std::vector<FAD>& x_FAD)
 {
   // Element connectivity 243
-  LINALG::Matrix<1, 3, FAD> normal(true);
+  CORE::LINALG::Matrix<1, 3, FAD> normal(true);
 
-  LINALG::Matrix<1, 3, FAD> side1(true);  // side 34
-  LINALG::Matrix<1, 3, FAD> side2(true);  // side 24
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);  // side 34
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);  // side 24
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 6] - x_FAD[j + 3];
     side2(j) = x_FAD[j] - x_FAD[j + 3];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
 
   // Cross Product
@@ -587,13 +587,13 @@ LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSlave(
 void DRT::ELEMENTS::DiscSh3Line::ReassembleMATBlock(const int row_block,  ///< row block
     const int col_block,                                                  ///< column block
     Epetra_SerialDenseMatrix& mat_block,                                  ///< matrix block
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
         elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
         elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
         elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
         elematrix_ss,                        ///< element matrix slave-slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
@@ -671,8 +671,8 @@ void DRT::ELEMENTS::DiscSh3Line::ReassembleMATBlock(const int row_block,  ///< r
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::ReassembleRHSBlock(const int row_block,  ///< row block
     Epetra_SerialDenseVector& rhs_block,                                  ///< rhs block
-    LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
-    LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch    ///< local map between slave nodes and nodes in patch
 )
@@ -703,19 +703,19 @@ void DRT::ELEMENTS::DiscSh3Line::ReassembleRHSBlock(const int row_block,  ///< r
  |  Calculate gradient of the normal of an element (private)   mukherjee 07/15|
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::CalcGradienNormal(std::vector<FAD>& x_FAD,
-    LINALG::Matrix<3, 3, FAD>& DnDx1, LINALG::Matrix<3, 3, FAD>& DnDx2,
-    LINALG::Matrix<3, 3, FAD>& DnDx3)
+    CORE::LINALG::Matrix<3, 3, FAD>& DnDx1, CORE::LINALG::Matrix<3, 3, FAD>& DnDx2,
+    CORE::LINALG::Matrix<3, 3, FAD>& DnDx3)
 {
   // Calculate surface area at spatial config FAD
-  LINALG::Matrix<1, 3, FAD> side1(true);
-  LINALG::Matrix<1, 3, FAD> side2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> side2(true);
   for (int j = 0; j < 3; j++)
   {
     side1(j) = x_FAD[j + 3] - x_FAD[j];
     side2(j) = x_FAD[j + 6] - x_FAD[j + 3];
   }
 
-  LINALG::Matrix<1, 3, FAD> crossprod(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
 
   // Cross Product
   crossprod = CalcCrossProduct(side1, side2);
@@ -723,9 +723,9 @@ void DRT::ELEMENTS::DiscSh3Line::CalcGradienNormal(std::vector<FAD>& x_FAD,
   FAD area_curr = 0.5 * pow((crossprod.Dot(crossprod)), 0.5);
 
   // Auxiliarry vector
-  LINALG::Matrix<1, 3, FAD> AuxVect1(true);
-  LINALG::Matrix<1, 3, FAD> AuxVect2(true);
-  LINALG::Matrix<1, 3, FAD> AuxVect3(true);
+  CORE::LINALG::Matrix<1, 3, FAD> AuxVect1(true);
+  CORE::LINALG::Matrix<1, 3, FAD> AuxVect2(true);
+  CORE::LINALG::Matrix<1, 3, FAD> AuxVect3(true);
 
   for (int i = 0; i < NUMNOD_DISCSH3; i++)
   {
@@ -749,12 +749,12 @@ void DRT::ELEMENTS::DiscSh3Line::CalcGradienNormal(std::vector<FAD>& x_FAD,
 /*----------------------------------------------------------------------------*
  |  Calculate spatial configuration of an element (private)    mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
+CORE::LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
     DRT::Discretization& dis) const
 {
   Teuchos::RCP<const Epetra_Vector> discol = dis.GetState("displacement");
 
-  LINALG::Matrix<1, 6> coord(true);
+  CORE::LINALG::Matrix<1, 6> coord(true);
 
   // compute current nodal positions
   for (int dim = 0; dim < 3; ++dim)
@@ -775,10 +775,10 @@ LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
 /*----------------------------------------------------------------------------*
  |  Calculate spatial configuration of an element (private)    mukherjee 07/15|
  *----------------------------------------------------------------------------*/
-LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
+CORE::LINALG::Matrix<1, 6> DRT::ELEMENTS::DiscSh3Line::SpatialConfiguration(
     DRT::Discretization& dis, const Epetra_Vector& discol) const
 {
-  LINALG::Matrix<1, 6> coord(true);
+  CORE::LINALG::Matrix<1, 6> coord(true);
 
   // compute current nodal positions
   for (int dim = 0; dim < 3; ++dim)

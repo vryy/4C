@@ -24,7 +24,7 @@ namespace DRT
   class Discretization;
   class Element;
 }  // namespace DRT
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }

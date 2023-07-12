@@ -402,7 +402,7 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinScalarIso::GetInelasticSource(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameter
   const int sc1 = Parameter()->Scalar1();
@@ -420,13 +420,13 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInverseInelasticDefGrad(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
   // static variables
-  static LINALG::Matrix<9, 6> diFinjdC(true);
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 6> diFinjdC(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
 
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
@@ -454,10 +454,10 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateAdditionalCmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 1>& dstressdc)
 {
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
@@ -481,7 +481,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
-    const double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -494,7 +494,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
                           linear_growth_->GrowthFac() * detjacobian;
 
   // prepare identity tensor as 9x1 vector
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // here dFindc is zeroed out and filled with the current value
@@ -520,10 +520,10 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinScalarAniso::GetInelasticSourc
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // init and clear variable
-  static LINALG::Matrix<3, 3> FinM(true);
+  static CORE::LINALG::Matrix<3, 3> FinM(true);
   FinM.Clear();
 
   // get parameters
@@ -547,14 +547,14 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateInverseInelasticDefGrad(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
-  static LINALG::Matrix<3, 3> temp(true);
-  static LINALG::Matrix<3, 3> iFinjGiFinj(true);
-  static LINALG::Matrix<9, 1> iFinjGiFinj9x1(true);
-  static LINALG::Matrix<9, 6> diFinjdC(true);
+  static CORE::LINALG::Matrix<3, 3> temp(true);
+  static CORE::LINALG::Matrix<3, 3> iFinjGiFinj(true);
+  static CORE::LINALG::Matrix<9, 1> iFinjGiFinj9x1(true);
+  static CORE::LINALG::Matrix<9, 6> diFinjdC(true);
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -580,13 +580,13 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateAdditionalCmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 1>& dstressdc)
 {
   // static variables
-  static LINALG::Matrix<3, 3> tmp(true);
-  static LINALG::Matrix<3, 3> diFinjdcM(true);
-  static LINALG::Matrix<9, 1> diFinjdc9x1(true);
+  static CORE::LINALG::Matrix<3, 3> tmp(true);
+  static CORE::LINALG::Matrix<3, 3> diFinjdcM(true);
+  static CORE::LINALG::Matrix<9, 1> diFinjdc9x1(true);
 
   // get parameters
   const double sc1GrowthFac = linear_growth_->GrowthFac();
@@ -607,12 +607,12 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinScalarAniso::EvaluateInelasticDefGradDerivative(
-    const double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   const double scalefac = linear_growth_->GrowthFac() * detjacobian;
 
   // get the growth direction matrix as a 9x1 vector
-  static LINALG::Matrix<9, 1> growthdirmat9x1(true);
+  static CORE::LINALG::Matrix<9, 1> growthdirmat9x1(true);
   UTILS::VOIGT::Matrix3x3to9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
 
   // here dFindc is zeroed out and filled with the current value
@@ -630,7 +630,7 @@ MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -650,13 +650,13 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInverseInelasticDefGrad(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
   // static variables
-  static LINALG::Matrix<9, 6> diFinjdC(true);
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 6> diFinjdC(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
 
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
@@ -688,10 +688,10 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateAdditionalCmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 1>& dstressdc)
 {
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
@@ -719,9 +719,9 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivative(
-    const double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
@@ -757,10 +757,10 @@ MAT::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAnis
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* const defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // init and clear variable
-  static LINALG::Matrix<3, 3> FinM(true);
+  static CORE::LINALG::Matrix<3, 3> FinM(true);
   FinM.Clear();
 
   // get parameters
@@ -788,14 +788,14 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInverseInelasticDefGrad
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
-  static LINALG::Matrix<3, 3> temp(true);
-  static LINALG::Matrix<3, 3> iFinjGiFinj(true);
-  static LINALG::Matrix<9, 1> iFinjGiFinj9x1(true);
-  static LINALG::Matrix<9, 6> diFinjdC(true);
+  static CORE::LINALG::Matrix<3, 3> temp(true);
+  static CORE::LINALG::Matrix<3, 3> iFinjGiFinj(true);
+  static CORE::LINALG::Matrix<9, 1> iFinjGiFinj9x1(true);
+  static CORE::LINALG::Matrix<9, 6> diFinjdC(true);
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -827,13 +827,13 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateAdditionalCmat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 1>& dstressdc)
 {
   // static variables
-  static LINALG::Matrix<3, 3> tmp(true);
-  static LINALG::Matrix<3, 3> diFinjdcM(true);
-  static LINALG::Matrix<9, 1> diFinjdc9x1(true);
+  static CORE::LINALG::Matrix<3, 3> tmp(true);
+  static CORE::LINALG::Matrix<3, 3> diFinjdcM(true);
+  static CORE::LINALG::Matrix<9, 1> diFinjdc9x1(true);
 
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -861,7 +861,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivative(
-    const double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    const double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
   const int sc1 = Parameter()->Scalar1();
@@ -876,7 +876,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivat
   const double scalefac = polynomDerivativeValue / (polynomReferenceValue + 1.0) * dChidc;
 
   // get the growth direction matrix as a 9x1 vector
-  static LINALG::Matrix<9, 1> growthdirmat9x1(true);
+  static CORE::LINALG::Matrix<9, 1> growthdirmat9x1(true);
   UTILS::VOIGT::Matrix3x3to9x1(Parameter()->GrowthDirMat(), growthdirmat9x1);
 
   // here dFindc is zeroed out and filled with the current value
@@ -976,7 +976,7 @@ void MAT::InelasticDefgradLinTempIso::PreEvaluate(Teuchos::ParameterList& params
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   // get parameters
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
@@ -993,7 +993,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
-    double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
   // get parameters
   const double tempgrowthfac = Parameter()->GetTempGrowthFac();
@@ -1003,7 +1003,7 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
   const double scalefac = tempgrowthfac / 3.0 * std::pow(growthfactor, -2.0 / 3.0);
 
   // prepare identity tensor as 9x1 vector
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // here dFindT is zeroed out and filled with the current value
@@ -1013,20 +1013,20 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradLinTempIso::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 6>& cmatadd)
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
   // nothing to do so far, as current growth model is not a function of displacements (and thus C)
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
-    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 1>& dstressdT)
+void MAT::InelasticDefgradLinTempIso::EvaluateODStiffMat(
+    const CORE::LINALG::Matrix<3, 3>* const defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 9>& dSdiFinj, CORE::LINALG::Matrix<6, 1>& dstressdT)
 {
-  static LINALG::Matrix<9, 1> id9x1(true);
+  static CORE::LINALG::Matrix<9, 1> id9x1(true);
   // prepare id9x1 (identity matrix written as a 9x1 vector)
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
@@ -1053,32 +1053,33 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinTempIso::GetInelasticSource()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
-    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd)
+void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(
+    const CORE::LINALG::Matrix<3, 3>* defgrad, const CORE::LINALG::Matrix<3, 3>& iFinjM,
+    const CORE::LINALG::Matrix<6, 1>& iCV, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 6>& cmatadd)
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradNoGrowth::EvaluateInelasticDefGradDerivative(
-    double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+    double detjacobian, CORE::LINALG::Matrix<9, 1>& dFindx)
 {
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradNoGrowth::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   iFinM = identity_;
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::InelasticDefgradNoGrowth::EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad,
-    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-    LINALG::Matrix<6, 1>& dstressdx)
+void MAT::InelasticDefgradNoGrowth::EvaluateODStiffMat(const CORE::LINALG::Matrix<3, 3>* defgrad,
+    const CORE::LINALG::Matrix<3, 3>& iFinjM, const CORE::LINALG::Matrix<6, 9>& dSdiFinj,
+    CORE::LINALG::Matrix<6, 1>& dstressdx)
 {
 }
 
@@ -1106,7 +1107,7 @@ void MAT::InelasticDefgradNoGrowth::PreEvaluate(Teuchos::ParameterList& params, 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradTimeFunct::EvaluateInverseInelasticDefGrad(
-    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+    const CORE::LINALG::Matrix<3, 3>* defgrad, CORE::LINALG::Matrix<3, 3>& iFinM)
 {
   const double idetFin = std::pow(funct_value_, -1.0 / 3.0);
   iFinM.Update(idetFin, identity_, 0.0);

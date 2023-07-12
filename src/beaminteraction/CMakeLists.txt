@@ -10,7 +10,6 @@ set(_beaminteraction_dependencies
     inpar
     io
     lib
-    linalg
     mat
     rebalance
     rigidsphere

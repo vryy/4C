@@ -73,7 +73,7 @@ namespace SCATRA
 
     bool SystemMatrixInitializationNeeded() const override { return false; }
 
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       dserror(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -83,7 +83,7 @@ namespace SCATRA
       return Teuchos::null;
     }
 
-    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
       return Teuchos::null;
@@ -93,23 +93,24 @@ namespace SCATRA
     void SetupMeshtying() override;
 
     //! solver
-    const LINALG::Solver& Solver() const override;
+    const CORE::LINALG::Solver& Solver() const override;
 
     //! init the convergence check
     void InitConvCheckStrategy() override;
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
-        const int& iteration,  //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
+        const int& iteration,                      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
     ) const override;
 
-    void SetupSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual                             //!< residual vector
+    void SetupSystem(
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& residual                      //!< residual vector
     ) const;
 
     //! init the convergence check
@@ -131,7 +132,7 @@ namespace SCATRA
     void ApplyMeshMovement();
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> CombinedSystemMatrix()
     {
       return comb_systemmatrix_;
     }
@@ -176,7 +177,7 @@ namespace SCATRA
     Teuchos::RCP<DRT::Discretization> scatradis_;
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! combined rhs
     Teuchos::RCP<Epetra_Vector> rhs_;

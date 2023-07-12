@@ -5,6 +5,5 @@ set(_rebalance_dependencies
     inpar
     io
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_rebalance_dependencies})

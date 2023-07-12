@@ -24,7 +24,7 @@
  |  Constructor (public)                                rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
@@ -248,8 +248,8 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(
   if (fsphinp_ != Teuchos::null)
   {
     old = fsphinp_;
-    fsphinp_ = LINALG::CreateVector(*newdofrowmap, true);
-    LINALG::Export(*old, *fsphinp_);
+    fsphinp_ = CORE::LINALG::CreateVector(*newdofrowmap, true);
+    CORE::LINALG::Export(*old, *fsphinp_);
   }
 
   return;

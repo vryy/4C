@@ -379,7 +379,7 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               // determine number of velocity related dofs per node
               const int numveldofpernode = lmvel.size() / nen;
 
-              LINALG::Matrix<nsd, nen> evel(true);
+              CORE::LINALG::Matrix<nsd, nen> evel(true);
 
               // loop over number of nodes
               for (int inode = 0; inode < nen; ++inode)
@@ -391,16 +391,16 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
               // used here to get center coordinates
               CORE::DRT::UTILS::IntPointsAndWeights<nsd> centercoord(
                   SCATRA::DisTypeToStabGaussRule<distype>::rule);
-              LINALG::Matrix<nsd, 1> xsi(true);
+              CORE::LINALG::Matrix<nsd, 1> xsi(true);
               const double* gpcoord = (centercoord.IP().qxg)[0];
               for (int idim = 0; idim < nsd; idim++) xsi(idim, 0) = gpcoord[idim];
 
               // compute shape functions at element center
-              LINALG::Matrix<nen, 1> funct(true);
+              CORE::LINALG::Matrix<nen, 1> funct(true);
               CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
 
               // get velocity at integration point
-              LINALG::Matrix<nsd, 1> velint(true);
+              CORE::LINALG::Matrix<nsd, 1> velint(true);
               velint.Multiply(evel, funct);
 
               // add to averaged velocity vector
@@ -471,7 +471,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   if (convel_col == Teuchos::null) dserror("Cannot get state vector convective velocity");
   Teuchos::RCP<Epetra_Vector> convel =
       Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(NdsVel()), true));
-  LINALG::Export(*convel_col, *convel);
+  CORE::LINALG::Export(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -563,7 +563,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   // export phinp to column map
   const Teuchos::RCP<Epetra_Vector> phinpcol =
       Teuchos::rcp(new Epetra_Vector(*discret_->DofColMap()));
-  LINALG::Export(*phinp_, *phinpcol);
+  CORE::LINALG::Export(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
   for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -683,7 +683,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     // which then eliminate all but their row nodes
     {
       Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
-      LINALG::Gather<int>(
+      CORE::LINALG::Gather<int>(
           *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->Comm());
 
       allcollectednodes->clear();
@@ -703,8 +703,8 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
   // and therefore gets added to the surfacenodes set. This set is redundantly available and
   // mereley knows a node's position and velocities
   //-----------------------------------------------------------------------------------------------
-  Teuchos::RCP<std::vector<LINALG::Matrix<3, 2>>> surfacenodes =
-      Teuchos::rcp(new std::vector<LINALG::Matrix<3, 2>>);
+  Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 2>>> surfacenodes =
+      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 2>>);
 
   std::set<int>::const_iterator nodeit;
   for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
@@ -723,7 +723,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     if (elementcount < 8)
     {
       std::vector<int> nodedofs = discret_->Dof(NdsVel(), node);
-      LINALG::Matrix<3, 2> coordandvel;
+      CORE::LINALG::Matrix<3, 2> coordandvel;
       const double* coord = node->X();
       for (int i = 0; i < 3; ++i)
       {
@@ -740,10 +740,10 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
   // Now the surfacenodes must be gathered to all procs
   {
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
-    surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 2>>);
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
+    surfacenodes = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 2>>);
 
-    LINALG::Gather<LINALG::Matrix<3, 2>>(
+    CORE::LINALG::Gather<CORE::LINALG::Matrix<3, 2>>(
         *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->Comm());
   }
 
@@ -756,7 +756,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
     std::vector<int> nodedofs = discret_->Dof(NdsVel(), lnode);
 
-    LINALG::Matrix<3, 1> fluidvel(true);
+    CORE::LINALG::Matrix<3, 1> fluidvel(true);
 
     // extract velocity values (no pressure!) from global velocity vector
     for (int i = 0; i < 3; ++i)
@@ -773,9 +773,9 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
     if (foundit == allcollectednodes->end())
     {
       // find closest node in surfacenodes
-      LINALG::Matrix<3, 2> closestnodedata(true);
+      CORE::LINALG::Matrix<3, 2> closestnodedata(true);
       {
-        LINALG::Matrix<3, 1> nodecoord;
+        CORE::LINALG::Matrix<3, 1> nodecoord;
         const double* coord = lnode->X();
         for (int i = 0; i < 3; ++i) nodecoord(i) = coord[i];
         double mindist = 1.0e19;
@@ -809,7 +809,7 @@ void SCATRA::LevelSetAlgorithm::ManipulateFluidFieldForGfunc()
 
         for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
         {
-          LINALG::Matrix<3, 1> tmpcoord(nodecoord);
+          CORE::LINALG::Matrix<3, 1> tmpcoord(nodecoord);
 
           // determine which pbcs have to be applied
           //
@@ -1065,11 +1065,11 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // in standard case, but do not save the graph if fine-scale subgrid
   // diffusivity is used in non-incremental case
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
-    // sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    // sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap,27));
     // cf constructor
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27, false, true));
   else
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -1082,31 +1082,31 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (phinp_ != Teuchos::null)
   {
     old = phinp_;
-    phinp_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *phinp_);
+    phinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *phinp_);
   }
 
   if (phin_ != Teuchos::null)
   {
     old = phin_;
-    phin_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *phin_);
+    phin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *phin_);
   }
 
   // temporal solution derivative at time n+1
   if (phidtnp_ != Teuchos::null)
   {
     old = phidtnp_;
-    phidtnp_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *phidtnp_);
+    phidtnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *phidtnp_);
   }
 
   // temporal solution derivative at time n
   if (phidtn_ != Teuchos::null)
   {
     old = phidtn_;
-    phidtn_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *phidtn_);
+    phidtn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *phidtn_);
   }
 
   // history vector (a linear combination of phinm, phin (BDF)
@@ -1114,8 +1114,8 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (hist_ != Teuchos::null)
   {
     old = hist_;
-    hist_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *hist_);
+    hist_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *hist_);
   }
 
   // -------------------------------------------------------------------
@@ -1125,8 +1125,8 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (zeros_ != Teuchos::null)
   {
     old = zeros_;
-    zeros_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *zeros_);
+    zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *zeros_);
   }
 
   // -------------------------------------------------------------------
@@ -1136,32 +1136,32 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (neumann_loads_ != Teuchos::null)
   {
     old = neumann_loads_;
-    neumann_loads_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *neumann_loads_);
+    neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *neumann_loads_);
   }
 
   // the residual vector --- more or less the rhs
   if (residual_ != Teuchos::null)
   {
     old = residual_;
-    residual_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *residual_);
+    residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *residual_);
   }
 
   // residual vector containing the normal boundary fluxes
   if (trueresidual_ != Teuchos::null)
   {
     old = trueresidual_;
-    trueresidual_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *trueresidual_);
+    trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *trueresidual_);
   }
 
   // incremental solution vector
   if (increment_ != Teuchos::null)
   {
     old = increment_;
-    increment_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *increment_);
+    increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *increment_);
   }
 
   // subgrid-diffusivity(-scaling) vector
@@ -1170,15 +1170,15 @@ void SCATRA::LevelSetAlgorithm::Redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (subgrdiff_ != Teuchos::null)
   {
     old = subgrdiff_;
-    subgrdiff_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *subgrdiff_);
+    subgrdiff_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *subgrdiff_);
   }
 
   if (initialphireinit_ != Teuchos::null)
   {
     old = initialphireinit_;
-    initialphireinit_ = LINALG::CreateVector(*dofrowmap, true);
-    LINALG::Export(*old, *initialphireinit_);
+    initialphireinit_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    CORE::LINALG::Export(*old, *initialphireinit_);
   }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)

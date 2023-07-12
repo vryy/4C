@@ -99,7 +99,7 @@ namespace DRT
           const int ndofpernodefluid,      //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
       );
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
@@ -128,7 +128,7 @@ namespace DRT
       virtual void SetInternalVariablesForMatAndRHS();
 
       //! artery pressure values at t_(n+1)
-      LINALG::Matrix<nen_, 1> earterypressurenp_;
+      CORE::LINALG::Matrix<nen_, 1> earterypressurenp_;
     };
 
     template <int NSD, int NEN>
@@ -147,23 +147,24 @@ namespace DRT
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void SetInternalVariablesArtery(
-          const LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NSD, NEN>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const LINALG::Matrix<NSD, NSD>& xjm,
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,   //! scalar at t_(n)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const CORE::LINALG::Matrix<NSD, NSD>& xjm,
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist,  //! history vector of transported scalars
-          const LINALG::Matrix<NEN, 1>& earterypressure)
+          const CORE::LINALG::Matrix<NEN, 1>& earterypressure)
       {
         // call base class (scatra) with dummy variable econvelnp
-        const LINALG::Matrix<NSD, NEN> econvelnp(true);
+        const CORE::LINALG::Matrix<NSD, NEN> econvelnp(true);
         my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
 
-        static LINALG::Matrix<NSD, 1> pressuregrad(true);
+        static CORE::LINALG::Matrix<NSD, 1> pressuregrad(true);
         pressuregrad.Multiply(derxy, earterypressure);
 
         // convective velocity

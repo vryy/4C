@@ -113,7 +113,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
 {
   CheckInitSetup();
 
-  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   if (jac_ptr == NULL) dserror("Dynamic cast failed.");
 
   if (not implint_ptr_->ApplyStiff(x, *jac_ptr)) return false;
@@ -133,7 +133,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
 {
   CheckInitSetup();
 
-  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   if (jac_ptr == NULL) dserror("Dynamic cast failed!");
 
   if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
@@ -159,7 +159,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
 {
   CheckInitSetup();
 
-  LINALG::SparseOperator* jac_ptr = dynamic_cast<LINALG::SparseOperator*>(&jac);
+  CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   if (jac_ptr == NULL) dserror("Dynamic cast failed!");
 
   std::vector<INPAR::STR::ModelType> constraint_models;
@@ -605,12 +605,12 @@ double STR::TIMINT::NoxInterface::CalcRefNormForce()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
 STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
 {
   CheckInitSetup();
-  Teuchos::RCP<LINALG::SparseMatrix> scalingMatrixOpPtr =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(), 81, true, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> scalingMatrixOpPtr =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(), 81, true, true));
   implint_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;

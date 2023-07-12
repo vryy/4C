@@ -73,16 +73,16 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -115,22 +115,22 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingODAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           SCATRA::DifferentiationType differentiationtype,
-          const LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd, Epetra_SerialDenseMatrix& k_ss,
+          const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_sm);
 
      private:
@@ -178,7 +178,7 @@ namespace DRT
           ) override;
 
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-      std::vector<LINALG::Matrix<nen_, 1>> eelchnp_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> eelchnp_;
     };  // class ScaTraEleBoundaryCalcSTIElectrode
   }     // namespace ELEMENTS
 }  // namespace DRT

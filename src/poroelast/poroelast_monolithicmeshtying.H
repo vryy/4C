@@ -29,7 +29,7 @@ namespace POROELAST
    public:
     //! create using a Epetra_Comm
     explicit MonolithicMeshtying(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
     void SetupSystem() override;
@@ -50,7 +50,7 @@ namespace POROELAST
 
     //! extractor to split fluid RHS vector for convergence check
     //! should be named fluidvelocityactiverowdofmap_
-    Teuchos::RCP<const LINALG::MultiMapExtractor> FluidVelActiveDofExtractor() const
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> FluidVelActiveDofExtractor() const
     {
       return fvelactiverowdofmap_;
     }
@@ -75,7 +75,7 @@ namespace POROELAST
     Teuchos::RCP<ADAPTER::CouplingPoroMortar> mortar_adapter_;
 
     //! fluid velocity dof row map splitted in active dofs and the rest (no pressures)
-    Teuchos::RCP<LINALG::MultiMapExtractor>
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor>
         fvelactiverowdofmap_;  //!< should be named fluidvelocityactiverowdofmap_, but kept shorter
 
     double normrhsfactiven_;  //!< norm of coupling part of residual forces (fluid )

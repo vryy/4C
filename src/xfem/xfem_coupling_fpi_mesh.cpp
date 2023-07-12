@@ -91,8 +91,8 @@ void XFEM::MeshCouplingFPI::InitStateVectors()
   const Epetra_Map* cutterdofrowmap = cutter_dis_->DofRowMap();
   const Epetra_Map* cutterdofcolmap = cutter_dis_->DofColMap();
 
-  itrueresidual_ = LINALG::CreateVector(*cutterdofrowmap, true);
-  iforcecol_ = LINALG::CreateVector(*cutterdofcolmap, true);
+  itrueresidual_ = CORE::LINALG::CreateVector(*cutterdofrowmap, true);
+  iforcecol_ = CORE::LINALG::CreateVector(*cutterdofcolmap, true);
 }
 
 /*--------------------------------------------------------------------------*
@@ -263,15 +263,15 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP(double& kappa_m,  //< flui
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   if (!contact_)
@@ -400,15 +400,15 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
 #ifdef DEBUG
@@ -424,7 +424,7 @@ void XFEM::MeshCouplingFPI::UpdateConfigurationMap_GP_Contact(
   static const double scaling = 1. / (MAX_h - MIN_h);
   static const double refsliplength = 0.1;  // numerical reference sliplength
 
-  LINALG::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
+  CORE::LINALG::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
   double gap =
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
   bool pure_fsi = true;
@@ -635,7 +635,7 @@ void XFEM::MeshCouplingFPI::GmshOutput(const std::string& filename_base, const i
   filename_base_fsi << filename_base << "_force";
 
   // compute the current boundary position
-  std::map<int, LINALG::Matrix<3, 1>> currinterfacepositions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currinterfacepositions;
   XFEM::UTILS::ExtractNodeVectors(cutter_dis_, currinterfacepositions, idispnp_);
 
 
@@ -685,10 +685,11 @@ void XFEM::MeshCouplingFPI::GmshOutputDiscretization(std::ostream& gmshfileconte
   XFEM::MeshCoupling::GmshOutputDiscretization(gmshfilecontent);
 
   // compute the current solid and boundary position
-  std::map<int, LINALG::Matrix<3, 1>> currsolidpositions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currsolidpositions;
 
   // write dis with zero solid displacements here!
-  Teuchos::RCP<Epetra_Vector> solid_dispnp = LINALG::CreateVector(*cond_dis_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> solid_dispnp =
+      CORE::LINALG::CreateVector(*cond_dis_->DofRowMap(), true);
 
   XFEM::UTILS::ExtractNodeVectors(cond_dis_, currsolidpositions, solid_dispnp);
 
@@ -768,7 +769,7 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
       DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
       if (fluid_ele->Shape() == DRT::Element::hex8)
       {
-        LINALG::Matrix<3, 8> xyze(true);
+        CORE::LINALG::Matrix<3, 8> xyze(true);
         CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
         double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
@@ -841,7 +842,7 @@ void XFEM::MeshCouplingFPI::LiftDrag(const int step, const double time) const
     // compute force components
     const int nsd = 3;
     const Epetra_Map* dofcolmap = cutter_dis_->DofColMap();
-    LINALG::Matrix<3, 1> c(true);
+    CORE::LINALG::Matrix<3, 1> c(true);
     for (int inode = 0; inode < cutter_dis_->NumMyColNodes(); ++inode)
     {
       const DRT::Node* node = cutter_dis_->lColNode(inode);
@@ -900,7 +901,7 @@ double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& poro
   else
     dserror("no second material defined for element %i", ele->Id());
 
-  static LINALG::Matrix<3, 3> reactiontensor(true);
+  static CORE::LINALG::Matrix<3, 3> reactiontensor(true);
   poromat->ComputeReactionTensor(reactiontensor, J, porosity);
 
   return sqrt((1. / reactiontensor(0, 0) + 1. / reactiontensor(1, 1) + 1. / reactiontensor(2, 2)) /
@@ -911,7 +912,7 @@ double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& poro
 // Caluculate the Porosity for this FaceElement Gausspoint   ager 12/16
 // --------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::CalcPorosity(
-    DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& J)
+    DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J)
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) dserror("Cast to Faceele failed!");
@@ -947,7 +948,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
 // Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint   ager 12/17
 // ------------------------------------------------------------------------------------------
 double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
-    DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& pres)
+    DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres)
 {
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) dserror("Cast to Faceele failed!");
@@ -965,13 +966,13 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     intpoints.Append(rst_slave(0, 0), rst_slave(1, 0), 0.0, 1.0);
 
     // get coordinates of gauss point w.r.t. local parent coordinate system
-    LINALG::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
-    LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
+    CORE::LINALG::SerialDenseMatrix pqxg(1, SLAVE_NUMDOF);
+    CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> derivtrafo(true);
 
     CORE::DRT::UTILS::BoundaryGPToParentGP<SLAVE_NUMDOF>(
         pqxg, derivtrafo, intpoints, coupl_ele->Shape(), fele->Shape(), fele->FaceParentNumber());
 
-    LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
+    CORE::LINALG::Matrix<SLAVE_NUMDOF, 1> pxsi(true);
 
     // coordinates of the current integration point in parent coordinate system
     for (unsigned int idim = 0; idim < SLAVE_NUMDOF; idim++)
@@ -982,10 +983,10 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     {
       const size_t PARENT_NEN =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
+      CORE::LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
-      LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> pderiv_loc(
+      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> pderiv_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
 
@@ -1007,11 +1008,13 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
       //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
       //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
       //
-      LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> xjm;
-      LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> Jmat;
+      CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> xjm;
+      CORE::LINALG::Matrix<SLAVE_NUMDOF, SLAVE_NUMDOF> Jmat;
 
-      LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xrefe(true);  // material coord. of parent element
-      LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xcurr(true);  // current  coord. of parent element
+      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xrefe(
+          true);  // material coord. of parent element
+      CORE::LINALG::Matrix<SLAVE_NUMDOF, PARENT_NEN> xcurr(
+          true);  // current  coord. of parent element
 
       // update element geometry of parent element
       {

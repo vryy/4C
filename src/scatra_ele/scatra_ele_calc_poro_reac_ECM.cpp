@@ -142,15 +142,15 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
     Teuchos::RCP<MAT::StructPoroReactionECM>& structmat, const int gp)
 {
   // gauss point displacements
-  LINALG::Matrix<nsd_, 1> dispint(false);
+  CORE::LINALG::Matrix<nsd_, 1> dispint(false);
   dispint.Multiply(my::edispnp_, my::funct_);
 
   // transposed jacobian "dX/ds"
-  LINALG::Matrix<nsd_, nsd_> xjm0;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(my::deriv_, poro::xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  LINALG::Matrix<nsd_, nsd_> xji0(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> xji0(true);
   xji0.Invert(xjm0);
 
   // inverse of transposed jacobian "ds/dX"
@@ -164,21 +164,21 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
   /// first derivatives of shape functions w.r.t. material coordinates
-  LINALG::Matrix<nsd_, nen_> N_XYZ;
+  CORE::LINALG::Matrix<nsd_, nen_> N_XYZ;
   N_XYZ.Multiply(xji0, my::deriv_);
 
   // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
   // N_XYZ_^T
-  static LINALG::Matrix<nsd_, nsd_> defgrd(false);
+  static CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
   defgrd.MultiplyNT(my::xyze_, N_XYZ);
 
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  static LINALG::Matrix<6, 1> glstrain(true);
+  static CORE::LINALG::Matrix<6, 1> glstrain(true);
   glstrain.Clear();
   // if (kinemtype_ == INPAR::STR::kinem_nonlinearTotLag)
   {
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<nsd_, nsd_> cauchygreen;
+    CORE::LINALG::Matrix<nsd_, nsd_> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}

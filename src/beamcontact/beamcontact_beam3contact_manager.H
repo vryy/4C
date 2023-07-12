@@ -33,7 +33,7 @@
 #include "io.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -158,7 +158,7 @@ namespace CONTACT
     are assembles into global force resdiual and global stiffness matrix.
 
     */
-    void Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+    void Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
         const Epetra_Vector& disrow, Teuchos::ParameterList beamcontactparams, bool newsti = false,
         double time = 0.0);
 
@@ -402,7 +402,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> fcold_;
 
     //! contact stiffness matrix of current time step
-    Teuchos::RCP<LINALG::SparseMatrix> stiffc_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stiffc_;
 
     //! time integration parameter (0.0 for statics)
     double alphaf_;
@@ -509,7 +509,7 @@ namespace CONTACT
     neighbours, i.e. share one node, will be rejected.
     */
     std::vector<std::vector<DRT::Element*>> BruteForceSearch(
-        std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
         const double sphericalsearchradius);
 
     /*!
@@ -545,7 +545,8 @@ namespace CONTACT
     \brief Test if element midpoints are close (spherical bounding box intersection)
     */
     bool CloseMidpointDistance(const DRT::Element* ele1, const DRT::Element* ele2,
-        std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const double sphericalsearchradius);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        const double sphericalsearchradius);
 
     /*!
     \brief Set the member variables numnodes_ and numnodalvalues depending on the element type
@@ -610,7 +611,7 @@ namespace CONTACT
 
     */
     void SetCurrentPositions(
-        std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
     \brief Set displacment state on contact element pair level
@@ -619,7 +620,7 @@ namespace CONTACT
     the current tangent vectors in case of Kirchhoff beam elements
     */
     void SetState(
-        std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol);
 
     /*!
     \brief Evaluate all pairs stored in the different pairs vectors (BTB, BTSPH, BTSOL; contact and

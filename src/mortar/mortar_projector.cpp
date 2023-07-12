@@ -601,8 +601,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
   bool ok = true;
   if (ndim_ == 2)
   {
-    LINALG::Matrix<ns_, 1> val;
-    LINALG::Matrix<ndim_, ns_> coord;
+    CORE::LINALG::Matrix<ns_, 1> val;
+    CORE::LINALG::Matrix<ndim_, ns_> coord;
 
     DRT::Node** mynodes = gpele.Nodes();
     if (!mynodes) dserror("ProjectGaussPoint: Null pointer!");
@@ -610,8 +610,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     // get shape function values and derivatives at gpeta
     if (distypeS == DRT::Element::nurbs2 || distypeS == DRT::Element::nurbs3)
     {
-      LINALG::SerialDenseVector auxval(ns_);
-      LINALG::SerialDenseMatrix deriv(ns_, 1);
+      CORE::LINALG::SerialDenseVector auxval(ns_);
+      CORE::LINALG::SerialDenseMatrix deriv(ns_, 1);
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
@@ -703,8 +703,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
   std::vector<double> auxn(3);
   std::vector<double> auxc(3);
   std::vector<double> proj_gp(3);
-  LINALG::Matrix<3, 3> P;
-  LINALG::Matrix<3, 3> T;
+  CORE::LINALG::Matrix<3, 3> P;
+  CORE::LINALG::Matrix<3, 3> T;
   std::array<double, 3> n = {0.0, 0.0, 0.0};
   double length_t = 0.0;
   double length_n = 0.0;
@@ -846,8 +846,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 {
   if (ndim_ == 3)
   {
-    LINALG::Matrix<ns_, 1> val;
-    LINALG::Matrix<ndim_, ns_> coord;
+    CORE::LINALG::Matrix<ns_, 1> val;
+    CORE::LINALG::Matrix<ndim_, ns_> coord;
     coord.Clear();
 
     DRT::Node** mypoints = gpele.Points();
@@ -858,8 +858,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     if (distypeS == DRT::Element::nurbs4 || distypeS == DRT::Element::nurbs8 ||
         distypeS == DRT::Element::nurbs9)
     {
-      LINALG::SerialDenseVector auxval(ns_);
-      LINALG::SerialDenseMatrix deriv(ns_, 2);
+      CORE::LINALG::SerialDenseVector auxval(ns_);
+      CORE::LINALG::SerialDenseMatrix deriv(ns_, 2);
       gpele.EvaluateShape(gpeta, auxval, deriv, gpele.NumNode());
 
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
@@ -916,7 +916,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     double f[3] = {0.0, 0.0, 0.0};
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-    LINALG::Matrix<3, 3> df;
+    CORE::LINALG::Matrix<3, 3> df;
     // start iteration
     int k = 0;
     double conv = 0.0;
@@ -1015,7 +1015,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
     double f[3] = {0.0, 0.0, 0.0};
 
     // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-    LINALG::Matrix<3, 3> df;
+    CORE::LINALG::Matrix<3, 3> df;
 
     // start iteration
     int k = 0;
@@ -1102,7 +1102,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  LINALG::Matrix<3, 3> df;
+  CORE::LINALG::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1150,7 +1150,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
 
     // normal grad
-    LINALG::Matrix<3, n_> secderiv;
+    CORE::LINALG::Matrix<3, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
@@ -1265,7 +1265,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  LINALG::Matrix<3, 3> df;
+  CORE::LINALG::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1313,7 +1313,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
 
     // normal grad
-    LINALG::Matrix<3, n_> secderiv;
+    CORE::LINALG::Matrix<3, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
@@ -1423,7 +1423,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  LINALG::Matrix<3, 3> df;
+  CORE::LINALG::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -1435,8 +1435,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     //  F CALCULATION                             //
     //**********************************************
     // get shape function value
-    LINALG::Matrix<n_, 1> mval;
-    LINALG::Matrix<2, n_> mderiv;
+    CORE::LINALG::Matrix<n_, 1> mval;
+    CORE::LINALG::Matrix<2, n_> mderiv;
 
     CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
     CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
@@ -1553,8 +1553,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   dist = alpha;
 
   // get shape function value
-  LINALG::Matrix<n_, 1> mval;
-  LINALG::Matrix<2, n_> mderiv;
+  CORE::LINALG::Matrix<n_, 1> mval;
+  CORE::LINALG::Matrix<2, n_> mderiv;
 
   CORE::DRT::UTILS::shape_function_2D(mval, eta[0], eta[1], distype);
   CORE::DRT::UTILS::shape_function_2D_deriv1(mderiv, eta[0], eta[1], distype);
@@ -1741,7 +1741,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   std::array<double, 2> f = {0.0, 0.0};
 
   // gradient of f (df/deta[0], df/dalpha)
-  LINALG::Matrix<2, 2> df;
+  CORE::LINALG::Matrix<2, 2> df;
 
   // start iteration
   int k = 0;
@@ -1753,8 +1753,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     //  F CALCULATION                             //
     //**********************************************
     // get shape function value
-    LINALG::Matrix<n_, 1> mval;
-    LINALG::Matrix<1, n_> mderiv;
+    CORE::LINALG::Matrix<n_, 1> mval;
+    CORE::LINALG::Matrix<1, n_> mderiv;
 
     CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
     CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
@@ -1865,8 +1865,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   dist = alpha;
 
   // get shape function value
-  LINALG::Matrix<n_, 1> mval;
-  LINALG::Matrix<1, n_> mderiv;
+  CORE::LINALG::Matrix<n_, 1> mval;
+  CORE::LINALG::Matrix<1, n_> mderiv;
 
   CORE::DRT::UTILS::shape_function_1D(mval, eta[0], distype);
   CORE::DRT::UTILS::shape_function_1D_deriv1(mderiv, eta[0], distype);
@@ -2031,7 +2031,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  LINALG::Matrix<3, 3> df;
+  CORE::LINALG::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -2079,7 +2079,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
 
     // normal grad
-    LINALG::Matrix<1, n_> secderiv;
+    CORE::LINALG::Matrix<1, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
@@ -2182,7 +2182,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   std::array<double, 3> f = {0.0, 0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1], df/dalpha)
-  LINALG::Matrix<3, 3> df;
+  CORE::LINALG::Matrix<3, 3> df;
 
   // start iteration
   int k = 0;
@@ -2230,7 +2230,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
 
     // normal grad
-    LINALG::Matrix<1, n_> secderiv;
+    CORE::LINALG::Matrix<1, n_> secderiv;
     std::array<double, 3> meta00 = {0.0, 0.0, 0.0};  // x , xi_0 xi_0
     std::array<double, 3> meta11 = {0.0, 0.0, 0.0};  // x , xi_1 xi_1
     std::array<double, 3> meta01 = {0.0, 0.0, 0.0};  // x , xi_0 xi_1
@@ -2327,7 +2327,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
 
   //--------------------------
   // master part:
-  LINALG::Matrix<n_, 1> val;
+  CORE::LINALG::Matrix<n_, 1> val;
   CORE::DRT::UTILS::shape_function_1D(val, eta[0], distype);
 
   for (int i = 0; i < n_; ++i)
@@ -2346,7 +2346,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   std::vector<CORE::GEN::pairedvector<int, double>> auxnormalLin(3, 1000);
   std::vector<CORE::GEN::pairedvector<int, double>> auxnormalunitLin(3, 1000);
 
-  LINALG::Matrix<1, n_> deriv1;
+  CORE::LINALG::Matrix<1, n_> deriv1;
   CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
@@ -2371,7 +2371,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   linnormalaux[2] = normal[2] * normallength;
 
   // derivative weighting matrix for current element
-  LINALG::Matrix<3, 3> W;
+  CORE::LINALG::Matrix<3, 3> W;
   const double lcubeinv = 1.0 / (normallength * normallength * normallength);
 
   for (int j = 0; j < 3; ++j)
@@ -2434,10 +2434,10 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   std::vector<CORE::GEN::pairedvector<int, double>> x_0Linnew(3, 1000);
   std::vector<CORE::GEN::pairedvector<int, double>> normaltolineLinaux(3, 1000);
 
-  LINALG::Matrix<1, n_> deriv;
+  CORE::LINALG::Matrix<1, n_> deriv;
   CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, eta[0], distype);
 
-  LINALG::Matrix<1, n_> deriv2;
+  CORE::LINALG::Matrix<1, n_> deriv2;
   CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eta[0], distype);
   for (int i = 0; i < n_; ++i)
   {
@@ -2462,7 +2462,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     (normaltolineLinaux[1])[p->first] -= (p->second);
 
   // normalize lin
-  LINALG::Matrix<3, 3> Wfinal;
+  CORE::LINALG::Matrix<3, 3> Wfinal;
   //  const double lcubeinv = 1.0 / (normallength * normallength * normallength);
 
   for (int j = 0; j < 3; ++j)
@@ -2642,14 +2642,14 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) dserror("EvaluateFElementNormal: Null pointer!");
 
-  LINALG::Matrix<n_, 1> val;
-  LINALG::Matrix<ndim_, n_> coord;
+  CORE::LINALG::Matrix<n_, 1> val;
+  CORE::LINALG::Matrix<ndim_, n_> coord;
 
   // get shape function values and derivatives at gpeta
   if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)
   {
-    LINALG::SerialDenseVector auxval(n_);
-    LINALG::SerialDenseMatrix deriv(n_, 1);
+    CORE::LINALG::SerialDenseVector auxval(n_);
+    CORE::LINALG::SerialDenseMatrix deriv(n_, 1);
     ele.EvaluateShape(eta, auxval, deriv, ele.NumNode());
 
     for (int i = 0; i < n_; ++i) val(i) = auxval(i);
@@ -2712,9 +2712,9 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   double fgrad = 0.0;
 
   // collect necessary data (slave side)
-  LINALG::Matrix<n_, 1> val;
-  LINALG::Matrix<ndim_ - 1, n_> deriv;
-  LINALG::Matrix<ndim_, n_> coord;
+  CORE::LINALG::Matrix<n_, 1> val;
+  CORE::LINALG::Matrix<ndim_ - 1, n_> deriv;
+  CORE::LINALG::Matrix<ndim_, n_> coord;
 
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) dserror("EvaluateGradFElementNormal: Null pointer!");
@@ -2722,8 +2722,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   // get shape function values and derivatives at gpeta
   if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)
   {
-    LINALG::SerialDenseVector auxval(n_);
-    LINALG::SerialDenseMatrix auxderiv(n_, 1);
+    CORE::LINALG::SerialDenseVector auxval(n_);
+    CORE::LINALG::SerialDenseMatrix auxderiv(n_, 1);
     ele.EvaluateShape(eta, auxval, auxderiv, ele.NumNode());
 
     for (int i = 0; i < n_; ++i)
@@ -2863,8 +2863,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoi
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint3D(
-    LINALG::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, MORTAR::MortarElement& ele,
-    const double* eta, const double& alpha)
+    CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn,
+    MORTAR::MortarElement& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -
    - alpha * gpn - gpx, which is a (3x3)-matrix!
@@ -2921,7 +2921,7 @@ bool MORTAR::MortarProjectorCalc<distype>::EvaluateFGaussPointAuxn3D(double* f,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::EvaluateGradFGaussPointAuxn3D(
-    LINALG::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
+    CORE::LINALG::Matrix<3, 3>& fgrad, const double* globgp, const double* auxn,
     MORTAR::MortarElement& ele, const double* eta, const double& alpha)
 {
   /* Evaluate the gradient of the function F(eta,alpha) = Ni * xi -

@@ -40,11 +40,11 @@ namespace STR
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only (derived)
-      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once (derived)
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! (derived)
       bool AssembleForce(Epetra_Vector& f,
@@ -147,7 +147,7 @@ namespace STR
        *                + (1 - \frac{1}{\Delta t} \boldsymbol{C}
        *                + theta  \boldsymbol{K}_{T}
        *  \f] */
-      void AddViscoMassContributions(LINALG::SparseOperator& jac) const;
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const;
 
       /** \brief Access the time integration coefficient \f$\theta\f$
        *

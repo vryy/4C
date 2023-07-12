@@ -23,14 +23,14 @@
 STR::TimIntAdjointPrestress::TimIntAdjointPrestress(Teuchos::RCP<DRT::Discretization> discret)
     : TimIntAdjoint(discret), stiffp_(Teuchos::null)
 {
-  stiffp_ = Teuchos::rcp(new LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
+  stiffp_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(dofrowmap_), 81, true, true));
 
   // initialize solution at stepn
-  disdualnp_ = LINALG::CreateVector(*(dofrowmap_), true);
+  disdualnp_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
   disdualp_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_, msteps_, true));
 
   // rhs for the prestress adjoint equation
-  rhsnp_ = LINALG::CreateVector(*(dofrowmap_), true);
+  rhsnp_ = CORE::LINALG::CreateVector(*(dofrowmap_), true);
 
   // prestress stuff
   pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
@@ -65,7 +65,7 @@ void STR::TimIntAdjointPrestress::SetupAdjoint(Teuchos::RCP<Epetra_MultiVector> 
     // and must not be re-evaluated before every solve
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateGlobalToLocal(
-          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_), zeros_);
+          Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), zeros_);
 
     zeros_->Scale(0.0);
 
@@ -99,10 +99,11 @@ void STR::TimIntAdjointPrestress::Solve()
 
   // transform rhs to local co-ordinate systems
   if (locsysman_ != Teuchos::null)
-    locsysman_->RotateGlobalToLocal(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_), rhsn_);
+    locsysman_->RotateGlobalToLocal(
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_), rhsn_);
 
   // Apply Dirichlet
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       stiff_, disdualn_, rhsn_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
   solver_->Solve(stiff_->EpetraOperator(), disdualn_, rhsn_, true, true, Teuchos::null);
 
@@ -115,7 +116,7 @@ void STR::TimIntAdjointPrestress::Solve()
   stiffn_->Apply(*disdualn_, *rhsnp_);
   rhsnp_->Update(-1.0, *rhsn_, 1.0);
 
-  LINALG::ApplyDirichlettoSystem(disdualnp_, rhsnp_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(disdualnp_, rhsnp_, zeros_, *(dbcmaps_->CondMap()));
   solver_->Solve(stiffp_->EpetraOperator(), disdualnp_, rhsnp_, true, true, Teuchos::null);
 
   return;

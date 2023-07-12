@@ -20,10 +20,10 @@ namespace STR
     class ParamsRuntimeVtkOutput;
   }
 }  // namespace STR
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
@@ -87,7 +87,7 @@ namespace ADAPTER
 
    private:
     /// Map extractor seperating the beam elements from the structure elements
-    Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
 
   };  // class FSIStructureWrapper
 }  // namespace ADAPTER

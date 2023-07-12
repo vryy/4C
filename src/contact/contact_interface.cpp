@@ -295,14 +295,14 @@ void CONTACT::CoInterface::SetCnCtValues(const int& iter)
   const double ct = InterfaceParams().get<double>("SEMI_SMOOTH_CT");
 
   // set all nodal cn-values to the input value
-  GetCn() = LINALG::CreateVector(*SlaveRowNodes(), true);
+  GetCn() = CORE::LINALG::CreateVector(*SlaveRowNodes(), true);
   int err = GetCn()->PutScalar(cn);
   if (err != 0) dserror("cn definition failed!");
 
   // set all nodal ct-values to the input value
   if (friction_)
   {
-    GetCt() = LINALG::CreateVector(*SlaveRowNodes(), true);
+    GetCt() = CORE::LINALG::CreateVector(*SlaveRowNodes(), true);
     err = GetCt()->PutScalar(ct);
     if (err != 0) dserror("cn definition failed!");
   }
@@ -526,7 +526,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of nodes redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build completely overlapping map of nodes (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -541,7 +541,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // build complete overlapping map of elements (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -583,7 +583,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all master row node gids redundantly
       std::vector<int> rdata;
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* nodecolmap = Discret().NodeColMap();
@@ -616,7 +616,7 @@ void CONTACT::CoInterface::ExtendInterfaceGhostingSafely(const double meanVeloci
 
       // gather all gids of elements redundantly
       rdata.resize(0);
-      LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+      CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
       // add my own slave column node ids (non-redundant, standard overlap)
       const Epetra_Map* elecolmap = Discret().ElementColMap();
@@ -871,7 +871,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalcns;
   std::set<int> setglobalcns;
   std::vector<int> scnids;
-  LINALG::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
+  CORE::LINALG::Gather<int>(localcns, globalcns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalcns.size(); ++i) setglobalcns.insert(globalcns[i]);
   for (iter = setglobalcns.begin(); iter != setglobalcns.end(); ++iter) scnids.push_back(*iter);
 
@@ -898,7 +898,7 @@ void CONTACT::CoInterface::Redistribute()
   std::vector<int> globalfns;
   std::set<int> setglobalfns;
   std::vector<int> sncnids;
-  LINALG::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
+  CORE::LINALG::Gather<int>(localfns, globalfns, numproc, allproc.data(), Comm());
   for (int i = 0; i < (int)globalfns.size(); ++i) setglobalfns.insert(globalfns[i]);
   for (iter = setglobalfns.begin(); iter != setglobalfns.end(); ++iter) sncnids.push_back(*iter);
 
@@ -964,7 +964,7 @@ void CONTACT::CoInterface::Redistribute()
 
       // check for overlap
       if (slaveCloseRowNodes->MyGID(slaveNonCloseRowNodes->GID(i)))
-        dserror("LINALG::MergeMap: Result map is overlapping");
+        dserror("CORE::LINALG::MergeMap: Result map is overlapping");
 
       // add new GIDs to mygids
       mygids[count] = slaveNonCloseRowNodes->GID(i);
@@ -977,7 +977,7 @@ void CONTACT::CoInterface::Redistribute()
   }
 
   // merge interface node row map from slave and master parts
-  Teuchos::RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes, mrownodes, false);
+  Teuchos::RCP<Epetra_Map> rownodes = CORE::LINALG::MergeMap(srownodes, mrownodes, false);
 
   // IMPORTANT NOTE:
   // While merging from the two different slave parts of the discretization
@@ -1013,7 +1013,7 @@ void CONTACT::CoInterface::Redistribute()
   outgraph = Teuchos::null;
 
   // merge interface node column map from slave and master parts
-  Teuchos::RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes, mcolnodes, false);
+  Teuchos::RCP<Epetra_Map> colnodes = CORE::LINALG::MergeMap(scolnodes, mcolnodes, false);
 
   //**********************************************************************
   // (8) Get partitioning information into discretization
@@ -1136,7 +1136,8 @@ void CONTACT::CoInterface::CreateSearchTree()
       SetState(MORTAR::state_new_displacement, *zero);
 
       // create fully overlapping map of all contact elements
-      Teuchos::RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
+      Teuchos::RCP<Epetra_Map> elefullmap =
+          CORE::LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
 
       // create binary tree object for self contact search
       if (!TwoHalfPass())
@@ -1170,7 +1171,7 @@ void CONTACT::CoInterface::CreateSearchTree()
         case INPAR::MORTAR::ExtendGhosting::redundant_all:
         case INPAR::MORTAR::ExtendGhosting::redundant_master:
         {
-          melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+          melefullmap = CORE::LINALG::AllreduceEMap(*melerowmap_);
           break;
         }
         default:
@@ -1220,7 +1221,7 @@ void CONTACT::CoInterface::InitializeDataContainer()
   // normal field!
   if (DRT::INPUT::IntegralValue<int>(InterfaceParams(), "CPP_NORMALS") || nonSmoothContact_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)
     {
@@ -2083,7 +2084,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix> kteff)
+void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
   const double penaltytan = InterfaceParams().get<double>("PENALTYPARAMTAN");
@@ -2759,7 +2760,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff)
+void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -2956,7 +2957,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff)
+void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -3106,7 +3107,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff)
+void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff)
 {
   const double penalty = InterfaceParams().get<double>("PENALTYPARAM");
 
@@ -3962,8 +3963,8 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
   }
 
   // create maps
-  nonsmoothnodes_ = LINALG::CreateMap(nonsmoothnodegids, Comm());
-  smoothnodes_ = LINALG::CreateMap(smoothnodegids, Comm());
+  nonsmoothnodes_ = CORE::LINALG::CreateMap(nonsmoothnodegids, Comm());
+  smoothnodes_ = CORE::LINALG::CreateMap(smoothnodegids, Comm());
 
   // debug output
   std::cout << "# nonsmooth nodes: " << nonsmoothnodes_->NumGlobalElements() << std::endl;
@@ -4024,8 +4025,8 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
     //**********************************************
     //  F CALCULATION                             //
     //**********************************************
-    LINALG::SerialDenseVector sval(nrow);
-    LINALG::SerialDenseMatrix sderiv(nrow, 1);
+    CORE::LINALG::SerialDenseVector sval(nrow);
+    CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
     mele.EvaluateShape(&xi, sval, sderiv, nrow);
 
     // tangent part
@@ -4106,8 +4107,8 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   //   LINEARIZATION   df                       //
   //**********************************************
 
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 1);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 1);
   mele.EvaluateShape(&xi, sval, sderiv, nrow);
 
   // tangent part
@@ -4567,7 +4568,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
 
   CORE::GEN::pairedvector<int, double>::iterator iter;
 
-  const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(mnoderowmap_));
+  const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(mnoderowmap_));
 
   // build info on row map
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
@@ -7992,8 +7993,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
-    const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
-    const Teuchos::RCP<LINALG::SparseMatrix> doldmod)
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixmod,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix> doldmod)
 {
   if (friction_ == false)
     dserror("Error in CoInterface::EvaluateRelMov(): Only evaluated for frictional contact");
@@ -8541,8 +8542,8 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
 
           int ndof = 3;
           int ncol = melements[nummaster]->NumNode();
-          LINALG::SerialDenseVector mval(ncol);
-          LINALG::SerialDenseMatrix mderiv(ncol, 2);
+          CORE::LINALG::SerialDenseVector mval(ncol);
+          CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
           melements[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
 
           //          int linsize    = mynode->GetLinsize();
@@ -9059,16 +9060,16 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   }
 
   // create active node map and active dof map
-  activenodes_ = LINALG::CreateMap(mynodegids, Comm());
-  activedofs_ = LINALG::CreateMap(mydofgids, Comm());
-  inactivenodes_ = LINALG::CreateMap(mynodegidsInactive, Comm());
-  inactivedofs_ = LINALG::CreateMap(mydofgidsInactive, Comm());
+  activenodes_ = CORE::LINALG::CreateMap(mynodegids, Comm());
+  activedofs_ = CORE::LINALG::CreateMap(mydofgids, Comm());
+  inactivenodes_ = CORE::LINALG::CreateMap(mynodegidsInactive, Comm());
+  inactivedofs_ = CORE::LINALG::CreateMap(mydofgidsInactive, Comm());
 
   if (friction_)
   {
     // create slip node map and slip dof map
-    slipnodes_ = LINALG::CreateMap(myslipnodegids, Comm());
-    slipdofs_ = LINALG::CreateMap(myslipdofgids, Comm());
+    slipnodes_ = CORE::LINALG::CreateMap(myslipnodegids, Comm());
+    slipdofs_ = CORE::LINALG::CreateMap(myslipdofgids, Comm());
   }
 
   // split active dofs and slip dofs
@@ -9207,8 +9208,8 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::CoInterface::GetForceOfNode(
-    LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force, const DRT::Node& node) const
+void CONTACT::CoInterface::GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force,
+    const Epetra_Vector& force, const DRT::Node& node) const
 {
   std::vector<int> dofs;
   idiscret_->Dof(&node, dofs);
@@ -9233,7 +9234,7 @@ void CONTACT::CoInterface::GetForceOfNode(
  |  Calculate angular interface moments                  hiermeier 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-    LINALG::SerialDenseMatrix* conservation_data_ptr) const
+    CORE::LINALG::SerialDenseMatrix* conservation_data_ptr) const
 {
   static int step = 0;
 
@@ -9251,7 +9252,7 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
-  LINALG::Matrix<3, 1> nforce(true);
+  CORE::LINALG::Matrix<3, 1> nforce(true);
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
@@ -9322,7 +9323,7 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
 
   if (conservation_data_ptr)
   {
-    LINALG::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
+    CORE::LINALG::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
     conservation_data.Zero();
     if (conservation_data.M() < 18) dserror("conservation_data length is too short!");
 
@@ -9509,15 +9510,15 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
   /* Write interface displacement
    *
    * The interface displacement has been handed in via the parameter list outParams.
-   * Grab it from there, then use LINALG::Export() to extract the interface
+   * Grab it from there, then use CORE::LINALG::Export() to extract the interface
    * portion from the global displacement vector. Finally, write the interface
    * portion using this interfaces' discretization writer.
    */
   {
     // Get full displacement vector and extract interface displacement
     RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
-    RCP<Epetra_Vector> iDisp = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*disp, *iDisp);
+    RCP<Epetra_Vector> iDisp = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*disp, *iDisp);
 
     // Write the interface displacement field
     writer->WriteVector("displacement", iDisp, IO::VectorType::dofvector);
@@ -9528,8 +9529,8 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     // Get full Lagrange multiplier vector and extract values of this interface
     RCP<const Epetra_Vector> lagMult =
         outputParams.get<RCP<const Epetra_Vector>>("interface traction");
-    RCP<Epetra_Vector> iLagMult = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*lagMult, *iLagMult);
+    RCP<Epetra_Vector> iLagMult = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
     writer->WriteVector("interfacetraction", iLagMult, IO::VectorType::dofvector);
@@ -9540,8 +9541,8 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     // Get values from parameter list and export to interface DofRowMap
     RCP<const Epetra_Vector> normalStresses =
         outputParams.get<RCP<const Epetra_Vector>>("norcontactstress");
-    RCP<Epetra_Vector> iNormalStresses = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*normalStresses, *iNormalStresses);
+    RCP<Epetra_Vector> iNormalStresses = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*normalStresses, *iNormalStresses);
 
     // Write this interface's normal contact stress field
     writer->WriteVector("norcontactstress", iNormalStresses, IO::VectorType::dofvector);
@@ -9552,8 +9553,8 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     // Get values from parameter list and export to interface DofRowMap
     RCP<const Epetra_Vector> tangentialStresses =
         outputParams.get<RCP<const Epetra_Vector>>("tancontactstress");
-    RCP<Epetra_Vector> iTangentialStresses = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*tangentialStresses, *iTangentialStresses);
+    RCP<Epetra_Vector> iTangentialStresses = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*tangentialStresses, *iTangentialStresses);
 
     // Write this interface's normal contact stress field
     writer->WriteVector("tancontactstress", iTangentialStresses, IO::VectorType::dofvector);
@@ -9564,8 +9565,8 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     // Get nodal forces
     RCP<const Epetra_Vector> slaveforces =
         outputParams.get<RCP<const Epetra_Vector>>("slave forces");
-    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*slaveforces, *forces);
+    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*slaveforces, *forces);
 
     // Write to output
     writer->WriteVector("slaveforces", forces, IO::VectorType::dofvector);
@@ -9576,8 +9577,8 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     // Get nodal forces
     RCP<const Epetra_Vector> masterforces =
         outputParams.get<RCP<const Epetra_Vector>>("master forces");
-    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*masterforces, *forces);
+    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*masterforces, *forces);
 
     // Write to output
     writer->WriteVector("masterforces", forces, IO::VectorType::dofvector);
@@ -9589,9 +9590,9 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> nodeRowMap = LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*nodeRowMap, true);
-    LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> nodeRowMap = CORE::LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*nodeRowMap, true);
+    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
     writer->WriteVector("slavemasternodes", masterSlaveVec, IO::VectorType::nodevector);
   }
@@ -9607,13 +9608,13 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
       RCP<Epetra_Vector> slipset = Teuchos::rcp(new Epetra_Vector(*slipnodes_));
       slipset->PutScalar(1.0);
       RCP<Epetra_Vector> slipsetexp = Teuchos::rcp(new Epetra_Vector(*activenodes_));
-      LINALG::Export(*slipset, *slipsetexp);
+      CORE::LINALG::Export(*slipset, *slipsetexp);
       activeset->Update(1.0, *slipsetexp, 1.0);
     }
 
     // export to interface node row map
     RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*(idiscret_->NodeRowMap())));
-    LINALG::Export(*activeset, *activesetexp);
+    CORE::LINALG::Export(*activeset, *activesetexp);
 
     writer->WriteVector("activeset", activesetexp, IO::VectorType::nodevector);
   }
@@ -9623,17 +9624,17 @@ void CONTACT::CoInterface::PostprocessQuantities(const Teuchos::ParameterList& o
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*eleRowMap, true);
-    LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*eleRowMap, true);
+    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
     writer->WriteVector("slavemasterelements", masterSlaveVec, IO::VectorType::elementvector);
   }
 
   // Write element owners
   {
-    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> owner = LINALG::CreateVector(*eleRowMap);
+    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> owner = CORE::LINALG::CreateVector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->lRowElement(i)->Owner();

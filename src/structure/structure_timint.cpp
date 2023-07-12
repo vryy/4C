@@ -79,7 +79,7 @@ void STR::TimInt::Logo()
 STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : discret_(actdis),
       facediscret_(Teuchos::null),
@@ -88,7 +88,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       contactsolver_(contactsolver),
       solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams, "ADAPTCONV") == 1),
       solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
-      dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+      dbcmaps_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
       divcontype_(DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams, "DIVERCONT")),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
@@ -185,7 +185,7 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // invalidate setup
   SetIsSetup(false);
@@ -312,9 +312,9 @@ void STR::TimInt::Setup()
     // Yes, it was. Go ahead for all processors (even if they do not carry any SoSh8P8 elements)
     if (glonumsosh8p8 > 0)
     {
-      pressure_ = Teuchos::rcp(new LINALG::MapExtractor());
+      pressure_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
       const int ndim = 3;
-      LINALG::CreateMapExtractorFromDiscretization(*discret_, ndim, *pressure_);
+      CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, ndim, *pressure_);
     }
   }
 
@@ -354,24 +354,24 @@ void STR::TimInt::CreateAllSolutionVectors()
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  disn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   if ((DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale and
           (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF") > 0.0))
   {
     // material displacements Dm_{n+1} at t_{n+1}
-    dismatn_ = LINALG::CreateVector(*DofRowMapView(), true);
+    dismatn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
     // material_displacements D_{n}
     dismat_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   }
 
   // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
+  veln_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  accn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fifc_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -380,7 +380,7 @@ void STR::TimInt::CreateAllSolutionVectors()
 void STR::TimInt::CreateFields()
 {
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // Map containing Dirichlet DOFs
   {
@@ -391,13 +391,13 @@ void STR::TimInt::CreateFields()
   }
 
   // create empty matrices
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
-  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
+  mass_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
   if (damping_ != INPAR::STR::damp_none)
   {
     if (HaveNonlinearMass() == INPAR::STR::ml_none)
     {
-      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
+      damp_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
     }
     else
     {
@@ -928,11 +928,12 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
 
   // create fully overlapping slave node map
   Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().SlaveRowNodes();
-  Teuchos::RCP<Epetra_Map> allreduceslavemap = LINALG::AllreduceEMap(*slavemap);
+  Teuchos::RCP<Epetra_Map> allreduceslavemap = CORE::LINALG::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
-  Teuchos::RCP<Epetra_Vector> Xslavemodcol = LINALG::CreateVector(*discret_->DofColMap(), false);
-  LINALG::Export(*Xslavemod, *Xslavemodcol);
+  Teuchos::RCP<Epetra_Vector> Xslavemodcol =
+      CORE::LINALG::CreateVector(*discret_->DofColMap(), false);
+  CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = DRT::Problem::Instance()->NDim();
@@ -998,14 +999,14 @@ void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::TimInt::EvaluateEdgeBased(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, Teuchos::RCP<Epetra_Vector> systemvector1)
+void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<Epetra_Vector> systemvector1)
 {
   TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::EvaluateEdgeBased");
 
 
   Teuchos::RCP<Epetra_Vector> residual_col =
-      LINALG::CreateVector(*(facediscret_->DofColMap()), true);
+      CORE::LINALG::CreateVector(*(facediscret_->DofColMap()), true);
 
   const Epetra_Map* rmap = NULL;
 
@@ -1019,9 +1020,9 @@ void STR::TimInt::EvaluateEdgeBased(
   else
     dserror("sysmat is NULL!");
 
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg =
-      Teuchos::rcp(new LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
-          LINALG::View, true, false, LINALG::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
+      new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
+          CORE::LINALG::View, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   const int numrowintfaces = facediscret_->NumMyRowFaces();
 
@@ -1123,12 +1124,12 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 {
   // temporary right hand sinde vector in this routing
   Teuchos::RCP<Epetra_Vector> rhs =
-      LINALG::CreateVector(*DofRowMapView(), true);  // right hand side
+      CORE::LINALG::CreateVector(*DofRowMapView(), true);  // right hand side
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext =
-      LINALG::CreateVector(*DofRowMapView(), true);  // external force
+      CORE::LINALG::CreateVector(*DofRowMapView(), true);  // external force
   Teuchos::RCP<Epetra_Vector> fint =
-      LINALG::CreateVector(*DofRowMapView(), true);  // internal force
+      CORE::LINALG::CreateVector(*DofRowMapView(), true);  // internal force
 
   // initialise matrices
   stiff_->Zero();
@@ -1137,7 +1138,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   // auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
   // Meier 2015: This contribution is necessary in order to determine correct initial
   // accelerations in case of inhomogeneous Dirichlet conditions
-  Teuchos::RCP<Epetra_Vector> acc_aux = LINALG::CreateVector(*DofRowMapView(), true);
+  Teuchos::RCP<Epetra_Vector> acc_aux = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   acc_aux->PutScalar(0.0);
 
   // overwrite initial state vectors with DirichletBCs
@@ -1218,12 +1219,12 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
   // in case of C0 pressure field, we need to get rid of
   // pressure equations
-  Teuchos::RCP<LINALG::SparseOperator> mass = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseOperator> mass = Teuchos::null;
   // Meier 2015: Here, we apply a deep copy in order to not perform the Dirichlet conditions on the
   // constant matrix mass_ later on. This is necessary since we need the original mass matrix mass_
   // (without blanked rows) on the Dirichlet DoFs in order to calculate correct reaction forces
   // (Christoph Meier)
-  mass = Teuchos::rcp(new LINALG::SparseMatrix(*MassMatrix(), LINALG::Copy));
+  mass = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*MassMatrix(), CORE::LINALG::Copy));
 
   /* calculate consistent initial accelerations
    * WE MISS:
@@ -1263,7 +1264,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
-    Teuchos::RCP<Epetra_Vector> finert0 = LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> finert0 = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     finert0->PutScalar(0.0);
     mass_->Multiply(false, *acc_aux, *finert0);
     rhs->Update(-1.0, *finert0, 1.0);
@@ -1473,7 +1474,8 @@ void STR::TimInt::UpdateStepContactVUM()
           cmtbridge_->GetStrategy().NotReDistSlaveRowDofs();
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
           cmtbridge_->GetStrategy().NotReDistMasterRowDofs();
-      Teuchos::RCP<Epetra_Map> notactivenodemap = LINALG::SplitMap(*slavenodemap, *activenodemap);
+      Teuchos::RCP<Epetra_Map> notactivenodemap =
+          CORE::LINALG::SplitMap(*slavenodemap, *activenodemap);
 
       // the lumped mass matrix and its inverse
       if (lumpmass_ == false)
@@ -1481,10 +1483,11 @@ void STR::TimInt::UpdateStepContactVUM()
         dserror("***** WARNING: VelUpdate ONLY for lumped mass matrix -> skipping ****");
         return;
       }
-      Teuchos::RCP<LINALG::SparseMatrix> Mass =
-          Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-      Teuchos::RCP<LINALG::SparseMatrix> Minv = Teuchos::rcp(new LINALG::SparseMatrix(*Mass));
-      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Mass =
+          Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Minv =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Mass));
+      Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*dofmap, true);
       int err = 0;
       Minv->ExtractDiagonalCopy(*diag);
       err = diag->Reciprocal(*diag);
@@ -1493,19 +1496,20 @@ void STR::TimInt::UpdateStepContactVUM()
       Minv->Complete(*dofmap, *dofmap);
 
       // displacement increment Dd
-      Teuchos::RCP<Epetra_Vector> Dd = LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> Dd = CORE::LINALG::CreateVector(*dofmap, true);
       Dd->Update(1.0, *disn_, 0.0);
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
       // mortar operator Bc
-      Teuchos::RCP<LINALG::SparseMatrix> Mmat = cmtbridge_->GetStrategy().MMatrix();
-      Teuchos::RCP<LINALG::SparseMatrix> Dmat = cmtbridge_->GetStrategy().DMatrix();
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Mmat = cmtbridge_->GetStrategy().MMatrix();
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Dmat = cmtbridge_->GetStrategy().DMatrix();
       Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(new Epetra_Map(Dmat->RangeMap()));
-      Teuchos::RCP<LINALG::SparseMatrix> Bc = Teuchos::rcp(new LINALG::SparseMatrix(*dofmap, 10));
-      Teuchos::RCP<LINALG::SparseMatrix> M =
-          Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
-      Teuchos::RCP<LINALG::SparseMatrix> D =
-          Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Bc =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofmap, 10));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> M =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofmap, 10));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> D =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofmap, 10));
       if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               cmtbridge_->GetStrategy().Params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
@@ -1524,64 +1528,64 @@ void STR::TimInt::UpdateStepContactVUM()
       Bc->ApplyDirichlet(*(dbcmaps_->CondMap()), false);
 
       // matrix of the normal vectors
-      Teuchos::RCP<LINALG::SparseMatrix> N = cmtbridge_->GetStrategy().EvaluateNormals(disn_);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> N = cmtbridge_->GetStrategy().EvaluateNormals(disn_);
 
       // lagrange multiplier z
       Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->GetStrategy().LagrMult();
-      Teuchos::RCP<Epetra_Vector> Z = LINALG::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> z = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> Z = CORE::LINALG::CreateVector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> z = CORE::LINALG::CreateVector(*activenodemap, true);
       N->Multiply(false, *LM, *Z);
-      LINALG::Export(*Z, *z);
+      CORE::LINALG::Export(*Z, *z);
 
       // auxiliary operator BN = Bc * N
-      Teuchos::RCP<LINALG::SparseMatrix> BN =
-          LINALG::MLMultiply(*Bc, false, *N, true, false, false, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> BN =
+          CORE::LINALG::MLMultiply(*Bc, false, *N, true, false, false, true);
 
       // operator A
-      Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
-      Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-      Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
-      Teuchos::RCP<LINALG::SparseMatrix> A;
-      Teuchos::RCP<LINALG::SparseMatrix> Atemp1 =
-          LINALG::MLMultiply(*BN, true, *Minv, false, false, false, true);
-      Teuchos::RCP<LINALG::SparseMatrix> Atemp2 =
-          LINALG::MLMultiply(*Atemp1, false, *BN, false, false, false, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx1;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx2;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> tempmtx3;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> A;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Atemp1 =
+          CORE::LINALG::MLMultiply(*BN, true, *Minv, false, false, false, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Atemp2 =
+          CORE::LINALG::MLMultiply(*Atemp1, false, *BN, false, false, false, true);
       Atemp2->Scale(R4);
-      LINALG::SplitMatrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
+      CORE::LINALG::SplitMatrix2x2(Atemp2, notactivenodemap, activenodemap, notactivenodemap,
           activenodemap, tempmtx1, tempmtx2, tempmtx3, A);
       A->Complete(*activenodemap, *activenodemap);
 
       // diagonal of A
-      Teuchos::RCP<Epetra_Vector> AD = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> AD = CORE::LINALG::CreateVector(*activenodemap, true);
       A->ExtractDiagonalCopy(*AD);
 
       // operator b
-      Teuchos::RCP<Epetra_Vector> btemp1 = LINALG::CreateVector(*dofmap, true);
-      Teuchos::RCP<Epetra_Vector> btemp2 = LINALG::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> b = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> btemp1 = CORE::LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> btemp2 = CORE::LINALG::CreateVector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> b = CORE::LINALG::CreateVector(*activenodemap, true);
       btemp1->Update(R1, *Dd, 0.0);
       btemp1->Update(R2, (*vel_)[0], 1.0);
       btemp1->Update(R3, (*acc_)[0], 1.0);
       BN->Multiply(true, *btemp1, *btemp2);
-      LINALG::Export(*btemp2, *b);
+      CORE::LINALG::Export(*btemp2, *b);
 
       // operatior c
-      Teuchos::RCP<Epetra_Vector> ctemp = LINALG::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> c = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> ctemp = CORE::LINALG::CreateVector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> c = CORE::LINALG::CreateVector(*activenodemap, true);
       BN->Multiply(true, *Dd, *ctemp);
-      LINALG::Export(*ctemp, *c);
+      CORE::LINALG::Export(*ctemp, *c);
 
       // contact work wc
-      Teuchos::RCP<Epetra_Vector> wc = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wc = CORE::LINALG::CreateVector(*activenodemap, true);
       wc->Multiply(1.0, *c, *z, 0.0);
 
       // gain and loss of energy
       double gain = 0;
       double loss = 0;
-      Teuchos::RCP<Epetra_Vector> wp = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wn = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wd = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wt = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wp = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wn = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wd = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wt = CORE::LINALG::CreateVector(*activenodemap, true);
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
         if ((*wc)[i] > 0)
@@ -1611,9 +1615,9 @@ void STR::TimInt::UpdateStepContactVUM()
 
       // manipulated contact work w
       double tolerance = 0.01;
-      Teuchos::RCP<Epetra_Vector> wtemp1 = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> wtemp2 = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> w = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wtemp1 = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> wtemp2 = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> w = CORE::LINALG::CreateVector(*activenodemap, true);
       if (abs(gain - loss) < 1.0e-8)
       {
         return;
@@ -1644,9 +1648,9 @@ void STR::TimInt::UpdateStepContactVUM()
       }
 
       // (1) initial solution p_0
-      Teuchos::RCP<Epetra_Vector> p1 = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> p2 = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> p = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p1 = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p2 = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> p = CORE::LINALG::CreateVector(*activenodemap, true);
       if (gain > loss)
       {
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
@@ -1683,16 +1687,16 @@ void STR::TimInt::UpdateStepContactVUM()
       }
 
       // (2) initial residual f_0, |f_0|, DF_0
-      Teuchos::RCP<Epetra_Vector> x = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> f = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> x = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> f = CORE::LINALG::CreateVector(*activenodemap, true);
       int NumEntries = 0;
       int* Indices = NULL;
       double* Values = NULL;
       double res = 1.0;
       double initres = 1.0;
       double dfik = 0;
-      Teuchos::RCP<LINALG::SparseMatrix> DF =
-          Teuchos::rcp(new LINALG::SparseMatrix(*activenodemap, 10));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> DF =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*activenodemap, 10));
 
       // rhs f
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
@@ -1735,8 +1739,8 @@ void STR::TimInt::UpdateStepContactVUM()
       DF->Complete(*activenodemap, *activenodemap);
 
       // (3) Newton-Iteration
-      Teuchos::RCP<Epetra_Vector> mf = LINALG::CreateVector(*activenodemap, true);
-      Teuchos::RCP<Epetra_Vector> dp = LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> mf = CORE::LINALG::CreateVector(*activenodemap, true);
+      Teuchos::RCP<Epetra_Vector> dp = CORE::LINALG::CreateVector(*activenodemap, true);
       double tol = 0.00000001;
       double numiter = 0;
       double stopcrit = 100;
@@ -1801,10 +1805,10 @@ void STR::TimInt::UpdateStepContactVUM()
       }
 
       // (4) VelocityUpdate
-      Teuchos::RCP<Epetra_Vector> ptemp1 = LINALG::CreateVector(*slavenodemap, true);
-      Teuchos::RCP<Epetra_Vector> ptemp2 = LINALG::CreateVector(*dofmap, true);
-      Teuchos::RCP<Epetra_Vector> VU = LINALG::CreateVector(*dofmap, true);
-      LINALG::Export(*p, *ptemp1);
+      Teuchos::RCP<Epetra_Vector> ptemp1 = CORE::LINALG::CreateVector(*slavenodemap, true);
+      Teuchos::RCP<Epetra_Vector> ptemp2 = CORE::LINALG::CreateVector(*dofmap, true);
+      Teuchos::RCP<Epetra_Vector> VU = CORE::LINALG::CreateVector(*dofmap, true);
+      CORE::LINALG::Export(*p, *ptemp1);
       BN->Multiply(false, *ptemp1, *ptemp2);
       Minv->Multiply(false, *ptemp2, *VU);
       veln_->Update(1.0, *VU, 1.0);
@@ -2579,7 +2583,7 @@ void STR::TimInt::DetermineEnergy()
     // global calculation of kinetic energy
     kinergy_ = 0.0;  // total kinetic energy
     {
-      Teuchos::RCP<Epetra_Vector> linmom = LINALG::CreateVector(*DofRowMapView(), true);
+      Teuchos::RCP<Epetra_Vector> linmom = CORE::LINALG::CreateVector(*DofRowMapView(), true);
       mass_->Multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
       kinergy_ *= 0.5;
@@ -2811,7 +2815,7 @@ void STR::TimInt::OutputContact()
     int dim = cmtbridge_->GetStrategy().Dim();
 
     // global linear momentum (M*v)
-    Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> mv = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
     mass_->Multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
@@ -3531,7 +3535,7 @@ void STR::TimInt::ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
 {
   // The values in dismatn_ are replaced, because the new absolute material
   // displacement is provided in the argument (not an increment)
-  LINALG::Export(*dismat, *dismatn_);
+  CORE::LINALG::Export(*dismat, *dismatn_);
 
   return;
 }
@@ -3552,7 +3556,7 @@ void STR::TimInt::AttachEnergyFile()
 
 /*----------------------------------------------------------------------*/
 /* Return (rotatory) transformation matrix of local co-ordinate systems */
-Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
 {
   if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
 
@@ -3560,24 +3564,24 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TimInt::GetLocSysTrafo() const
 }
 
 /*----------------------------------------------------------------------*/
-/* Return stiffness matrix as LINALG::SparseMatrix                      */
-Teuchos::RCP<LINALG::SparseMatrix> STR::TimInt::SystemMatrix()
+/* Return stiffness matrix as CORE::LINALG::SparseMatrix                      */
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TimInt::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(stiff_);
 }
 
 /*----------------------------------------------------------------------*/
-/* Return stiffness matrix as LINALG::BlockSparseMatrix */
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TimInt::BlockSystemMatrix()
+/* Return stiffness matrix as CORE::LINALG::BlockSparseMatrix */
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TimInt::BlockSystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(stiff_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(stiff_);
 }
 
 /*----------------------------------------------------------------------*/
 /* Return sparse mass matrix                                            */
-Teuchos::RCP<LINALG::SparseMatrix> STR::TimInt::MassMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TimInt::MassMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_);
 }
 
 
@@ -3627,13 +3631,13 @@ void STR::TimInt::Reset()
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  disn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // velocities V_{n+1} at t_{n+1}
-  veln_ = LINALG::CreateVector(*DofRowMapView(), true);
+  veln_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  accn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // create empty interface force vector
-  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fifc_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // set initial fields
   SetInitialFields();
@@ -3678,8 +3682,8 @@ void STR::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
   condmaps.push_back(GetDBCMapExtractor()->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
   return;
 }
 
@@ -3690,7 +3694,7 @@ void STR::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptorem
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
   othermaps.push_back(GetDBCMapExtractor()->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
   return;
 }

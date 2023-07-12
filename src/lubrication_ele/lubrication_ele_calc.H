@@ -167,12 +167,12 @@ namespace DRT
 
       //! Calculate the average velocity of the contacting bodies at the Int point
       virtual void CalcAvrVelAtIntPoint(
-          LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
+          CORE::LINALG::Matrix<nsd_, 1>& avrvel  //!< average surface velocity at Int point
       );
 
       //! Calculate the relative velocity of the contacting bodies at the Int point
       virtual void CalcRelVelAtIntPoint(
-          LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
+          CORE::LINALG::Matrix<nsd_, 1>& relvel  //!< relative surface velocity at Int point
       );
 
       //! read element coordinates
@@ -191,8 +191,8 @@ namespace DRT
       virtual void SetInternalVariablesForMatAndRHS();
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
-      virtual void CalcPFlowFacAtIntPoint(LINALG::Matrix<nsd_, 1>& pflowfac,
-          LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
+      virtual void CalcPFlowFacAtIntPoint(CORE::LINALG::Matrix<nsd_, 1>& pflowfac,
+          CORE::LINALG::Matrix<nsd_, 1>& pflowfacderiv, const double heightint);
 
       //! evaluate pressure and shear flow factors for modified reynolds equation
       virtual void CalcSFlowFacAtIntPoint(
@@ -259,20 +259,22 @@ namespace DRT
       virtual void GetLaplacianWeakForm(double& val, const int vi, const int ui);
       //! calculate linearization of the Laplacian (weak form) for element integration
       virtual void GetLaplacianWeakForm(
-          double& val, const int vi, const int ui, const LINALG::Matrix<nsd_, 1> pflowfac);
+          double& val, const int vi, const int ui, const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculate the Laplacian (weak form)
       virtual void GetLaplacianWeakFormRHS(
-          double& val, const LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
+          double& val, const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi);
       //! calculate the Laplacian (weak form)
-      virtual void GetLaplacianWeakFormRHS(double& val, const LINALG::Matrix<nsd_, 1>& gradpre,
-          const int vi, const LINALG::Matrix<nsd_, 1> pflowfac);
+      virtual void GetLaplacianWeakFormRHS(double& val,
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi,
+          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
       virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
-          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1> pflowfac);
+          const double viscosity, const double height,
+          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Poiseuille-Viscosity contribution to element matrix in modified Rey. Equ.
       virtual void CalcMatPslVis(Epetra_SerialDenseMatrix& emat, const double timefacfac,
@@ -284,11 +286,12 @@ namespace DRT
 
       //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
       virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const double viscosity, const double height, const LINALG::Matrix<nsd_, 1> pflowfac);
+          const double viscosity, const double height,
+          const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
       virtual void CalcRhsWdg(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const double height, const LINALG::Matrix<nsd_, 1> velocity);
+          const double height, const CORE::LINALG::Matrix<nsd_, 1> velocity);
 
       //! calculation of Squeeze contribution to RHS matrix
       virtual void CalcRhsSqz(
@@ -296,7 +299,7 @@ namespace DRT
 
       //! calculation of Shear contribution to RHS matrix
       virtual void CalcRhsShear(Epetra_SerialDenseVector& erhs, const double rhsfac,
-          const LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
+          const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
 
       /*========================================================================*/
       //! @name parameter lists
@@ -310,43 +313,43 @@ namespace DRT
       /*========================================================================*/
 
       //! state variables at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nen_, 1> eprenp_;
+      CORE::LINALG::Matrix<nen_, 1> eprenp_;
 
       /*========================================================================*/
       //! @name Galerkin approximation and related
       /*========================================================================*/
 
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_ele_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_ele_, 1> xsi_;
       //! node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
 
       //! transposed jacobian "dx/ds"
-      LINALG::Matrix<nsd_, nsd_> xjm_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<nsd_, nsd_> xij_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xij_;
 
       //!  array for element nodal film height at time n+1, (same scalar value for all space
       //!  dimensions)
-      LINALG::Matrix<nsd_, nen_> eheinp_;
+      CORE::LINALG::Matrix<nsd_, nen_> eheinp_;
 
       //! array for the element nodal film height time derivative at time n+1,
-      LINALG::Matrix<nsd_, nen_> eheidotnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> eheidotnp_;
 
       //! Average tangential interface velocity
-      LINALG::Matrix<nsd_, nen_> eAvTangVel_;
+      CORE::LINALG::Matrix<nsd_, nen_> eAvTangVel_;
 
       //! Relative tangential interface velocity
-      LINALG::Matrix<nsd_, nen_> eRelTangVel_;
+      CORE::LINALG::Matrix<nsd_, nen_> eRelTangVel_;
 
       //!  array of element nodal displacement at time n+1
-      LINALG::Matrix<nsd_, nen_> edispnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
 
       /*========================================================================*/
       //! @name manager classes for efficient application to various problems
@@ -370,10 +373,10 @@ namespace DRT
       double Dt_;
 
       /// Pressure flow factor, initialized to zero
-      LINALG::Matrix<nsd_, 1> pflowfac_;
+      CORE::LINALG::Matrix<nsd_, 1> pflowfac_;
 
       /// Pressure flow factor derivative, initialized to zero
-      LINALG::Matrix<nsd_, 1> pflowfacderiv_;
+      CORE::LINALG::Matrix<nsd_, 1> pflowfacderiv_;
 
       /// shear flow factor
       double sflowfac_;
@@ -398,9 +401,10 @@ namespace DRT
       virtual ~LubricationEleInternalVariableManager(){};
 
       // compute and set internal variables
-      void SetInternalVariables(LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          LINALG::Matrix<NSD, NEN>& derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          LINALG::Matrix<NEN, 1>& eprenp    //! pressure at t_(n+1) or t_(n+alpha_F)
+      void SetInternalVariables(CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+          CORE::LINALG::Matrix<NSD, NEN>&
+              derxy,  //! global derivatives of shape functions w.r.t x,y,z
+          CORE::LINALG::Matrix<NEN, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)
       )
       {
         // calculate pressure at t_(n+1) or t_(n+alpha_F)
@@ -418,7 +422,7 @@ namespace DRT
       //! return pressure values at t_(n+1) or t_(n+alpha_F)
       virtual const double& Prenp() const { return prenp_; };
       //! return spatial gradient of all pressure values
-      virtual const LINALG::Matrix<NSD, 1>& GradPre() const { return gradpre_; };
+      virtual const CORE::LINALG::Matrix<NSD, 1>& GradPre() const { return gradpre_; };
 
      protected:
       /*========================================================================*/
@@ -428,7 +432,7 @@ namespace DRT
       //! pressure
       double prenp_;
       //! spatial gradient of current pressure value
-      LINALG::Matrix<NSD, 1> gradpre_;
+      CORE::LINALG::Matrix<NSD, 1> gradpre_;
     };
 
     /// Lubrication diffusion manager

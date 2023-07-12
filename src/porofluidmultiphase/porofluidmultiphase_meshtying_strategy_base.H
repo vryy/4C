@@ -52,11 +52,11 @@ namespace POROFLUIDMULTIPHASE
     virtual void Output() = 0;
 
     //! Initialize the linear solver
-    virtual void InitializeLinearSolver(Teuchos::RCP<LINALG::Solver> solver) = 0;
+    virtual void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) = 0;
 
     //! solve linear system of equations
-    virtual void LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
+    virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
         Teuchos::RCP<Epetra_Vector> residual) = 0;
 
     //! calculate norms for convergence checks
@@ -91,7 +91,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const
     {
       dserror("ArteryPorofluidSysmat() not implemented in base class, wrong mesh tying object?");
       return Teuchos::null;

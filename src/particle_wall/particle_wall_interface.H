@@ -94,7 +94,7 @@ namespace PARTICLEWALL
      * \param colelenodalpos[out] current nodal position
      */
     virtual void DetermineColWallEleNodalPos(
-        DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& colelenodalpos) const = 0;
+        DRT::Element* ele, std::map<int, CORE::LINALG::Matrix<3, 1>>& colelenodalpos) const = 0;
   };
 
 }  // namespace PARTICLEWALL

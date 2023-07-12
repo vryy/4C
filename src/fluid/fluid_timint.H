@@ -22,14 +22,14 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class Sparsematrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class KrylovProjector;
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -59,7 +59,7 @@ namespace FLD
   {
    public:
     TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
-        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output);
 
@@ -181,22 +181,22 @@ namespace FLD
     }
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { return DofRowMap(0); }
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -212,7 +212,7 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -253,7 +253,7 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
-    virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()
+    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -264,7 +264,7 @@ namespace FLD
 
     virtual void CalcIntermediateSolution() { dserror("Not implemented in the base class"); }
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver()
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -714,7 +714,7 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> discret_;
 
     //! linear solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -758,7 +758,7 @@ namespace FLD
     bool updateprojection_;
 
     //! Krylov projector himself
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;
 
     /// Krylov space projection map extractor
     Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;

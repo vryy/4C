@@ -23,10 +23,10 @@
 class DiscretizationRuntimeVtuWriter;
 class BeamDiscretizationRuntimeVtuWriter;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace STR
 {
@@ -80,7 +80,8 @@ namespace STR
       bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! derived
-      bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
       void WriteRestart(
@@ -168,7 +169,7 @@ namespace STR
 
       //! [derived]
       void AssembleJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
       void CreateBackupState(const Epetra_Vector& dir) override;
@@ -204,11 +205,12 @@ namespace STR
        *  skipped. Otherwise FALSE will be returned.
        *
        *  \author hiermeier \date 02/18 */
-      bool PreApplyForceStiffExternal(Epetra_Vector& fextnp, LINALG::SparseMatrix& stiff) const;
+      bool PreApplyForceStiffExternal(
+          Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const;
 
       //! Set the ParamsInterface in the parameter list and call the other EvaluateNeumann routine
       void EvaluateNeumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
-          const Teuchos::RCP<LINALG::SparseOperator>& eval_mat);
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  EvaluateNeumann routine of the discretization
@@ -219,11 +221,11 @@ namespace STR
        *  \date 08/15
        *  \author hiermeier */
       void EvaluateNeumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
-          const Teuchos::RCP<LINALG::SparseOperator>& eval_mat);
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat);
 
       //! Set the ParamsInterface in the parameter list and call the other EvaluateInternal routine
-      void EvaluateInternal(
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void EvaluateInternal(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  Evaluate routine of the discretization
@@ -234,15 +236,16 @@ namespace STR
        *  \date 08/15
        *  \author hiermeier */
       void EvaluateInternal(Teuchos::ParameterList& p,
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief  Check if the given parameter list is valid and call the
        *  Evaluate routine for all elements specified in the element map
        *
        *  \author grill */
       void EvaluateInternalSpecifiedElements(Teuchos::ParameterList& p,
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
-          const Epetra_Map* ele_map_to_be_evaluated);
+          Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief Add static structural internal force and stiffness matrix to the
        *         evaluate call (default)
@@ -256,8 +259,8 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void StaticContributions(
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void StaticContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add static structural internal force to the evaluate call (default)
        *
@@ -281,7 +284,7 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void MaterialDampingContributions(Teuchos::RCP<LINALG::SparseOperator>* eval_mat);
+      void MaterialDampingContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat);
 
       /*! \brief Add mass matrix and inertial force to the evaluate call (optional)
        *
@@ -300,8 +303,8 @@ namespace STR
        *
        *  \date 09/16
        *  \author hiermeier */
-      void InertialContributions(
-          Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void InertialContributions(Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat,
+          Teuchos::RCP<Epetra_Vector>* eval_vec);
 
       /*! \brief Add inertial force to the evaluate call (optional)
        *
@@ -467,22 +470,22 @@ namespace STR
       const Epetra_Vector& DisNp() const;
 
       //! structural stiffness block
-      LINALG::SparseMatrix& Stiff() const;
+      CORE::LINALG::SparseMatrix& Stiff() const;
 
       //! modified stiffness block
-      LINALG::SparseMatrix& StiffPTC() const;
+      CORE::LINALG::SparseMatrix& StiffPTC() const;
 
       //! structural mass matrix
-      LINALG::SparseOperator& Mass();
+      CORE::LINALG::SparseOperator& Mass();
 
       //! structural mass matrix (read-only)
-      const LINALG::SparseOperator& Mass() const;
+      const CORE::LINALG::SparseOperator& Mass() const;
 
       //! structural damping matrix
-      LINALG::SparseOperator& Damp();
+      CORE::LINALG::SparseOperator& Damp();
 
       //! structural damping matrix
-      const LINALG::SparseOperator& Damp() const;
+      const CORE::LINALG::SparseOperator& Damp() const;
 
       //! @}
 
@@ -497,10 +500,10 @@ namespace STR
       //! @{
 
       //! structural stiffness matrix
-      LINALG::SparseMatrix* stiff_ptr_;
+      CORE::LINALG::SparseMatrix* stiff_ptr_;
 
       //! contains ptc stiffness contributions calculated on elements
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_ptc_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_ptc_ptr_;
 
       /*! \brief displacement increment
        *  Necessary for the EAS reconstruction, incremental strain evaluation,

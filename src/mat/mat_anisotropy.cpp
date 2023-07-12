@@ -32,7 +32,7 @@ void MAT::Anisotropy::PackAnisotropy(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data, static_cast<int>(element_fibers_initialized_));
   DRT::ParObject::AddtoPack(data, static_cast<int>(gp_fibers_initialized_));
   DRT::ParObject::AddtoPack(data, elementFibers_);
-  PackFiberVector<LINALG::Matrix<3, 1>>(data, gpFibers_);
+  PackFiberVector<CORE::LINALG::Matrix<3, 1>>(data, gpFibers_);
 
   if (elementCylinderCoordinateSystemManager_)
   {
@@ -57,7 +57,7 @@ void MAT::Anisotropy::UnpackAnisotropy(
   element_fibers_initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
   gp_fibers_initialized_ = static_cast<bool>(DRT::ParObject::ExtractInt(position, data));
   DRT::ParObject::ExtractfromPack(position, data, elementFibers_);
-  UnpackFiberVector<LINALG::Matrix<3, 1>>(position, data, gpFibers_);
+  UnpackFiberVector<CORE::LINALG::Matrix<3, 1>>(position, data, gpFibers_);
 
   if (static_cast<bool>(DRT::ParObject::ExtractInt(position, data)))
   {
@@ -131,7 +131,7 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
   OnGPFibersInitialized();
 }
 
-void MAT::Anisotropy::InsertFibers(std::vector<LINALG::Matrix<3, 1>> fiber)
+void MAT::Anisotropy::InsertFibers(std::vector<CORE::LINALG::Matrix<3, 1>> fiber)
 {
   for (unsigned gp = 0; gp < numgp_; ++gp)
   {
@@ -139,7 +139,7 @@ void MAT::Anisotropy::InsertFibers(std::vector<LINALG::Matrix<3, 1>> fiber)
   }
 }
 
-void MAT::Anisotropy::SetElementFibers(const std::vector<LINALG::Matrix<3, 1>>& fibers)
+void MAT::Anisotropy::SetElementFibers(const std::vector<CORE::LINALG::Matrix<3, 1>>& fibers)
 {
   elementFibers_ = fibers;
 
@@ -147,7 +147,7 @@ void MAT::Anisotropy::SetElementFibers(const std::vector<LINALG::Matrix<3, 1>>& 
 }
 
 void MAT::Anisotropy::SetGaussPointFibers(
-    const std::vector<std::vector<LINALG::Matrix<3, 1>>>& fibers)
+    const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& fibers)
 {
   // check input fibers whether they make sense
 
@@ -181,7 +181,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
   OnGPFibersInitialized();
 }
 
-const LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int i) const
+const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int i) const
 {
   if (!element_fibers_initialized_)
   {
@@ -195,7 +195,7 @@ const LINALG::Matrix<3, 1>& MAT::Anisotropy::GetElementFiber(unsigned int i) con
   return elementFibers_[i];
 }
 
-const std::vector<LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers() const
+const std::vector<CORE::LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers() const
 {
   if (!element_fibers_initialized_)
   {
@@ -204,7 +204,7 @@ const std::vector<LINALG::Matrix<3, 1>>& MAT::Anisotropy::GetElementFibers() con
   return elementFibers_;
 }
 
-const std::vector<std::vector<LINALG::Matrix<3, 1>>>& MAT::Anisotropy::GetGPFibers() const
+const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& MAT::Anisotropy::GetGPFibers() const
 {
   if (!gp_fibers_initialized_)
   {
@@ -213,7 +213,7 @@ const std::vector<std::vector<LINALG::Matrix<3, 1>>>& MAT::Anisotropy::GetGPFibe
   return gpFibers_;
 }
 
-const LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, unsigned int i) const
+const CORE::LINALG::Matrix<3, 1>& MAT::Anisotropy::GetGPFiber(unsigned int gp, unsigned int i) const
 {
   if (!gp_fibers_initialized_)
   {

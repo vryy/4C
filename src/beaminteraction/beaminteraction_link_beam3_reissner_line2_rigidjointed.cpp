@@ -46,7 +46,7 @@ DRT::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Create(
 BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed()
     : BeamLinkRigidJointed(),
       linkele_(Teuchos::null),
-      bspotforces_(2, LINALG::SerialDenseVector(true))
+      bspotforces_(2, CORE::LINALG::SerialDenseVector(true))
 {
 }
 
@@ -54,7 +54,8 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointe
  *----------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointed(
     const BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed& old)
-    : BEAMINTERACTION::BeamLinkRigidJointed(old), bspotforces_(2, LINALG::SerialDenseVector(true))
+    : BEAMINTERACTION::BeamLinkRigidJointed(old),
+      bspotforces_(2, CORE::LINALG::SerialDenseVector(true))
 {
   if (linkele_ != Teuchos::null)
     linkele_ =
@@ -110,7 +111,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Setup(int matnum)
 
   // the triads at the two connection sites are chosen identical initially, so we only use the first
   // one
-  LINALG::Matrix<3, 1> linkelerotvec(true);
+  CORE::LINALG::Matrix<3, 1> linkelerotvec(true);
   CORE::LARGEROTATIONS::quaterniontoangle(GetBindSpotQuaternion1(), linkelerotvec);
 
   std::vector<double> refpos(6, 0.0);
@@ -188,16 +189,16 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Unpack(const std::vector<
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForce(
-    LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2)
+    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2)
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
-  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
+  CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
-  LINALG::SerialDenseVector force(12, true);
+  CORE::LINALG::SerialDenseVector force(12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, NULL, NULL, &force, NULL);
@@ -216,17 +217,17 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForce(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateStiff(
-    LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
-    LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22)
+    CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
+    CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
-  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
+  CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
-  LINALG::SerialDenseMatrix stiffmat(12, 12, true);
+  CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, NULL, NULL, NULL);
@@ -248,19 +249,19 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
-    LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2,
-    LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
-    LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22)
+    CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2,
+    CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
+    CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1, double> disp_totlag_centerline;
-  std::vector<LINALG::Matrix<4, 1, double>> Qnode;
+  CORE::LINALG::Matrix<6, 1, double> disp_totlag_centerline;
+  std::vector<CORE::LINALG::Matrix<4, 1, double>> Qnode;
 
   FillStateVariablesForElementEvaluation(disp_totlag_centerline, Qnode);
 
-  LINALG::SerialDenseVector force(12, true);
-  LINALG::SerialDenseMatrix stiffmat(12, 12, true);
+  CORE::LINALG::SerialDenseVector force(12, true);
+  CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
       disp_totlag_centerline, Qnode, &stiffmat, NULL, &force, NULL);
@@ -285,8 +286,8 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::FillStateVariablesForElementEvaluation(
-    LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
-    std::vector<LINALG::Matrix<4, 1, double>>& Qnode) const
+    CORE::LINALG::Matrix<6, 1, double>& disp_totlag_centerline,
+    std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode) const
 {
   for (unsigned int i = 0; i < 3; ++i)
   {

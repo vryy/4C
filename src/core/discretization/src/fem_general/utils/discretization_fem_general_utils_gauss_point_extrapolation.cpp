@@ -73,21 +73,21 @@ namespace
   }
 
   template <DRT::Element::DiscretizationType distype, class GaussIntegration>
-  LINALG::SerialDenseMatrix EvaluateBaseShapeFunctionsAtGaussPoints(
+  CORE::LINALG::SerialDenseMatrix EvaluateBaseShapeFunctionsAtGaussPoints(
       const DRT::Element::DiscretizationType base_distype, const GaussIntegration& intpoints)
   {
     constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
-    LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
+    CORE::LINALG::SerialDenseMatrix mat(intpoints.NumPoints(), base_numnod);
 
 
     for (int gp = 0; gp < intpoints.NumPoints(); ++gp)
     {
-      LINALG::Matrix<nsd, 1> xi(intpoints.Point(gp), true);
+      CORE::LINALG::Matrix<nsd, 1> xi(intpoints.Point(gp), true);
 
-      LINALG::SerialDenseVector shape_functions(base_numnod);
-      CORE::DRT::UTILS::shape_function_dim<LINALG::Matrix<nsd, 1>, LINALG::SerialDenseVector, nsd>(
-          xi, shape_functions, base_distype);
+      CORE::LINALG::SerialDenseVector shape_functions(base_numnod);
+      CORE::DRT::UTILS::shape_function_dim<CORE::LINALG::Matrix<nsd, 1>,
+          CORE::LINALG::SerialDenseVector, nsd>(xi, shape_functions, base_distype);
 
       for (int inode = 0; inode < base_numnod; ++inode)
       {
@@ -97,10 +97,10 @@ namespace
     return mat;
   }
 
-  LINALG::SerialDenseMatrix EvaluateProjectionGaussPointsToBaseDistype(
-      const LINALG::SerialDenseMatrix& shapefcns_at_gps)
+  CORE::LINALG::SerialDenseMatrix EvaluateProjectionGaussPointsToBaseDistype(
+      const CORE::LINALG::SerialDenseMatrix& shapefcns_at_gps)
   {
-    LINALG::SerialDenseMatrix shapefunctions_at_gps_copy(shapefcns_at_gps);
+    CORE::LINALG::SerialDenseMatrix shapefunctions_at_gps_copy(shapefcns_at_gps);
     if (shapefcns_at_gps.M() == shapefcns_at_gps.N())
     {
       Epetra_SerialDenseSolver matrixInverter;
@@ -124,7 +124,7 @@ namespace
     }
 
     // solve least square algorithm
-    LINALG::SerialDenseMatrix matTmat(shapefcns_at_gps.N(), shapefcns_at_gps.N());
+    CORE::LINALG::SerialDenseMatrix matTmat(shapefcns_at_gps.N(), shapefcns_at_gps.N());
     matTmat.Multiply('T', 'N', 1.0, shapefcns_at_gps, shapefcns_at_gps, 0.0);
 
     {
@@ -146,15 +146,15 @@ namespace
           "Trilinos documentation is ambiguous here.");
     }
 
-    LINALG::SerialDenseMatrix matrix_gp_to_base(shapefcns_at_gps.N(), shapefcns_at_gps.M());
+    CORE::LINALG::SerialDenseMatrix matrix_gp_to_base(shapefcns_at_gps.N(), shapefcns_at_gps.M());
     matrix_gp_to_base.Multiply('N', 'T', 1.0, matTmat, shapefunctions_at_gps_copy, 0.0);
 
     return matrix_gp_to_base;
   }
 
   template <DRT::Element::DiscretizationType distype>
-  LINALG::SerialDenseMatrix EvaluateProjectionGaussPointsToDistype(
-      const LINALG::SerialDenseMatrix& matrix_gp_to_base,
+  CORE::LINALG::SerialDenseMatrix EvaluateProjectionGaussPointsToDistype(
+      const CORE::LINALG::SerialDenseMatrix& matrix_gp_to_base,
       DRT::Element::DiscretizationType base_distype)
   {
     if (base_distype == distype)
@@ -164,17 +164,17 @@ namespace
     constexpr int nsd = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
     int base_numnod = CORE::DRT::UTILS::getNumberOfElementNodes(base_distype);
 
-    LINALG::SerialDenseMatrix matrix_base_to_dis(
+    CORE::LINALG::SerialDenseMatrix matrix_base_to_dis(
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, base_numnod);
 
     for (int dis_inode = 0;
          dis_inode < CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
          ++dis_inode)
     {
-      LINALG::SerialDenseMatrix reference_nodes =
+      CORE::LINALG::SerialDenseMatrix reference_nodes =
           CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
-      LINALG::SerialDenseVector shape_functions(base_numnod);
+      CORE::LINALG::SerialDenseVector shape_functions(base_numnod);
       switch (nsd)
       {
         case 3:
@@ -204,7 +204,7 @@ namespace
       }
     }
 
-    LINALG::SerialDenseMatrix matrix_gp_to_nodes(
+    CORE::LINALG::SerialDenseMatrix matrix_gp_to_nodes(
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         matrix_gp_to_base.N());
 
@@ -235,10 +235,10 @@ namespace
 
 
 template <DRT::Element::DiscretizationType distype, class GaussIntegration>
-LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix(
+CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix(
     const GaussIntegration& intpoints)
 {
-  static std::unordered_map<unsigned, LINALG::SerialDenseMatrix> extrapolation_matrix_cache{};
+  static std::unordered_map<unsigned, CORE::LINALG::SerialDenseMatrix> extrapolation_matrix_cache{};
 
   if (extrapolation_matrix_cache.find(intpoints.NumPoints()) == extrapolation_matrix_cache.end())
   {
@@ -251,10 +251,10 @@ LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolat
         "This should not happen. The evaluation of the base extrapolation type for the number of "
         "gauss points is not correct.");
 
-    LINALG::SerialDenseMatrix shapefcns_at_gps =
+    CORE::LINALG::SerialDenseMatrix shapefcns_at_gps =
         EvaluateBaseShapeFunctionsAtGaussPoints<distype>(base_distype, intpoints);
 
-    LINALG::SerialDenseMatrix matrix_gp_to_base =
+    CORE::LINALG::SerialDenseMatrix matrix_gp_to_base =
         EvaluateProjectionGaussPointsToBaseDistype(shapefcns_at_gps);
 
     extrapolation_matrix_cache[intpoints.NumPoints()] =
@@ -270,7 +270,7 @@ LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolat
 // extrapolation matrix holds the shapefunction-values of the HEX-element, evaluated at the
 // pyramid-nodes.
 template <>
-LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<
+CORE::LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<
     DRT::Element::DiscretizationType::pyramid5>(
     const ::CORE::DRT::UTILS::IntegrationPoints3D& intpoints)
 {
@@ -282,10 +282,10 @@ LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolat
         intpoints.NumPoints());
   }
 
-  static LINALG::SerialDenseMatrix extrapolation_matrix = std::invoke(
+  static CORE::LINALG::SerialDenseMatrix extrapolation_matrix = std::invoke(
       []()
       {
-        LINALG::SerialDenseMatrix expol(5, 8);
+        CORE::LINALG::SerialDenseMatrix expol(5, 8);
         expol(0, 0) = 2.408235313815748;
         expol(0, 1) = -0.6452847075210328;
         expol(0, 2) = 0.1729035162684118;
@@ -334,10 +334,10 @@ LINALG::SerialDenseMatrix CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolat
 
 template <DRT::Element::DiscretizationType distype, class GaussIntegration>
 void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Element& ele,
-    const LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data, bool nodal_average,
-    const GaussIntegration& integration)
+    const CORE::LINALG::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
+    bool nodal_average, const GaussIntegration& integration)
 {
-  LINALG::SerialDenseMatrix nodal_quantity(
+  CORE::LINALG::SerialDenseMatrix nodal_quantity(
       ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.N());
   nodal_quantity.Multiply('N', 'N', 1.0,
       EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data, 0.0);
@@ -347,66 +347,66 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
 
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::hex8, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::hex27, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::tet10, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::hex20, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::tet4, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::wedge6, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::wedge15, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::pyramid5, CORE::DRT::UTILS::IntegrationPoints3D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::quad4, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::quad8, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::quad9, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::tri3, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     DRT::Element::DiscretizationType::tri6, CORE::DRT::UTILS::IntegrationPoints2D>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::IntegrationPoints2D& integration);

@@ -41,7 +41,7 @@ namespace CORE::DRT::UTILS
 
     bool NonzeroOnFace(const int index) const { return isNonzero_[index]; }
 
-    LINALG::SerialDenseMatrix matrix_;
+    CORE::LINALG::SerialDenseMatrix matrix_;
     std::vector<bool> isNonzero_;
 
     // assignment operator
@@ -147,30 +147,34 @@ namespace CORE::DRT::UTILS
     /// number of integration points
     unsigned int nqpoints_;
 
-    LINALG::SerialDenseMatrix funct;  /// values of mapping shape functions on all quadrature points
-    LINALG::Matrix<nsd_, nen_> deriv;   /// gradients of mapping shape functions in unit coordinates
-    LINALG::SerialDenseMatrix derxy;    /// gradients of mapping shape functions in real coordinates
-                                        /// on all quadrature points
-    LINALG::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
-    LINALG::SerialDenseMatrix nodexyzunit;  /// coordinates of all node (support) points of Lagrange
-                                            /// basis functions in unit coordinates (all points at
-                                            /// cell center for Legendre-type polynomials)
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
+        funct;  /// values of mapping shape functions on all quadrature points
+    CORE::LINALG::Matrix<nsd_, nen_>
+        deriv;  /// gradients of mapping shape functions in unit coordinates
+    CORE::LINALG::SerialDenseMatrix derxy;    /// gradients of mapping shape functions in real
+                                              /// coordinates on all quadrature points
+    CORE::LINALG::SerialDenseMatrix xyzreal;  /// coordinates of all quadrature points in real space
+    CORE::LINALG::SerialDenseMatrix
+        nodexyzunit;  /// coordinates of all node (support) points of Lagrange
+                      /// basis functions in unit coordinates (all points at
+                      /// cell center for Legendre-type polynomials)
+    CORE::LINALG::SerialDenseMatrix
         nodexyzreal;  /// coordinates of all node (support) points of Lagrange basis functions in
                       /// real space (all points at cell center for Legendre-type polynomials)
 
-    LINALG::SerialDenseMatrix shfunct;  /// evaluated HDG shape functions on all quadrature points
-    LINALG::SerialDenseVector shfunctAvg;  /// average of shfunctF on cell
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
+        shfunct;  /// evaluated HDG shape functions on all quadrature points
+    CORE::LINALG::SerialDenseVector shfunctAvg;  /// average of shfunctF on cell
+    CORE::LINALG::SerialDenseMatrix
         shderiv;  /// evaluated HDG shape function gradients in unit coordinates
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
         shderxy;  /// evaluated HDG shape function gradients in real coordinates
 
-    LINALG::Matrix<nsd_, 1> xsi;      /// quadrature points
-    LINALG::Matrix<nsd_, nsd_> xjm;   /// Jacobi matrix of transformation
-    LINALG::Matrix<nsd_, nsd_> xji;   /// inverse of Jacobi matrix of transformation
-    LINALG::Matrix<nsd_, nen_> xyze;  /// element nodes
-    LINALG::SerialDenseVector jfac;   /// Jacobian determinant times quadrature weight
+    CORE::LINALG::Matrix<nsd_, 1> xsi;      /// quadrature points
+    CORE::LINALG::Matrix<nsd_, nsd_> xjm;   /// Jacobi matrix of transformation
+    CORE::LINALG::Matrix<nsd_, nsd_> xji;   /// inverse of Jacobi matrix of transformation
+    CORE::LINALG::Matrix<nsd_, nen_> xyze;  /// element nodes
+    CORE::LINALG::SerialDenseVector jfac;   /// Jacobian determinant times quadrature weight
   };
 
   /// Helper class for evaluating HDG polynomials, geometry, etc.
@@ -234,38 +238,41 @@ namespace CORE::DRT::UTILS
     /// number of integration points on face
     unsigned int nqpoints_;
 
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
         funct;  /// values of mapping shape functions on all face quadrature points
-    LINALG::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
-    LINALG::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
-    LINALG::Matrix<nsd_, 1> normal;                   /// normal vector
-    LINALG::Matrix<nsd_, nsd_ - 1> tangent;  /// Face reference frame wrt real one (face -> real)
+    CORE::LINALG::Matrix<nsd_ - 1, nfn_> deriv;  /// gradients of mapping shape functions on face
+    CORE::LINALG::Matrix<nsd_ - 1, nsd_ - 1> metricTensor;  /// metric tensor on face
+    CORE::LINALG::Matrix<nsd_, 1> normal;                   /// normal vector
+    CORE::LINALG::Matrix<nsd_, nsd_ - 1>
+        tangent;  /// Face reference frame wrt real one (face -> real)
 
-    LINALG::SerialDenseMatrix xyzreal;  /// coordinates of face quadrature points in real space
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
+        xyzreal;  /// coordinates of face quadrature points in real space
+    CORE::LINALG::SerialDenseMatrix
         nodexyzunit;  /// coordinates of all node (support) points of face Lagrange basis
                       /// functions in unit coordinates (invalid for Legendre-type polynomials)
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
         nodexyzreal;  /// coordinates of all node (support) points of face Lagrange basis
                       /// functions in real space (invalid for Legendre-type polynomials)
 
-    LINALG::SerialDenseMatrix shfunct;  /// evaluated shape functions for HDG face polynomials,
-                                        /// permuted to account for face orientation
-    LINALG::SerialDenseMatrix shfunctNoPermute;  /// evaluated shape functions for HDG face
-                                                 /// polynomials in natural ordering
+    CORE::LINALG::SerialDenseMatrix
+        shfunct;  /// evaluated shape functions for HDG face polynomials,
+                  /// permuted to account for face orientation
+    CORE::LINALG::SerialDenseMatrix shfunctNoPermute;  /// evaluated shape functions for HDG face
+                                                       /// polynomials in natural ordering
     ShapeValuesInteriorOnFace
         shfunctI;  /// evaluated shape functions on face for interior HDG polynomials
-    LINALG::SerialDenseMatrix
+    CORE::LINALG::SerialDenseMatrix
         normals;  /// normal vectors on a single face for all quadrature points
 
-    LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
-    LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
-    LINALG::SerialDenseVector jfac;   /// face Jacobian determinant times quadrature weight
+    CORE::LINALG::Matrix<nsd_ - 1, 1> xsi;  /// face quadrature points
+    CORE::LINALG::Matrix<nsd_, nfn_> xyze;  /// face nodes
+    CORE::LINALG::SerialDenseVector jfac;   /// face Jacobian determinant times quadrature weight
 
     std::vector<std::vector<int>> faceNodeOrder;  /// numbering of nodes belonging to faces
 
    private:
-    LINALG::SerialDenseVector faceValues;  /// Evaluated basis functions on face
+    CORE::LINALG::SerialDenseVector faceValues;  /// Evaluated basis functions on face
 
     /*!
     \brief Computes the face reference system considering the ordering of the master element

@@ -146,48 +146,49 @@ namespace DRT
       //! vector in thickness direction for compatibility with sosh8
       std::vector<double> thickvec_;
 
-      static std::pair<bool, LINALG::Matrix<nsd_, nsd_>> jac_refe_;
-      static std::pair<bool, LINALG::Matrix<nsd_, nsd_>> jac_curr_;
-      static std::pair<bool, LINALG::Matrix<num_ans * num_sp, numdofperelement_>> B_ans_loc_;
-      static std::pair<bool, LINALG::Matrix<numstr_, numstr_>> TinvT_;
+      static std::pair<bool, CORE::LINALG::Matrix<nsd_, nsd_>> jac_refe_;
+      static std::pair<bool, CORE::LINALG::Matrix<nsd_, nsd_>> jac_curr_;
+      static std::pair<bool, CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>> B_ans_loc_;
+      static std::pair<bool, CORE::LINALG::Matrix<numstr_, numstr_>> TinvT_;
 
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
       void nln_stiffmass(std::vector<double>& disp,  // current displacements
           std::vector<double>& vel,                  // current velocities
           std::vector<double>& temp,                 // current temperatures
-          LINALG::Matrix<numdofperelement_, numdofperelement_>*
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
-          LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
-          LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
-          LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
-          LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
-          Teuchos::ParameterList& params,                   // algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,            // stress output option
-          const INPAR::STR::StrainType iostrain             // strain output option
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>*
+              massmatrix,                                         // element mass matrix
+          CORE::LINALG::Matrix<numdofperelement_, 1>* force,      // element internal force vector
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
+          CORE::LINALG::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
+          Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,  // stress output option
+          const INPAR::STR::StrainType iostrain   // strain output option
           ) override;
 
       //! calculate nonlinear B-operator (potentially with ANS modification)
-      void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          const LINALG::Matrix<nsd_, nsd_>* defgrd, const LINALG::Matrix<nsd_, nen_>* N_XYZ,
-          const int gp) override;
+      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+          const CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,
+          const CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp) override;
 
       //! Evaluate all ANS related data at the ANS sampling points
-      void Anssetup(const LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
-          const LINALG::Matrix<nen_, nsd_>& xcurr,            ///< current element coords
-          std::vector<LINALG::Matrix<nsd_, nen_>>**
+      void Anssetup(const CORE::LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords
+          const CORE::LINALG::Matrix<nen_, nsd_>& xcurr,            ///< current element coords
+          std::vector<CORE::LINALG::Matrix<nsd_, nen_>>**
               deriv_sp,  ///< derivs eval. at all sampling points
-          std::vector<LINALG::Matrix<nsd_, nsd_>>& jac_sps,  ///< jac at all sampling points
-          std::vector<LINALG::Matrix<nsd_, nsd_>>&
+          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  ///< jac at all sampling points
+          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
               jac_cur_sps,  ///< current jac at all sampling points
-          LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc);  ///< modified B
+          CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc);  ///< modified B
 
       //! Evaluate transformation matrix T (parameter->material) at gp
-      void EvaluateT(const LINALG::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
-          LINALG::Matrix<numstr_, numstr_>& TinvT);          ///< T^{-T}
+      void EvaluateT(const CORE::LINALG::Matrix<nsd_, nsd_>& jac,  ///< actual jacobian
+          CORE::LINALG::Matrix<numstr_, numstr_>& TinvT);          ///< T^{-T}
 
       void AnsStrains(const int gp,
-          std::vector<LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
-          std::vector<LINALG::Matrix<nsd_, nsd_>>&
+          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
+          std::vector<CORE::LINALG::Matrix<nsd_, nsd_>>&
               jac_cur_sps  // current jac at all sampling points
       );
 
@@ -195,7 +196,7 @@ namespace DRT
       ThicknessDirection findthickdir();
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
-      ThicknessDirection enfthickdir(LINALG::Matrix<nsd_, 1>&
+      ThicknessDirection enfthickdir(CORE::LINALG::Matrix<nsd_, 1>&
               glothickdir  ///< global direction of enforced thickness direction
       );
 
@@ -216,45 +217,45 @@ namespace DRT
         B_ans_loc_.first = false;
       }
 
-      const LINALG::Matrix<nsd_, nsd_>& Jac_curr() const
+      const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_curr() const
       {
         if (jac_curr_.first == false) dserror("jac_curr_ not valid");
         return jac_curr_.second;
       }
-      LINALG::Matrix<nsd_, nsd_>& SetJac_curr()
+      CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_curr()
       {
         jac_curr_.first = true;
         return jac_curr_.second;
       }
 
-      const LINALG::Matrix<nsd_, nsd_>& Jac_refe() const
+      const CORE::LINALG::Matrix<nsd_, nsd_>& Jac_refe() const
       {
         if (jac_refe_.first == false) dserror("jac_refe_ not valid");
         return jac_refe_.second;
       }
-      LINALG::Matrix<nsd_, nsd_>& SetJac_refe()
+      CORE::LINALG::Matrix<nsd_, nsd_>& SetJac_refe()
       {
         jac_refe_.first = true;
         return jac_refe_.second;
       }
 
-      const LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc() const
+      const CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& B_ans_loc() const
       {
         if (B_ans_loc_.first == false) dserror("B_ans_loc_ not valid");
         return B_ans_loc_.second;
       }
-      LINALG::Matrix<num_ans * num_sp, numdofperelement_>& SetB_ans_loc()
+      CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_>& SetB_ans_loc()
       {
         B_ans_loc_.first = true;
         return B_ans_loc_.second;
       }
 
-      const LINALG::Matrix<numstr_, numstr_>& TinvT() const
+      const CORE::LINALG::Matrix<numstr_, numstr_>& TinvT() const
       {
         if (TinvT_.first == false) dserror("TinvT_ not valid");
         return TinvT_.second;
       }
-      LINALG::Matrix<numstr_, numstr_>& SetTinvT()
+      CORE::LINALG::Matrix<numstr_, numstr_>& SetTinvT()
       {
         TinvT_.first = true;
         return TinvT_.second;

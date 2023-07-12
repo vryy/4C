@@ -135,7 +135,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
           Discret().gElement(elepairptr->GetEleGid(1)));
 
       // init position of linker nodes
-      std::vector<LINALG::Matrix<3, 1>> pos(2, LINALG::Matrix<3, 1>(true));
+      std::vector<CORE::LINALG::Matrix<3, 1>> pos(2, CORE::LINALG::Matrix<3, 1>(true));
 
       // sphere current position
       std::vector<double> sphereeledisp;
@@ -159,7 +159,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::Reset()
       PeriodicBoundingBoxPtr()->UnShift3D(pos[1], pos[0]);
 
       // dummy triad
-      std::vector<LINALG::Matrix<3, 3>> dummy_triad(2, LINALG::Matrix<3, 3>(true));
+      std::vector<CORE::LINALG::Matrix<3, 3>> dummy_triad(2, CORE::LINALG::Matrix<3, 3>(true));
 
       // finally reset state
       elepairptr->ResetState(pos, dummy_triad);
@@ -174,12 +174,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
   CheckInitSetup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  std::vector<LINALG::SerialDenseVector> bspotforce(2, LINALG::SerialDenseVector(6));
+  std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
 
   // resulting discrete element force vectors of the two parent elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> dummystiff;
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> dummystiff;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -229,16 +229,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> bspotstiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2, LINALG::SerialDenseMatrix(6, 6)));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> bspotstiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2, CORE::LINALG::SerialDenseMatrix(6, 6)));
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which
   // couple the two element stiffness blocks
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
-  std::vector<LINALG::SerialDenseVector> dummyforce;
+  std::vector<CORE::LINALG::SerialDenseVector> dummyforce;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -288,21 +288,21 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
   CheckInitSetup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  std::vector<LINALG::SerialDenseVector> bspotforce(2, LINALG::SerialDenseVector(6));
+  std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> bspotstiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2, LINALG::SerialDenseMatrix(6, 6)));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> bspotstiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2, CORE::LINALG::SerialDenseMatrix(6, 6)));
 
   // resulting discrete element force vectors of the two parent elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which
   // couple the two element stiffness blocks
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -652,7 +652,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
   std::vector<double> currlength(num_row_points, 0.0);
   std::vector<double> orientation(num_row_points * num_spatial_dimensions, 0.0);
   std::vector<double> force(num_row_points * num_spatial_dimensions, 0.0);
-  LINALG::SerialDenseVector bspotforce(true);
+  CORE::LINALG::SerialDenseVector bspotforce(true);
 
   // set position of spherebeamlinks
   unsigned int bond_i = 0;
@@ -671,7 +671,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
           Discret().gElement(elepairptr->GetEleGid(1)));
 
       // init position of linker nodes
-      std::vector<LINALG::Matrix<3, 1>> pos(2, LINALG::Matrix<3, 1>(true));
+      std::vector<CORE::LINALG::Matrix<3, 1>> pos(2, CORE::LINALG::Matrix<3, 1>(true));
 
       // sphere current position
       std::vector<double> sphereeledisp;
@@ -804,7 +804,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
       Discret(), currele, BeamInteractionDataState().GetDisColNp(), sphereeledisp);
 
   // note: sphere has just one node (with three translational dofs)
-  LINALG::Matrix<3, 1> spherepos(true);
+  CORE::LINALG::Matrix<3, 1> spherepos(true);
   for (unsigned int dim = 0; dim < 3; ++dim)
     spherepos(dim) = sphere->Nodes()[0]->X()[dim] + sphereeledisp[dim];
 
@@ -824,8 +824,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
     BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), beamele,
         BeamInteractionDataState().GetDisColNp(), PeriodicBoundingBox(), beameledisp);
 
-    LINALG::Matrix<3, 1> bspotpos(true);
-    LINALG::Matrix<3, 3> bspottriad(true);
+    CORE::LINALG::Matrix<3, 1> bspotpos(true);
+    CORE::LINALG::Matrix<3, 3> bspottriad(true);
 
     // loop over binding spots of neighboring element
     unsigned int numbspots = beamele->GetNumberOfBindingSpots(
@@ -901,11 +901,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkerType(), rand_bsp[bspot_i]);
 
       // note: we use first base vector instead of tangent vector here
-      LINALG::Matrix<3, 1> curr_bindingspot_beam_tangent(true);
+      CORE::LINALG::Matrix<3, 1> curr_bindingspot_beam_tangent(true);
       for (unsigned int idim = 0; idim < 3; ++idim)
         curr_bindingspot_beam_tangent(idim) = bspottriad(idim, 0);
 
-      LINALG::Matrix<3, 1> dist_vec(true);
+      CORE::LINALG::Matrix<3, 1> dist_vec(true);
       dist_vec.Update(1.0, bspotpos, -1.0, spherepos);
 
       double const linkanglemin =
@@ -943,7 +943,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CreateBeamToSphereJo
   for (auto const& newlinkiter : newlinks)
   {
     // init position of linker nodes
-    std::vector<LINALG::Matrix<3, 1>> pos(2, LINALG::Matrix<3, 1>(true));
+    std::vector<CORE::LINALG::Matrix<3, 1>> pos(2, CORE::LINALG::Matrix<3, 1>(true));
 
     int const spheregid = newlinkiter.first;
     // get elements
@@ -991,7 +991,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CreateBeamToSphereJo
       int id = BEAMINTERACTION::UTILS::CantorPairing(eleids[1]);
 
       // dummy triad
-      std::vector<LINALG::Matrix<3, 3>> dummy_triad(2, LINALG::Matrix<3, 3>(true));
+      std::vector<CORE::LINALG::Matrix<3, 3>> dummy_triad(2, CORE::LINALG::Matrix<3, 3>(true));
 
       // finally initialize and setup object
       linkelepairptr->Init(id, eleids, pos, dummy_triad,
@@ -1089,7 +1089,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   // Fixme: is force 1 the correct one, do we need to take the force on the end that is connected to
   // the beam? note: as we only check unbinding in links that were set before the current time step,
   // we do not need to calculate the forces again.
-  LINALG::SerialDenseVector bspotforce_one(6);
+  CORE::LINALG::SerialDenseVector bspotforce_one(6);
   linkelepairptr->GetBindingSpotForce(1, bspotforce_one);
   double f = bspotforce_one.Norm2();
 
@@ -1097,8 +1097,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   // check if linker is stretched -> sgn+ or compressed -> sgn- by checking orientation of force
   // vector note: this works only if there are no other forces (like inertia, stochastic, damping)
   // acting on the linker
-  LINALG::Matrix<3, 1> dist_vec(true);
-  LINALG::Matrix<3, 1> bspotforceone(true);
+  CORE::LINALG::Matrix<3, 1> dist_vec(true);
+  CORE::LINALG::Matrix<3, 1> bspotforceone(true);
   dist_vec.Update(-1.0, linkelepairptr->GetBindSpotPos1(), 1.0, linkelepairptr->GetBindSpotPos2());
   for (unsigned int j = 0; j < 3; ++j) bspotforceone(j) = bspotforce_one(j);
   double sgn = (dist_vec.Dot(bspotforceone) < 0.0) ? -1.0 : 1.0;

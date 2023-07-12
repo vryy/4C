@@ -80,32 +80,32 @@ namespace DRT
       inline Epetra_SerialDenseMatrix& JHistory() const { return *invJhist_; }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(
-          const int gp, const LINALG::Matrix<3, 3>& Mat, Epetra_SerialDenseMatrix& gpMat) const
+      inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<3, 3>& Mat,
+          Epetra_SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
       /// put a matrix to storage
-      inline void MatrixtoStorage(
-          const int gp, const LINALG::Matrix<4, 3>& Mat, Epetra_SerialDenseMatrix& gpMat) const
+      inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<4, 3>& Mat,
+          Epetra_SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(
-          const int gp, LINALG::Matrix<3, 3>& Mat, const Epetra_SerialDenseMatrix& gpMat) const
+      inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<3, 3>& Mat,
+          const Epetra_SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
       }
 
       /// get matrix from storage
-      inline void StoragetoMatrix(
-          const int gp, LINALG::Matrix<4, 3>& Mat, const Epetra_SerialDenseMatrix& gpMat) const
+      inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<4, 3>& Mat,
+          const Epetra_SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;

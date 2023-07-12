@@ -28,7 +28,7 @@
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
 void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   // mortar initialization and evaluation
@@ -36,9 +36,9 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> 
 
   // just a Nitsche-version
   Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(f->Map()));
-  Teuchos::RCP<LINALG::SparseMatrix> kc = Teuchos::rcp(new LINALG::SparseMatrix(
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kc = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kt->EpetraOperator())))->RowMap(), 100, true, false,
-      LINALG::SparseMatrix::FE_MATRIX));
+      CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   // Evaluation for all interfaces
   for (const auto& interface : interface_)
@@ -147,7 +147,7 @@ void CONTACT::CoNitscheStrategy::SetParentState(
   if (statename == MORTAR::state_new_displacement || statename == MORTAR::state_svelocity)
   {
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
-    LINALG::Export(vec, *global);
+    CORE::LINALG::Export(vec, *global);
 
     // set state on interfaces
     for (const auto& interface : interface_)
@@ -297,16 +297,16 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
   return Teuchos::null;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt)
 {
   switch (bt)
   {
     case DRT::UTILS::MatBlockType::displ_displ:
-      return Teuchos::rcp(
-          new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
-                                       *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
-              100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+      return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+          *Teuchos::rcpFromRef<const Epetra_Map>(
+              *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
+          100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
     default:
       dserror("you should not be here");
       break;
@@ -315,7 +315,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockP
 }
 
 void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
-    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc)
+    const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<CORE::LINALG::SparseMatrix> kc)
 {
   switch (bt)
   {
@@ -328,12 +328,12 @@ void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
   }
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt)
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
 
   for (const auto& interface : interface_)
   {
@@ -350,7 +350,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
   return kc;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");

@@ -99,8 +99,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<LINALG::Solver> solver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
           actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 

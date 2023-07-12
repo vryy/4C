@@ -116,7 +116,7 @@ namespace BEAMINTERACTION
 
       int GetId() const { return id_; };
 
-      LINALG::Matrix<3, 1> const& GetPosition() const { return pos_; };
+      CORE::LINALG::Matrix<3, 1> const& GetPosition() const { return pos_; };
 
       int GetNumberOfBonds() const { return numbond_; };
 
@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
 
       void SetId(int id) { id_ = id; };
 
-      void SetPosition(LINALG::Matrix<3, 1> const& clpos) { pos_ = clpos; };
+      void SetPosition(CORE::LINALG::Matrix<3, 1> const& clpos) { pos_ = clpos; };
 
       void SetNumberOfBonds(int clnumbond) { numbond_ = clnumbond; };
 
@@ -156,7 +156,7 @@ namespace BEAMINTERACTION
       int id_;
 
       /// current position of crosslinker
-      LINALG::Matrix<3, 1> pos_;
+      CORE::LINALG::Matrix<3, 1> pos_;
 
       /// number of active bonds
       int numbond_;
@@ -184,24 +184,26 @@ namespace BEAMINTERACTION
 
       int GetId() const { return id_; };
 
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, LINALG::Matrix<3, 1>>> const&
+      std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, CORE::LINALG::Matrix<3, 1>>> const&
       GetBSpotPositions() const
       {
         return bspotpos_;
       };
 
-      LINALG::Matrix<3, 1> const& GetBSpotPosition(
+      CORE::LINALG::Matrix<3, 1> const& GetBSpotPosition(
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspotpos_.at(linkertype).at(bspotid);
       };
 
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, LINALG::Matrix<3, 3>>> const&
+      std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
+          std::map<int, CORE::LINALG::Matrix<3, 3>>> const&
       GetBSpotTriads() const
       {
         return bspottriad_;
       };
-      LINALG::Matrix<3, 3> const& GetBSpotTriad(
+      CORE::LINALG::Matrix<3, 3> const& GetBSpotTriad(
           INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid) const
       {
         return bspottriad_.at(linkertype).at(bspotid);
@@ -229,23 +231,23 @@ namespace BEAMINTERACTION
       void SetId(int id) { id_ = id; };
 
       void SetBSpotPositions(std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, LINALG::Matrix<3, 1>>> const& bspotpos)
+          std::map<int, CORE::LINALG::Matrix<3, 1>>> const& bspotpos)
       {
         bspotpos_ = bspotpos;
       };
       void SetBSpotPosition(INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
-          LINALG::Matrix<3, 1> const& bspotpos)
+          CORE::LINALG::Matrix<3, 1> const& bspotpos)
       {
         bspotpos_[linkertype][bspotid] = bspotpos;
       };
 
       void SetBSpotTriads(std::map<INPAR::BEAMINTERACTION::CrosslinkerType,
-          std::map<int, LINALG::Matrix<3, 3>>> const& bspottriad)
+          std::map<int, CORE::LINALG::Matrix<3, 3>>> const& bspottriad)
       {
         bspottriad_ = bspottriad;
       };
       void SetBSpotTriad(INPAR::BEAMINTERACTION::CrosslinkerType linkertype, int bspotid,
-          LINALG::Matrix<3, 3> const& bspottriad)
+          CORE::LINALG::Matrix<3, 3> const& bspottriad)
       {
         bspottriad_[linkertype][bspotid] = bspottriad;
       };
@@ -299,11 +301,11 @@ namespace BEAMINTERACTION
       int id_;
 
       /// current position at bindingspots (xi) (key is local number of binding spot)
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, LINALG::Matrix<3, 1>>>
+      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, CORE::LINALG::Matrix<3, 1>>>
           bspotpos_;
 
       /// current triad at bindingspots (xi) (key is local number of binding spot)
-      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, LINALG::Matrix<3, 3>>>
+      std::map<INPAR::BEAMINTERACTION::CrosslinkerType, std::map<int, CORE::LINALG::Matrix<3, 3>>>
           bspottriad_;
 
       /// key is locn of bspot, holds gid of crosslinker to which it is bonded

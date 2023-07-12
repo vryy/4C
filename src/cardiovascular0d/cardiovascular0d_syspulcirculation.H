@@ -61,11 +61,11 @@ namespace DRT
   class Discretization;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace UTILS
 {
@@ -107,10 +107,10 @@ namespace UTILS
     virtual void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             sysmat3,                          ///< Cardiovascular0D offdiagonal matrix dfext/dp
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions

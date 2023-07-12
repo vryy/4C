@@ -34,8 +34,8 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapstructure,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapstructure,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapthermo,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
@@ -56,7 +56,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDomain(
-    Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructuredomain)
 {
   // initialize thermo-structure matrix block
   thermostructuredomain->Zero();
@@ -88,28 +88,30 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureDo
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> thermostructureinterface)
 {
   thermostructureinterface->Zero();
 
   // slave and master matrix for evaluation of conditions
-  Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
-  Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> mastermatrix(Teuchos::null);
   switch (thermo_->ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsSlave(), 81, false, true));
-      mastermatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsMaster(), 81, false, true));
+      slavematrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsSlave(), 81, false, true));
+      mastermatrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsMaster(), 81, false, true));
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      slavematrix = Teuchos::rcp(new LINALG::SparseMatrix(
+      slavematrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
-      mastermatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+      mastermatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
           *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap(), 27, false, true));
       break;
     }
@@ -130,13 +132,13 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
   // finalize thermo-structure matrix block
   switch (thermo_->ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       thermostructureinterface->Complete();
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       thermostructureinterface->Complete(*full_map_structure_, *full_map_thermo_);
       break;
@@ -155,7 +157,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator> structurethermodomain)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> structurethermodomain)
 {
   structurethermodomain->Zero();
 
@@ -191,25 +193,25 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInterface(
-    Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
-    Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> slavematrix,
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
 
   switch (thermo_->ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       const int numberthermoblocks = thermo_->ScaTraField()->BlockMaps()->NumMaps();
 
       auto blockslavematrix =
-          Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
+          Teuchos::rcp_dynamic_cast<const CORE::LINALG::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(mastermatrix);
+          Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(mastermatrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      LINALG::SparseMatrix mastermatrixsparse(
+      CORE::LINALG::SparseMatrix mastermatrixsparse(
           *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap(), 27, false, true);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
@@ -224,7 +226,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
           auto slave_side_converter_thermo =
               CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
 
-          LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
               *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
               &slave_side_converter_thermo, &(*slave_side_converter_struct), mastermatrixsparse,
               true, true);
@@ -235,7 +237,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       mastermatrixsparse.Complete(*full_map_structure_, *full_map_thermo_);
 
       // split sparse matrix to block matrix
-      auto mastermatrix_split = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
+      auto mastermatrix_split = mastermatrixsparse.Split<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *blockmapstructure_, *blockmapthermo_);
       mastermatrix_split->Complete();
       blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
@@ -244,10 +246,11 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
 
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      auto sparseslavematrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(slavematrix);
-      auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mastermatrix);
+      auto sparseslavematrix =
+          Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseMatrix>(slavematrix);
+      auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
@@ -258,7 +261,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
         auto slave_side_converter_thermo =
             CORE::ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
 
-        LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
             *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
             &slave_side_converter_thermo, &(*slave_side_converter_struct), *sparsemastermatrix,
             true, true);
@@ -279,7 +282,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlaveSide(
-    Teuchos::RCP<LINALG::SparseOperator> slavematrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> slavematrix)
 {
   Teuchos::ParameterList condparams;
 
@@ -293,16 +296,16 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   thermo_->ScaTraField()->AddTimeIntegrationSpecificVectors();
 
-  Teuchos::RCP<LINALG::SparseOperator> evaluate_matrix;
-  if (thermo_->ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+  Teuchos::RCP<CORE::LINALG::SparseOperator> evaluate_matrix;
+  if (thermo_->ScaTraField()->MatrixType() == CORE::LINALG::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::rcp(new LINALG::SparseMatrix(
+    evaluate_matrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
         *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
   }
   else
   {
     evaluate_matrix =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsSlave(), 81, false, true));
   }
 
@@ -332,13 +335,14 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
   // finalize thermo-structure matrix block
   switch (thermo_->ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       evaluate_matrix->Complete();
 
       auto evaluate_matrix_block =
-          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
+      auto slavematrix_block =
+          CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
 
       // "slave side" from thermo and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -359,10 +363,10 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
           auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
 
           auto scatra_slave_block_mapi =
-              LINALG::IntersectMap(*thermo_->ScaTraField()->BlockMaps()->Map(iblock),
+              CORE::LINALG::IntersectMap(*thermo_->ScaTraField()->BlockMaps()->Map(iblock),
                   *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
 
-          LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
+          CORE::LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *scatra_slave_block_mapi,
               *slave_map, 1.0, nullptr, &slave_slave_converter, slave_iblock, true, true);
         }
       }
@@ -370,10 +374,11 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      auto evaluate_matrix_sparse = LINALG::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
-      auto slavematrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
+      auto evaluate_matrix_sparse =
+          CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
+      auto slavematrix_sparse = CORE::LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
 
       evaluate_matrix->Complete(
           *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
@@ -391,7 +396,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
         // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
 
-        LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
+        CORE::LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
             *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_map, 1.0, nullptr,
             &slave_slave_converter, *slavematrix_sparse, true, true);
       }

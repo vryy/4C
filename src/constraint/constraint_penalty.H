@@ -65,10 +65,10 @@ namespace UTILS
     void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
@@ -105,10 +105,10 @@ namespace UTILS
     void EvaluateConstraint(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<LINALG::SparseOperator>
+        Teuchos::RCP<CORE::LINALG::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by

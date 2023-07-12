@@ -332,7 +332,7 @@ void MAT::ElastHyper::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
+void MAT::ElastHyper::GetFiberVecs(std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
@@ -345,8 +345,8 @@ void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ElastHyper::EvaluateFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   if (summandProperties_.anisoprinc || summandProperties_.anisomod)
   {
@@ -360,13 +360,13 @@ void MAT::ElastHyper::EvaluateFiberVecs(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
-  static LINALG::Matrix<6, 1> C_strain(true);
+  static CORE::LINALG::Matrix<6, 1> C_strain(true);
   C_strain.Clear();
-  static LINALG::Matrix<3, 1> prinv(true);
+  static CORE::LINALG::Matrix<3, 1> prinv(true);
   prinv.Clear();
-  static LINALG::Matrix<3, 1> modinv(true);
+  static CORE::LINALG::Matrix<3, 1> modinv(true);
   modinv.Clear();
 
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
@@ -384,12 +384,12 @@ void MAT::ElastHyper::StrainEnergy(
 /*----------------------------------------------------------------------*
  |  Evaluate for GEMM time integration                        popp 11/13|
  *----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-    LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+void MAT::ElastHyper::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, CORE::LINALG::Matrix<3, 3>* rcg_new,
+    CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (stress == nullptr) dserror("No stress vector supplied");
@@ -401,7 +401,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
 
   // standard material evaluate call at midpoint t_{n+1/2}
   Teuchos::ParameterList params;
-  LINALG::Matrix<3, 3> defgrd(true);
+  CORE::LINALG::Matrix<3, 3> defgrd(true);
   Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
   *density = Density();
 
@@ -409,7 +409,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   // CHECK IF GEMM ALGORITHMIC STRESSES NEED TO BE APPLIED
   //**********************************************************************
   // increment of Cauchy-Green tensor in Voigt notation
-  LINALG::Matrix<6, 1> M;
+  CORE::LINALG::Matrix<6, 1> M;
   M(0) = (*rcg_new)(0, 0) - (*rcg_old)(0, 0);
   M(1) = (*rcg_new)(1, 1) - (*rcg_old)(1, 1);
   M(2) = (*rcg_new)(2, 2) - (*rcg_old)(2, 2);
@@ -418,7 +418,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   M(5) = (*rcg_new)(0, 2) + (*rcg_new)(2, 0) - (*rcg_old)(0, 2) - (*rcg_old)(2, 0);
 
   // second variant of M in Voigt notation
-  LINALG::Matrix<6, 1> Mtilde;
+  CORE::LINALG::Matrix<6, 1> Mtilde;
   Mtilde(0) = M(0);
   Mtilde(1) = M(1);
   Mtilde(2) = M(2);
@@ -439,9 +439,9 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   // COMPUTE GEMM ALGORITHMIC STRESSES
   //**********************************************************************
   // some helper definitions
-  LINALG::Matrix<6, 1> vecid(true);
+  CORE::LINALG::Matrix<6, 1> vecid(true);
   for (int k = 0; k < 6; ++k) vecid(k) = 1.0;
-  LINALG::Matrix<6, 6> halfid(true);
+  CORE::LINALG::Matrix<6, 6> halfid(true);
   for (int k = 0; k < 3; ++k) halfid(k, k) = 1.0;
   for (int k = 3; k < 6; ++k) halfid(k, k) = 0.5;
 
@@ -460,29 +460,29 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   double fac = 2.0 * ((psi - psio - dpsiM) / Mb);
 
   // algorithmic stresses
-  LINALG::Matrix<6, 1> algstress(true);
+  CORE::LINALG::Matrix<6, 1> algstress(true);
   algstress.Update(fac, Mtilde, 1.0);
 
   //**********************************************************************
   // COMPUTE GEMM ALGORITHMIC MATERIAL TENSOR
   //**********************************************************************
   // algorithmic material tensor requires stresses at t_{n+1}
-  LINALG::Matrix<6, 1> stressnew(true);
-  LINALG::Matrix<6, 6> cmatnew(true);
+  CORE::LINALG::Matrix<6, 1> stressnew(true);
+  CORE::LINALG::Matrix<6, 6> cmatnew(true);
   Evaluate(&defgrd, glstrain_new, params, &stressnew, &cmatnew, gp, eleGID);
 
   // initialize algorithmic material tensor
-  LINALG::Matrix<6, 6> algcmat(true);
+  CORE::LINALG::Matrix<6, 6> algcmat(true);
 
   // part 1 (derivative of Mtilde)
   algcmat.Update(4.0 * fac, halfid, 1.0);
 
   // part 2a (derivative of strain energy in fac)
-  LINALG::Matrix<6, 1> dfac(true);
+  CORE::LINALG::Matrix<6, 1> dfac(true);
   dfac.Update(2.0 / Mb, stressnew, 1.0);
 
   // part 2b (derivative of dpsiM in fac)
-  LINALG::Matrix<6, 1> tmp(true);
+  CORE::LINALG::Matrix<6, 1> tmp(true);
   tmp.Multiply(*cmat, M);
   dfac.Update(-0.5 / Mb, tmp, 1.0);
   dfac.Update(-2.0 / Mb, *stress, 1.0);
@@ -493,7 +493,7 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
   dfac.Update(-4.0 * (psi - psio - dpsiM) / (Mb * Mb), Mtilde, 1.0);
 
   // part 2 (derivative of fac, put together parts 2a,2b and 2c)
-  LINALG::Matrix<6, 6> tmpmat(true);
+  CORE::LINALG::Matrix<6, 6> tmpmat(true);
   tmpmat.MultiplyNT(2.0, Mtilde, dfac);
   algcmat.Update(1.0, tmpmat, 1.0);
 
@@ -506,9 +506,10 @@ void MAT::ElastHyper::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::ElastHyper::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   bool checkpolyconvexity = (params_ != nullptr and params_->polyconvex_ != 0);
 
@@ -518,9 +519,9 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, const int gp,
-    int eleGID, LINALG::Matrix<3, 1>& dPI, LINALG::Matrix<6, 1>& ddPII,
-    LINALG::Matrix<10, 1>& dddPIII, const double* temp)
+void MAT::ElastHyper::EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    int eleGID, CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
+    CORE::LINALG::Matrix<10, 1>& dddPIII, const double* temp)
 {
   for (auto& i : potsum_)
   {
@@ -536,41 +537,42 @@ void MAT::ElastHyper::EvaluateCauchyDerivs(const LINALG::Matrix<3, 1>& prinv, co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-    LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
-    LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp,
-    int eleGID, const double* concentration, const double* temp, double* d_cauchyndir_dT,
-    LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
+void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
+    const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
+    double& cauchy_n_dir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+    CORE::LINALG::Matrix<9, 9>* d2_cauchyndir_dF2, CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+    CORE::LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID,
+    const double* concentration, const double* temp, double* d_cauchyndir_dT,
+    CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   cauchy_n_dir = 0.0;
 
-  static LINALG::Matrix<3, 3> b(true);
+  static CORE::LINALG::Matrix<3, 3> b(true);
   b.MultiplyNT(1.0, defgrd, defgrd, 0.0);
-  static LINALG::Matrix<3, 1> bdn(true);
+  static CORE::LINALG::Matrix<3, 1> bdn(true);
   bdn.Multiply(1.0, b, n, 0.0);
-  static LINALG::Matrix<3, 1> bddir(true);
+  static CORE::LINALG::Matrix<3, 1> bddir(true);
   bddir.Multiply(1.0, b, dir, 0.0);
   const double bdnddir = bdn.Dot(dir);
 
-  static LINALG::Matrix<3, 3> ib(true);
+  static CORE::LINALG::Matrix<3, 3> ib(true);
   ib.Invert(b);
-  static LINALG::Matrix<3, 1> ibdn(true);
+  static CORE::LINALG::Matrix<3, 1> ibdn(true);
   ibdn.Multiply(1.0, ib, n, 0.0);
-  static LINALG::Matrix<3, 1> ibddir(true);
+  static CORE::LINALG::Matrix<3, 1> ibddir(true);
   ibddir.Multiply(1.0, ib, dir, 0.0);
   const double ibdnddir = ibdn.Dot(dir);
   const double nddir = n.Dot(dir);
 
-  static LINALG::Matrix<6, 1> bV_strain(true);
+  static CORE::LINALG::Matrix<6, 1> bV_strain(true);
   UTILS::VOIGT::Strains::MatrixToVector(b, bV_strain);
-  static LINALG::Matrix<3, 1> prinv(true);
+  static CORE::LINALG::Matrix<3, 1> prinv(true);
   UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, bV_strain);
 
-  static LINALG::Matrix<3, 1> dPI(true);
-  static LINALG::Matrix<6, 1> ddPII(true);
-  static LINALG::Matrix<10, 1> dddPIII(true);
+  static CORE::LINALG::Matrix<3, 1> dPI(true);
+  static CORE::LINALG::Matrix<6, 1> ddPII(true);
+  static CORE::LINALG::Matrix<10, 1> dddPIII(true);
   dPI.Clear();
   ddPII.Clear();
   dddPIII.Clear();
@@ -598,54 +600,54 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
   }
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
-  static LINALG::Matrix<9, 1> FV(true);
+  static CORE::LINALG::Matrix<9, 1> FV(true);
   UTILS::VOIGT::Matrix3x3to9x1(defgrd, FV);
-  static LINALG::Matrix<3, 3> iF(true);
+  static CORE::LINALG::Matrix<3, 3> iF(true);
   iF.Invert(defgrd);
-  static LINALG::Matrix<3, 3> iFT(true);
+  static CORE::LINALG::Matrix<3, 3> iFT(true);
   iFT.UpdateT(iF);
-  static LINALG::Matrix<9, 1> iFTV(true);
+  static CORE::LINALG::Matrix<9, 1> iFTV(true);
   UTILS::VOIGT::Matrix3x3to9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
-  static LINALG::Matrix<3, 3> bdF(true);
+  static CORE::LINALG::Matrix<3, 3> bdF(true);
   bdF.Multiply(1.0, b, defgrd, 0.0);
-  static LINALG::Matrix<9, 1> bdFV(true);
+  static CORE::LINALG::Matrix<9, 1> bdFV(true);
   UTILS::VOIGT::Matrix3x3to9x1(bdF, bdFV);
-  static LINALG::Matrix<3, 3> ibdF(true);
+  static CORE::LINALG::Matrix<3, 3> ibdF(true);
   ibdF.Multiply(1.0, ib, defgrd, 0.0);
-  static LINALG::Matrix<9, 1> ibdFV(true);
+  static CORE::LINALG::Matrix<9, 1> ibdFV(true);
   UTILS::VOIGT::Matrix3x3to9x1(ibdF, ibdFV);
-  static LINALG::Matrix<9, 1> d_I1_dF(true);
+  static CORE::LINALG::Matrix<9, 1> d_I1_dF(true);
   d_I1_dF.Update(2.0, FV, 0.0);
-  static LINALG::Matrix<9, 1> d_I2_dF(true);
+  static CORE::LINALG::Matrix<9, 1> d_I2_dF(true);
   d_I2_dF.Update(prinv(0), FV, 0.0);
   d_I2_dF.Update(-1.0, bdFV, 1.0);
   d_I2_dF.Scale(2.0);
-  static LINALG::Matrix<9, 1> d_I3_dF(true);
+  static CORE::LINALG::Matrix<9, 1> d_I3_dF(true);
   d_I3_dF.Update(2.0 * prinv(2), ibdFV, 0.0);
 
   // calculate d(b \cdot n \cdot t)/dF
-  static LINALG::Matrix<3, 1> tempvec3x1(true);
-  static LINALG::Matrix<1, 3> tempvec1x3(true);
+  static CORE::LINALG::Matrix<3, 1> tempvec3x1(true);
+  static CORE::LINALG::Matrix<1, 3> tempvec1x3(true);
   tempvec1x3.MultiplyTN(1.0, dir, defgrd, 0.0);
-  static LINALG::Matrix<3, 3> d_bdnddir_dF(true);
+  static CORE::LINALG::Matrix<3, 3> d_bdnddir_dF(true);
   d_bdnddir_dF.MultiplyNN(1.0, n, tempvec1x3, 0.0);
   tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
   d_bdnddir_dF.MultiplyNN(1.0, dir, tempvec1x3, 1.0);
-  static LINALG::Matrix<9, 1> d_bdnddir_dFV(true);
+  static CORE::LINALG::Matrix<9, 1> d_bdnddir_dFV(true);
   UTILS::VOIGT::Matrix3x3to9x1(d_bdnddir_dF, d_bdnddir_dFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
-  static LINALG::Matrix<1, 3> dirdibdF(true);
-  static LINALG::Matrix<1, 3> ndibdF(true);
+  static CORE::LINALG::Matrix<1, 3> dirdibdF(true);
+  static CORE::LINALG::Matrix<1, 3> ndibdF(true);
   dirdibdF.MultiplyTN(1.0, dir, ibdF, 0.0);
-  static LINALG::Matrix<3, 3> d_ibdnddir_dF(true);
+  static CORE::LINALG::Matrix<3, 3> d_ibdnddir_dF(true);
   d_ibdnddir_dF.MultiplyNN(1.0, ibdn, dirdibdF, 0.0);
   ndibdF.MultiplyTN(1.0, n, ibdF, 0.0);
   d_ibdnddir_dF.MultiplyNN(1.0, ibddir, ndibdF, 1.0);
   d_ibdnddir_dF.Scale(-1.0);
-  static LINALG::Matrix<9, 1> d_ibdnddir_dFV(true);
+  static CORE::LINALG::Matrix<9, 1> d_ibdnddir_dFV(true);
   UTILS::VOIGT::Matrix3x3to9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
   if (temp != nullptr)
@@ -788,12 +790,12 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
   if (d2_cauchyndir_dF2 != nullptr)
   {
     // define and fill all tensors that can not be calculated using multiply operations first
-    static LINALG::Matrix<9, 9> d_iFT_dF(true);
-    static LINALG::Matrix<9, 9> d2_bdnddir_dF2(true);
-    static LINALG::Matrix<9, 9> d2_ibdnddir_dF2(true);
-    static LINALG::Matrix<9, 9> d2_I1_dF2(true);
-    static LINALG::Matrix<9, 9> d2_I2_dF2(true);
-    static LINALG::Matrix<9, 9> d2_I3_dF2(true);
+    static CORE::LINALG::Matrix<9, 9> d_iFT_dF(true);
+    static CORE::LINALG::Matrix<9, 9> d2_bdnddir_dF2(true);
+    static CORE::LINALG::Matrix<9, 9> d2_ibdnddir_dF2(true);
+    static CORE::LINALG::Matrix<9, 9> d2_I1_dF2(true);
+    static CORE::LINALG::Matrix<9, 9> d2_I2_dF2(true);
+    static CORE::LINALG::Matrix<9, 9> d2_I3_dF2(true);
     d_iFT_dF.Clear();
     d2_bdnddir_dF2.Clear();
     d2_ibdnddir_dF2.Clear();
@@ -801,7 +803,7 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
     d2_I2_dF2.Clear();
     d2_I3_dF2.Clear();
 
-    static LINALG::Matrix<3, 3> C(true);
+    static CORE::LINALG::Matrix<3, 3> C(true);
     C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
 
     using map = UTILS::VOIGT::IndexMappings;
@@ -957,7 +959,7 @@ void MAT::ElastHyper::VisNames(std::map<std::string, int>& names)
 {
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
-    std::vector<LINALG::Matrix<3, 1>> fibervecs;
+    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);
     int vissize = fibervecs.size();
     std::string fiber;
@@ -986,7 +988,7 @@ bool MAT::ElastHyper::VisData(
   int return_val = 0;
   if (AnisotropicPrincipal() or AnisotropicModified())
   {
-    std::vector<LINALG::Matrix<3, 1>> fibervecs;
+    std::vector<CORE::LINALG::Matrix<3, 1>> fibervecs;
     GetFiberVecs(fibervecs);
     int vissize = fibervecs.size();
     for (int i = 0; i < vissize; i++)

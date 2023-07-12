@@ -14,12 +14,12 @@ interface
 #include "poroelast_monolithicsplit.H"
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace POROELAST
 {
@@ -30,7 +30,7 @@ namespace POROELAST
     //! create using a Epetra_Comm
     explicit MonolithicStructureSplit(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<LINALG::MapExtractor> porosity_splitter);
+        Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -52,7 +52,7 @@ namespace POROELAST
     void SetupRHS(bool firstcall = false) override;
 
     //! setup composed system matrix from field solvers
-    void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) override;
+    void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) override;
 
    private:
     //! build block vector from field vectors
@@ -75,35 +75,35 @@ namespace POROELAST
 
     //! @name matrix transformation
     //! transform object for structure interface matrix \f$S_{\Gamma \Gamma}\f$
-    Teuchos::RCP<LINALG::MatrixRowColTransform> sggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> sggtransform_;
     //! transform object for structure interface matrix \f$S_{\Gamma I}\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> sgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> sgitransform_;
     //! transform object for structure interface matrix \f$S_{I \Gamma}\f$
-    Teuchos::RCP<LINALG::MatrixColTransform> sigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> sigtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> csggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^G\f$
-    Teuchos::RCP<LINALG::MatrixColTransform> cfggtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma I}^S\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> csgitransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> csgitransform_;
     //! transform object for fluid coupling matrix \f$C_{I \Gamma}^F\f$
-    Teuchos::RCP<LINALG::MatrixColTransform> cfigtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> cfigtransform_;
 
     //!@}
 
     //! @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseOperator> sgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> sgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseOperator> sggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> sggcur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseOperator> cgicur_;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> cgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const LINALG::SparseOperator> cggcur_;
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> cggcur_;
 
     //!@}
   };

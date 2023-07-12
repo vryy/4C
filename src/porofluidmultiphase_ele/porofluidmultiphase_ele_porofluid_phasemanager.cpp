@@ -1440,7 +1440,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::ClearGPState()
  *---------------------------------------------------------------------------*/
 template <int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PermeabilityTensor(
-    int phasenum, LINALG::Matrix<nsd, nsd>& permeabilitytensor) const
+    int phasenum, CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensor) const
 {
   phasemanager_->CheckIsEvaluated();
   // make a hard copy for now
@@ -1616,7 +1616,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::DynViscosityDerivVo
  *---------------------------------------------------------------------------*/
 template <int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDiffusion<nsd>::PermeabilityTensorVolFracPressure(
-    int volfracpressnum, LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const
+    int volfracpressnum, CORE::LINALG::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const
 {
   phasemanager_->CheckIsEvaluated();
   // make a hard copy for now
@@ -1752,7 +1752,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::EvaluateGPState(
  *---------------------------------------------------------------------------*/
 template <int nsd>
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerVolFrac<nsd>::DiffTensorVolFrac(
-    int volfracnum, LINALG::Matrix<nsd, nsd>& difftensorvolfrac) const
+    int volfracnum, CORE::LINALG::Matrix<nsd, nsd>& difftensorvolfrac) const
 {
   phasemanager_->CheckIsEvaluated();
   // make a hard copy for now

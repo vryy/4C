@@ -167,12 +167,13 @@ namespace MAT
 
     bool UsesExtendedUpdate() override { return true; };
 
-    void Update(LINALG::Matrix<3, 3> const& defgrd, int const gp, Teuchos::ParameterList& params,
-        int const eleGID) override;
+    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
+        Teuchos::ParameterList& params, int const eleGID) override;
 
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
    private:
     /*!
@@ -257,7 +258,7 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return Fa Active deformation gradient
      */
-    LINALG::Matrix<3, 3> ActDefGrad(const double omegaa, const LINALG::Matrix<3, 3>& M);
+    CORE::LINALG::Matrix<3, 3> ActDefGrad(const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the first derivative of the active deformation gradient Fa w.r.t. omegaa
@@ -266,7 +267,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return dFadomegaa First derivative of the active deformation gradient
      */
-    LINALG::Matrix<3, 3> DActDefGrad_DActLevel(const double omegaa, const LINALG::Matrix<3, 3>& M);
+    CORE::LINALG::Matrix<3, 3> DActDefGrad_DActLevel(
+        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the second derivative of the active deformation gradient Fa w.r.t. omegaa
@@ -275,8 +277,8 @@ namespace MAT
      * @param[in] M Structural tensor of fiber directions
      * @return ddFaddomegaa Second derivative of the active deformation gradient
      */
-    LINALG::Matrix<3, 3> DDActDefGrad_DDActLevel(
-        const double omegaa, const LINALG::Matrix<3, 3>& M);
+    CORE::LINALG::Matrix<3, 3> DDActDefGrad_DDActLevel(
+        const double omegaa, const CORE::LINALG::Matrix<3, 3>& M);
 
     /*!
      * @brief Returns the inverse of the active deformation gradient Fa
@@ -284,7 +286,7 @@ namespace MAT
      * @param[in] Fa Active deformation gradient
      * @return invFa Inverse of the active deformation gradient
      */
-    LINALG::Matrix<3, 3> InvActDefGrad(const LINALG::Matrix<3, 3>& Fa);
+    CORE::LINALG::Matrix<3, 3> InvActDefGrad(const CORE::LINALG::Matrix<3, 3>& Fa);
 
     /*!
      * @brief Returns the first derivative of the inverse of the active deformation gradient Fa
@@ -294,8 +296,8 @@ namespace MAT
      * @param[in] dFadomegaa First derivative of the active deformation gradient
      * @return dinvFadomegaa First derivative of the inverse of the active deformation gradient
      */
-    LINALG::Matrix<3, 3> DInvActDefGrad_DActLevel(
-        const LINALG::Matrix<3, 3>& Fa, const LINALG::Matrix<3, 3>& dFadomegaa);
+    CORE::LINALG::Matrix<3, 3> DInvActDefGrad_DActLevel(
+        const CORE::LINALG::Matrix<3, 3>& Fa, const CORE::LINALG::Matrix<3, 3>& dFadomegaa);
 
     /*!
      * @brief Check if material is active at current time and fiber stretch lambdaM

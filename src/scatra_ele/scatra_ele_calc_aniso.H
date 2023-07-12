@@ -86,14 +86,15 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate the Laplacian for all shape functions(strong form)
-      void GetLaplacianStrongForm(LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
+      void GetLaplacianStrongForm(
+          CORE::LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,             //!< ?
-          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const int vi,                                  //!< ?
-          const int ui                                   //!< ?
+      void GetLaplacianWeakForm(double& val,                   //!< ?
+          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const int vi,                                        //!< ?
+          const int ui                                         //!< ?
       )
       {
         val = 0.0;
@@ -108,10 +109,10 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,          //!< ?
-          const LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
-          const LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
-          const int vi                                   //!< ?
+      void GetLaplacianWeakFormRHS(double& val,                //!< ?
+          const CORE::LINALG::Matrix<nsd_, nsd_>& difftensor,  //!< ?
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,        //!< ?
+          const int vi                                         //!< ?
       )
       {
         val = 0.0;
@@ -157,18 +158,21 @@ namespace DRT
       virtual ~ScaTraEleDiffManagerAniso(){};
 
       //! Set the anisotropic diffusion coefficient
-      virtual void SetAnisotropicDiff(const LINALG::Matrix<NSD, NSD> difftensor, const int k)
+      virtual void SetAnisotropicDiff(const CORE::LINALG::Matrix<NSD, NSD> difftensor, const int k)
       {
         difftensor_[k] = difftensor;
         return;
       }
 
       //! Return the stored anisotropic diffusion coefficient
-      virtual LINALG::Matrix<NSD, NSD> GetAnisotropicDiff(const int k) { return difftensor_[k]; }
+      virtual CORE::LINALG::Matrix<NSD, NSD> GetAnisotropicDiff(const int k)
+      {
+        return difftensor_[k];
+      }
 
      protected:
       //! tensor valued diffusion coefficient
-      std::vector<LINALG::Matrix<NSD, NSD>> difftensor_;
+      std::vector<CORE::LINALG::Matrix<NSD, NSD>> difftensor_;
     };
 
   }  // namespace ELEMENTS

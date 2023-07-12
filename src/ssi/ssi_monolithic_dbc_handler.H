@@ -26,11 +26,11 @@ namespace DRT
   }
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -68,14 +68,14 @@ namespace SSI
      *
      * @param[in,out] system_matrix  system matrix
      */
-    void ApplyDBCToSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> system_matrix);
+    void ApplyDBCToSystemMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
 
     /*!
      * @brief apply structure Dirichlet boundary conditions to system matrix
      *
      * @param[in,out] system_matrix  system matrix
      */
-    void ApplyStructureDBCToSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> system_matrix);
+    void ApplyStructureDBCToSystemMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix);
 
    protected:
     //! solve additional scatra field on manifolds
@@ -104,7 +104,7 @@ namespace SSI
      *                                     problem
      */
     virtual void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) = 0;
 
@@ -138,7 +138,7 @@ namespace SSI
 
    private:
     void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
   };
@@ -156,7 +156,7 @@ namespace SSI
 
    private:
     void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix,
         const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
         Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
 
@@ -175,7 +175,7 @@ namespace SSI
    * @return Dirichlet boundary condition handler
    */
   Teuchos::RCP<SSI::DBCHandlerBase> BuildDBCHandler(bool is_scatra_manifold,
-      LINALG::MatrixType matrixtype_ssi, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+      CORE::LINALG::MatrixType matrixtype_ssi, Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
       Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);

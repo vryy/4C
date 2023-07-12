@@ -81,7 +81,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       outsizefile_(Teuchos::null)
 {
   // allocate displacement local error vector
-  locerrdisn_ = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  locerrdisn_ = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // check whether energyout_ file handle was attached
   if ((not sti_->AttachedEnergyFile()) and (outeneperiod_ != 0.0) and (myrank_ == 0))
@@ -256,7 +256,8 @@ void STR::TimAda::EvaluateLocalErrorDis()
 
   // blank Dirichlet DOFs since they always carry the exact solution
   Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
-  LINALG::ApplyDirichlettoSystem(locerrdisn_, zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(
+      locerrdisn_, zeros, *(sti_->GetDBCMapExtractor()->CondMap()));
 }
 
 /*----------------------------------------------------------------------*/

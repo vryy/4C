@@ -72,22 +72,23 @@ namespace MIXTURE
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(
-        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void Update(const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
-    void UpdatePrestress(
-        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
-
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+    void UpdatePrestress(const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params,
         int gp, int eleGID) override;
 
-    void EvaluateElasticPart(const LINALG::Matrix<3, 3>& FM, const LINALG::Matrix<3, 3>& iFextin,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
+
+    void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& FM,
+        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) override;
 
     [[nodiscard]] double GetGrowthScalar(int gp) const override;
-    [[nodiscard]] LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
+    [[nodiscard]] CORE::LINALG::Matrix<1, 6> GetDGrowthScalarDC(int gp, int eleGID) const override;
 
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
@@ -97,11 +98,12 @@ namespace MIXTURE
 
    private:
     void IntegrateLocalEvolutionEquations(double dt, int gp, int eleGID);
-    [[nodiscard]] double EvaluateLambdaf(const LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
-    [[nodiscard]] LINALG::Matrix<1, 6> EvaluateDLambdafsqDC(int gp, int eleGID) const;
+    [[nodiscard]] double EvaluateLambdaf(
+        const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<1, 6> EvaluateDLambdafsqDC(int gp, int eleGID) const;
 
-    [[nodiscard]] LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
-    [[nodiscard]] LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 1> EvaluateCurrentPK2(int gp, int eleGID) const;
+    [[nodiscard]] CORE::LINALG::Matrix<6, 6> EvaluateCurrentCmat(int gp, int eleGID) const;
 
     [[nodiscard]] double EvaluateDepositionStretch(double time) const;
     void UpdateHomeostaticValues(const Teuchos::ParameterList& params, int eleGID);
@@ -119,8 +121,8 @@ namespace MIXTURE
 
     /// temporary variables used within one evaluation
     /// @{
-    std::vector<LINALG::Matrix<1, 6>> dgrowthscalardC_;
-    std::vector<LINALG::Matrix<1, 6>> dlambdardC_;
+    std::vector<CORE::LINALG::Matrix<1, 6>> dgrowthscalardC_;
+    std::vector<CORE::LINALG::Matrix<1, 6>> dlambdardC_;
     /// @}
   };
 }  // namespace MIXTURE

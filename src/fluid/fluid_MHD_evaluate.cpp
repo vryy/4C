@@ -306,8 +306,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     Epetra_Map subdofcolmap(*bnd_discret_->DofColMap());
 
 
-    bndmat_ = Teuchos::rcp(new LINALG::SparseMatrix(
-        *subdofrowmap_, 500, false, true, LINALG::SparseMatrix::FE_MATRIX));
+    bndmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+        *subdofrowmap_, 500, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
     if (bnd_discret_->Comm().MyPID() == 0)
     {
@@ -333,7 +333,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     std::vector<int> allproc(numproc);
     for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
-    LINALG::Gather<int>(bndnidslocal, bndnids, numproc, allproc.data(), pdiscret_->Comm());
+    CORE::LINALG::Gather<int>(bndnidslocal, bndnids, numproc, allproc.data(), pdiscret_->Comm());
 
     //**********************************************************************
     // Compute the rebalancing
@@ -494,19 +494,19 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
 
 void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcparams,
     Teuchos::RCP<Epetra_Vector> velaf_, Teuchos::RCP<Epetra_Vector> velnp_,
-    Teuchos::RCP<Epetra_Vector> residual_, Teuchos::RCP<LINALG::SparseMatrix> sysmat_)
+    Teuchos::RCP<Epetra_Vector> residual_, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_)
 {
   // set the required state vectors
-  Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(), true);
+  Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*bnd_discret_->DofColMap(), true);
 
 
-  LINALG::Export(*velaf_, *tmp);
+  CORE::LINALG::Export(*velaf_, *tmp);
   bnd_discret_->SetState("u and p (trial)", tmp);
   bnd_discret_->SetState("velaf", tmp);  // was missing. gjb 12/12
 
   {
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(), true);
-    LINALG::Export(*velnp_, *tmp);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*bnd_discret_->DofColMap(), true);
+    CORE::LINALG::Export(*velnp_, *tmp);
     bnd_discret_->SetState("u and p (trial,n+1)", tmp);
     bnd_discret_->SetState("velnp", tmp);  // was missing. gjb 12/12
   }
@@ -515,7 +515,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
   // bndmat_->Zero(); // please tell me why zero doesn't work in parallel
   bndmat_->Reset();
 
-  Teuchos::RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> bndres = CORE::LINALG::CreateVector(*bnd_discret_->DofRowMap(), true);
 
   std::vector<DRT::Condition*> bndMHDcnd;
   const std::string condstring = "SurfaceMixHybDirichlet";
@@ -562,7 +562,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
         // assembly to all parent dofs even if we just integrated
         // over a boundary element
         bndmat_->FEAssemble(elematrix1, la[0].lm_, la[0].lmowner_, la[0].lm_);
-        LINALG::Assemble(*bndres, elevector1, la[0].lm_, la[0].lmowner_);
+        CORE::LINALG::Assemble(*bndres, elevector1, la[0].lm_, la[0].lmowner_);
       }  // end loop geometry elements of this conditions
     }
   }
@@ -583,10 +583,10 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
     dserror("NULL Epetra_Crs_bndmat\n");
   }
 
-  LINALG::Add(*Epetra_Crs_bndmat, false, 1.0, *(sysmat_->EpetraMatrix()), 1.0);
+  CORE::LINALG::Add(*Epetra_Crs_bndmat, false, 1.0, *(sysmat_->EpetraMatrix()), 1.0);
 
   {
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*pdiscret_->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*pdiscret_->DofRowMap(), true);
 
     Epetra_Export exporter(bndres->Map(), tmp->Map());
     int err = tmp->Export(*bndres, exporter, Add);

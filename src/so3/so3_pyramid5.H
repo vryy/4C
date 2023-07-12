@@ -82,9 +82,9 @@ namespace DRT
       \param id : A unique global id
       \param owner : elements owner
       */ //! push forward of Green-Lagrange strain to Euler-Almansi strains
-      void GLtoEA(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
-          LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
-          LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi);
+      void GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi);
 
       So_pyramid5(int id, int owner);
 
@@ -353,7 +353,7 @@ namespace DRT
       //! container containing all kind of solid3 thisandthat
       DRT::Container data_;
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>> invJ_;
+      std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
 
@@ -382,15 +382,17 @@ namespace DRT
       virtual void InitJacobianMapping();
 
       //! Calculate linear stiffness and mass matrix
-      virtual void sop5_linstiffmass(std::vector<int>& lm,        ///< location matrix
-          std::vector<double>& disp,                              ///< current displacements
-          std::vector<double>& residual,                          ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOP5, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+      virtual void sop5_linstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,                        ///< current displacements
+          std::vector<double>& residual,                    ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>*
+              eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,     ///< stress output option
           const INPAR::STR::StrainType iostrain,     ///< strain output option
@@ -403,35 +405,37 @@ namespace DRT
           std::vector<double>* acc,                         ///< current accelerations
           std::vector<double>& residual,                    ///< current residual displ
           std::vector<double>& dispmat,                     ///< current material displacements
-          LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOP5, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOP5, 1>* forceinert,             ///< element inertial force vector
-          LINALG::Matrix<NUMDOF_SOP5, 1>* force_str,  ///< element structural force vector
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
-          LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
+          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force,       ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* forceinert,  ///< element inertial force vector
+          CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force_str,   ///< element structural force vector
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+          CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>*
+              eleplstrain,                           ///< plastic strains at GP
           Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,     ///< stress output option
           const INPAR::STR::StrainType iostrain,     ///< strain output option
           const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
-      void sop5_lumpmass(LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass);
+      void sop5_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass);
 
       //! Evaluate Pyramid5 Shapefcts to keep them static
-      const std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> sop5_shapefcts();
+      const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> sop5_shapefcts();
       //! Evaluate Pyramid5 Derivs to keep them static
-      const std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> sop5_derivs();
+      const std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> sop5_derivs();
       //! Evaluate Pyramid5 Weights to keep them static
       const std::vector<double> sop5_weights();
 
 
       //! Evaluate shapefunction, derivative and gaussweights
-      void sop5_shapederiv(
-          LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5>** shapefct,  // pointer to pointer of shapefct
-          LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5>** deriv,     // pointer to pointer of derivs
-          LINALG::Matrix<NUMGPT_SOP5, 1>** weights);            // pointer to pointer of weights
+      void sop5_shapederiv(CORE::LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5>**
+                               shapefct,                           // pointer to pointer of shapefct
+          CORE::LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5>** deriv,  // pointer to pointer of derivs
+          CORE::LINALG::Matrix<NUMGPT_SOP5, 1>** weights);         // pointer to pointer of weights
 
       //! @name Multi-scale related stuff
 
@@ -447,7 +451,7 @@ namespace DRT
       void sop5_read_restart_multi();
 
       void GetTemperatureForStructuralMaterial(
-          const LINALG::Matrix<NUMNOD_SOP5, 1>&
+          const CORE::LINALG::Matrix<NUMNOD_SOP5, 1>&
               shapefcts,  ///< shape functions of current Gauss point
           Teuchos::ParameterList&
               params  ///< special material parameters e.g. scalar-valued temperature

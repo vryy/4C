@@ -384,11 +384,12 @@ void XFEM::UTILS::GetNavierSlipStabilizationParameters(
  * compute transformation factor for surface integration, normal, local and global gp coordinates
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transformation factor
-    LINALG::Matrix<3, 1> &x_gp_lin,    ///< global coordiantes of gaussian point
-    LINALG::Matrix<3, 1> &normal,      ///< normal vector on boundary cell
-    CORE::GEO::CUT::BoundaryCell *bc,  ///< boundary cell
-    const LINALG::Matrix<2, 1> &eta,   ///< local coordinates of gaussian point w.r.t boundarycell
-    bool referencepos                  ///< use the bc reference position for transformation
+    CORE::LINALG::Matrix<3, 1> &x_gp_lin,  ///< global coordiantes of gaussian point
+    CORE::LINALG::Matrix<3, 1> &normal,    ///< normal vector on boundary cell
+    CORE::GEO::CUT::BoundaryCell *bc,      ///< boundary cell
+    const CORE::LINALG::Matrix<2, 1>
+        &eta,          ///< local coordinates of gaussian point w.r.t boundarycell
+    bool referencepos  ///< use the bc reference position for transformation
 )
 {
   normal.Clear();
@@ -461,11 +462,11 @@ double XFEM::UTILS::ComputeMeasCutSurf(
         double drs =
             0.0;  // transformation factor between reference cell and linearized boundary cell
 
-        const LINALG::Matrix<2, 1> eta(iquad.Point());  // xi-coordinates with respect to side
+        const CORE::LINALG::Matrix<2, 1> eta(iquad.Point());  // xi-coordinates with respect to side
 
-        LINALG::Matrix<3, 1> normal(true);
+        CORE::LINALG::Matrix<3, 1> normal(true);
 
-        LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
+        CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
         if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
@@ -576,8 +577,9 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double XFEM::UTILS::EvalElementVolume(
-    LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> xyze,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+        xyze,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
         *nurbs_weights,
     std::vector<Epetra_SerialDenseVector> *nurbs_knots)
 {
@@ -591,11 +593,11 @@ double XFEM::UTILS::EvalElementVolume(
   const double *gpcoord = intpoints_stab.IP().qxg[0];   // actual integration point (coords)
   const double gpweight = intpoints_stab.IP().qwgt[0];  // actual integration point (weight)
 
-  LINALG::Matrix<nsd, 1> xsi(gpcoord, true);
-  static LINALG::Matrix<nen, 1> funct;
-  static LINALG::Matrix<nsd, nen> deriv;
-  static LINALG::Matrix<nsd, nsd> xjm;
-  static LINALG::Matrix<nsd, nsd> xji;
+  CORE::LINALG::Matrix<nsd, 1> xsi(gpcoord, true);
+  static CORE::LINALG::Matrix<nen, 1> funct;
+  static CORE::LINALG::Matrix<nsd, nen> deriv;
+  static CORE::LINALG::Matrix<nsd, nsd> xjm;
+  static CORE::LINALG::Matrix<nsd, nsd> xji;
 
   switch (distype)
   {
@@ -674,8 +676,8 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
   static const int nsd = 3;
   // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::ComputeCharEleLength");
 
-  LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> xyze(
-      ele_xyze, true);
+  CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+      xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
   const INPAR::XFEM::AveragingStrategy averaging_strategy =
       cond_manager->GetAveragingStrategy(coup_sid, ele->Id());
@@ -830,19 +832,19 @@ double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid elemen
  *    compute stabilization factor for the Nitsche's penalty term
  *--------------------------------------------------------------------------------*/
 void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
-    double &NIT_full_stab_fac,             ///< to be filled: full Nitsche's penalty term scaling
-                                           ///< (viscous+convective part)
-    const LINALG::Matrix<3, 1> &normal,    ///< interface-normal vector
-    const double h_k,                      ///< characteristic element length
-    const double kappa_m,                  ///< Weight parameter (parameter +/master side)
-    const double kappa_s,                  ///< Weight parameter (parameter -/slave  side)
-    const LINALG::Matrix<3, 1> &velint_m,  ///< Master side velocity at gauss-point
-    const LINALG::Matrix<3, 1> &velint_s,  ///< Slave side velocity at gauss-point
-    const double NIT_visc_stab_fac,        ///< Nitsche's viscous scaling part of penalty term
-    const double timefac,                  ///< timefac
-    const bool isstationary,               ///< isstationary
-    const double densaf_master,            ///< master density
-    const double densaf_slave,             ///< slave density
+    double &NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
+                                ///< (viscous+convective part)
+    const CORE::LINALG::Matrix<3, 1> &normal,    ///< interface-normal vector
+    const double h_k,                            ///< characteristic element length
+    const double kappa_m,                        ///< Weight parameter (parameter +/master side)
+    const double kappa_s,                        ///< Weight parameter (parameter -/slave  side)
+    const CORE::LINALG::Matrix<3, 1> &velint_m,  ///< Master side velocity at gauss-point
+    const CORE::LINALG::Matrix<3, 1> &velint_s,  ///< Slave side velocity at gauss-point
+    const double NIT_visc_stab_fac,              ///< Nitsche's viscous scaling part of penalty term
+    const double timefac,                        ///< timefac
+    const bool isstationary,                     ///< isstationary
+    const double densaf_master,                  ///< master density
+    const double densaf_slave,                   ///< slave density
     INPAR::XFEM::MassConservationScaling
         MassConservationScaling,  ///< kind of mass conservation scaling
     INPAR::XFEM::MassConservationCombination
@@ -992,12 +994,12 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
-    const LINALG::Matrix<3, 3> &vderxy_m, const double &visc_m, const double &penalty_fac,
-    const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
-    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal,
-    const LINALG::Matrix<3, 1> &velpf_s, double porosity)
+    const CORE::LINALG::Matrix<3, 3> &vderxy_m, const double &visc_m, const double &penalty_fac,
+    const CORE::LINALG::Matrix<3, 1> &vel_m, const CORE::LINALG::Matrix<3, 1> &vel_s,
+    const CORE::LINALG::Matrix<3, 1> &elenormal, const CORE::LINALG::Matrix<3, 1> &normal,
+    const CORE::LINALG::Matrix<3, 1> &velpf_s, double porosity)
 {
-  LINALG::Matrix<3, 1> traction(true);
+  CORE::LINALG::Matrix<3, 1> traction(true);
 
   // pressure contribution
   if (porosity <= 0)
@@ -1021,11 +1023,12 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
   return traction.Dot(elenormal);
 }
 
-double XFEM::UTILS::Evaluate_Full_Traction(const LINALG::Matrix<3, 1> &intraction,
-    const double &penalty_fac, const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
-    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal)
+double XFEM::UTILS::Evaluate_Full_Traction(const CORE::LINALG::Matrix<3, 1> &intraction,
+    const double &penalty_fac, const CORE::LINALG::Matrix<3, 1> &vel_m,
+    const CORE::LINALG::Matrix<3, 1> &vel_s, const CORE::LINALG::Matrix<3, 1> &elenormal,
+    const CORE::LINALG::Matrix<3, 1> &normal)
 {
-  LINALG::Matrix<3, 1> traction(true);
+  CORE::LINALG::Matrix<3, 1> traction(true);
 
   for (int i = 0; i < 3; ++i)
     traction(i, 0) = intraction(i, 0) - penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
@@ -1033,17 +1036,18 @@ double XFEM::UTILS::Evaluate_Full_Traction(const LINALG::Matrix<3, 1> &intractio
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const double &penalty_fac,
-    const LINALG::Matrix<3, 1> &vel_m, const LINALG::Matrix<3, 1> &vel_s,
-    const LINALG::Matrix<3, 1> &elenormal, const LINALG::Matrix<3, 1> &normal)
+    const CORE::LINALG::Matrix<3, 1> &vel_m, const CORE::LINALG::Matrix<3, 1> &vel_s,
+    const CORE::LINALG::Matrix<3, 1> &elenormal, const CORE::LINALG::Matrix<3, 1> &normal)
 {
-  LINALG::Matrix<3, 1> traction(true);
+  CORE::LINALG::Matrix<3, 1> traction(true);
 
   for (int i = 0; i < 3; ++i) traction(i, 0) = -penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
   return intraction + traction.Dot(elenormal);
 }
 
-void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele, const LINALG::Matrix<3, 1> &selexsi,
-    const DRT::Discretization &discret, const std::string &state, LINALG::Matrix<3, 1> &vel_s)
+void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
+    const CORE::LINALG::Matrix<3, 1> &selexsi, const DRT::Discretization &discret,
+    const std::string &state, CORE::LINALG::Matrix<3, 1> &vel_s)
 {
   vel_s.Clear();
 
@@ -1056,7 +1060,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele, const LINALG::Matri
   // 4 // evaluate slave velocity at guasspoint
   if (sele->Shape() == DRT::Element::quad4)
   {
-    LINALG::Matrix<3, 4> vels;
+    CORE::LINALG::Matrix<3, 4> vels;
     for (int n = 0; n < sele->NumNode(); ++n)
     {
       for (int dof = 0; dof < 3; ++dof)
@@ -1067,7 +1071,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele, const LINALG::Matri
 
     const int numnodes =
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-    static LINALG::Matrix<numnodes, 1> funct(false);
+    static CORE::LINALG::Matrix<numnodes, 1> funct(false);
     CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
     vel_s.Multiply(vels, funct);
   }
@@ -1077,45 +1081,45 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele, const LINALG::Matri
 
 
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement,
-        1> *,
+    CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex20>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement>,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement,
-        1> *,
+    CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex27>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement>,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement,
-        1> *,
+    CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet4>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement>,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
-        1> *,
+    CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet10>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement>,
-    LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement,
-        1> *,
+    CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge6>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement>,
-    LINALG::Matrix<
+    CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge15>(
-    LINALG::Matrix<3,
+    CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement>,
-    LINALG::Matrix<
+    CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement, 1> *,
     std::vector<Epetra_SerialDenseVector> *);
 

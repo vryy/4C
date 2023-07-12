@@ -28,11 +28,11 @@ namespace Teuchos
   class ParameterList;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace NOX
 {
@@ -76,14 +76,14 @@ namespace NOX
       //! standard constructor
       Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
           const Teuchos::RCP<NOX::Epetra::Vector>& x,
-          const Teuchos::RCP<LINALG::SparseOperator>& A);
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! destructor
       virtual ~Problem(){};
 
       //! initialize stuff (can be overloaded in derived classes)
       virtual void Initialize(const Teuchos::RCP<NOX::Epetra::Vector>& x,
-          const Teuchos::RCP<LINALG::SparseOperator>& A);
+          const Teuchos::RCP<CORE::LINALG::SparseOperator>& A);
 
       //! create the linear system for the NOX framework
       virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem() const;
@@ -130,9 +130,9 @@ namespace NOX
 
       /** ptr to the state matrix RCP. In this way the strong_count is neither lost
        *  nor increased. */
-      const Teuchos::RCP<LINALG::SparseOperator>* jac_;
+      const Teuchos::RCP<CORE::LINALG::SparseOperator>* jac_;
 
-      Teuchos::RCP<LINALG::SparseOperator> precMat_;
+      Teuchos::RCP<CORE::LINALG::SparseOperator> precMat_;
     };
   }  // namespace NLN
 }  // namespace NOX

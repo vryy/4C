@@ -16,7 +16,7 @@
 #include <Epetra_CrsMatrix.h>
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
 }
@@ -54,9 +54,9 @@ namespace CONTACT
      \brief Perform integration at GP
      */
     virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -68,9 +68,9 @@ namespace CONTACT
      \brief Perform integration at GP
      */
     virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-        LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-        LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+        CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
+        CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
+        CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
         CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
         CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -82,17 +82,19 @@ namespace CONTACT
     // integrate surface gradient
     void GP_WeightedSurfGradAndDeriv(MORTAR::MortarElement& sele, const double* xi,
         const std::vector<CORE::GEN::pairedvector<int, double>>& dsxigp,
-        const LINALG::SerialDenseVector& lmval, const LINALG::SerialDenseMatrix& lmderiv,
+        const CORE::LINALG::SerialDenseVector& lmval,
+        const CORE::LINALG::SerialDenseMatrix& lmderiv,
         const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
-        const LINALG::SerialDenseMatrix& sderiv2, const double& wgt, const double& jac,
+        const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseMatrix& sderiv,
+        const CORE::LINALG::SerialDenseMatrix& sderiv2, const double& wgt, const double& jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap);
 
     // integrate relative and average tangential velocity
     void GP_WeightedAvRelVel(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseVector& lmval,
-        const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& sderiv,
-        const LINALG::SerialDenseMatrix& mderiv, const LINALG::SerialDenseMatrix& lmderiv,
+        const CORE::LINALG::SerialDenseVector& sval, const CORE::LINALG::SerialDenseVector& lmval,
+        const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& sderiv,
+        const CORE::LINALG::SerialDenseMatrix& mderiv,
+        const CORE::LINALG::SerialDenseMatrix& lmderiv,
         const CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, const double& wgt,
         const double& jac, const CORE::GEN::pairedvector<int, double>& derivjac,
         const double* normal, const std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit,

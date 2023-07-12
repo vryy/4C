@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
      */
     void EvaluateBeamPositionDouble(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, double>& r_beam, bool reference) const override;
+        CORE::LINALG::Matrix<3, 1, double>& r_beam, bool reference) const override;
 
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
      * returned
      */
     virtual void GetTriadAtXiDouble(
-        const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
+        const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const = 0;
   };
 }  // namespace BEAMINTERACTION
 

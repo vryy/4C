@@ -257,7 +257,7 @@ namespace MAT
        *  @param[in] M Structural tensor of fiber directions
        *  @param[out] lambdaM Fiber stretch
        */
-      double FiberStretch(const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+      double FiberStretch(const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M);
 
       /*!
        *  @brief Returns the derivative of the fiber stretch w.r.t. the Cauchy-Green strain
@@ -267,8 +267,8 @@ namespace MAT
        *  @param[in] M Structural tensor of fiber directions
        *  @param[out] dlambdaMdC Derivative of the fiber stretch w.r.t. the Cauchy-Green strains
        */
-      LINALG::Matrix<3, 3> DFiberStretch_DC(
-          const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M);
+      CORE::LINALG::Matrix<3, 3> DFiberStretch_DC(const double lambdaM,
+          const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M);
 
       /*!
        *  @brief Returns the contraction velocity computed by a Backward Euler approximation

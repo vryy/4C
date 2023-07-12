@@ -180,7 +180,7 @@ namespace CONTACT
       static const unsigned NUMNODE =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
-      LINALG::Matrix<NUMNODE, 1> weights(true);
+      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
       return CORE::DRT::NURBS::UTILS::nurbs_get_funct(val, xi, ele.Knots(), weights, type);
@@ -199,10 +199,10 @@ namespace CONTACT
       static const unsigned NUMNODE =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
-      LINALG::Matrix<NUMNODE, 1> weights(true);
+      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      LINALG::Matrix<NUMNODE, 1> val(false);
+      CORE::LINALG::Matrix<NUMNODE, 1> val(false);
       return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
           val, deriv, xi, ele.Knots(), weights, type);
     }
@@ -220,7 +220,7 @@ namespace CONTACT
       static const unsigned NUMNODE =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
-      LINALG::Matrix<NUMNODE, 1> weights(true);
+      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
       return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
@@ -241,11 +241,11 @@ namespace CONTACT
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
       static const unsigned DIM = CORE::DRT::UTILS::DisTypeToDim<type>::dim;
 
-      LINALG::Matrix<NUMNODE, 1> weights(true);
+      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
-      LINALG::Matrix<NUMNODE, 1> val(false);
-      LINALG::Matrix<DIM, NUMNODE> deriv1(false);
+      CORE::LINALG::Matrix<NUMNODE, 1> val(false);
+      CORE::LINALG::Matrix<DIM, NUMNODE> deriv1(false);
       return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(
           val, deriv1, deriv2, xi, ele.Knots(), weights, type);
     }
@@ -264,7 +264,7 @@ namespace CONTACT
       static const unsigned NUMNODE =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement;
 
-      LINALG::Matrix<NUMNODE, 1> weights(true);
+      CORE::LINALG::Matrix<NUMNODE, 1> weights(true);
       GetNurbsWeights(ele, weights);
 
       return CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv_deriv2(

@@ -154,9 +154,10 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   double elelocalrad = params.get("localrad meanvalue", -999.0);
   if (elelocalrad == -999.0) dserror("Aneurysm local radii not found");
@@ -173,11 +174,11 @@ void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::Matrix<6, 1> identity(true);
+  CORE::LINALG::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6, 1> rcg(*glstrain);
+  CORE::LINALG::Matrix<6, 1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -195,7 +196,7 @@ void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::Matrix<6, 1> invc(false);
+  CORE::LINALG::Matrix<6, 1> invc(false);
 
   double invdet = 1. / iiinv;
 
@@ -225,7 +226,7 @@ void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       pow(iiinv, -twthi);
 
   // contribution: Cinv
-  LINALG::Matrix<6, 1> pktwoiso(invc);
+  CORE::LINALG::Matrix<6, 1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -237,7 +238,7 @@ void MAT::AAA_mixedeffects::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   double scalar = komp / beta2 * (1.0 - pow(detf, -beta2));
 
   // initialise PKtwo with volumetric part
-  LINALG::Matrix<6, 1> pktwovol(invc);
+  CORE::LINALG::Matrix<6, 1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
@@ -349,9 +350,9 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface
-  const LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
-  LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
-  LINALG::Matrix<6, 1> stress(stress_e->A(), true);
+  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
+  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
+  CORE::LINALG::Matrix<6, 1> stress(stress_e->A(), true);
 
   // material parameters for isochoric part
   const double alpha = 1E6 * (0.09631 + 0.03329 * (elelocalrad * 2 / params_->refdia_ - 2.55));
@@ -364,11 +365,11 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::Matrix<6, 1> identity(true);
+  CORE::LINALG::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6, 1> rcg(glstrain);
+  CORE::LINALG::Matrix<6, 1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -386,7 +387,7 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::Matrix<6, 1> invc(false);
+  CORE::LINALG::Matrix<6, 1> invc(false);
 
   double invdet = 1. / iiinv;
 
@@ -416,7 +417,7 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
       pow(iiinv, -twthi);
 
   // contribution: Cinv
-  LINALG::Matrix<6, 1> pktwoiso(invc);
+  CORE::LINALG::Matrix<6, 1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -428,7 +429,7 @@ void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   double scalar = komp / beta2 * (1.0 - pow(detf, -beta2));
 
   // initialise PKtwo with volumetric part
-  LINALG::Matrix<6, 1> pktwovol(invc);
+  CORE::LINALG::Matrix<6, 1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up

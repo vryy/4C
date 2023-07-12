@@ -130,7 +130,7 @@ namespace DRT
           ) override;
 
       //! nodal growth variables
-      LINALG::Matrix<nen_, 1> egrowth_;
+      CORE::LINALG::Matrix<nen_, 1> egrowth_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
   }     // namespace ELEMENTS
 }  // namespace DRT

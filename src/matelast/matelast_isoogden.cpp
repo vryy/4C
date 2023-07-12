@@ -17,8 +17,8 @@ MAT::ELASTIC::PAR::IsoOgden::IsoOgden(Teuchos::RCP<MAT::PAR::Material> matdata)
 
 MAT::ELASTIC::IsoOgden::IsoOgden(MAT::ELASTIC::PAR::IsoOgden* params) : params_(params) {}
 
-void MAT::ELASTIC::IsoOgden::AddCoefficientsStretchesModified(LINALG::Matrix<3, 1>& modgamma,
-    LINALG::Matrix<6, 1>& moddelta, const LINALG::Matrix<3, 1>& modstr)
+void MAT::ELASTIC::IsoOgden::AddCoefficientsStretchesModified(CORE::LINALG::Matrix<3, 1>& modgamma,
+    CORE::LINALG::Matrix<6, 1>& moddelta, const CORE::LINALG::Matrix<3, 1>& modstr)
 {
   // get parameters
   const double& mue = params_->mue_;

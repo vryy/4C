@@ -20,7 +20,7 @@
 STR::TimIntGEMM::TimIntGEMM(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       beta_(sdynparams.sublist("GEMM").get<double>("BETA")),
@@ -51,7 +51,7 @@ STR::TimIntGEMM::TimIntGEMM(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntGEMM::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -86,30 +86,30 @@ void STR::TimIntGEMM::Setup()
   // create state vectors
 
   // mid-displacements
-  dism_ = LINALG::CreateVector(*DofRowMapView(), true);
+  dism_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  velm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  accm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  accm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;m} at mid-time
-  fintm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertia mid-point force vector F_inert
-  finertm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  finertm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
-  fviscm_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fviscm_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // GEMM time integrator cannot handle nonlinear inertia forces
   if (HaveNonlinearMass())
@@ -545,12 +545,12 @@ void STR::TimIntGEMM::UpdateStepElement()
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force, its stiffness at mid-state */
 void STR::TimIntGEMM::ApplyForceStiffInternalMid(const double time, const double dt,
-    const Teuchos::RCP<Epetra_Vector> dis,      // displacement state at t_n
-    const Teuchos::RCP<Epetra_Vector> disn,     // displacement state at t_{n+1}
-    const Teuchos::RCP<Epetra_Vector> disi,     // residual displacements
-    const Teuchos::RCP<Epetra_Vector> vel,      // velocity state
-    Teuchos::RCP<Epetra_Vector> fint,           // internal force
-    Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
+    const Teuchos::RCP<Epetra_Vector> dis,            // displacement state at t_n
+    const Teuchos::RCP<Epetra_Vector> disn,           // displacement state at t_{n+1}
+    const Teuchos::RCP<Epetra_Vector> disi,           // residual displacements
+    const Teuchos::RCP<Epetra_Vector> vel,            // velocity state
+    Teuchos::RCP<Epetra_Vector> fint,                 // internal force
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
   // *********** time measurement ***********

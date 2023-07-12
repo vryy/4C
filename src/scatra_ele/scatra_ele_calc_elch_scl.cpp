@@ -101,7 +101,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcFreeChargeDerC
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
     Epetra_SerialDenseMatrix& emat, const double fac, const double invf, const double scalefac,
-    const LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
+    const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -124,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
     Epetra_SerialDenseVector& erhs, const double fac, const double invf, const double cond_invperm,
-    const LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
+    const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -172,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotSrc(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
     Epetra_SerialDenseVector& erhs, const double rhsfac, const std::vector<double>& invfval,
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi)
+    const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   if (diffcondmat_ != INPAR::ELCH::diffcondmat_scl)
     dserror("Diffusion-Conduction material has to be SCL material");
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
     Epetra_SerialDenseMatrix& emat, const double timefacfac, const std::vector<double>& invfval,
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi)
+    const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -230,7 +230,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
     const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
+    const double rhstaufac, CORE::LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
 {
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms

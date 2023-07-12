@@ -367,17 +367,17 @@ namespace DRT
           int gp                                                      ///< Integration point
       );
 
-      void MaterialResponse3d(LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
-          LINALG::Matrix<6, 6>* cmat,                        ///< material tensor (output)
-          const LINALG::Matrix<6, 1>* glstrain,              ///< strain state (input)
-          Teuchos::ParameterList& params,                    ///< parameter list
-          int gp                                             ///< Integration point
+      void MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
+          CORE::LINALG::Matrix<6, 6>* cmat,                        ///< material tensor (output)
+          const CORE::LINALG::Matrix<6, 1>* glstrain,              ///< strain state (input)
+          Teuchos::ParameterList& params,                          ///< parameter list
+          int gp                                                   ///< Integration point
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D
       void GreenLagrangePlane3d(
           const Epetra_SerialDenseVector& glplane,  ///< Green-Lagrange strains in 2D notation
-          LINALG::Matrix<6, 1>& gl3d);              ///< Green-Lagrange strains in 2D notation
+          CORE::LINALG::Matrix<6, 1>& gl3d);        ///< Green-Lagrange strains in 2D notation
 
       void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze, double* length,
           double* sin_alpha, double* cos_alpha);

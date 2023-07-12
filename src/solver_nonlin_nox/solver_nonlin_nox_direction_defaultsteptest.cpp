@@ -71,7 +71,7 @@ void NOX::NLN::Direction::Test::VolumeChange::computePrimalDirectionMeasures(
   // range map and domain map are expected to coincide
   const Epetra_Map& rangemap = nln_grp.getJacobianRangeMap(0, 0);
   Teuchos::RCP<Epetra_Vector> primal_dir =
-      LINALG::ExtractMyVector(dir_epetra.getEpetraVector(), rangemap);
+      CORE::LINALG::ExtractMyVector(dir_epetra.getEpetraVector(), rangemap);
   NOX::Epetra::Vector nox_primal_dir(primal_dir, NOX::Epetra::Vector::CreateView);
 
   Teuchos::RCP<NOX::Epetra::Vector> result_ptr;

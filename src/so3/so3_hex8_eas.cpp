@@ -115,19 +115,19 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
     double& detJ0,                                 // det of Jacobian at origin
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
-        T0invT,                                                   // maps M(origin) local to global
-    const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const  // material element coords
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+        T0invT,  // maps M(origin) local to global
+    const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const  // material element coords
 {
   // vector of df(origin)
   static double df0_vector[NUMDIM_SOH8 * NUMNOD_SOH8] = {-0.125, -0.125, -0.125, +0.125, -0.125,
       -0.125, +0.125, +0.125, -0.125, -0.125, +0.125, -0.125, -0.125, -0.125, +0.125, +0.125,
       -0.125, +0.125, +0.125, +0.125, +0.125, -0.125, +0.125, +0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);  // copy
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector);  // copy
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
+  CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
   jac0.Multiply(df0, xrefe);
   // compute determinant of Jacobian at origin
   detJ0 = jac0.Determinant();
@@ -181,7 +181,8 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   T0invT(5, 5) = jac0(0, 0) * jac0(2, 2) + jac0(2, 0) * jac0(0, 2);
 
   // now evaluate T0^{-T} with solver
-  LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1> solve_for_inverseT0;
+  CORE::LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D, 1>
+      solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
@@ -386,19 +387,19 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alphao, *alpha);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainvo, *Kaainv);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easmild:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alphao, *alpha);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainvo, *Kaainv);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainvo, *Kaainv);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easnone:
       break;
@@ -422,19 +423,19 @@ void DRT::ELEMENTS::So_hex8::soh8_easrestore()
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, 1>(*alpha, *alphao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, soh8_easfull>(*Kaainv, *Kaainvo);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easfull, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easmild:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, 1>(*alpha, *alphao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, soh8_easmild>(*Kaainv, *Kaainvo);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_easmild, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
-      LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(*Kaainv, *Kaainvo);
+      CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
       break;
     case DRT::ELEMENTS::So_hex8::soh8_easnone:
       break;

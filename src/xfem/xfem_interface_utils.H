@@ -90,10 +90,10 @@ namespace XFEM
     //! compute transformation factor for surface integration, normal, local and global gp
     //! coordinates
     void ComputeSurfaceTransformation(double& drs,  ///< surface transformation factor
-        LINALG::Matrix<3, 1>& x_gp_lin,             ///< global coordiantes of gaussian point
-        LINALG::Matrix<3, 1>& normal,               ///< normal vector on boundary cell
+        CORE::LINALG::Matrix<3, 1>& x_gp_lin,       ///< global coordiantes of gaussian point
+        CORE::LINALG::Matrix<3, 1>& normal,         ///< normal vector on boundary cell
         CORE::GEO::CUT::BoundaryCell* bc,           ///< boundary cell
-        const LINALG::Matrix<2, 1>&
+        const CORE::LINALG::Matrix<2, 1>&
             eta,                   ///< local coordinates of gaussian point w.r.t boundarycell
         bool referencepos = false  ///< use the bc reference position for transformation
     );
@@ -123,10 +123,11 @@ namespace XFEM
     //! evaluate element volume
     template <DRT::Element::DiscretizationType distype>
     double EvalElementVolume(
-        LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
+        CORE::LINALG::Matrix<3,
+            CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
             xyze,
-        LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>*
-            nurbs_weights = NULL,
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+            1>* nurbs_weights = NULL,
         std::vector<Epetra_SerialDenseVector>* nurbs_knots = NULL);
 
     //! compute characteristic element length h_k
@@ -148,19 +149,19 @@ namespace XFEM
 
     //! compute full scaling of Nitsche's penalty term (xfluid-fluid)
     void NIT_Compute_FullPenalty_Stabfac(
-        double& NIT_full_stab_fac,           ///< to be filled: full Nitsche's penalty term scaling
-                                             ///< (viscous+convective part)
-        const LINALG::Matrix<3, 1>& normal,  ///< interface-normal vector
-        const double h_k,                    ///< characteristic element length
-        const double kappa1,                 ///< Weight parameter (parameter +/master side)
-        const double kappa2,                 ///< Weight parameter (parameter -/slave  side)
-        const LINALG::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
-        const LINALG::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
-        const double NIT_visc_stab_fac,        ///< Nitsche's viscous scaling part of penalty term
-        const double timefac,                  ///< timefac
-        const bool isstationary,               ///< isstationary
-        const double densaf_master,            ///< master density
-        const double densaf_slave,             ///< slave density
+        double& NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
+                                    ///< (viscous+convective part)
+        const CORE::LINALG::Matrix<3, 1>& normal,    ///< interface-normal vector
+        const double h_k,                            ///< characteristic element length
+        const double kappa1,                         ///< Weight parameter (parameter +/master side)
+        const double kappa2,                         ///< Weight parameter (parameter -/slave  side)
+        const CORE::LINALG::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
+        const CORE::LINALG::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
+        const double NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term
+        const double timefac,            ///< timefac
+        const bool isstationary,         ///< isstationary
+        const double densaf_master,      ///< master density
+        const double densaf_slave,       ///< slave density
         INPAR::XFEM::MassConservationScaling
             MassConservationScaling,  ///< kind of mass conservation scaling
         INPAR::XFEM::MassConservationCombination
@@ -174,22 +175,24 @@ namespace XFEM
         bool error_calc = false  ///< when called in error calculation, don't add the inflow terms
     );
 
-    double Evaluate_Full_Traction(const double& pres_m, const LINALG::Matrix<3, 3>& vderxy_m,
-        const double& visc_m, const double& penalty_fac, const LINALG::Matrix<3, 1>& vel_m,
-        const LINALG::Matrix<3, 1>& vel_s, const LINALG::Matrix<3, 1>& elenormal,
-        const LINALG::Matrix<3, 1>& normal, const LINALG::Matrix<3, 1>& velpf_s,
+    double Evaluate_Full_Traction(const double& pres_m, const CORE::LINALG::Matrix<3, 3>& vderxy_m,
+        const double& visc_m, const double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m,
+        const CORE::LINALG::Matrix<3, 1>& vel_s, const CORE::LINALG::Matrix<3, 1>& elenormal,
+        const CORE::LINALG::Matrix<3, 1>& normal, const CORE::LINALG::Matrix<3, 1>& velpf_s,
         double porosity = -1);
 
-    double Evaluate_Full_Traction(const LINALG::Matrix<3, 1>& intraction, const double& penalty_fac,
-        const LINALG::Matrix<3, 1>& vel_m, const LINALG::Matrix<3, 1>& vel_s,
-        const LINALG::Matrix<3, 1>& elenormal, const LINALG::Matrix<3, 1>& normal);
+    double Evaluate_Full_Traction(const CORE::LINALG::Matrix<3, 1>& intraction,
+        const double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m,
+        const CORE::LINALG::Matrix<3, 1>& vel_s, const CORE::LINALG::Matrix<3, 1>& elenormal,
+        const CORE::LINALG::Matrix<3, 1>& normal);
 
     double Evaluate_Full_Traction(const double& intraction, const double& penalty_fac,
-        const LINALG::Matrix<3, 1>& vel_m, const LINALG::Matrix<3, 1>& vel_s,
-        const LINALG::Matrix<3, 1>& elenormal, const LINALG::Matrix<3, 1>& normal);
+        const CORE::LINALG::Matrix<3, 1>& vel_m, const CORE::LINALG::Matrix<3, 1>& vel_s,
+        const CORE::LINALG::Matrix<3, 1>& elenormal, const CORE::LINALG::Matrix<3, 1>& normal);
 
-    void EvaluteStateatGP(const DRT::Element* sele, const LINALG::Matrix<3, 1>& selexsi,
-        const DRT::Discretization& discret, const std::string& state, LINALG::Matrix<3, 1>& vel_s);
+    void EvaluteStateatGP(const DRT::Element* sele, const CORE::LINALG::Matrix<3, 1>& selexsi,
+        const DRT::Discretization& discret, const std::string& state,
+        CORE::LINALG::Matrix<3, 1>& vel_s);
 
   }  // namespace UTILS
 }  // namespace XFEM

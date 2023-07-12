@@ -245,10 +245,10 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FindCycles(Element *element, Cyc
 void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::CorrectRotationDirection(
     const Side *side, std::vector<Cycle> &cycles)
 {
-  LINALG::Matrix<2, 1> rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(side->Shape());
-  LINALG::Matrix<3, 1> normal_side(false);
+  CORE::LINALG::Matrix<2, 1> rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(side->Shape());
+  CORE::LINALG::Matrix<3, 1> normal_side(false);
 
-  LINALG::SerialDenseMatrix xyze_side(3, side->NumNodes());
+  CORE::LINALG::SerialDenseMatrix xyze_side(3, side->NumNodes());
   side->Coordinates(xyze_side);
 
   // get the normal direction of the underlying side
@@ -265,17 +265,17 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::CorrectRotationDirection(
     std::vector<Point *>::const_iterator it_begin = cycle().begin();
     std::vector<Point *>::const_iterator it_end = cycle().end() - 1;
 
-    const LINALG::Matrix<3, 1> x1((*it_begin)->X(), true);
-    const LINALG::Matrix<3, 1> x2((*(++it_begin))->X(), true);
-    const LINALG::Matrix<3, 1> x3((*it_end)->X(), true);
+    const CORE::LINALG::Matrix<3, 1> x1((*it_begin)->X(), true);
+    const CORE::LINALG::Matrix<3, 1> x2((*(++it_begin))->X(), true);
+    const CORE::LINALG::Matrix<3, 1> x3((*it_end)->X(), true);
 
-    LINALG::Matrix<3, 1> x12;
-    LINALG::Matrix<3, 1> x13;
+    CORE::LINALG::Matrix<3, 1> x12;
+    CORE::LINALG::Matrix<3, 1> x13;
 
     x12.Update(1.0, x2, -1.0, x1);
     x13.Update(1.0, x3, -1.0, x1);
 
-    LINALG::Matrix<3, 1> normal_cycle;
+    CORE::LINALG::Matrix<3, 1> normal_cycle;
     normal_cycle.CrossProduct(x12, x13);
 
     // not really necessary, but we do it anyway ...

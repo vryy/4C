@@ -198,13 +198,13 @@ namespace DRT
       void ReassembleMATBlock(const int row_block,  ///< row block
           const int col_block,                      ///< column block
           Epetra_SerialDenseMatrix& mat_block,      ///< matrix block
-          LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
+          CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
               elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
+          CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
               elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
+          CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>&
               elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
+          CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>&
               elematrix_ss,  ///< element matrix slave-slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
@@ -213,10 +213,12 @@ namespace DRT
       );
 
       //! reassemble rhs block from master/slave rhs to patch-node block for field (row)
-      void ReassembleRHSBlock(const int row_block,                ///< row block
-          Epetra_SerialDenseVector& rhs_block,                    ///< rhs block
-          LINALG::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
-          LINALG::Matrix<numdofpernode_ * niel, 1>& elevector_s,  ///< element vector slave block
+      void ReassembleRHSBlock(const int row_block,  ///< row block
+          Epetra_SerialDenseVector& rhs_block,      ///< rhs block
+          CORE::LINALG::Matrix<numdofpernode_ * piel, 1>&
+              elevector_m,  ///< element vector master block
+          CORE::LINALG::Matrix<numdofpernode_ * niel, 1>&
+              elevector_s,  ///< element vector slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
@@ -241,11 +243,11 @@ namespace DRT
 
       //! evaluate shape functions and derivatives at integr. point
       double EvalShapeFuncAndDerivsAtIntPoint(const double wquad,  ///< Gaussian weight
-          const LINALG::Matrix<facensd_, 1>&
+          const CORE::LINALG::Matrix<facensd_, 1>&
               xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               p_xi_gp,  ///< local coordinates of gaussian point w.r.t master element
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               n_xi_gp,              ///< local coordinates of gaussian point w.r.t slave element
           int master_eid,           ///< master parent element
           int slave_eid,            ///< slave parent element
@@ -286,7 +288,7 @@ namespace DRT
       );
 
       //! Provide divergence and streamline (EOS) stabilization assembly for fluid
-      void div_streamline_EOS(const LINALG::Matrix<nsd_, nsd_>&
+      void div_streamline_EOS(const CORE::LINALG::Matrix<nsd_, nsd_>&
               vderxyaf_diff_scaled  ///< difference of velocity gradients * tau x (time factor rhs)
                                     ///< x (integration factor)
       );
@@ -514,7 +516,7 @@ namespace DRT
           double& h_e                      ///< element length w.r.t parent element
       )
       {
-        static LINALG::Matrix<nsd_, numnode> xyz_surf(true);
+        static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
         if (connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
@@ -616,7 +618,7 @@ namespace DRT
           double& h_e                      ///< element length w.r.t parent element
       )
       {
-        static LINALG::Matrix<nsd_, numnode> xyz_surf(true);
+        static CORE::LINALG::Matrix<nsd_, numnode> xyz_surf(true);
         xyz_surf.Clear();
 
         if (connectivity.size() != numnode) dserror("wrong number of nodes for parent's surface");
@@ -673,7 +675,7 @@ namespace DRT
       {
         // matrix that contains the coordinates of the start and end point of the connecting lines
         // between the two opposite surfaces
-        static LINALG::Matrix<nsd_, numlines * 2> xyze_distance_lines;
+        static CORE::LINALG::Matrix<nsd_, numlines * 2> xyze_distance_lines;
         xyze_distance_lines.Clear();
 
         if (master == true)  // is parent element the master element?
@@ -924,105 +926,105 @@ namespace DRT
 
      private:
       // element matrices in block structure master vs. slave
-      LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>
+      CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>
           elematrix_mm_;  ///< element matrix master-master block
-      LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>
+      CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>
           elematrix_ms_;  ///< element matrix master-slave block
-      LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>
+      CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * piel>
           elematrix_sm_;  ///< element matrix slave-master block
-      LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>
+      CORE::LINALG::Matrix<numdofpernode_ * niel, numdofpernode_ * niel>
           elematrix_ss_;  ///< element matrix slave-slave block
 
-      LINALG::Matrix<numdofpernode_ * piel, 1> elevector_m_;  ///< element vector master block
-      LINALG::Matrix<numdofpernode_ * niel, 1> elevector_s_;  ///< element vector slave block
+      CORE::LINALG::Matrix<numdofpernode_ * piel, 1> elevector_m_;  ///< element vector master block
+      CORE::LINALG::Matrix<numdofpernode_ * niel, 1> elevector_s_;  ///< element vector slave block
 
       // nodal arrays
       // ------------
       //! node coordinates of parent (master) element
-      LINALG::Matrix<nsd_, piel> pxyze_;
+      CORE::LINALG::Matrix<nsd_, piel> pxyze_;
       //! array of nodal velocities, intermediate time level
-      LINALG::Matrix<nsd_, piel> pevelaf_;
+      CORE::LINALG::Matrix<nsd_, piel> pevelaf_;
       //! array of nodal grid velocities, time n+1
-      LINALG::Matrix<nsd_, piel> pegridv_;
+      CORE::LINALG::Matrix<nsd_, piel> pegridv_;
       //! array of nodal velocities, new time level
-      LINALG::Matrix<nsd_, piel> pevelnp_;
+      CORE::LINALG::Matrix<nsd_, piel> pevelnp_;
       //! array of nodal advective velocities
-      LINALG::Matrix<nsd_, piel> peconvvelaf_;
+      CORE::LINALG::Matrix<nsd_, piel> peconvvelaf_;
       //! array of nodal pressure, new time level
-      LINALG::Matrix<piel, 1> peprenp_;
+      CORE::LINALG::Matrix<piel, 1> peprenp_;
       //! array of nodal grid displacements, parent element, new time level
-      LINALG::Matrix<nsd_, piel> pedispnp_;
+      CORE::LINALG::Matrix<nsd_, piel> pedispnp_;
       //! array of nodal grid displacements, surface element, new time level
-      LINALG::Matrix<nsd_, piel> edispnp_;
+      CORE::LINALG::Matrix<nsd_, piel> edispnp_;
 
       //! node coordinates of neighbor (slave) element
-      LINALG::Matrix<nsd_, niel> nxyze_;
+      CORE::LINALG::Matrix<nsd_, niel> nxyze_;
       //! array of nodal velocities, intermediate time level
-      LINALG::Matrix<nsd_, niel> nevelaf_;
+      CORE::LINALG::Matrix<nsd_, niel> nevelaf_;
       //! array of nodal grid velocities, time n+1
-      LINALG::Matrix<nsd_, niel> negridv_;
+      CORE::LINALG::Matrix<nsd_, niel> negridv_;
       //! array of nodal velocities, new time level
-      LINALG::Matrix<nsd_, niel> nevelnp_;
+      CORE::LINALG::Matrix<nsd_, niel> nevelnp_;
       //! array of nodal advective velocities
-      LINALG::Matrix<nsd_, niel> neconvvelaf_;
+      CORE::LINALG::Matrix<nsd_, niel> neconvvelaf_;
       //! array of nodal pressure, new time level
-      LINALG::Matrix<niel, 1> neprenp_;
+      CORE::LINALG::Matrix<niel, 1> neprenp_;
       //! array of nodal grid displacements, neighbor element, new time level
-      LINALG::Matrix<nsd_, niel> nedispnp_;
+      CORE::LINALG::Matrix<nsd_, niel> nedispnp_;
 
       //! node coordinates of boundary element
-      LINALG::Matrix<nsd_, iel> xyze_;
+      CORE::LINALG::Matrix<nsd_, iel> xyze_;
 
       //! linearisation of convection, convective part for parent element
-      LINALG::Matrix<piel, 1> p_conv_c;
+      CORE::LINALG::Matrix<piel, 1> p_conv_c;
       //! linearisation of convection, convective part for neighbor element
-      LINALG::Matrix<niel, 1> n_conv_c;
+      CORE::LINALG::Matrix<niel, 1> n_conv_c;
 
 
       // shape functions and derivatives, mapping from reference element to actual geometry
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<nsd_, nsd_> pxjm_;
+      CORE::LINALG::Matrix<nsd_, nsd_> pxjm_;
       //! its inverse
-      LINALG::Matrix<nsd_, nsd_> pxji_;
+      CORE::LINALG::Matrix<nsd_, nsd_> pxji_;
       //! vector of shape functions, parent element
-      LINALG::Matrix<piel, 1> pfunct_;
+      CORE::LINALG::Matrix<piel, 1> pfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      LINALG::Matrix<nsd_, piel> pderiv_;
+      CORE::LINALG::Matrix<nsd_, piel> pderiv_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::Matrix<nsd_, piel> pderxy_;
+      CORE::LINALG::Matrix<nsd_, piel> pderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      LINALG::Matrix<numderiv2_p, piel> pderiv2_;
+      CORE::LINALG::Matrix<numderiv2_p, piel> pderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      LINALG::Matrix<numderiv2_p, piel> pderxy2_;
+      CORE::LINALG::Matrix<numderiv2_p, piel> pderxy2_;
 
       // ----------------------------------------------------------------------------------
       //! transpose of the jacobian matrix of the mapping (r,s,t)->(x,y,z)
-      LINALG::Matrix<nsd_, nsd_> nxjm_;
+      CORE::LINALG::Matrix<nsd_, nsd_> nxjm_;
       //! its inverse
-      LINALG::Matrix<nsd_, nsd_> nxji_;
+      CORE::LINALG::Matrix<nsd_, nsd_> nxji_;
       //! vector of shape functions, parent element
-      LINALG::Matrix<niel, 1> nfunct_;
+      CORE::LINALG::Matrix<niel, 1> nfunct_;
       //! vector of shape function derivatives in reference coordinate system, parent element
-      LINALG::Matrix<nsd_, niel> nderiv_;
+      CORE::LINALG::Matrix<nsd_, niel> nderiv_;
       //! vector of shape function derivatives in global coordinate system
-      LINALG::Matrix<nsd_, niel> nderxy_;
+      CORE::LINALG::Matrix<nsd_, niel> nderxy_;
       //! vector of shape function (2nd) derivatives in reference coordinate system, parent element
-      LINALG::Matrix<numderiv2_n, niel> nderiv2_;
+      CORE::LINALG::Matrix<numderiv2_n, niel> nderiv2_;
       //! vector of shape function (2nd) derivatives in global coordinate system
-      LINALG::Matrix<numderiv2_n, niel> nderxy2_;
+      CORE::LINALG::Matrix<numderiv2_n, niel> nderxy2_;
 
 
       //! vector of shape functions, boundary element
-      LINALG::Matrix<iel, 1> funct_;
+      CORE::LINALG::Matrix<iel, 1> funct_;
       //! vector of shape function derivatives in reference coordinate system, boundary element
-      LINALG::Matrix<facensd_, iel> deriv_;
+      CORE::LINALG::Matrix<facensd_, iel> deriv_;
       //! normal vector on surface element (outward pointing from parent element)
-      LINALG::Matrix<nsd_, 1> n_;
+      CORE::LINALG::Matrix<nsd_, 1> n_;
       //! derivatives of surface in all reference directions
-      LINALG::Matrix<facensd_, nsd_> dxyzdrs_;
+      CORE::LINALG::Matrix<facensd_, nsd_> dxyzdrs_;
       //! the metric tensor
-      LINALG::Matrix<facensd_, facensd_> metrictensor_;
+      CORE::LINALG::Matrix<facensd_, facensd_> metrictensor_;
       //! the area of an infintesimal surface element
       double drs_;
 
@@ -1032,64 +1034,64 @@ namespace DRT
       // ---------------------------------------------------
 
       //! local coordinates w.r.t face
-      LINALG::Matrix<facensd_, 1> xsi_;
+      CORE::LINALG::Matrix<facensd_, 1> xsi_;
       //! velocity in gausspoint, time n+af
-      LINALG::Matrix<nsd_, 1> velintaf_;
+      CORE::LINALG::Matrix<nsd_, 1> velintaf_;
       //! velocity in gausspoint, time n+1
-      LINALG::Matrix<nsd_, 1> velintnp_;
+      CORE::LINALG::Matrix<nsd_, 1> velintnp_;
       //! grid velocity in gausspoint, time n+1 (master side, for ALE-fluid)
-      LINALG::Matrix<nsd_, 1> gridvelint_;
+      CORE::LINALG::Matrix<nsd_, 1> gridvelint_;
       //! convective velocity in gausspoint, time n+1 (master side, for ALE-fluid)
-      LINALG::Matrix<nsd_, 1> convvelint_;
+      CORE::LINALG::Matrix<nsd_, 1> convvelint_;
       //! parent velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<nsd_, nsd_> pvderxyaf_;
+      CORE::LINALG::Matrix<nsd_, nsd_> pvderxyaf_;
       //! neighbor velocity derivatives in gausspoint, time n+af
-      LINALG::Matrix<nsd_, nsd_> nvderxyaf_;
+      CORE::LINALG::Matrix<nsd_, nsd_> nvderxyaf_;
       //! parent velocity derivatives in gausspoint, time n+1
-      LINALG::Matrix<nsd_, nsd_> pvderxynp_;
+      CORE::LINALG::Matrix<nsd_, nsd_> pvderxynp_;
       //! neighbor velocity derivatives in gausspoint, time n+1
-      LINALG::Matrix<nsd_, nsd_> nvderxynp_;
+      CORE::LINALG::Matrix<nsd_, nsd_> nvderxynp_;
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<nsd_, numderiv2_p> pvderxy2af_;
+      CORE::LINALG::Matrix<nsd_, numderiv2_p> pvderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<nsd_, numderiv2_n> nvderxy2af_;
+      CORE::LINALG::Matrix<nsd_, numderiv2_n> nvderxy2af_;
 
       //! parent velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<1, numderiv2_p> ppderxy2af_;
+      CORE::LINALG::Matrix<1, numderiv2_p> ppderxy2af_;
       //! neighbor velocity (2nd) derivatives in gausspoint, time n+af
-      LINALG::Matrix<1, numderiv2_n> npderxy2af_;
+      CORE::LINALG::Matrix<1, numderiv2_n> npderxy2af_;
 
       //! velocity gradient difference, time n+af
-      LINALG::Matrix<nsd_, nsd_> vderxyaf_diff_;
+      CORE::LINALG::Matrix<nsd_, nsd_> vderxyaf_diff_;
       //! velocity gradient difference, time n+1
-      LINALG::Matrix<nsd_, nsd_> vderxynp_diff_;
+      CORE::LINALG::Matrix<nsd_, nsd_> vderxynp_diff_;
 
 
       //! pressure in gausspoint, time n+1
       double prenp_;
       //! parent pressure derivatives in gausspoint, time n+1
-      LINALG::Matrix<nsd_, 1> pprederxy_;
+      CORE::LINALG::Matrix<nsd_, 1> pprederxy_;
       //! neighbor velocity derivatives in gausspoint, time n+1
-      LINALG::Matrix<nsd_, 1> nprederxy_;
+      CORE::LINALG::Matrix<nsd_, 1> nprederxy_;
 
-      LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_;
-      LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfac_;
-      LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfacpre_;
+      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_;
+      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfac_;
+      CORE::LINALG::Matrix<piel, piel> pderiv_dyad_pderiv_tau_timefacfacpre_;
 
-      LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_;
-      LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfac_;
-      LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfacpre_;
+      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_;
+      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfac_;
+      CORE::LINALG::Matrix<piel, niel> pderiv_dyad_nderiv_tau_timefacfacpre_;
 
-      LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_;
-      LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfac_;
-      LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfacpre_;
+      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_;
+      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfac_;
+      CORE::LINALG::Matrix<niel, niel> nderiv_dyad_nderiv_tau_timefacfacpre_;
 
       //! vector of shape function derivatives in global coordinate system scaled with
       //! tau_timefacfac
-      LINALG::Matrix<nsd_, piel> pderxy_tau_timefacfac_;
+      CORE::LINALG::Matrix<nsd_, piel> pderxy_tau_timefacfac_;
       //! vector of shape function derivatives in global coordinate system scaled with
       //! tau_timefacfac
-      LINALG::Matrix<nsd_, niel> nderxy_tau_timefacfac_;
+      CORE::LINALG::Matrix<nsd_, niel> nderxy_tau_timefacfac_;
 
 
       //! face/edge integration points
@@ -1104,9 +1106,9 @@ namespace DRT
       Epetra_SerialDenseMatrix face_xi_points_slave_;
 
 
-      LINALG::Matrix<facensd_, 1> face_xi_gp_;
-      LINALG::Matrix<nsd_, 1> p_xi_gp_;
-      LINALG::Matrix<nsd_, 1> n_xi_gp_;
+      CORE::LINALG::Matrix<facensd_, 1> face_xi_gp_;
+      CORE::LINALG::Matrix<nsd_, 1> p_xi_gp_;
+      CORE::LINALG::Matrix<nsd_, 1> n_xi_gp_;
 
       // element, side, line connectivity
       // ---------------------------------------------------

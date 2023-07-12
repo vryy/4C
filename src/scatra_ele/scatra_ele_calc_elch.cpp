@@ -88,7 +88,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
 
   // stabilization variables
   std::vector<double> tau(my::numscal_, 0.);
-  std::vector<LINALG::Matrix<nen_, 1>> tauderpot(my::numscal_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> tauderpot(
+      my::numscal_, CORE::LINALG::Matrix<nen_, 1>(true));
 
   if (not my::scatrapara_->MatGP() or not my::scatrapara_->TauGP())
   {

@@ -86,7 +86,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, owner), data_()
 {
-  invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
+  invJ_.resize(NUMGPT_SONURBS27, CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
   SetNurbsElement() = true;
 
@@ -183,7 +183,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   if (position != data.size())

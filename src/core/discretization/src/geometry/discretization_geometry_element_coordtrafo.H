@@ -26,10 +26,10 @@ namespace CORE::GEO
    *----------------------------------------------------------------------*/
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   static inline void elementToCurrentCoordinatesInPlaceT(
-      const M& xyze, LINALG::Matrix<3, 1>& eleCoord)
+      const M& xyze, CORE::LINALG::Matrix<3, 1>& eleCoord)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<numNodes, 1> funct;
+    static CORE::LINALG::Matrix<numNodes, 1> funct;
 
     CORE::DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
 
@@ -49,7 +49,7 @@ namespace CORE::GEO
   template <class M>
   static inline void elementToCurrentCoordinatesInPlace(
       const ::DRT::Element::DiscretizationType distype, const M& xyze,
-      LINALG::Matrix<3, 1>& eleCoord)
+      CORE::LINALG::Matrix<3, 1>& eleCoord)
   {
     switch (distype)
     {
@@ -118,10 +118,10 @@ namespace CORE::GEO
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class V, class M, unsigned probDim>
   static inline void elementToCurrentCoordinatesT(
-      const M& xyze, const V& xsi, LINALG::Matrix<probDim, 1>& x)
+      const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<numNodes, 1> funct;
+    static CORE::LINALG::Matrix<numNodes, 1> funct;
 
     CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
@@ -145,7 +145,7 @@ namespace CORE::GEO
   */
   template <class V, class M, unsigned probDim>
   static inline void elementToCurrentCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze, const V& xsi, LINALG::Matrix<probDim, 1>& x)
+      const M& xyze, const V& xsi, CORE::LINALG::Matrix<probDim, 1>& x)
   {
     switch (distype)
     {
@@ -274,7 +274,7 @@ namespace CORE::GEO
   template <::DRT::Element::DiscretizationType distype, class M1, class V3>
   static inline bool FastInitialGuess(const M1& xyze,  ///< nodal position array
       const V3& x,                                     ///< (x,y,z)
-      LINALG::Matrix<3, 1>& xsi)                       ///< initial guess for xsi
+      CORE::LINALG::Matrix<3, 1>& xsi)                 ///< initial guess for xsi
   {
     switch (distype)
     {
@@ -283,9 +283,9 @@ namespace CORE::GEO
       case ::DRT::Element::hex27:
       {
         // split hex element into 5 tetrahedra in order to obtain a good initial guess
-        static LINALG::Matrix<4, 4> A_tet;
-        static LINALG::Matrix<4, 1> b_tet;
-        static LINALG::Matrix<4, 1> x_tet;
+        static CORE::LINALG::Matrix<4, 4> A_tet;
+        static CORE::LINALG::Matrix<4, 1> b_tet;
+        static CORE::LINALG::Matrix<4, 1> x_tet;
 
 
         // first tet 1 3 4 6 + fourth row filled with ones
@@ -315,7 +315,7 @@ namespace CORE::GEO
         b_tet(2) = x(2);
         b_tet(3) = 1.0;
 
-        double det = LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
+        double det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
         if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
 
         bool inside = true;
@@ -365,7 +365,7 @@ namespace CORE::GEO
         b_tet(2) = x(2);
         b_tet(3) = 1.0;
 
-        det = LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
+        det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
         if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
 
         inside = true;
@@ -415,7 +415,7 @@ namespace CORE::GEO
         b_tet(2) = x(2);
         b_tet(3) = 1.0;
 
-        det = LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
+        det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
         if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
 
         inside = true;
@@ -465,7 +465,7 @@ namespace CORE::GEO
         b_tet(2) = x(2);
         b_tet(3) = 1.0;
 
-        det = LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
+        det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
         if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
 
         inside = true;
@@ -515,7 +515,7 @@ namespace CORE::GEO
         b_tet(2) = x(2);
         b_tet(3) = 1.0;
 
-        det = LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
+        det = CORE::LINALG::gaussElimination<true, 4>(A_tet, b_tet, x_tet);
         if (fabs(det) < 1E-14) dserror("determinant is near zero %d", det);
 
         inside = true;
@@ -679,7 +679,7 @@ namespace CORE::GEO
   )
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<dim, numNodes> deriv1;
+    static CORE::LINALG::Matrix<dim, numNodes> deriv1;
     CORE::DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
     A.Clear();
@@ -705,7 +705,7 @@ namespace CORE::GEO
   )
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<numNodes, 1> funct;
+    static CORE::LINALG::Matrix<numNodes, 1> funct;
     funct.Clear();
     CORE::DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
 
@@ -731,7 +731,7 @@ namespace CORE::GEO
   template <::DRT::Element::DiscretizationType DISTYPE, class M1, class V3>
   static inline bool currentToVolumeElementCoordinatesT(const M1& xyze,  ///< nodal position array
       const V3& x,                                                       ///< (x,y,z)
-      LINALG::Matrix<3, 1>& xsi,                                         ///< (r,s,t)
+      CORE::LINALG::Matrix<3, 1>& xsi,                                   ///< (r,s,t)
       bool fastinitguess)  ///< enhanced intitial guess
   {
     // REMARK: This function seemed to deliver wrong results!
@@ -755,9 +755,9 @@ namespace CORE::GEO
     const int maxiter = 20;  // 40;
     double residual = 1.0;
 
-    static LINALG::Matrix<3, 3> A;
-    static LINALG::Matrix<3, 1> b;
-    static LINALG::Matrix<3, 1> dx;
+    static CORE::LINALG::Matrix<3, 3> A;
+    static CORE::LINALG::Matrix<3, 1> b;
+    static CORE::LINALG::Matrix<3, 1> dx;
 
     A.Clear();
     b.Clear();
@@ -788,7 +788,7 @@ namespace CORE::GEO
     // Row_Scaling = | 0  s_2  0 |
     //               | 0   0  s_3|
 
-    LINALG::Matrix<3, 1> scale_vector;
+    CORE::LINALG::Matrix<3, 1> scale_vector;
     //  for(int i=0; i<(int)xyze.N(); ++i)
     //    for(int j=0; j<(int)xyze.M(); ++j)
     for (int i = 0; i < (int)nen; ++i)
@@ -815,7 +815,7 @@ namespace CORE::GEO
     {
       updateAForNWE<DISTYPE, dim>(A, xsi, xyze_scaled);
 
-      double det = LINALG::gaussElimination<true, 3>(A, b, dx);
+      double det = CORE::LINALG::gaussElimination<true, 3>(A, b, dx);
 
       if (fabs(det) < CORE::GEO::TOL14)
       {
@@ -856,7 +856,7 @@ namespace CORE::GEO
    *  \note If \c fastinitguess == TRUE this is just an approximation and can be incorrect */
   template <class M1, class V3>
   bool currentToVolumeElementCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M1& xyze, const V3& x, LINALG::Matrix<3, 1>& xsi, bool fastinitguess = false)
+      const M1& xyze, const V3& x, CORE::LINALG::Matrix<3, 1>& xsi, bool fastinitguess = false)
   {
     bool nodeWithinElement = false;
 
@@ -911,11 +911,11 @@ namespace CORE::GEO
    |      into element coordinates                                        |
    *----------------------------------------------------------------------*/
   template <class M1, class V3>
-  LINALG::Matrix<3, 1> currentToVolumeElementCoordinatesExact(
+  CORE::LINALG::Matrix<3, 1> currentToVolumeElementCoordinatesExact(
       const ::DRT::Element::DiscretizationType distype, const M1& xyze, const V3& x,
       const double tol)
   {
-    LINALG::Matrix<3, 1> xsi;
+    CORE::LINALG::Matrix<3, 1> xsi;
     currentToVolumeElementCoordinates(distype, xyze, x, xsi);
 
     switch (distype)
@@ -994,12 +994,12 @@ namespace CORE::GEO
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
-  static inline void updateJacobianForMap3To2(
-      LINALG::Matrix<3, 2>& Jacobi, const LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
+  static inline void updateJacobianForMap3To2(CORE::LINALG::Matrix<3, 2>& Jacobi,
+      const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    static LINALG::Matrix<2, numNodes> deriv1;
+    static CORE::LINALG::Matrix<2, numNodes> deriv1;
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
 
     Jacobi.Clear();
@@ -1022,11 +1022,12 @@ namespace CORE::GEO
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
-  static inline void updateFForMap3To2(LINALG::Matrix<3, 1>& F, const LINALG::Matrix<2, 1>& xsi,
-      const LINALG::Matrix<3, 1>& x, const M& xyze_surfaceElement)
+  static inline void updateFForMap3To2(CORE::LINALG::Matrix<3, 1>& F,
+      const CORE::LINALG::Matrix<2, 1>& xsi, const CORE::LINALG::Matrix<3, 1>& x,
+      const M& xyze_surfaceElement)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<numNodes, 1> funct;
+    static CORE::LINALG::Matrix<numNodes, 1> funct;
     CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
 
     F.Clear();
@@ -1050,15 +1051,16 @@ namespace CORE::GEO
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
-  static void updateAForMap3To2(LINALG::Matrix<2, 2>& A, const LINALG::Matrix<3, 2>& Jacobi,
-      const LINALG::Matrix<3, 1>& F, const LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
+  static void updateAForMap3To2(CORE::LINALG::Matrix<2, 2>& A,
+      const CORE::LINALG::Matrix<3, 2>& Jacobi, const CORE::LINALG::Matrix<3, 1>& F,
+      const CORE::LINALG::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static LINALG::Matrix<3, numNodes> deriv2;
+    static CORE::LINALG::Matrix<3, numNodes> deriv2;
     CORE::DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
-    static LINALG::Matrix<3, 4> tensor3order;
+    static CORE::LINALG::Matrix<3, 4> tensor3order;
     tensor3order.Clear();
 
     for (int i = 0; i < 3; ++i)
@@ -1089,7 +1091,7 @@ namespace CORE::GEO
    */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   static void currentToSurfaceElementCoordinatesT(const M& xyze_surfaceElement,
-      const LINALG::Matrix<3, 1>& physCoord, LINALG::Matrix<2, 1>& eleCoord)
+      const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<2, 1>& eleCoord)
   {
     startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
 
@@ -1100,11 +1102,11 @@ namespace CORE::GEO
       iter++;
 
       // compute Jacobian, f and b
-      static LINALG::Matrix<3, 2> Jacobi;
-      static LINALG::Matrix<3, 1> F;
+      static CORE::LINALG::Matrix<3, 2> Jacobi;
+      static CORE::LINALG::Matrix<3, 1> F;
       updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
       updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
-      static LINALG::Matrix<2, 1> b;
+      static CORE::LINALG::Matrix<2, 1> b;
       b.Clear();
 
       for (int i = 0; i < 2; ++i)
@@ -1117,13 +1119,13 @@ namespace CORE::GEO
       }
 
       // compute system matrix A
-      static LINALG::Matrix<2, 2> A;
+      static CORE::LINALG::Matrix<2, 2> A;
       updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
 
-      static LINALG::Matrix<2, 1> dx;
+      static CORE::LINALG::Matrix<2, 1> dx;
       dx = 0.0;
 
-      double det = LINALG::gaussElimination<true, 2>(A, b, dx);
+      double det = CORE::LINALG::gaussElimination<true, 2>(A, b, dx);
 
       if (fabs(det) < CORE::GEO::TOL14)
       {
@@ -1148,8 +1150,8 @@ namespace CORE::GEO
    *----------------------------------------------------------------------*/
   template <class M>
   static void CurrentToSurfaceElementCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze_surfaceElement, const LINALG::Matrix<3, 1>& physCoord,
-      LINALG::Matrix<2, 1>& eleCoord)
+      const M& xyze_surfaceElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
+      CORE::LINALG::Matrix<2, 1>& eleCoord)
   {
     switch (distype)
     {
@@ -1193,7 +1195,7 @@ namespace CORE::GEO
    */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
-      const LINALG::Matrix<3, 1>& physCoord, LINALG::Matrix<1, 1>& eleCoord)
+      const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<1, 1>& eleCoord)
   {
     const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
@@ -1209,21 +1211,21 @@ namespace CORE::GEO
       iter++;
 
       // determine shapefunction, 1. and 2. derivative at current solutiom
-      static LINALG::Matrix<numNodes, 1> funct;
+      static CORE::LINALG::Matrix<numNodes, 1> funct;
       CORE::DRT::UTILS::shape_function_1D(funct, eleCoord(0), DISTYPE);
 
-      static LINALG::Matrix<1, numNodes> deriv1;
+      static CORE::LINALG::Matrix<1, numNodes> deriv1;
       CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
 
-      static LINALG::Matrix<1, numNodes> deriv2;
+      static CORE::LINALG::Matrix<1, numNodes> deriv2;
       CORE::DRT::UTILS::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
 
       // compute nonlinear system
-      static LINALG::Matrix<3, 1> F;
+      static CORE::LINALG::Matrix<3, 1> F;
       // compute first derivative of r
-      static LINALG::Matrix<3, 1> F_deriv1;
+      static CORE::LINALG::Matrix<3, 1> F_deriv1;
       // compute first derivative of r
-      static LINALG::Matrix<3, 1> F_deriv2;
+      static CORE::LINALG::Matrix<3, 1> F_deriv2;
 
       F.Clear();
       F_deriv1.Clear();
@@ -1279,8 +1281,8 @@ namespace CORE::GEO
    *----------------------------------------------------------------------*/
   template <class M>
   static void CurrentToLineElementCoordinates(const ::DRT::Element::DiscretizationType distype,
-      const M& xyze_lineElement, const LINALG::Matrix<3, 1>& physCoord,
-      LINALG::Matrix<1, 1>& eleCoord)
+      const M& xyze_lineElement, const CORE::LINALG::Matrix<3, 1>& physCoord,
+      CORE::LINALG::Matrix<1, 1>& eleCoord)
   {
     switch (distype)
     {
@@ -1307,10 +1309,10 @@ namespace CORE::GEO
   // template <::DRT::Element::DiscretizationType DISTYPE>
   template <::DRT::Element::DiscretizationType DISTYPE>
   static bool ComputeLocalCoordinates(
-      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
-      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
-      LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& x,
+      CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, 1>& xsi)
   {
     bool inelement = true;
 
@@ -1320,17 +1322,17 @@ namespace CORE::GEO
     const int maxiter = 20;
     double residual = 1.0;
 
-    LINALG::Matrix<nsd_, nsd_> A(true);
-    LINALG::Matrix<nsd_, nsd_> A_inv(true);
+    CORE::LINALG::Matrix<nsd_, nsd_> A(true);
+    CORE::LINALG::Matrix<nsd_, nsd_> A_inv(true);
 
-    LINALG::Matrix<nsd_, 1> b(true);
-    LINALG::Matrix<nsd_, 1> dx(true);
+    CORE::LINALG::Matrix<nsd_, 1> b(true);
+    CORE::LINALG::Matrix<nsd_, 1> dx(true);
 
     // initialize != 0
     dx(0) = 1.0;
 
-    LINALG::Matrix<numNodes, 1> funct(true);
-    LINALG::Matrix<nsd_, numNodes> deriv1(true);
+    CORE::LINALG::Matrix<numNodes, 1> funct(true);
+    CORE::LINALG::Matrix<nsd_, numNodes> deriv1(true);
 
 
     // initial guess

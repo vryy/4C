@@ -524,7 +524,7 @@ int CORE::GEO::CUT::VolumeIntegration::pnpoly(
 ???
 *--------------------------------------------------------------------------------------------------------------------*/
 int CORE::GEO::CUT::VolumeIntegration::pnpoly(const std::vector<std::vector<double>> &xp,
-    const LINALG::Matrix<3, 1> &pt, CORE::GEO::CUT::ProjectionDirection projType)
+    const CORE::LINALG::Matrix<3, 1> &pt, CORE::GEO::CUT::ProjectionDirection projType)
 {
   int npol = xp.size();
   int ind1 = 1, ind2 = 2;
@@ -1086,7 +1086,7 @@ void CORE::GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(
  * Check whether the point with this element Local coordinates is inside,              *
  * outside or on boundary of this volumecell                            sudhakar 07/12 *
  *-------------------------------------------------------------------------------------*/
-std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(LINALG::Matrix<3, 1> &rst)
+std::string CORE::GEO::CUT::VolumeIntegration::IsPointInside(CORE::LINALG::Matrix<3, 1> &rst)
 {
   const plain_facet_set &facete = volcell_->Facets();
 

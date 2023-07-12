@@ -55,7 +55,7 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
-    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<LINALG::SparseOperator>& A)
+    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
     : isinit_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
       xVector_(NULL),
@@ -68,7 +68,7 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Problem::Initialize(
-    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<LINALG::SparseOperator>& A)
+    const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient

@@ -45,7 +45,7 @@ namespace POROMULTIPHASESCATRA
         std::vector<DRT::Condition*> coupcond, unsigned int couplingnode);
 
     //! get global extractor
-    const Teuchos::RCP<LINALG::MultiMapExtractor>& GlobalExtractor() const;
+    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>& GlobalExtractor() const;
 
     //! check if initial fields on coupled DOFs are equal
     virtual void CheckInitialFields(
@@ -61,16 +61,16 @@ namespace POROMULTIPHASESCATRA
     virtual void PrintOutCouplingMethod() const = 0;
 
     //! Evaluate the 1D-3D coupling
-    virtual void Evaluate(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs) = 0;
+    virtual void Evaluate(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
-    virtual void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-        Teuchos::RCP<const Epetra_Vector> rhs_art,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) = 0;
+    virtual void SetupSystem(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art,
+        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+        Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art) = 0;
 
     //! set solution vectors of single fields
     virtual void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
@@ -135,7 +135,7 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! global extractor
-    Teuchos::RCP<LINALG::MultiMapExtractor> globalex_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> globalex_;
 
     //! myrank
     const int myrank_;

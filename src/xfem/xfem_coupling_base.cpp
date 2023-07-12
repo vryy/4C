@@ -486,8 +486,8 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   }
 }
 
-void XFEM::CouplingBase::EvaluateDirichletFunction(LINALG::Matrix<3, 1>& ivel,
-    const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+void XFEM::CouplingBase::EvaluateDirichletFunction(CORE::LINALG::Matrix<3, 1>& ivel,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
 
@@ -498,8 +498,8 @@ void XFEM::CouplingBase::EvaluateDirichletFunction(LINALG::Matrix<3, 1>& ivel,
   ivel(2, 0) = final_values[2];
 }
 
-void XFEM::CouplingBase::EvaluateNeumannFunction(LINALG::Matrix<3, 1>& itraction,
-    const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
 {
   std::vector<double> final_values(3, 0.0);
 
@@ -517,8 +517,8 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(LINALG::Matrix<3, 1>& itraction
   itraction(2, 0) = final_values[2];
 }
 
-void XFEM::CouplingBase::EvaluateNeumannFunction(LINALG::Matrix<6, 1>& itraction,
-    const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
+void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond, double time)
 {
   std::vector<double> final_values(6, 0.0);
 

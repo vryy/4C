@@ -11,7 +11,6 @@ set(_immersed_problem_dependencies
     inpar
     io
     lib
-    linalg
     mortar
     structure
     )

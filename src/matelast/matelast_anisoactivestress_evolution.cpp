@@ -87,11 +87,12 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::PostSetup(Teuchos::ParameterList
 }
 
 void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
-    const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    Teuchos::ParameterList& params, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& rcg, CORE::LINALG::Matrix<6, 6>& cmat,
+    CORE::LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   // Virtual GP (is zero for element fibers, otherwise it is the current GP)
-  LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
+  CORE::LINALG::Matrix<6, 1> A = anisotropyExtension_.GetStructuralTensor_stress(gp, 0);
 
   double dt = params.get("delta time", -1.0);
   if (dt < 0.0)
@@ -195,7 +196,7 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
 }
 
 void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   if (params_->init_ == DefaultAnisotropyExtension<1>::INIT_MODE_NODAL_FIBERS)
@@ -214,8 +215,8 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
 // Update internal stress variables
 void MAT::ELASTIC::AnisoActiveStress_Evolution::Update() { tauc_n_ = tauc_np_; }
 
-void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }

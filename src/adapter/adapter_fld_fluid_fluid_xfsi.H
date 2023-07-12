@@ -28,7 +28,7 @@ namespace ADAPTER
     /// Constructor
     FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,
         const std::string coupling_name_xfsi,  // name of the FSI coupling condition
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// initialize algorithm

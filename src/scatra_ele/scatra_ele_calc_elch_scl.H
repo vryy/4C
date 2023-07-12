@@ -49,7 +49,7 @@ namespace DRT
       void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
           const int k, const double fac, const double timefacfac, const double rhsfac,
           const double taufac, const double timetaufac, const double rhstaufac,
-          LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint) override;
+          CORE::LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint) override;
 
       //! CalcMat: Coulomb's equation (no source)
       //!
@@ -61,7 +61,7 @@ namespace DRT
       //! \param epsilon  dielectric permittivity of bulk electrolyte
 
       void CalcMatPotCoulomb(Epetra_SerialDenseMatrix& emat, double timefacfac, double invf,
-          double scalefac, const LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
+          double scalefac, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
 
       //! CalcRhs: Coulomb's equation (no source)
       //!
@@ -73,7 +73,7 @@ namespace DRT
       //! \param gradpot  gradient of electric potential
       //! \param epsilon dielectric permittitivity of bulk electrolyte
       void CalcRhsPotCoulomb(Epetra_SerialDenseVector& erhs, double fac, double invf,
-          double cond_invperm, const LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
+          double cond_invperm, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
 
       //! CalcRhs: Source contribution to electric potential (free charge)
       //!
@@ -107,7 +107,7 @@ namespace DRT
       //! \param gradphi  ector of scalar gradients at t_(n+1)
       void CalcRhsDiffCur(Epetra_SerialDenseVector& erhs, double rhsfac,
           const std::vector<double>& invfval,
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi);
+          const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
 
       //! CalcMat: Calculate diffusion contribution to current
       //!
@@ -117,7 +117,7 @@ namespace DRT
       //! \param gradphi  vector of scalar gradients at t_(n+1)
       void CalcMatDiffCur(Epetra_SerialDenseMatrix& emat, double timefacfac,
           const std::vector<double>& invfval,
-          const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi);
+          const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
 
       void CalcMatAndRhsOutsideScalarLoop(Epetra_SerialDenseMatrix& emat,
           Epetra_SerialDenseVector& erhs, const double fac, const double timefacfac,
@@ -312,7 +312,7 @@ namespace DRT
       /*========================================================================*/
 
       //! current density at Gauss point
-      LINALG::Matrix<NSD, 1> curint_;
+      CORE::LINALG::Matrix<NSD, 1> curint_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

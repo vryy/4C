@@ -307,12 +307,14 @@ namespace DRT
       int HowManyRandomNumbersINeed();
 
       /// \brief get generalized interpolation matrix which yields the variation of the position
-      virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(LINALG::SerialDenseMatrix& Ivar,
-          const double& dummy1, const std::vector<double>& dummy2) const;
+      virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
+          CORE::LINALG::SerialDenseMatrix& Ivar, const double& dummy1,
+          const std::vector<double>& dummy2) const;
 
       /// \brief get generalized interpolation matrix which yields the increments of the position
-      virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(LINALG::SerialDenseMatrix& Iinc,
-          const double& dummy1, const std::vector<double>& dummy2) const;
+      virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
+          CORE::LINALG::SerialDenseMatrix& Iinc, const double& dummy1,
+          const std::vector<double>& dummy2) const;
 
       /** \brief get linearization of the product of (generalized interpolation matrix for
        * variations (see above) and applied force vector) with respect to the primary DoFs of this
@@ -321,8 +323,8 @@ namespace DRT
        *  \author grill
        *  \date 01/17 */
       virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
-          LINALG::SerialDenseMatrix& stiffmat, const double& xi, const std::vector<double>& disp,
-          const LINALG::SerialDenseVector& force) const
+          CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
+          const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
       {
         // nothing to do here
         stiffmat.Zero();
@@ -475,7 +477,7 @@ namespace DRT
 
       //! calculation of background fluid velocity and gradient of velocity
       void GetBackgroundVelocity(Teuchos::ParameterList& params,
-          LINALG::Matrix<3, 1>& velbackground, LINALG::Matrix<3, 3>& velbackgroundgrad);
+          CORE::LINALG::Matrix<3, 1>& velbackground, CORE::LINALG::Matrix<3, 3>& velbackgroundgrad);
 
       //! computes damping coefficient
       double MyDampingConstant();

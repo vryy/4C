@@ -126,7 +126,7 @@ namespace FSI
 
 
       /// calculate current position of structure interface nodes
-      std::map<int, LINALG::Matrix<3, 1>> CurrentStructPos(
+      std::map<int, CORE::LINALG::Matrix<3, 1>> CurrentStructPos(
           Teuchos::RCP<Epetra_Vector> reddisp,  ///< redundant version of structure displacements
           DRT::Discretization& interfacedis,    ///< interface discretization
           std::map<int, double>& maxcoord);

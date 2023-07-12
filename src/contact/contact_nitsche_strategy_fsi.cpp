@@ -20,7 +20,7 @@
 #include "mortar_projector.H"
 
 void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
@@ -49,7 +49,7 @@ void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
 }
 
 bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement* cele,
-    const LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
+    const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   return CONTACT::UTILS::CheckNitscheContactState(
       *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
@@ -57,7 +57,7 @@ bool CONTACT::CoNitscheStrategyFsi::CheckNitscheContactState(CONTACT::CoElement*
 
 bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinterface,
     const double& pen_n, INPAR::CONTACT::NitscheWeighting weighting, CONTACT::CoElement* cele,
-    const LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
+    const CORE::LINALG::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   // No master elements found
   if (!cele->MoData().NumSearchElements())
@@ -101,7 +101,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     if (other_cele)
     {
       double center[2] = {0., 0.};
-      LINALG::Matrix<3, 1> sc, mc;
+      CORE::LINALG::Matrix<3, 1> sc, mc;
       cele->LocalToGlobal(center, sc.A(), 0);
       other_cele->LocalToGlobal(center, mc.A(), 0);
       near = 2. * std::max(cele->MaxEdgeSize(), other_cele->MaxEdgeSize());
@@ -113,7 +113,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
   if (other_cele)
   {
     double center[2] = {0., 0.};
-    LINALG::Matrix<3, 1> sn, mn;
+    CORE::LINALG::Matrix<3, 1> sn, mn;
     cele->ComputeUnitNormalAtXi(center, sn.A());
     other_cele->ComputeUnitNormalAtXi(center, mn.A());
     if (sn.Dot(mn) > 0.) other_cele = nullptr;
@@ -125,20 +125,20 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     return true;
   }
 
-  LINALG::Matrix<2, 1> mxi_m(mxi, true);
+  CORE::LINALG::Matrix<2, 1> mxi_m(mxi, true);
   double mx_glob[3];
   double sx_glob[3];
   cele->LocalToGlobal(xsi.A(), sx_glob, 0);
   other_cele->LocalToGlobal(mxi, mx_glob, 0);
-  LINALG::Matrix<3, 1> mx(mx_glob, true);
-  LINALG::Matrix<3, 1> sx(sx_glob, true);
+  CORE::LINALG::Matrix<3, 1> mx(mx_glob, true);
+  CORE::LINALG::Matrix<3, 1> sx(sx_glob, true);
 
-  LINALG::Matrix<3, 1> n(mx);
+  CORE::LINALG::Matrix<3, 1> n(mx);
   n.Update(-1., sx, 1.);
-  LINALG::Matrix<3, 1> diff(n);
+  CORE::LINALG::Matrix<3, 1> diff(n);
   n.Scale(1. / n.Norm2());
   gap = diff.Dot(n);
-  LINALG::Matrix<3, 1> myN;
+  CORE::LINALG::Matrix<3, 1> myN;
   cele->ComputeUnitNormalAtXi(xsi.A(), myN.A());
   double dir = n.Dot(myN);
   if (dir > 0)
@@ -161,7 +161,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
   CONTACT::UTILS::NitscheWeightsAndScaling(
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
-  LINALG::Matrix<3, 1> ele_n;
+  CORE::LINALG::Matrix<3, 1> ele_n;
   cele->ComputeUnitNormalAtXi(xsi.A(), ele_n.A());
 
   double stress_plus_penalty =

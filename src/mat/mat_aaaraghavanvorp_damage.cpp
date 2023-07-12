@@ -65,14 +65,15 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage() : params_(NULL)
 {
   isinit_ = false;  ///< indicates if material is initialized by calling the #Initialized routine
   // damage history parameters
-  histgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);  ///< current damage parameter
-  histglast_ =
-      Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);  ///< damage of last converged state
+  histgcurr_ =
+      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);  ///< current damage parameter
+  histglast_ = Teuchos::rcp(
+      new std::vector<CORE::LINALG::Matrix<1, 1>>);  ///< damage of last converged state
   histeqstrmaxcurr_ =
-      Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);  ///< current damage parameter
-  histeqstrmaxlast_ =
-      Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);  ///< damage of last converged state
-  elstrength_ = Teuchos::rcp(new double);                   ///< element strength
+      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);  ///< current damage parameter
+  histeqstrmaxlast_ = Teuchos::rcp(
+      new std::vector<CORE::LINALG::Matrix<1, 1>>);  ///< damage of last converged state
+  elstrength_ = Teuchos::rcp(new double);            ///< element strength
 }
 
 
@@ -154,15 +155,15 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 
   if (twicehistsize == 0) isinit_ = false;
 
-  histgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
-  histglast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
+  histgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
+  histglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
   //  histgcurr_= Teuchos::rcp(new std::vector<double > );   ///< current damage parameter
   //  histglast_= Teuchos::rcp(new std::vector<double> );   ///< damage of last converged state
 
 
   for (int var = 0; var < twicehistsize; ++var)
   {
-    LINALG::Matrix<1, 1> tmp(true);
+    CORE::LINALG::Matrix<1, 1> tmp(true);
     // double tmp= 0.0;
     histgcurr_->push_back(tmp);            // current vectors have to be initialized
     ExtractfromPack(position, data, tmp);  // last vectors are unpacked
@@ -182,13 +183,13 @@ void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* l
   linedef->ExtractDouble("STRENGTH", strength);
 
   std::cout << "SETUP \n";
-  histgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
-  histglast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
+  histgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
+  histglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
   //  histgcurr_= Teuchos::rcp(new std::vector<double> );   ///< current damage parameter
   //  histglast_= Teuchos::rcp(new std::vector<double> );   ///< damage of last converged state
 
-  histeqstrmaxcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
-  histeqstrmaxlast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
+  histeqstrmaxcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
+  histeqstrmaxlast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
   //  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<double> );
   //  histeqstrmaxlast_=Teuchos::rcp(new std::vector<double> );
 
@@ -196,8 +197,8 @@ void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* l
   //  double emptyvec=0.0;
   //  double emptyvec1=1.0;
 
-  LINALG::Matrix<1, 1> emptyvec(true);
-  LINALG::Matrix<1, 1> emptyvec1(true);
+  CORE::LINALG::Matrix<1, 1> emptyvec(true);
+  CORE::LINALG::Matrix<1, 1> emptyvec1(true);
   emptyvec1(0, 0) = 1.0;
   histgcurr_->resize(numgp);
   histglast_->resize(numgp);
@@ -229,11 +230,11 @@ void MAT::AAAraghavanvorp_damage::Update()
   histglast_ = histgcurr_;
   histeqstrmaxlast_ = histeqstrmaxcurr_;
 
-  const LINALG::Matrix<1, 1> emptyvec(true);
+  const CORE::LINALG::Matrix<1, 1> emptyvec(true);
   //  double emptyvec=0.0;
   //  histgcurr_= Teuchos::rcp(new std::vector<double > );   ///< current damage parameter
-  histgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
-  histeqstrmaxcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1, 1>>);
+  histgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
+  histeqstrmaxcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<1, 1>>);
   //  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<double>);
   const int numgp = histglast_->size();
   histgcurr_->resize(numgp);
@@ -252,10 +253,10 @@ void MAT::AAAraghavanvorp_damage::Update()
  *----------------------------------------------------------------------*/
 
 void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(
-    LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
-    const double detf,                         ///< determinant of deformation gradient tensor
-    LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
-    LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& f,       ///< deformation gradient tensor
+    const double detf,                               ///< determinant of deformation gradient tensor
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo,   ///< 2nd PK-stress
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress  ///< Cauchy-stress
 )
 {
   cstress(0) = (f(0) * pktwo(0) + f(3) * pktwo(3) + f(5) * pktwo(5)) * f(0) +
@@ -290,10 +291,10 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfSPKtoCauchy(
  |  Transform Cauchy Stress Tensor in the Second Piola-Kirchhoff one(public)         05/08|
  *----------------------------------------------------------------------*/
 void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(
-    LINALG::Matrix<NUM_STRESS_3D, 1>& invf,     ///< deformation gradient tensor
-    const double detf,                          ///< determinant of deformation gradient tensor
-    LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
-    LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo     ///< 2nd PK-stress
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& invf,  ///< deformation gradient tensor
+    const double detf,                             ///< determinant of deformation gradient tensor
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& cstress,  ///< Cauchy-stress
+    CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& pktwo     ///< 2nd PK-stress
 )
 {
   pktwo(0) = (invf(0) * cstress(0) + invf(3) * cstress(3) + invf(5) * cstress(5)) * invf(0) +
@@ -357,9 +358,10 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(
  J    .. det(F) determinante of the Jacobian matrix, IIIc^0.5
 
   */
-void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::AAAraghavanvorp_damage::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   // material parameters for volumetric part
   const double bulk = params_->bulk_;  // Bulk's modulus(Volumetric)
@@ -377,11 +379,11 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::Matrix<NUM_STRESS_3D, 1> identity(true);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<NUM_STRESS_3D, 1> rcg(*glstrain);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -404,7 +406,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::Matrix<NUM_STRESS_3D, 1> invc(true);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> invc(true);
 
   double invdet = 1. / iiinv;
 
@@ -422,7 +424,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   const double twthi = 2.0 / 3.0;
 
 
-  LINALG::Matrix<NUM_STRESS_3D, 1> f(true);  // deformation gradient tensor F, init to 0
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> f(true);  // deformation gradient tensor F, init to 0
 
   f(0) = sqrt(rcg(0));        // F11
   f(1) = sqrt(rcg(1));        // F22
@@ -431,7 +433,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   f(4) = sqrt(rcg(4) / 2.0);  // F23
   f(5) = sqrt(rcg(5) / 2.0);  // F31
 
-  LINALG::Matrix<NUM_STRESS_3D, 1> invf(
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> invf(
       true);  // inverse of deformation gradient tensor F, init to 0
 
   invf(0) = f(1) * f(2) - f(4) * f(4);  // invF11
@@ -441,17 +443,17 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   invf(4) = f(3) * f(5) - f(0) * f(4);  // invF23
   invf(5) = f(3) * f(4) - f(5) * f(1);  // invF31
 
-  // LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
   // for(int i=0;i<3;i++)
   //  fvol(i)=pow(detf,third);
-  // LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to 0
-  // for(int i=0;i<3;i++)
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to
+  // 0 for(int i=0;i<3;i++)
   //  fvol(i)=pow(detf,-third);
 
-  // LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
   // fiso.Scale(pow(invdet,-third));
-  // LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to 0
-  // fiso.Scale(pow(invdet,third));
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to
+  // 0 fiso.Scale(pow(invdet,third));
 
 
 
@@ -459,13 +461,13 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // 1st step: volumetric part
   //==========================
-  LINALG::Matrix<NUM_STRESS_3D, 1> pktwovol(invc);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> pktwovol(invc);
   double scalar = bulk / beta2 * (1.0 - pow(detf, -beta2));
 
   pktwovol.Scale(scalar);  // initialise PKtwo with volumetric part
 
 
-  // LINALG::Matrix<NUM_STRESS_3D,1> sigmvol(true); // Cauchy stress tensor, init to 0
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigmvol(true); // Cauchy stress tensor, init to 0
   // StressTensTransfSPKtoCauchy(fvol,detf,pktwovol,sigmvol);
   // sigmvol.Scale(strength);
   // StressTensTransfCauchytoSPK(invfvol,detf,sigmvol,pktwovol);
@@ -482,13 +484,13 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       (alpha * pow(iiinv, third) + 2.0 * beta * inv - 6.0 * beta * pow(iiinv, third)) *
       pow(iiinv, -twthi);
   // contribution: Cinv
-  LINALG::Matrix<NUM_STRESS_3D, 1> pktwoiso(invc);
+  CORE::LINALG::Matrix<NUM_STRESS_3D, 1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
   for (int i = 0; i < 3; i++) pktwoiso(i) += isochor1;
 
-  // LINALG::Matrix<NUM_STRESS_3D,1> sigmiso(true); // Cauchy stress tensor, init to 0
+  // CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigmiso(true); // Cauchy stress tensor, init to 0
   // StressTensTransfSPKtoCauchy(fvol,1.0,pktwoiso,sigmiso);
   // sigmiso.Scale(strength);
   // StressTensTransfCauchytoSPK(invfiso,1.0,sigmvol,pktwoiso);
@@ -501,8 +503,8 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // 3rd step: volumetric part
   //==========================
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatvol(true);  // volumetric elasticity tensor
-  double coeff1 = bulk * pow(detf, -beta2);                    // coefficients
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatvol(true);  // volumetric elasticity tensor
+  double coeff1 = bulk * pow(detf, -beta2);                          // coefficients
   double coeff2 = -2.0 * scalar;
 
   // contribution: Cinv \otimes Cinv
@@ -514,7 +516,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   // 4th step: isochoric part
   //=========================
-  LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso(true);  // isochoric elasticity tensor
+  CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso(true);  // isochoric elasticity tensor
 
   // deltas (see also Holzapfel p.261)
   // note that these deltas serve for the isochoric part only
@@ -567,7 +569,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
   else
   {
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisodam(
+    CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisodam(
         true);  // damage part of isochoric elasticity tensor
     double gdot = 0.0;
 
@@ -602,9 +604,9 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   /*
     // 7th step: rescaling step - DISASTER ZONE
     //==========================
-    LINALG::Matrix<NUM_STRESS_3D,1> pktwo(*stress); // Cauchy stress tensor, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> pktwo(*stress); // Cauchy stress tensor, init to 0
 
-    LINALG::Matrix<NUM_STRESS_3D,1> f(true); // deformation gradient tensor F, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> f(true); // deformation gradient tensor F, init to 0
 
     f(0)=sqrt(rcg(0)); 		// F11
     f(1)=sqrt(rcg(1)); 		// F22
@@ -613,7 +615,8 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     f(4)=sqrt(rcg(4)/2.0);	// F23
     f(5)=sqrt(rcg(5)/2.0);	// F31
 
-    LINALG::Matrix<NUM_STRESS_3D,1> invf(true); // inverse of deformation gradient tensor F, init to
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> invf(true); // inverse of deformation gradient tensor F,
+    init to
     0
 
     invf(0) = f(1)*f(2) - f(4)*f(4);     // invF11
@@ -623,26 +626,26 @@ void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     invf(4) = f(3)*f(5) - f(0)*f(4);     // invF23
     invf(5) = f(3)*f(4) - f(5)*f(1);     // invF31
 
-    LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> fvol(true); // deformation gradient tensor F, init to 0
     for(int =0;i<3;i++)
      fvol(i)=pow(detf,third);
-    LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> invfvol(true); // deformation gradient tensor F, init to 0
     for(int =0;i<3;i++)
      fvol(i)=pow(detf,-third);
 
-    LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> fiso(f); // deformation gradient tensor F, init to 0
     fiso.Scale(pow(invdet,-third));
-    LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> invfiso(invf); // deformation gradient tensor F, init to 0
     fiso.Scale(pow(invdet,third));
 
 
-    LINALG::Matrix<NUM_STRESS_3D,1> sigm(true); // Cauchy stress tensor, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> sigm(true); // Cauchy stress tensor, init to 0
 
     StressTensTransfSPKtoCauchy(f,detf,pktwo,sigm);
 
     sigm.Scale(strength);
 
-    LINALG::Matrix<NUM_STRESS_3D,1> realpktwo(true); // Cauchy stress tensor, init to 0
+    CORE::LINALG::Matrix<NUM_STRESS_3D,1> realpktwo(true); // Cauchy stress tensor, init to 0
 
     StressTensTransfCauchytoSPK(invf,detf,sigm,realpktwo);
    */

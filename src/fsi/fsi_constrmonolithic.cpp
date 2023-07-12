@@ -125,17 +125,17 @@ void FSI::ConstrMonolithic::GeneralSetup()
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
   aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
-      LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
   // Merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
   dbcmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
   dbcmaps.push_back(aleintersectionmap);
-  Teuchos::RCP<const Epetra_Map> dbcmap = LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
+  Teuchos::RCP<const Epetra_Map> dbcmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcmaps);
 
   // Finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*DofRowMap(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     dserror("Creation of FSI Dirichlet map extractor failed.");
@@ -168,7 +168,7 @@ void FSI::ConstrMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::ConstrMonolithic::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   // should we scale the system?
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -220,7 +220,7 @@ void FSI::ConstrMonolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epet
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::ConstrMonolithic::UnscaleSolution(
-    LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -391,7 +391,7 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
   //  interface.push_back(FluidField()->Interface()->FSICondMap());
   //  interface.push_back(Teuchos::null);
-  //  LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
+  //  CORE::LINALG::MultiMapExtractor interfaceextract(*DofRowMap(),interface);
   //
   //  Teuchos::RCP<NOX::StatusTest::Combo> interfacecombo =
   //    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -419,7 +419,7 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvel;
   fluidvel.push_back(FluidField()->InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(), fluidvel);
+  CORE::LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(), fluidvel);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -442,7 +442,7 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidpress;
   fluidpress.push_back(FluidField()->PressureRowMap());
   fluidpress.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(), fluidpress);
+  CORE::LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(), fluidpress);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -463,7 +463,7 @@ Teuchos::RCP<NOX::StatusTest::Combo> FSI::ConstrMonolithic::CreateStatusTest(
   std::vector<Teuchos::RCP<const Epetra_Map>> volconstr;
   volconstr.push_back(conman_->GetConstraintMap());
   volconstr.push_back(Teuchos::null);
-  LINALG::MultiMapExtractor volconstrextract(*DofRowMap(), volconstr);
+  CORE::LINALG::MultiMapExtractor volconstrextract(*DofRowMap(), volconstr);
 
   Teuchos::RCP<NOX::StatusTest::Combo> volconstrcombo =
       Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));

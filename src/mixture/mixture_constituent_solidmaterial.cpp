@@ -132,21 +132,23 @@ void MIXTURE::MixtureConstituent_SolidMaterial::ReadElement(
   material_->Setup(numgp, linedef);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::Update(LINALG::Matrix<3, 3> const& defgrd,
+void MIXTURE::MixtureConstituent_SolidMaterial::Update(CORE::LINALG::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   material_->Update(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd,
-    Teuchos::ParameterList& params, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_SolidMaterial::UpdatePrestress(
+    CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
+    const int eleGID)
 {
   material_->UpdatePrestress(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
+void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+    const int eleGID)
 {
   material_->Evaluate(&F, &E_strain, params, &S_stress, &cmat, gp, eleGID);
 }

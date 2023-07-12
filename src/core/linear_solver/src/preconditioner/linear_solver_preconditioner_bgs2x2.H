@@ -20,7 +20,7 @@
 
 #include "linear_solver_preconditioner_type.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /// Block Gauss-Seidel preconditioner for a 2x2 system
   class BGS2x2_Operator : public Epetra_Operator
@@ -44,7 +44,7 @@ namespace LINALG
     }
 
     /// Llabel of this class.
-    const char* Label() const { return "LINALG::BGS2x2_Operator"; }
+    const char* Label() const { return "CORE::LINALG::BGS2x2_Operator"; }
 
     /// Comm of this class
     const Epetra_Comm& Comm() const { return (A_->Comm()); }
@@ -65,7 +65,7 @@ namespace LINALG
     /// not implemented
     int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
     {
-      dserror("Apply does not make sense for LINALG::BGS2x2_Operator");
+      dserror("Apply does not make sense for CORE::LINALG::BGS2x2_Operator");
       return (-1);
     }
 
@@ -126,7 +126,7 @@ namespace LINALG
     int firstind_;  /// index of block "0" in Gauss-Seidel procedure
     int secind_;    /// index of block "1" in Gauss-Seidel procedure
   };
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 
 #endif

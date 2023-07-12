@@ -90,10 +90,10 @@ namespace MAT
 
       /// Add modified coeffiencts.
       void AddCoefficientsViscoPrincipal(
-          const LINALG::Matrix<3, 1>& prinv,  ///< invariants of right Cauchy-Green tensor
-          LINALG::Matrix<8, 1>& mu,           ///< necassary coefficients for piola-kirchhoff-stress
-          LINALG::Matrix<33, 1>& xi,          ///< necassary coefficients for viscosity tensor
-          LINALG::Matrix<7, 1>& rateinv, Teuchos::ParameterList& params, int gp,
+          const CORE::LINALG::Matrix<3, 1>& prinv,  ///< invariants of right Cauchy-Green tensor
+          CORE::LINALG::Matrix<8, 1>& mu,   ///< necassary coefficients for piola-kirchhoff-stress
+          CORE::LINALG::Matrix<33, 1>& xi,  ///< necassary coefficients for viscosity tensor
+          CORE::LINALG::Matrix<7, 1>& rateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
 
       /// Indicator for formulation

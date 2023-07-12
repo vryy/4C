@@ -71,7 +71,8 @@ namespace STR
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const
+      virtual bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
       {
         return true;
       };

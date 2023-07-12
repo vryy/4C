@@ -40,7 +40,7 @@
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver,
+ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params, Teuchos::RCP<IO::DiscretizationWriter> output)
     : discret_(actdis),
       solver_(solver),
@@ -75,15 +75,15 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Sol
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  dispn_ = LINALG::CreateVector(*dofrowmap, true);
-  dispnp_ = LINALG::CreateVector(*dofrowmap, true);
-  disi_ = LINALG::CreateVector(*dofrowmap, true);
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
-  rhs_ = LINALG::CreateVector(*dofrowmap, true);
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  dispn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  dispnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  disi_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  eledetjac_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
-  elequality_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+  eledetjac_ = CORE::LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+  elequality_ = CORE::LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -197,12 +197,13 @@ void ALE::Ale::CreateSystemMatrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> i
   else if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 81, false, true));
+    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 81, false, true));
   }
   else
   {
-    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        *interface, *interface, 81, false, true));
+    sysmat_ =
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+            *interface, *interface, 81, false, true));
   }
 }
 
@@ -245,19 +246,19 @@ void ALE::Ale::Evaluate(
   {
     // Transform system matrix and rhs to local coordinate systems
     LocsysManager()->RotateGlobalToLocal(
-        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_), residual_);
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_), residual_);
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // ApplyDirichlettoSystem
     Teuchos::RCP<Epetra_Vector> dispnp_local = Teuchos::rcp(new Epetra_Vector(*(zeros_)));
     LocsysManager()->RotateGlobalToLocal(dispnp_local);
 
-    LINALG::ApplyDirichlettoSystem(sysmat_, disi_, residual_, GetLocSysTrafo(), dispnp_local,
+    CORE::LINALG::ApplyDirichlettoSystem(sysmat_, disi_, residual_, GetLocSysTrafo(), dispnp_local,
         *(dbcmaps_[dbc_type]->CondMap()));
   }
   else
   {
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sysmat_, disi_, residual_, zeros_, *(dbcmaps_[dbc_type]->CondMap()));
   }
 
@@ -379,7 +380,7 @@ const std::string ALE::Ale::ElementActionString(const enum INPAR::ALE::AleDynami
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Preconditioner> ALE::Ale::ConstPreconditioner()
+Teuchos::RCP<CORE::LINALG::Preconditioner> ALE::Ale::ConstPreconditioner()
 {
   // TODO (mayr) fix const preconditioner stuff
 
@@ -397,7 +398,7 @@ void ALE::Ale::CreatePreconditioner(bool full)
   else
   {
     // This is the MFSI case and we need the preconditioner on the inner dofs only
-    precond_ = Teuchos::rcp(new LINALG::Preconditioner(solver_));
+    precond_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(solver_));
 
     Teuchos::RCP<Epetra_CrsMatrix> A = BlockSystemMatrix()->Matrix(0, 0).EpetraMatrix();
 
@@ -433,16 +434,16 @@ Teuchos::RCP<const Epetra_Map> ALE::Ale::DofRowMap() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ALE::Ale::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> ALE::Ale::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> ALE::Ale::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ALE::Ale::BlockSystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -654,7 +655,8 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
   switch (dbc_type)
   {
     case ALE::UTILS::MapExtractor::dbc_set_std:
-      dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] = Teuchos::rcp(new LINALG::MapExtractor());
+      dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] =
+          Teuchos::rcp(new CORE::LINALG::MapExtractor());
       ApplyDirichletBC(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
       break;
     case ALE::UTILS::MapExtractor::dbc_set_x_ff:
@@ -662,10 +664,10 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
       condmaps.push_back(xff_interface->XFluidFluidCondMap());
       condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-      Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+      Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
-          Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_x_fsi:
@@ -675,10 +677,10 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
       condmaps.push_back(interface->FSICondMap());
       condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-      Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+      Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
 
       dbcmaps_[dbc_type] =
-          Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_wear:
@@ -687,9 +689,9 @@ void ALE::Ale::SetupDBCMapEx(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
       condmaps.push_back(interface->AleWearCondMap());
       condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
 
-      Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+      Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
-          Teuchos::rcp(new LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
+          Teuchos::rcp(new CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged));
       break;
     }
     default:
@@ -755,8 +757,8 @@ void ALE::Ale::Reset()
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  dispnp_ = LINALG::CreateVector(*dofrowmap, true);
-  dispn_ = LINALG::CreateVector(*dofrowmap, true);
+  dispnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  dispn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   return;
 }
@@ -791,7 +793,7 @@ void ALE::Ale::SetDt(const double dtnew)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
 {
   if (locsysman_ != Teuchos::null) return locsysman_->Trafo();
 
@@ -878,7 +880,7 @@ bool ALE::Ale::EvaluateElementQuality()
 
 /*----------------------------------------------------------------------------*/
 ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params, output), validsysmat_(false), updateeverystep_(false)
 {

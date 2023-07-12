@@ -22,12 +22,12 @@
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
  *---------------------------------------------------------------------*/
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -81,25 +81,27 @@ namespace ADAPTER
     virtual void Integrate(Teuchos::RCP<const Epetra_Vector> disp, const double dt);
 
     /// perform condensation of contact Lagrange multipliers
-    virtual void CondenseContact(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+    virtual void CondenseContact(Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector>& combined_RHS, Teuchos::RCP<const Epetra_Vector> disp,
         const double dt);
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc, Teuchos::RCP<Epetra_Vector> tinc);
 
     void EvaluateRelMov();
-    void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
+    void StoreDirichletStatus(Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps);
 
     /// check whether this displacement state has already been evaluated
     virtual bool AlreadyEvaluated(Teuchos::RCP<const Epetra_Vector> disp);
 
     /// Assemble linearization D_{ij,k}*x_i
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleEHLLinD(const Teuchos::RCP<Epetra_Vector> x);
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> AssembleEHLLinD(
+        const Teuchos::RCP<Epetra_Vector> x);
 
     /// Assemble linearization M_{il,k}*x_i
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AssembleEHLLinM(const Teuchos::RCP<Epetra_Vector> x);
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> AssembleEHLLinM(
+        const Teuchos::RCP<Epetra_Vector> x);
 
     /// Assemble linearization G_{ij,k}*x_i
-    Teuchos::RCP<LINALG::SparseMatrix> AssembleSurfGradDeriv(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> AssembleSurfGradDeriv(
         const Teuchos::RCP<const Epetra_Vector> x);
 
     virtual void WriteRestart(IO::DiscretizationWriter& output);
@@ -120,21 +122,21 @@ namespace ADAPTER
     /// relative tangential velocity
     virtual Teuchos::RCP<Epetra_Vector> RelTangVel() { return relTangVel_; }
     /// relative tangential velocity derivative
-    virtual Teuchos::RCP<LINALG::SparseMatrix> RelTangVelDeriv() { return relTangVel_deriv_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> RelTangVelDeriv() { return relTangVel_deriv_; }
     /// average tangential velocity
     virtual Teuchos::RCP<Epetra_Vector> AvTangVel() { return avTangVel_; }
     /// average tangential velocity derivative
-    virtual Teuchos::RCP<LINALG::SparseMatrix> AvTangVelDeriv() { return avTangVel_deriv_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> AvTangVelDeriv() { return avTangVel_deriv_; }
     /// nodal gap (not weighted)
     virtual Teuchos::RCP<Epetra_Vector> Nodal_Gap() { return nodal_gap_; }
     /// nodal gap (not weighted) derivative
-    virtual Teuchos::RCP<LINALG::SparseMatrix> Nodal_GapDeriv() { return deriv_nodal_gap_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> Nodal_GapDeriv() { return deriv_nodal_gap_; }
     /// nodal normals
     virtual Teuchos::RCP<Epetra_Vector> Normals() { return normals_; }
     /// nodal normals derivative
-    virtual Teuchos::RCP<LINALG::SparseMatrix> NderivMatrix() { return Nderiv_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> NderivMatrix() { return Nderiv_; }
     /// surfrace gradient operator
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SurfGradMatrix() { return SurfGrad_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SurfGradMatrix() { return SurfGrad_; }
     /// slave+master dof map
     virtual Teuchos::RCP<const Epetra_Map> SMdofMap() { return smdofrowmap_; }
     //@}
@@ -147,7 +149,7 @@ namespace ADAPTER
       dserror("stop");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<LINALG::SparseMatrix> NMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> NMatrix()
     {
       dserror("stop");
       return Teuchos::null;
@@ -191,19 +193,19 @@ namespace ADAPTER
     void AssembleInterfaceVelocities(const double dt);
     //@}
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         SurfGrad_;  ///< matrix to compute surface gradient at nodes: Grad(x) \approx TangGrad * x
     Teuchos::RCP<Epetra_Vector> relTangVel_;  ///< relative tangential velocity
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         relTangVel_deriv_;                   ///< derivative of relative tangential velocity
     Teuchos::RCP<Epetra_Vector> avTangVel_;  ///< average tangential velocity
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         avTangVel_deriv_;                    ///< derivative of average tangential velocity
     Teuchos::RCP<Epetra_Vector> nodal_gap_;  ///< NOT the weighted gap but the real distance
-    Teuchos::RCP<LINALG::SparseMatrix>
-        deriv_nodal_gap_;                        ///< derivative of nodal_gap_ w.r.t. displacements
-    Teuchos::RCP<Epetra_Vector> normals_;        ///< nodal normals (slave side)
-    Teuchos::RCP<LINALG::SparseMatrix> Nderiv_;  ///< derivtative of nodal slave-sided normals
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        deriv_nodal_gap_;                  ///< derivative of nodal_gap_ w.r.t. displacements
+    Teuchos::RCP<Epetra_Vector> normals_;  ///< nodal normals (slave side)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Nderiv_;  ///< derivtative of nodal slave-sided normals
 
     Teuchos::RCP<Epetra_Vector>
         evaluated_state_;  ///< displacement state that has last been evaluated
@@ -216,10 +218,11 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> z_;  //  contact lagrange mulitplier
 
     // recovery of contact LM
-    Teuchos::RCP<LINALG::SparseMatrix> dinvA_;  // dinv on active displacement dofs (for recovery)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        dinvA_;  // dinv on active displacement dofs (for recovery)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         kss_a_;  // Part of structure-stiffness (kss) that corresponds to active slave rows
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         kst_a_;  // Part of coupling-stiffness  (kst) that corresponds to active slave rows
     Teuchos::RCP<Epetra_Vector>
         rs_a_;  // Part of structural residual that corresponds to active slave rows

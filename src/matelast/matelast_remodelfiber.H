@@ -73,8 +73,8 @@ namespace MAT
     };
 
     /// Evaluate derivative of growth evolution equation w.r.t. the right Cauchy-Green tensor
-    void EvaluatedFuncidC(LINALG::Matrix<1, 6>& drdC,  ///< Output
-        LINALG::Matrix<6, 1> const&
+    void EvaluatedFuncidC(CORE::LINALG::Matrix<1, 6>& drdC,  ///< Output
+        CORE::LINALG::Matrix<6, 1> const&
             dsigdCv,  ///< Derivative of Cauchy stress w.r.t. the right Cauchy-Green tensor
         double const& cur_rho_col,  ///< Current collagen mass density
         double const& dt,           ///< Time step size
@@ -107,12 +107,12 @@ namespace MAT
     void SetSigH(double const& sig) { sig_h = sig; };
 
     /// Evaluate residual of remodel evolution equation
-    void EvaluateFunc(double& r,               ///< Residual
-        double const& sig,                     ///< Current Cauchy stress
-        LINALG::Matrix<3, 3> const& YM,        ///< Factor in remodel evolution equation
-        LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t. to the
-                                               ///< elastic right Cauchy-Green tensor
-        int const eleGID) const                ///< Element id
+    void EvaluateFunc(double& r,                     ///< Residual
+        double const& sig,                           ///< Current Cauchy stress
+        CORE::LINALG::Matrix<3, 3> const& YM,        ///< Factor in remodel evolution equation
+        CORE::LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t.
+                                                     ///< to the elastic right Cauchy-Green tensor
+        int const eleGID) const                      ///< Element id
     {
       r = (k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h) - 2.0 * dsigdCeM.Dot(YM);
     };
@@ -121,13 +121,13 @@ namespace MAT
     /// inelastic (scalar) remodel stretch of the i-th fiber family
     void EvaluatedFuncidlambri(double& drdlambr,  ///< Output
         double const& sig,                        ///< Current Cauchy stress
-        double const& dsigdlambr,        ///< Derivative of Cauchy stress w.r.t. the remodel stretch
-        LINALG::Matrix<3, 3> const& YM,  ///< Factor in remodel evolution equation
-        LINALG::Matrix<3, 3> const& dYdlambrM,  ///< Derivative of factor in remodel evolution
-                                                ///< equation w.r.t. the remodel stretch
-        LINALG::Matrix<3, 3> const& dsigdCeM,   ///< Derivative of local Cauchy stress w.r.t. the
-                                                ///< elastic right Cauchy-Green tensor
-        LINALG::Matrix<3, 3> const&
+        double const& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. the remodel stretch
+        CORE::LINALG::Matrix<3, 3> const& YM,         ///< Factor in remodel evolution equation
+        CORE::LINALG::Matrix<3, 3> const& dYdlambrM,  ///< Derivative of factor in remodel evolution
+                                                      ///< equation w.r.t. the remodel stretch
+        CORE::LINALG::Matrix<3, 3> const& dsigdCeM,   ///< Derivative of local Cauchy stress w.r.t.
+                                                      ///< the elastic right Cauchy-Green tensor
+        CORE::LINALG::Matrix<3, 3> const&
             dsigdCedlambrM,      ///< Derivative of local Cauchy stress w.r.t. the remodel stretch
         int const eleGID) const  ///< Element id
     {
@@ -141,13 +141,13 @@ namespace MAT
     /// inelastic (scalar) remodel stretch of the i-th fiber family
     void EvaluatedFuncidrho(double& drdrho,  ///< Output
         double const& sig,                   ///< Current Cauchy stress
-        double const& dsigdrho,          ///< Derivative of Cauchy stress w.r.t. the remodel stretch
-        LINALG::Matrix<3, 3> const& YM,  ///< Factor in remodel evolution equation
-        LINALG::Matrix<3, 3> const& dYdrhoM,   ///< Derivative of factor in remodel evolution
-                                               ///< equation w.r.t. the remodel stretch
-        LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t. the
-                                               ///< elastic right Cauchy-Green tensor
-        LINALG::Matrix<3, 3> const&
+        double const& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the remodel stretch
+        CORE::LINALG::Matrix<3, 3> const& YM,        ///< Factor in remodel evolution equation
+        CORE::LINALG::Matrix<3, 3> const& dYdrhoM,   ///< Derivative of factor in remodel evolution
+                                                     ///< equation w.r.t. the remodel stretch
+        CORE::LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t.
+                                                     ///< the elastic right Cauchy-Green tensor
+        CORE::LINALG::Matrix<3, 3> const&
             dsigdCedrhoM,        ///< Derivative of local Cauchy stress w.r.t. the remodel stretch
         int const eleGID) const  ///< Element id
     {
@@ -159,20 +159,21 @@ namespace MAT
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
-    void EvaluatedFuncidC(LINALG::Matrix<1, 6>& drdC,  ///< Output
-        double const& sig,                             ///< Current Cauchy stress
-        LINALG::Matrix<6, 1> const&
+    void EvaluatedFuncidC(CORE::LINALG::Matrix<1, 6>& drdC,  ///< Output
+        double const& sig,                                   ///< Current Cauchy stress
+        CORE::LINALG::Matrix<6, 1> const&
             dsigdCv,  ///< Derivative of Cauchy stress w.r.t. the right Cauchy-Green tensor
-        LINALG::Matrix<6, 1> const&
+        CORE::LINALG::Matrix<6, 1> const&
             Y_strain,  ///< Factor in remodel evolution equation (strain-like Voigt notation)
-        LINALG::Matrix<9, 6> const& dYdC,  ///< Derivative of factor in remodel evolution equation
-                                           ///< w.r.t. the right Cauchy-Green tensor
-        LINALG::Matrix<9, 1> const&
+        CORE::LINALG::Matrix<9, 6> const& dYdC,  ///< Derivative of factor in remodel evolution
+                                                 ///< equation w.r.t. the right Cauchy-Green tensor
+        CORE::LINALG::Matrix<9, 1> const&
             dsigdCe9x1,  ///< Derivative of local Cauchy stress w.r.t. to the elastic right
                          ///< Cauchy-Green tensor (9x1 vector notation)
-        LINALG::Matrix<6, 6> const& dsigdCedC,  ///< Derivative of local Cauchy stress w.r.t. to the
-                                                ///< elastic and total right Cauchy-Green tensor
-        int const eleGID) const                 ///< Element id
+        CORE::LINALG::Matrix<6, 6> const&
+            dsigdCedC,           ///< Derivative of local Cauchy stress w.r.t. to the
+                                 ///< elastic and total right Cauchy-Green tensor
+        int const eleGID) const  ///< Element id
     {
       drdC.UpdateT(2. * (k_sig / sig_h) * (sig - sig_h), dsigdCv, 0.0);
       drdC.UpdateT(1.0 / t_decay, dsigdCv, 1.0);
@@ -182,13 +183,13 @@ namespace MAT
 
     /// Evaluate derivative of remodel evolution equation w.r.t. time derivative of the remodel
     /// stretch
-    void Evaluatedlambrdt(double& dlambrdt,    ///< Output
-        double const& sig,                     ///< Current Cauchy stress
-        LINALG::Matrix<3, 3> const& YredM,     ///< Reduced factor in remodel evolution equation
-                                               ///< (\dot{\lambda}_r is factored out)
-        LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t. to the
-                                               ///< elastic right Cauchy-Green tensor
-        int const eleGID) const                ///< Element id
+    void Evaluatedlambrdt(double& dlambrdt,       ///< Output
+        double const& sig,                        ///< Current Cauchy stress
+        CORE::LINALG::Matrix<3, 3> const& YredM,  ///< Reduced factor in remodel evolution equation
+                                                  ///< (\dot{\lambda}_r is factored out)
+        CORE::LINALG::Matrix<3, 3> const& dsigdCeM,  ///< Derivative of local Cauchy stress w.r.t.
+                                                     ///< to the elastic right Cauchy-Green tensor
+        int const eleGID) const                      ///< Element id
     {
       dlambrdt = ((k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h)) /
                  (2.0 * dsigdCeM.Dot(YredM));
@@ -240,21 +241,22 @@ namespace MAT
       std::vector<double> cur_rho;    ///< Mass density (in reference configuration) at time t_{n+1}
       std::vector<double> last_rho;   ///< Mass density (in reference configuration) at time t_{n}
       std::vector<double> cur_lambr;  ///< Inelastic stretch in fiber direction at time t_{n+1}
-      std::vector<double> last_lambr;  ///< Inelastic stretch in fiber direction at time t_{n}
-      LINALG::Matrix<3, 3> AM;         ///< Structural tensor: represents fiber direction
-      LINALG::Matrix<3, 3> AM_orth;    ///< Orthogonal structural tensor ( 1_{ij} - A_{ij} )
-      std::vector<LINALG::Matrix<3, 3>> iFrM;  ///< Inverse inelastic remodel deformation gradient
-      std::vector<LINALG::Matrix<3, 3>>
+      std::vector<double> last_lambr;      ///< Inelastic stretch in fiber direction at time t_{n}
+      CORE::LINALG::Matrix<3, 3> AM;       ///< Structural tensor: represents fiber direction
+      CORE::LINALG::Matrix<3, 3> AM_orth;  ///< Orthogonal structural tensor ( 1_{ij} - A_{ij} )
+      std::vector<CORE::LINALG::Matrix<3, 3>>
+          iFrM;  ///< Inverse inelastic remodel deformation gradient
+      std::vector<CORE::LINALG::Matrix<3, 3>>
           FrnM;  ///< Inelastic remodel deformation gradient at time t_{n}
-      std::vector<LINALG::Matrix<3, 3>>
+      std::vector<CORE::LINALG::Matrix<3, 3>>
           dFrdlambrM;  ///< Derivative of inelastic remodel deformation gradient w.r.t. the
                        ///< inelastic stretch
-      std::vector<LINALG::Matrix<3, 3>>
+      std::vector<CORE::LINALG::Matrix<3, 3>>
           diFrdlambrM;  ///< Derivative of inverse inelastic remodel deformation gradient w.r.t. the
                         ///< inelastic stretch
-      std::vector<LINALG::Matrix<3, 3>>
+      std::vector<CORE::LINALG::Matrix<3, 3>>
           FrdotM;  ///< Time derivative of inelastic remodel deformation gradient
-      std::vector<LINALG::Matrix<3, 3>>
+      std::vector<CORE::LINALG::Matrix<3, 3>>
           dFrdotdlambrM;  ///< Time derivative of inelastic remodel deformation gradient
       Teuchos::RCP<RemodelEvolution> remodel;  ///< Remodel evolution equation
       Teuchos::RCP<GrowthEvolution> growth;    ///< Growth evolution equation
@@ -398,8 +400,8 @@ namespace MAT
       virtual void Setup(int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef);
 
       /// Update fiber directions with new local coordinate system (radaxicirc_)
-      void UpdateFiberDirs(LINALG::Matrix<3, 3> const& locsys,  ///< local coordinate system
-          const double& dt);                                    ///< time step size
+      void UpdateFiberDirs(CORE::LINALG::Matrix<3, 3> const& locsys,  ///< local coordinate system
+          const double& dt);                                          ///< time step size
 
       /// Update cauchy prestress of new mass which is deposited during G&R
       void UpdateSigH();
@@ -407,17 +409,20 @@ namespace MAT
       /// Returns the necessary derivations of the growth and remodel evolution equations and
       /// their residuals
       void EvaluateDerivativesInternalNewton(
-          LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+          CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
           int const nr_grf_tot,   ///< Total number of remodel fibers
           int const gp,           ///< Current gp
           double const& dt,       ///< Time step size
           int const eleGID,       ///< Element ID
-          LINALG::Matrix<3, 3> const& iFgM,       ///< Inverse inelastic growth deformation gradient
-          LINALG::Matrix<3, 3> const& dFgdrhoM,   ///< Derivative of inelastic growth deformation
-                                                  ///< gradient w.r.t. the mass density
-          LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
-                                                  ///< deformation gradient w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse inelastic growth deformation gradient
+          CORE::LINALG::Matrix<3, 3> const&
+              dFgdrhoM,  ///< Derivative of inelastic growth deformation
+                         ///< gradient w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3> const&
+              diFgdrhoM,  ///< Derivative of inverse inelastic growth
+                          ///< deformation gradient w.r.t. the mass density
           std::vector<std::vector<double>>&
               dWdrho,  ///< Derivative of the growth evolution eq. w.r.t. the current mass density
           std::vector<std::vector<double>>&
@@ -434,53 +439,57 @@ namespace MAT
       /// Returns the derivations of the growth and remodel evolution equations w.r.t. the right
       /// Cauchy Green tensor
       void EvaluateDerivativesCauchyGreen(
-          LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+          CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
           int const gp,           ///< Current gp
           double const& dt,       ///< Time step size
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse inelastic growth deformation gradient
-          std::vector<LINALG::Matrix<1, 6>>&
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse inelastic growth deformation gradient
+          std::vector<CORE::LINALG::Matrix<1, 6>>&
               dWdC,  ///< Derivation of the growth evolution eq. w.r.t. right Cauchy Green
-          std::vector<LINALG::Matrix<1, 6>>&
+          std::vector<CORE::LINALG::Matrix<1, 6>>&
               dEdC,           ///< Derivation of the remodel evolution eq. w.r.t. right Cauchy Green
           int const eleGID);  ///< Element ID
 
       /// Retrieve stress and cmat
       void EvaluateAdditionalGrowthRemodelCmat(
-          LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
+          CORE::LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse inelastic growth deformation gradient
-          LINALG::Matrix<3, 3> const&
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse inelastic growth deformation gradient
+          CORE::LINALG::Matrix<3, 3> const&
               diFgdrhoM,  ///< Derivative of inverse inelastic growth deformation gradient w.r.t.
                           ///< the current mass density
-          std::vector<LINALG::Matrix<1, 6>> const&
+          std::vector<CORE::LINALG::Matrix<1, 6>> const&
               drhodC,  ///< Derivation of the current mass density w.r.t. the right Cauchy Green
                        ///< tensor
-          std::vector<LINALG::Matrix<1, 6>> const&
+          std::vector<CORE::LINALG::Matrix<1, 6>> const&
               dlambrdC,  ///< Derivation of the remodel fiber stretch w.r.t. the right Cauchy
                          ///< Green tensor
-          LINALG::Matrix<6, 6>& cmat,  ///< Material stiffness matrix due to G&R
-          int const gp,                ///< Current gp
-          int const eleGID) const;     ///< Element ID
+          CORE::LINALG::Matrix<6, 6>& cmat,  ///< Material stiffness matrix due to G&R
+          int const gp,                      ///< Current gp
+          int const eleGID) const;           ///< Element ID
 
       /// prestressing step: evaluate fibers in a "normal" way (no growth and/or remodeling)
       void EvaluateAnisotropicStressCmat(
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse inelastic growth deformation gradient
-          LINALG::Matrix<6, 6>& cmat,        ///< Material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,      ///< 2nd PK-stress
-          int const gp,                      ///< Current gp
-          double const& dt,                  ///< Time step size
-          int const eleGID);                 ///< Element ID
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                            ///< Inverse inelastic growth deformation gradient
+          CORE::LINALG::Matrix<6, 6>& cmat,    ///< Material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,  ///< 2nd PK-stress
+          int const gp,                        ///< Current gp
+          double const& dt,                    ///< Time step size
+          int const eleGID);                   ///< Element ID
 
       /// Explicit local time integration: updates current collagen density and inelastic fiber
       /// stretch
       void EvaluateGrowthAndRemodelingExpl(
-          LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
-          double const& dt,                    ///< Time step size
-          LINALG::Matrix<3, 3> const& iFgM,    ///< Inverse inelastic growth deformation gradient
-          const int gp,                        ///< Current gp
-          const int eleGID);                   ///< Element ID
+          CORE::LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
+          double const& dt,                          ///< Time step size
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,           ///< Inverse inelastic growth deformation gradient
+          const int gp,       ///< Current gp
+          const int eleGID);  ///< Element ID
 
       /// Return names of visualization data
       virtual void VisNames(std::map<std::string, int>& names, unsigned int p);
@@ -504,14 +513,14 @@ namespace MAT
 
      private:
       /// Add contribution to elasticity tensor
-      void AddStressCmat(LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const&
-              iFgM,                      ///< Inverse inelastic deformation gradient (used in G&R)
-          FiberData const& fiberdat,     ///< Type of remodel fiber
-          int const gp,                  ///< Current Gauss-Point
-          int const eleGID,              ///< Element Id
-          LINALG::Matrix<6, 1>& stress,  ///< 2nd Piola Kirchhoff stress
-          LINALG::Matrix<6, 6>& cmat) const;  ///< Elasticity tenor
+      void AddStressCmat(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                   ///< Inverse inelastic deformation gradient (used in G&R)
+          FiberData const& fiberdat,  ///< Type of remodel fiber
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID,           ///< Element Id
+          CORE::LINALG::Matrix<6, 1>& stress,       ///< 2nd Piola Kirchhoff stress
+          CORE::LINALG::Matrix<6, 6>& cmat) const;  ///< Elasticity tenor
 
       /// @name Automatic differentiation
       //@{
@@ -519,59 +528,59 @@ namespace MAT
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void DerivdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
           int gp,                        ///< Gauss point
           ForceAnalytical const eleGID,  ///< Element Id
-          LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
+          CORE::LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
       /// First derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void DerivdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
           int gp,            ///< Gauss point
           int const eleGID,  ///< Element Id
-          LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
+          CORE::LINALG::Matrix<3, 3, T>& dfuncdC) const;  ///< First derivative
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (automatic differentiation)
       template <class FUNC, typename T, typename ForceAnalytical>
-      void DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void DerivdCdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,                        ///< Structural tensor of associated anisotropic direction
           FUNC const& func,              ///< Function which is differentiated
           int gp,                        ///< Gauss point
           ForceAnalytical const eleGID,  ///< Element Id
-          LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
+          CORE::LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
       /// Second derivative w.r.t. to the right Cauchy-Green tensor (analytical differentiation)
       template <class FUNC, typename T>
-      void DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void DerivdCdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,            ///< Structural tensor of associated anisotropic direction
           FUNC const& func,  ///< Function which is differentiated
           int gp,            ///< Gauss point
           int const eleGID,  ///< Element Id
-          LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
+          CORE::LINALG::Matrix<6, 6, T>& dfuncdCdC) const;  ///< Second derivative
 
       /// Evaluate local Cauchy stress in current fiber direction (analytical differentiation)
       template <typename T>
       void EvaluateLocalCauchyStress(
-          LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,                                            ///< Gauss point
@@ -581,93 +590,100 @@ namespace MAT
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
       /// right Cauchy Green tensor (analytical differentiation)
       template <typename T>
-      void EvaluatedsigdCe(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void EvaluatedsigdCe(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,                                            ///< Gauss point
           int eleGID,                                        ///< Element Id
-          LINALG::Matrix<3, 3, T>& dsigdCeM)
+          CORE::LINALG::Matrix<3, 3, T>& dsigdCeM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy-Green tensor
 
       /// Evaluate derivative of the derivative of the local Cauchy stress in current fiber
       /// direction w.r.t. the elastic right Cauchy Green tensor w.r.t. the right Cauchy Green
       /// tensor (automatic differentiation)
       template <typename ForceAnalytical>
-      void EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+      void EvaluatedsigdCedC(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+          CORE::LINALG::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int gp,                                           ///< Gauss point
           ForceAnalytical const eleGID,                     ///< Element Id
-          LINALG::Matrix<6, 6>& dsigdCedC) const;           ///< Output
+          CORE::LINALG::Matrix<6, 6>& dsigdCedC) const;     ///< Output
 
       /// Evaluate derivative of the derivative of the local Cauchy stress in current fiber
       /// direction w.r.t. the elastic right Cauchy Green tensor w.r.t. the right Cauchy Green
       /// tensor (analytical differentiation)
-      void EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+      void EvaluatedsigdCedC(CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+          CORE::LINALG::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const&
-              fiber,                               ///< Type of remodel fiberEvaluatedsigdCedC
-          int gp,                                  ///< Gauss point
-          int eleGID,                              ///< Element Id
-          LINALG::Matrix<6, 6>& dsigdCedC) const;  ///< Output
+              fiber,                                     ///< Type of remodel fiberEvaluatedsigdCedC
+          int gp,                                        ///< Gauss point
+          int eleGID,                                    ///< Element Id
+          CORE::LINALG::Matrix<6, 6>& dsigdCedC) const;  ///< Output
 
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (automatic
       /// differentiation)
       template <typename T, typename ForceAnalytical>
-      void EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void EvaluatedsigdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int gp,                                           ///< Gauss point
           ForceAnalytical const eleGID,                     ///< Element Id
-          LINALG::Matrix<3, 3, T>& dsigdC) const;  ///< First derivative of local Cauchy stress
-                                                   ///< w.r.t. the right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T>& dsigdC)
+          const;  ///< First derivative of local Cauchy stress
+                  ///< w.r.t. the right Cauchy-Green tensor
 
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (analytical
       /// differentiation)
       template <typename T>
-      void EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3, T> const&
+      void EvaluatedsigdC(CORE::LINALG::Matrix<3, 3, T> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3, T> const&
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3, T> const&
+          CORE::LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,
-          int eleGID,                              ///< Element Id
-          LINALG::Matrix<3, 3, T>& dsigdC) const;  ///< First derivative of local Cauchy stress
-                                                   ///< w.r.t. the right Cauchy-Green tensor
+          int eleGID,  ///< Element Id
+          CORE::LINALG::Matrix<3, 3, T>& dsigdC)
+          const;  ///< First derivative of local Cauchy stress
+                  ///< w.r.t. the right Cauchy-Green tensor
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
       /// the elastic right Cauchy Green tensor w.r.t. the mass density (automatic
       /// differentiation)
       template <typename ForceAnalytical>
       void EvaluateDerivativesCauchyGrowth(
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const& dFgdrhoM,   ///< Derivative of inelastic growth deformation
-                                                  ///< gradient w.r.t. the mass density
-          LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
-                                                  ///< deformation gradient w.r.t. the mass density
-          FiberData const& fiberdat,              ///< Data Container of fibers
-          int const gp,                           ///< Current Gauss-Point
-          ForceAnalytical const eleGID,           ///< Element Id
-          double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
-          LINALG::Matrix<3, 3>& dsigdCedrhoM)
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
+              dFgdrhoM,  ///< Derivative of inelastic growth deformation
+                         ///< gradient w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3> const&
+              diFgdrhoM,                 ///< Derivative of inverse inelastic growth
+                                         ///< deformation gradient w.r.t. the mass density
+          FiberData const& fiberdat,     ///< Data Container of fibers
+          int const gp,                  ///< Current Gauss-Point
+          ForceAnalytical const eleGID,  ///< Element Id
+          double& dsigdrho,              ///< Derivative of Cauchy stress w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3>& dsigdCedrhoM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
                   ///< the mass density
 
@@ -675,17 +691,20 @@ namespace MAT
       /// the elastic right Cauchy Green tensor w.r.t. the mass density (analytical
       /// differentiation)
       void EvaluateDerivativesCauchyGrowth(
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const& dFgdrhoM,   ///< Derivative of inelastic growth deformation
-                                                  ///< gradient w.r.t. the mass density
-          LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
-                                                  ///< deformation gradient w.r.t. the mass density
-          FiberData const& fiberdat,              ///< Data Container of fibers
-          int const gp,                           ///< Current Gauss-Point
-          int const eleGID,                       ///< Element Id
-          double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
-          LINALG::Matrix<3, 3>& dsigdCedrhoM)
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
+              dFgdrhoM,  ///< Derivative of inelastic growth deformation
+                         ///< gradient w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3> const&
+              diFgdrhoM,              ///< Derivative of inverse inelastic growth
+                                      ///< deformation gradient w.r.t. the mass density
+          FiberData const& fiberdat,  ///< Data Container of fibers
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID,           ///< Element Id
+          double& dsigdrho,           ///< Derivative of Cauchy stress w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3>& dsigdCedrhoM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
                   ///< the mass density
 
@@ -694,14 +713,15 @@ namespace MAT
       /// differentiation)
       template <typename ForceAnalytical>
       void EvaluateDerivativesCauchyRemodel(
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          FiberData const& fiberdat,         ///< Data Container of fibers
-          int const gp,                      ///< Current Gauss-Point
-          ForceAnalytical const eleGID,      ///< Element Id
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                      ///< Inverse growth deformation gradient (used in G&R)
+          FiberData const& fiberdat,     ///< Data Container of fibers
+          int const gp,                  ///< Current Gauss-Point
+          ForceAnalytical const eleGID,  ///< Element Id
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
-          LINALG::Matrix<3, 3>& dsigdCedlambrM)
+          CORE::LINALG::Matrix<3, 3>& dsigdCedlambrM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
                   ///< the inelastic remodeling stretch
 
@@ -709,26 +729,28 @@ namespace MAT
       /// the elastic right Cauchy Green tensor w.r.t. inverse remodeling stretch (analytical
       /// differentiation)
       void EvaluateDerivativesCauchyRemodel(
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          FiberData const& fiberdat,         ///< Data Container of fibers
-          int const gp,                      ///< Current Gauss-Point
-          int const eleGID,                  ///< Element Id
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
+          FiberData const& fiberdat,  ///< Data Container of fibers
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID,           ///< Element Id
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
-          LINALG::Matrix<3, 3>& dsigdCedlambrM)
+          CORE::LINALG::Matrix<3, 3>& dsigdCedlambrM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
                   ///< the inelastic remodeling stretch
 
       /// Evaluates growth and remodeling evolution equation
       void EvaluateEvolutionEquation(double& rg,  ///< Residual of growth evolution equation
           double& rr,                             ///< Residual of remodeling evolution equation
-          LINALG::Matrix<3, 3> const& CM,         ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          double const& dt,                  ///< Time step size
-          FiberData const& fiberdat,         ///< Container with all fiber specific data
-          int const gp,                      ///< Current Gauss-Point
-          int const eleGID) const;           ///< Element Id
+          CORE::LINALG::Matrix<3, 3> const& CM,   ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
+          double const& dt,           ///< Time step size
+          FiberData const& fiberdat,  ///< Container with all fiber specific data
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID) const;    ///< Element Id
 
       /// Evaluates growth and remodeling evolution equation
       void EvaluateDerivativeEvolutionEquation(
@@ -740,49 +762,55 @@ namespace MAT
           double& dEdrho,    ///< Derivative of growth evolution equation w.r.t. the mass density
           double& dEdlambr,  ///< Derivative of growth evolution equation w.r.t. the inelastic
                              ///< remodel stretch
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const& dFgdrhoM,   ///< Derivative of inelastic growth deformation
-                                                  ///< gradient w.r.t. the mass density
-          LINALG::Matrix<3, 3> const& diFgdrhoM,  ///< Derivative of inverse inelastic growth
-                                                  ///< deformation gradient w.r.t. the mass density
-          double const& dt,                       ///< Time step size
-          FiberData const& fiberdat,              ///< Container with all fiber specific data
-          int const gp,                           ///< Current Gauss-Point
-          int const eleGID) const;                ///< Element Id
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
+              dFgdrhoM,  ///< Derivative of inelastic growth deformation
+                         ///< gradient w.r.t. the mass density
+          CORE::LINALG::Matrix<3, 3> const&
+              diFgdrhoM,              ///< Derivative of inverse inelastic growth
+                                      ///< deformation gradient w.r.t. the mass density
+          double const& dt,           ///< Time step size
+          FiberData const& fiberdat,  ///< Container with all fiber specific data
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID) const;    ///< Element Id
 
       /// Derivative of growth and remodel evolution equation w.r.t. the right Cauchy-Green tensor
       void EvaluatedEvolutionEquationdC(
-          LINALG::Matrix<1, 6>& dWdC,        ///< Derivative of growth evolution equation
-          LINALG::Matrix<1, 6>& dEdC,        ///< Derivative of remodel evolution equation
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          double const& dt,                  ///< Time step size
-          FiberData const& fiberdat,         ///< Container with all fiber specific data
-          int const k,                       ///< k-th fiber family
-          int const gp,                      ///< Current Gauss-Point
-          int const eleGID);                 ///< Element Id
+          CORE::LINALG::Matrix<1, 6>& dWdC,      ///< Derivative of growth evolution equation
+          CORE::LINALG::Matrix<1, 6>& dEdC,      ///< Derivative of remodel evolution equation
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
+          double const& dt,           ///< Time step size
+          FiberData const& fiberdat,  ///< Container with all fiber specific data
+          int const k,                ///< k-th fiber family
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID);          ///< Element Id
 
       /// Time derivative of mass density and remodel stretch
       void EvaluatedEvolutionEquationdt(double& drhodt,  ///< Output
           double& dlambrdt,                              ///< Output
-          LINALG::Matrix<3, 3> const& CM,                ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          FiberData const& fiberdat,         ///< Container with all fiber specific data
-          int const k,                       ///< k-th fiber family
-          int const gp,                      ///< Current Gauss-Point
-          int const eleGID);                 ///< Element Id
+          CORE::LINALG::Matrix<3, 3> const& CM,          ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,                   ///< Inverse growth deformation gradient (used in G&R)
+          FiberData const& fiberdat,  ///< Container with all fiber specific data
+          int const k,                ///< k-th fiber family
+          int const gp,               ///< Current Gauss-Point
+          int const eleGID);          ///< Element Id
 
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
       /// inelastic remodel stretch (automatic differentiation)
       template <typename ForceAnalytical>
       void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
-          LINALG::Matrix<6, 1>& dSidrhoi,    ///< Output
-          LINALG::Matrix<6, 1>& dSidrhoj,    ///< Output
-          LINALG::Matrix<6, 1>& dSdlambr,    ///< Output
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+          CORE::LINALG::Matrix<6, 1>& dSidrhoi,  ///< Output
+          CORE::LINALG::Matrix<6, 1>& dSidrhoj,  ///< Output
+          CORE::LINALG::Matrix<6, 1>& dSdlambr,  ///< Output
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
               diFgdrhoM,  ///< Derivative of inverse inelastic growth deformation gradient w.r.t.
                           ///< the current mass density
           FiberData const& fiberdat,            ///< Container with all fiber specific data
@@ -792,12 +820,13 @@ namespace MAT
       /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
       /// inelastic remodel stretch (analytical differentiation)
       void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
-          LINALG::Matrix<6, 1>& dSidrhoi,    ///< Output
-          LINALG::Matrix<6, 1>& dSidrhoj,    ///< Output
-          LINALG::Matrix<6, 1>& dSdlambr,    ///< Output
-          LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
-          LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
-          LINALG::Matrix<3, 3> const&
+          CORE::LINALG::Matrix<6, 1>& dSidrhoi,  ///< Output
+          CORE::LINALG::Matrix<6, 1>& dSidrhoj,  ///< Output
+          CORE::LINALG::Matrix<6, 1>& dSdlambr,  ///< Output
+          CORE::LINALG::Matrix<3, 3> const& CM,  ///< Right Cauchy-Green tensor
+          CORE::LINALG::Matrix<3, 3> const&
+              iFgM,  ///< Inverse growth deformation gradient (used in G&R)
+          CORE::LINALG::Matrix<3, 3> const&
               diFgdrhoM,  ///< Derivative of inverse inelastic growth deformation gradient w.r.t.
                           ///< the current mass density
           FiberData const& fiberdat,  ///< Container with all fiber specific data

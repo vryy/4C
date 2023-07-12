@@ -72,7 +72,7 @@ namespace CONTACT
       INPAR::CONTACT::SolvingStrategy Type() const override;
 
       /// return the linear solver for the currently active strategy
-      LINALG::Solver* GetLinearSolver() const override;
+      CORE::LINALG::Solver* GetLinearSolver() const override;
 
       /// function wrapper
       void Reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
@@ -136,12 +136,13 @@ namespace CONTACT
           Epetra_Vector& f, const double& timefac_np) const override;
 
       /// function wrapper
-      Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+          const enum DRT::UTILS::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = NULL) const override;
 
       /// function wrapper
-      Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
-          Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const override;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override;
 
       /// function wrapper
       Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
@@ -262,7 +263,8 @@ namespace CONTACT
       void ResetLagrangeMultipliers(
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
 
-      void PostStoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps) override;
+      void PostStoreDirichletStatus(
+          Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps) override;
 
       /// @}
      private:
@@ -294,19 +296,19 @@ namespace CONTACT
 
       //! @name Deprecated methods
       //! @{
-      void EvaluateContact(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Deprecated function call!");
       };
-      void EvaluateFriction(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Deprecated function call!");
       };
-      void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+      void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-          Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+          Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         dserror("Deprecated function call!");
@@ -333,8 +335,8 @@ namespace CONTACT
         dserror("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
-      void InitializeUzawa(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Wrong strategy!");
       };

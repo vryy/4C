@@ -26,7 +26,7 @@
 #include "inpar_scatra.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -270,12 +270,12 @@ namespace DRT
         Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
 
     Teuchos::RCP<Epetra_MultiVector> SolveDiagonalNodalL2Projection(
-        LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
+        CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
         const Epetra_Map& noderowmap, const Epetra_Map* fullnoderowmap = NULL,
         const std::map<int, int>* slavetomastercolnodesmap = NULL,
         Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
 
-    Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(LINALG::SparseMatrix& massmatrix,
+    Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(CORE::LINALG::SparseMatrix& massmatrix,
         Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
         const int& solvernumber, const Epetra_Map& noderowmap,
         const Epetra_Map* fullnoderowmap = NULL,

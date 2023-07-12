@@ -40,14 +40,14 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::ElementHandle::Creat
 {
   const unsigned nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-  LINALG::Matrix<dim, nen> xie;
+  CORE::LINALG::Matrix<dim, nen> xie;
   if (cpoints.size() != nen) dserror("non-matching number of points");
 
   // Find the local coordinates of given corner points w.r. to background ElementHandle
   for (unsigned i = 0; i < nen; ++i)
   {
     CORE::GEO::CUT::Point* p = cpoints[i];
-    const LINALG::Matrix<3, 1>& xi = LocalCoordinates(p);
+    const CORE::LINALG::Matrix<3, 1>& xi = LocalCoordinates(p);
 
     // copy first dim entries into xie
     std::copy(xi.A(), xi.A() + dim, &xie(0, i));
@@ -870,14 +870,14 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
 
   // create middle nodes
 
-  LINALG::Matrix<3, 1> xyz;
-  LINALG::Matrix<1, 1> lsv;
+  CORE::LINALG::Matrix<3, 1> xyz;
+  CORE::LINALG::Matrix<1, 1> lsv;
 
   plain_int_set node_nids;
 
-  LINALG::Matrix<3, 8> side_xyze;
-  LINALG::Matrix<1, 8> side_lsvs;
-  LINALG::Matrix<8, 1> side_funct;
+  CORE::LINALG::Matrix<3, 8> side_xyze;
+  CORE::LINALG::Matrix<1, 8> side_lsvs;
+  CORE::LINALG::Matrix<8, 1> side_funct;
   std::vector<Node*> side_nodes(8);
 
   std::vector<Node*> center_nodes(6);
@@ -929,8 +929,8 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
   Node* node25 = center_nodes[5];
   int node25_id = node25->Id();
 
-  LINALG::Matrix<3, 20> xyze;
-  LINALG::Matrix<1, 20> lsvs;
+  CORE::LINALG::Matrix<3, 20> xyze;
+  CORE::LINALG::Matrix<1, 20> lsvs;
   nodes_.reserve(20);
   for (int i = 0; i < 20; ++i)
   {
@@ -944,7 +944,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
   // Remark: this node is also stored as shadow node in cut_mesh, however, the key for this shadow
   // node is the set of all 20 nodes of the hex20 element in contrast to the shadow nodes of sides,
   // for that the key are the eight nodes of the quad7 side
-  LINALG::Matrix<20, 1> funct;
+  CORE::LINALG::Matrix<20, 1> funct;
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, ::DRT::Element::hex20);
 
   xyz.Multiply(xyze, funct);
@@ -1346,14 +1346,14 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
 
   // create middle nodes
 
-  LINALG::Matrix<3, 1> xyz;
-  LINALG::Matrix<1, 1> lsv;
+  CORE::LINALG::Matrix<3, 1> xyz;
+  CORE::LINALG::Matrix<1, 1> lsv;
 
   plain_int_set node_nids;
 
-  LINALG::Matrix<3, 8> side_xyze;
-  LINALG::Matrix<1, 8> side_lsvs;
-  LINALG::Matrix<8, 1> side_funct;
+  CORE::LINALG::Matrix<3, 8> side_xyze;
+  CORE::LINALG::Matrix<1, 8> side_lsvs;
+  CORE::LINALG::Matrix<8, 1> side_funct;
   std::vector<Node*> side_nodes(8);
 
   std::vector<Node*> center_nodes(3);
@@ -1388,9 +1388,9 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
     center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.A(), lsv(0));
   }
 
-  LINALG::Matrix<3, 6> tb_side_xyze;  // top_bottom_sides
-  LINALG::Matrix<1, 6> tb_side_lsvs;
-  LINALG::Matrix<6, 1> tb_side_funct;
+  CORE::LINALG::Matrix<3, 6> tb_side_xyze;  // top_bottom_sides
+  CORE::LINALG::Matrix<1, 6> tb_side_lsvs;
+  CORE::LINALG::Matrix<6, 1> tb_side_funct;
   std::vector<Node*> tb_side_nodes(6);
 
   // two quadratic sides on top and bottom
@@ -1419,8 +1419,8 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
   int node17_id = node17->Id();
 
 
-  LINALG::Matrix<3, 15> xyze;
-  LINALG::Matrix<1, 15> lsvs;
+  CORE::LINALG::Matrix<3, 15> xyze;
+  CORE::LINALG::Matrix<1, 15> lsvs;
   nodes_.reserve(15);
   for (int i = 0; i < 15; ++i)
   {
@@ -1544,7 +1544,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, ::DRT::Element::hex20>(nodes_, xyz);
@@ -1572,7 +1572,7 @@ void CORE::GEO::CUT::Hex20ElementHandle::LocalCoordinates(
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Hex27ElementHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, ::DRT::Element::hex27>(nodes_, xyz);
@@ -1589,7 +1589,7 @@ void CORE::GEO::CUT::Hex27ElementHandle::LocalCoordinates(
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Tet10ElementHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, ::DRT::Element::tet10>(nodes_, xyz);
@@ -1605,7 +1605,7 @@ void CORE::GEO::CUT::Tet10ElementHandle::LocalCoordinates(
 // compute local coordinates of the element for given global coordinates
 /*----------------------------------------------------------------------*/
 void CORE::GEO::CUT::Wedge15ElementHandle::LocalCoordinates(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, ::DRT::Element::wedge15>(nodes_, xyz);

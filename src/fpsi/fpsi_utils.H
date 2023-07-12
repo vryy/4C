@@ -94,7 +94,7 @@ namespace FPSI
   namespace UTILS
   {
     /// specific MultiMapExtractor to handle the fluid field
-    class MapExtractor : public LINALG::MultiMapExtractor
+    class MapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum

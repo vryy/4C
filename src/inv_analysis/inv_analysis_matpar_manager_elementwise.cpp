@@ -97,7 +97,7 @@ void INVANA::MatParManagerPerElement::Setup()
   }
 
   // finally build the MapExtractor
-  paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmap_, partials));
+  paramapextractor_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*paramlayoutmap_, partials));
 
   optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_, 1, true));
   optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_, 1, true));
@@ -331,7 +331,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
   {
     case INPAR::INVANA::stat_inv_graph_area:
     {
-      LINALG::GatherAll<std::vector<int>, double>(faceweight, paramrowmap.Comm());
+      CORE::LINALG::GatherAll<std::vector<int>, double>(faceweight, paramrowmap.Comm());
       std::map<std::vector<int>, double>::iterator weightsit;
 
       double avgarea = 0.0;
@@ -399,7 +399,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       std::vector<int> rowningprocs;
       if (face_abroad != facemap.end() && Discret()->Comm().MyPID() != i)
         sowningprocs.push_back(Discret()->Comm().MyPID());
-      LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc.data(), Discret()->Comm());
+      CORE::LINALG::Gather(sowningprocs, rowningprocs, numprocs, allproc.data(), Discret()->Comm());
 
       // now bring parameters corresponding to this face on the other procs to proc i
       // (they are send to all procs but only proc i stores them in the map with
@@ -409,7 +409,7 @@ void INVANA::MatParManagerPerElement::FillAdjacencyMatrix(
       if (std::find(rowningprocs.begin(), rowningprocs.end(), Discret()->Comm().MyPID()) !=
           rowningprocs.end())
         sparams = facemap[facekey];
-      LINALG::Gather(sparams, rparams, numprocs, allproc.data(), Discret()->Comm());
+      CORE::LINALG::Gather(sparams, rparams, numprocs, allproc.data(), Discret()->Comm());
 
       // store additional elements on proc i
       if (Discret()->Comm().MyPID() == i)

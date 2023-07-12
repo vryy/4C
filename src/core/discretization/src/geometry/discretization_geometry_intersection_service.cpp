@@ -23,10 +23,10 @@
  |  ML:     computes the cross product                       u.may 08/07|
  |          of 2 vectors c = a x b                                      |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 1> CORE::GEO::computeCrossProduct(
-    const LINALG::Matrix<3, 1>& a, const LINALG::Matrix<3, 1>& b)
+CORE::LINALG::Matrix<3, 1> CORE::GEO::computeCrossProduct(
+    const CORE::LINALG::Matrix<3, 1>& a, const CORE::LINALG::Matrix<3, 1>& b)
 {
-  LINALG::Matrix<3, 1> c;
+  CORE::LINALG::Matrix<3, 1> c;
 
   c(0) = a(1) * b(2) - a(2) * b(1);
   c(1) = a(2) * b(0) - a(0) * b(2);
@@ -41,7 +41,7 @@ LINALG::Matrix<3, 1> CORE::GEO::computeCrossProduct(
  |          HIGHERORDER                                                 |
  *----------------------------------------------------------------------*/
 void CORE::GEO::checkGeoType(const ::DRT::Element* element,
-    const LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
+    const CORE::LINALG::SerialDenseMatrix& xyze_element, EleGeoType& eleGeoType)
 {
   bool cartesian = true;
   int CartesianCount = 0;
@@ -120,19 +120,20 @@ void CORE::GEO::checkGeoType(const ::DRT::Element* element,
  | delivers a axis-aligned bounding box for a given          u.may 12/08|
  | discretization                                                       |
  *----------------------------------------------------------------------*/
-const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
-    const ::DRT::Discretization& dis, const std::map<int, LINALG::Matrix<3, 1>>& currentpositions)
+const std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
+    const ::DRT::Discretization& dis,
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions)
 {
-  std::map<int, LINALG::Matrix<3, 2>> currentXAABBs;
+  std::map<int, CORE::LINALG::Matrix<3, 2>> currentXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int j = 0; j < dis.NumMyColElements(); ++j)
   {
     const ::DRT::Element* element = dis.lColElement(j);
-    const LINALG::SerialDenseMatrix xyze_element(
+    const CORE::LINALG::SerialDenseMatrix xyze_element(
         CORE::GEO::getCurrentNodalPositions(element, currentpositions));
     CORE::GEO::EleGeoType eleGeoType(CORE::GEO::HIGHERORDER);
     CORE::GEO::checkGeoType(element, xyze_element, eleGeoType);
-    const LINALG::Matrix<3, 2> xaabbEle =
+    const CORE::LINALG::Matrix<3, 2> xaabbEle =
         CORE::GEO::computeFastXAABB(element->Shape(), xyze_element, eleGeoType);
     currentXAABBs[element->Id()] = xaabbEle;
   }
@@ -145,21 +146,21 @@ const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getCurrentXAABBs(
  | delivers a axis-aligned bounding box for a given          u.may 02/09|
  | triangle list                                                        |
  *----------------------------------------------------------------------*/
-const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getTriangleXAABBs(
+const std::map<int, CORE::LINALG::Matrix<3, 2>> CORE::GEO::getTriangleXAABBs(
     const std::vector<std::vector<int>>& triangleList,
     const std::vector<CORE::GEO::InterfacePoint>& pointList)
 {
-  std::map<int, LINALG::Matrix<3, 2>> triangleXAABBs;
+  std::map<int, CORE::LINALG::Matrix<3, 2>> triangleXAABBs;
   // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
   for (int i = 0; i < (int)triangleList.size(); ++i)
   {
-    LINALG::SerialDenseMatrix xyze_triElement(3, 3);
+    CORE::LINALG::SerialDenseMatrix xyze_triElement(3, 3);
     for (int j = 0; j < 3; j++)
     {
-      LINALG::Matrix<3, 1> node = pointList[triangleList[i][j]].getCoord();
+      CORE::LINALG::Matrix<3, 1> node = pointList[triangleList[i][j]].getCoord();
       for (int k = 0; k < 3; k++) xyze_triElement(k, j) = node(k);
     }
-    LINALG::Matrix<3, 2> xaabbEle = CORE::GEO::computeFastXAABB(
+    CORE::LINALG::Matrix<3, 2> xaabbEle = CORE::GEO::computeFastXAABB(
         ::DRT::Element::tri3, xyze_triElement, CORE::GEO::EleGeoType(LINEAR));
     triangleXAABBs[i] = xaabbEle;
   }
@@ -172,11 +173,11 @@ const std::map<int, LINALG::Matrix<3, 2>> CORE::GEO::getTriangleXAABBs(
  |  ICS:    computes 18Dops                                  u.may 12/08|
  |          (only the slabs which are not present in an XAABB)          |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6, 2> CORE::GEO::computeContact18Dop(
-    const ::DRT::Element* element, const LINALG::SerialDenseMatrix& xyze)
+CORE::LINALG::Matrix<6, 2> CORE::GEO::computeContact18Dop(
+    const ::DRT::Element* element, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   // consider only remaining slabs
-  LINALG::Matrix<6, 2> slabs;
+  CORE::LINALG::Matrix<6, 2> slabs;
 
   for (int j = 0; j < 6; j++)
     slabs(j, 0) = slabs(j, 1) =
@@ -217,7 +218,7 @@ LINALG::Matrix<6, 2> CORE::GEO::computeContact18Dop(
  |  ICS:    checks if two 18DOPs intersect                   u.may 12/08| |
  *----------------------------------------------------------------------*/
 bool CORE::GEO::intersectionOfKDOPs(
-    const LINALG::Matrix<9, 2>& cutterDOP, const LINALG::Matrix<9, 2>& xfemDOP)
+    const CORE::LINALG::Matrix<9, 2>& cutterDOP, const CORE::LINALG::Matrix<9, 2>& xfemDOP)
 {
   // check intersection of 18 kdops
   for (int i = 0; i < 9; i++)
@@ -240,7 +241,7 @@ bool CORE::GEO::intersectionOfKDOPs(
  |                                                          wirtz 08/14 |
  *----------------------------------------------------------------------*/
 bool CORE::GEO::intersectionOfBVs(
-    const LINALG::Matrix<3, 2>& currentBV, const LINALG::Matrix<3, 2>& queryBV)
+    const CORE::LINALG::Matrix<3, 2>& currentBV, const CORE::LINALG::Matrix<3, 2>& queryBV)
 {
   return (overlap(currentBV(0, 0), currentBV(0, 1), queryBV(0, 0), queryBV(0, 1)) and
           overlap(currentBV(1, 0), currentBV(1, 1), queryBV(1, 0), queryBV(1, 1)) and
@@ -265,11 +266,11 @@ bool CORE::GEO::overlap(double smin, double smax, double omin, double omax)
  |  CLI:    checks if a position is within a given element   u.may 06/07|
  *----------------------------------------------------------------------*/
 bool CORE::GEO::checkPositionWithinElement(const ::DRT::Element* element,
-    const LINALG::SerialDenseMatrix& xyze, const LINALG::Matrix<3, 1>& x)
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& x)
 {
   dsassert(CORE::DRT::UTILS::getDimension(element->Shape()) == 3,
       "only valid for 3 dimensional elements");
-  LINALG::Matrix<3, 1> xsi(true);
+  CORE::LINALG::Matrix<3, 1> xsi(true);
   bool nodeWithinElement = currentToVolumeElementCoordinates(element->Shape(), xyze, x, xsi);
   // printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol =
   // %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
@@ -286,8 +287,9 @@ bool CORE::GEO::checkPositionWithinElement(const ::DRT::Element* element,
  |          element for a given point in physical coordinates           |
  *----------------------------------------------------------------------*/
 bool CORE::GEO::searchForNearestPointOnSurface(const ::DRT::Element* surfaceElement,
-    const LINALG::SerialDenseMatrix& xyze_surfaceElement, const LINALG::Matrix<3, 1>& physCoord,
-    LINALG::Matrix<2, 1>& eleCoord, LINALG::Matrix<3, 1>& normal, double& distance)
+    const CORE::LINALG::SerialDenseMatrix& xyze_surfaceElement,
+    const CORE::LINALG::Matrix<3, 1>& physCoord, CORE::LINALG::Matrix<2, 1>& eleCoord,
+    CORE::LINALG::Matrix<3, 1>& normal, double& distance)
 {
   CurrentToSurfaceElementCoordinates(
       surfaceElement->Shape(), xyze_surfaceElement, physCoord, eleCoord);
@@ -296,11 +298,11 @@ bool CORE::GEO::searchForNearestPointOnSurface(const ::DRT::Element* surfaceElem
       checkPositionWithinElementParameterSpace(eleCoord, surfaceElement->Shape());
 
   // normal vector at position xsi
-  static LINALG::Matrix<3, 1> eleNormalAtXsi;
+  static CORE::LINALG::Matrix<3, 1> eleNormalAtXsi;
   computeNormalToSurfaceElement(
       surfaceElement->Shape(), xyze_surfaceElement, eleCoord, eleNormalAtXsi);
 
-  LINALG::Matrix<3, 1> x_surface_phys;
+  CORE::LINALG::Matrix<3, 1> x_surface_phys;
   elementToCurrentCoordinates(
       surfaceElement->Shape(), xyze_surfaceElement, eleCoord, x_surface_phys);
   // normal pointing away from the surface towards physCoord

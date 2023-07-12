@@ -486,19 +486,19 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
     dserror("ERROR: Maps not initialized!");
 
   // init as standard sparse matrix --> local assembly
-  D_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  M_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  H_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  T_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  N_ = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  D_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  M_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  H_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  T_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  N_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*slavedofrowmap_, 81, false, false));
 
   gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_, true));
 
   // init as fe matrix --> nonlocal assembly
-  DLin_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*slavedofrowmap_, 81, true, false, LINALG::SparseMatrix::FE_MATRIX));
-  MLin_ = Teuchos::rcp(new LINALG::SparseMatrix(
-      *masterdofrowmap_, 81, true, false, LINALG::SparseMatrix::FE_MATRIX));
+  DLin_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *slavedofrowmap_, 81, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  MLin_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *masterdofrowmap_, 81, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   // bye
   return;
@@ -538,7 +538,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   pslavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
   pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
-  psmdofrowmap_ = LINALG::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
+  psmdofrowmap_ = CORE::LINALG::MergeMap(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
   interface->PrintParallelDistribution();
@@ -565,7 +565,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
   masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
   slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
-  smdofrowmap_ = LINALG::MergeMap(slavedofrowmap_, masterdofrowmap_, false);
+  smdofrowmap_ = CORE::LINALG::MergeMap(slavedofrowmap_, masterdofrowmap_, false);
 
   // store interface
   interface_ = interface;
@@ -753,8 +753,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
   interface_->CreateSearchTree();
 
   // interface displacement (=0) has to be merged from slave and master discretization
-  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Map> dofrowmap =
+      CORE::LINALG::MergeMap(masterdofrowmap_, slavedofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> dispn = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->SetState(MORTAR::state_new_displacement, *dispn);
@@ -928,8 +929,8 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
     // transform gap vector
     if (gap_ != Teuchos::null)
     {
-      Teuchos::RCP<Epetra_Vector> pgap = LINALG::CreateVector(*pslavenoderowmap_, true);
-      LINALG::Export(*gap_, *pgap);
+      Teuchos::RCP<Epetra_Vector> pgap = CORE::LINALG::CreateVector(*pslavenoderowmap_, true);
+      CORE::LINALG::Export(*gap_, *pgap);
       gap_ = pgap;
     }
   }  // end parredist
@@ -1051,8 +1052,8 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->Complete();
-  Dinv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*slavedofrowmap_, true);
+  Dinv_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*D_));
+  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(*slavedofrowmap_, true);
   int err = 0;
 
   // extract diagonal of invd into diag
@@ -1081,7 +1082,7 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   Dinv_->Complete();
 
   // do the multiplication P = inv(D) * M
-  P_ = LINALG::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
+  P_ = CORE::LINALG::MLMultiply(*Dinv_, false, *M_, false, false, false, true);
 
   // complete the matrix
   P_->Complete(*masterdofrowmap_, *slavedofrowmap_);

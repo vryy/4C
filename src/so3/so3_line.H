@@ -194,15 +194,15 @@ namespace DRT
       CORE::DRT::UTILS::GaussRule1D gaussrule_;
 
       //! line integration
-      void LineIntegration(
-          double& dL, const LINALG::SerialDenseMatrix& x, const LINALG::SerialDenseMatrix& deriv);
+      void LineIntegration(double& dL, const CORE::LINALG::SerialDenseMatrix& x,
+          const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Create matrix with material configuration
 
       \param x  (out)  : nodal coords in material frame
       */
-      inline void MaterialConfiguration(LINALG::SerialDenseMatrix& x) const
+      inline void MaterialConfiguration(CORE::LINALG::SerialDenseMatrix& x) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)

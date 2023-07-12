@@ -194,7 +194,7 @@ namespace IO
     void SurfaceVectorFieldDofBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret,      ///< discretization
         const Teuchos::RCP<const Epetra_Vector> vectorfield,  ///< vector field to output
-        std::map<int, LINALG::Matrix<3, 1>>& currpos,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currpos,
         std::ostream& s,  ///< output stream
         const int nsd, const int numdofpernode);
 
@@ -298,15 +298,15 @@ namespace IO
     }
 
     //! take a scalar value at a point and translate it into Gmsh postprocessing format
-    void ScalarToStream(const LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
-        const double scalarvalue,                              ///< scalar value at this point
-        std::ostream& s                                        ///< stream
+    void ScalarToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+        const double scalarvalue,                                    ///< scalar value at this point
+        std::ostream& s                                              ///< stream
     );
 
     //! take a scalar value at a point and translate it into Gmsh postprocessing format
-    void VectorToStream(const LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
-        const LINALG::Matrix<3, 1>& vectorvalue,               ///< vector at this point
-        std::ostream& s                                        ///< stream
+    void VectorToStream(const CORE::LINALG::Matrix<3, 1>& pointXYZ,  ///< coordinates of point
+        const CORE::LINALG::Matrix<3, 1>& vectorvalue,               ///< vector at this point
+        std::ostream& s                                              ///< stream
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
@@ -434,14 +434,16 @@ namespace IO
     void elementAtCurrentPositionToStream(
         const double scalar,      ///< scalar value for the entire element
         const DRT::Element* ele,  ///< element to print
-        const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions,  ///< nodal position array
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+            currentelepositions,  ///< nodal position array
         std::ostream& s);
 
     //! take an entire DRT::Element and print it with constant scalar value at the given position
     std::string elementAtCurrentPositionToString(
         const double scalar,      ///< scalar value for the entire element
         const DRT::Element* ele,  ///< element to print
-        const std::map<int, LINALG::Matrix<3, 1>>& currentelepositions  ///< nodal position array
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>&
+            currentelepositions  ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element
@@ -564,9 +566,9 @@ namespace IO
     }
 
     /// print a piece of text at a given position
-    std::string text3dToString(const LINALG::Matrix<3, 1>& xyz,  ///< 3d Position of text
-        const std::string& text,                                 ///< text to be printed
-        const int fontsize                                       ///< font size
+    std::string text3dToString(const CORE::LINALG::Matrix<3, 1>& xyz,  ///< 3d Position of text
+        const std::string& text,                                       ///< text to be printed
+        const int fontsize                                             ///< font size
     );
 
     //! print discretization in initial configuration (t = 0)
@@ -580,12 +582,12 @@ namespace IO
     //! print discretization in current configuration (t > 0)
     void disToStream(const std::string& text, const double scalar,
         const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, std::ostream& s);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, std::ostream& s);
 
     //! print discretization in current configuration (t > 0)
     std::string disToString(const std::string& text, const double scalar,
         const Teuchos::RCP<DRT::Discretization> dis,
-        const std::map<int, LINALG::Matrix<3, 1>>& currentpositions);
+        const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 
     std::string GetNewFileNameAndDeleteOldFiles(const std::string& filename_base,
         const int& actstep,    ///< generate filename for this step

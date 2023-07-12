@@ -117,22 +117,24 @@ namespace MAT
     void Evaluate(const Epetra_SerialDenseVector* glstrain_e, Epetra_SerialDenseMatrix* cmat_e,
         Epetra_SerialDenseVector* stress_e);
 
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
     void StrainEnergy(
-        const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
+        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
-    void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, int gp, int eleGID) override;
+    void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        CORE::LINALG::Matrix<3, 3>* rcg_new, CORE::LINALG::Matrix<3, 3>* rcg_old, int gp,
+        int eleGID) override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6, 6>& cmat);
+    void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);
 
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry
@@ -141,7 +143,7 @@ namespace MAT
     //@}
 
     //! general setup of constitutive tensor based on Young's and poisson's ratio
-    static void FillCmat(LINALG::Matrix<6, 6>& cmat, double Emod, double nu);
+    static void FillCmat(CORE::LINALG::Matrix<6, 6>& cmat, double Emod, double nu);
 
    private:
     /// my material parameters

@@ -50,17 +50,17 @@ namespace STR
       bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override;
 
       //! Apply the stiffness only [derived]
-      bool ApplyStiff(const Epetra_Vector& x, LINALG::SparseOperator& jac) override;
+      bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) override;
 
       //! Apply force and stiff at once [derived]
       bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) override;
+          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
       //! [derived]
       bool AssembleForce(Epetra_Vector& f,
           const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
 
-      bool AssembleJac(LINALG::SparseOperator& jac,
+      bool AssembleJac(CORE::LINALG::SparseOperator& jac,
           const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
 
       //! [derived]
@@ -191,7 +191,7 @@ namespace STR
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      void AddViscoMassContributions(LINALG::SparseOperator& jac) const override;
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /*! \brief Update constant contributions of the current state for the new time step
        * \f$ t_{n+1} \f$ based on the generalized alpha scheme:

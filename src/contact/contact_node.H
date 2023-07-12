@@ -923,20 +923,20 @@ namespace CONTACT
       weighted_avTangVel_.Clear();
     }
 
-    LINALG::Matrix<3, 1>& GetWeightedRelTangVel() { return weighted_relTangVel_; }
-    std::unordered_map<int, LINALG::Matrix<3, 1>>& GetWeightedRelTangVelDeriv()
+    CORE::LINALG::Matrix<3, 1>& GetWeightedRelTangVel() { return weighted_relTangVel_; }
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetWeightedRelTangVelDeriv()
     {
       return deriv_weighted_relTangVel_;
     }
 
-    LINALG::Matrix<3, 1>& GetWeightedAvTangVel() { return weighted_avTangVel_; }
-    std::unordered_map<int, LINALG::Matrix<3, 1>>& GetWeightedAvTangVelDeriv()
+    CORE::LINALG::Matrix<3, 1>& GetWeightedAvTangVel() { return weighted_avTangVel_; }
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetWeightedAvTangVelDeriv()
     {
       return deriv_weighted_avTangVel_;
     }
 
-    std::unordered_map<int, LINALG::Matrix<3, 1>>& GetSurfGrad() { return tang_grad_; }
-    std::unordered_map<int, std::unordered_map<int, LINALG::Matrix<3, 1>>>& GetSurfGradDeriv()
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>& GetSurfGrad() { return tang_grad_; }
+    std::unordered_map<int, std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>>& GetSurfGradDeriv()
     {
       return tang_grad_deriv_;
     }
@@ -947,14 +947,14 @@ namespace CONTACT
     CoNodeEhlDataContainer(const CoNodeEhlDataContainer& old) = delete;
 
     // actual data
-    LINALG::Matrix<3, 1> weighted_relTangVel_;
-    std::unordered_map<int, LINALG::Matrix<3, 1>> deriv_weighted_relTangVel_;
+    CORE::LINALG::Matrix<3, 1> weighted_relTangVel_;
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> deriv_weighted_relTangVel_;
 
-    LINALG::Matrix<3, 1> weighted_avTangVel_;
-    std::unordered_map<int, LINALG::Matrix<3, 1>> deriv_weighted_avTangVel_;
+    CORE::LINALG::Matrix<3, 1> weighted_avTangVel_;
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> deriv_weighted_avTangVel_;
 
-    std::unordered_map<int, LINALG::Matrix<3, 1>> tang_grad_;
-    std::unordered_map<int, std::unordered_map<int, LINALG::Matrix<3, 1>>> tang_grad_deriv_;
+    std::unordered_map<int, CORE::LINALG::Matrix<3, 1>> tang_grad_;
+    std::unordered_map<int, std::unordered_map<int, CORE::LINALG::Matrix<3, 1>>> tang_grad_deriv_;
   };
 
   /*!

@@ -35,7 +35,8 @@ void MORTAR::MultiFieldCoupling::PushBackCoupling(const Teuchos::RCP<DRT::Discre
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void MORTAR::MultiFieldCoupling::CondenseMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat)
+void MORTAR::MultiFieldCoupling::CondenseMatrix(
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat)
 {
   MORTAR::UTILS::MortarMatrixCondensation(mat, p_);
 }

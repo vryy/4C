@@ -394,7 +394,7 @@ namespace CORE::VOLMORTAR
         case ::DRT::Element::line3:
         {
           // metrics routine gives local basis vectors
-          LINALG::Matrix<ndim, nn> deriv;
+          CORE::LINALG::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
           ::CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, xi[0], distype);
@@ -427,7 +427,7 @@ namespace CORE::VOLMORTAR
         case ::DRT::Element::quad9:
         {
           // metrics routine gives local basis vectors
-          LINALG::Matrix<ndim, nn> deriv;
+          CORE::LINALG::Matrix<ndim, nn> deriv;
 
           // get shape function values and derivatives at xi
           ::CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, xi[0], xi[1], distype);
@@ -457,7 +457,7 @@ namespace CORE::VOLMORTAR
         }
         case ::DRT::Element::tet4:
         {
-          LINALG::Matrix<4, 4> jacob;
+          CORE::LINALG::Matrix<4, 4> jacob;
           for (int i = 0; i < 4; i++) jacob(0, i) = 1;
           for (int row = 0; row < 3; row++)
             for (int col = 0; col < 4; col++) jacob(row + 1, col) = ele.Nodes()[col]->X()[row];
@@ -472,14 +472,14 @@ namespace CORE::VOLMORTAR
         case ::DRT::Element::tet10:
         case ::DRT::Element::pyramid5:
         {
-          LINALG::Matrix<ndim, nn> derivs;
+          CORE::LINALG::Matrix<ndim, nn> derivs;
           const double r = xi[0];
           const double s = xi[1];
           const double t = xi[2];
 
           ::CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, distype);
 
-          LINALG::Matrix<nn, ndim> xrefe;
+          CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
             const ::DRT::Node* const* nodes = ele.Nodes();
@@ -490,7 +490,7 @@ namespace CORE::VOLMORTAR
             xrefe(i, 2) = nodes[i]->X()[2];
           }
 
-          LINALG::Matrix<ndim, ndim> invJ;
+          CORE::LINALG::Matrix<ndim, ndim> invJ;
           invJ.Clear();
 
           invJ.Multiply(derivs, xrefe);
@@ -585,7 +585,7 @@ namespace CORE::VOLMORTAR
         case ::DRT::Element::nurbs8:
         case ::DRT::Element::nurbs27:
         {
-          LINALG::Matrix<nn, ndim> xrefe;
+          CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
           {
             const ::DRT::Node* const* nodes = ele.Nodes();
@@ -596,7 +596,7 @@ namespace CORE::VOLMORTAR
             xrefe(i, 2) = nodes[i]->X()[2];
           }
 
-          LINALG::Matrix<ndim, ndim> invJ;
+          CORE::LINALG::Matrix<ndim, ndim> invJ;
           invJ.Clear();
 
           invJ.Multiply(deriv, xrefe);
@@ -991,7 +991,7 @@ namespace CORE::VOLMORTAR
           const double ssm = 1.0 - s * s;
           const double ttm = 1.0 - t * t;
 
-          LINALG::Matrix<20, 1> valtmp;
+          CORE::LINALG::Matrix<20, 1> valtmp;
 
           // corner nodes
           valtmp(0) = Q18 * rm * sm * tm * (rm + sm + tm - 5.0);
@@ -1055,7 +1055,7 @@ namespace CORE::VOLMORTAR
         case ::DRT::Element::tet10:
         {
           const double u = 1.0 - r - s - t;
-          LINALG::Matrix<10, 1> valtmp;
+          CORE::LINALG::Matrix<10, 1> valtmp;
 
           valtmp(0) = u * (2.0 * u - 1.0);
           valtmp(1) = r * (2.0 * r - 1.0);
@@ -1137,11 +1137,11 @@ namespace CORE::VOLMORTAR
 
           double detg = 0.0;
 
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
 
           for (int i = 0; i < nnodes; ++i) funct(i) = 0.0;
 
@@ -1163,7 +1163,7 @@ namespace CORE::VOLMORTAR
           }
 
           // get solution matrix with dual parameters
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1214,16 +1214,16 @@ namespace CORE::VOLMORTAR
               DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
           W refderiv = deriv;
 
           // establish fundamental data
           double detg = 0.0;
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
           for (int i = 0; i < intpoints.IP().nquad; ++i)
           {
@@ -1240,7 +1240,7 @@ namespace CORE::VOLMORTAR
           }
 
           // calcute coefficient matrix
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1312,13 +1312,13 @@ namespace CORE::VOLMORTAR
               DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
 
           // establish fundamental data
           double detg = 0.0;
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
           for (int i = 0; i < intpoints.IP().nquad; ++i)
           {
@@ -1335,7 +1335,7 @@ namespace CORE::VOLMORTAR
               }
           }
           // invert bi-ortho matrix me
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1388,16 +1388,16 @@ namespace CORE::VOLMORTAR
               DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
           W refderiv = deriv;
 
           // establish fundamental data
           double detg = 0.0;
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
           for (int i = 0; i < intpoints.IP().nquad; ++i)
           {
@@ -1414,7 +1414,7 @@ namespace CORE::VOLMORTAR
           }
 
           // calcute coefficient matrix
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1476,15 +1476,15 @@ namespace CORE::VOLMORTAR
               DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
 
           // establish fundamental data
           double detg = 0.0;
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
           for (int i = 0; i < intpoints.IP().nquad; ++i)
           {
@@ -1502,7 +1502,7 @@ namespace CORE::VOLMORTAR
           }
 
           // calcute coefficient matrix
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1567,16 +1567,16 @@ namespace CORE::VOLMORTAR
               DisTypeToOptGaussRule<distype>::rule);
 
           // get solution matrix with dual parameters
-          LINALG::Matrix<nnodes, 1> stdval;
+          CORE::LINALG::Matrix<nnodes, 1> stdval;
           W refderiv = deriv;
 
           // establish fundamental data
           double detg = 0.0;
 
           // compute entries to bi-ortho matrices me/de with Gauss quadrature
-          LINALG::Matrix<nnodes, nnodes> me(true);
-          LINALG::Matrix<nnodes, nnodes> de(true);
-          LINALG::Matrix<nnodes, nnodes> ae;
+          CORE::LINALG::Matrix<nnodes, nnodes> me(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> de(true);
+          CORE::LINALG::Matrix<nnodes, nnodes> ae;
 
           for (int i = 0; i < intpoints.IP().nquad; ++i)
           {
@@ -1594,7 +1594,7 @@ namespace CORE::VOLMORTAR
           }
 
           // calcute coefficient matrix
-          LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
+          CORE::LINALG::InvertAndMultiplyByCholesky<nnodes>(me, de, ae);
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
@@ -1653,7 +1653,7 @@ namespace CORE::VOLMORTAR
           const double ttm = 1.0 - t * t;
           const double Q18 = 1.0 / 8.0;
 
-          LINALG::Matrix<3, 20> valtmp;
+          CORE::LINALG::Matrix<3, 20> valtmp;
 
           // corner nodes
           valtmp(0, 0) = -Q18 * sm * tm * (2.0 * rm + sm + tm - 5.0);
@@ -1855,8 +1855,8 @@ namespace CORE::VOLMORTAR
 
       for (int i = 0; i < ndim; ++i) globcoord[i] = 0.0;
 
-      LINALG::Matrix<n, 1> val;
-      LINALG::Matrix<ndim, n> coord;
+      CORE::LINALG::Matrix<n, 1> val;
+      CORE::LINALG::Matrix<ndim, n> coord;
 
       shape_function<distype>(val, xi);
 

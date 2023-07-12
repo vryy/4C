@@ -20,11 +20,11 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace ADAPTER
 {
   /**
@@ -47,7 +47,7 @@ namespace ADAPTER
      * \brief Initializes all members of the class     *
      */
     void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
 
     /**
      * \brief Computes the coupling matrices
@@ -69,16 +69,16 @@ namespace ADAPTER
     void PrepareFluidSolve() override { SetWeakDirichletFlag(); };
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const override { return Css_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const override { return Css_; };
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    Teuchos::RCP<const LINALG::SparseOperator> GetCff() const override { return Cff_; };
+    Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const override { return Cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const override { return Csf_; };
+    Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const override { return Csf_; };
 
     /// Negative RHS coupling contribution for the fluid partition \f$f_f\f$
     Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const override { return ff_; };
@@ -123,16 +123,16 @@ namespace ADAPTER
 
    private:
     /// Coupling matrix containing only structure side contributions \f$C_ss\f$
-    Teuchos::RCP<LINALG::SparseMatrix> Css_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Css_;
 
     /// Coupling matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<LINALG::SparseOperator> Cff_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> Cff_;
 
     /// Coupling matrix containing mixed fluid side contributions \f$C_fs\f$
-    Teuchos::RCP<LINALG::SparseMatrix> Cfs_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Cfs_;
 
     /// Coupling matrix containing mixed structure side contributions \f$C_sf\f$
-    Teuchos::RCP<LINALG::SparseMatrix> Csf_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Csf_;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     Teuchos::RCP<Epetra_FEVector> ff_;

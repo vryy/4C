@@ -24,11 +24,11 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -49,7 +49,8 @@ namespace FLD
    public:
     /// Standard Constructor
     XWall(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-        Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+        Teuchos::RCP<Teuchos::ParameterList>& params,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
 
     /// Destructor
@@ -59,7 +60,7 @@ namespace FLD
     virtual void SetXWallParams(Teuchos::ParameterList& eleparams);
 
     // adapt ml nullspace for aggregation for scale separation (mfs)
-    void AdaptMLNullspace(const Teuchos::RCP<LINALG::Solver>& solver);
+    void AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solver);
 
     // get output vector of enriched dofs
     Teuchos::RCP<Epetra_Vector> GetOutputVector(Teuchos::RCP<Epetra_Vector> vel);
@@ -76,7 +77,7 @@ namespace FLD
     {
       Teuchos::RCP<Epetra_Vector> tauw =
           Teuchos::rcp(new Epetra_Vector(*(discret_->NodeRowMap()), true));
-      LINALG::Export(*tauw_, *tauw);
+      CORE::LINALG::Export(*tauw_, *tauw);
       return tauw;
     }
 
@@ -189,7 +190,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> oldinctauw_;
 
     //! matrix projecting the wall shear stress to off-wall nodes
-    Teuchos::RCP<LINALG::SparseMatrix> tauwcouplingmattrans_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tauwcouplingmattrans_;
 
     //! toggle vector, standard node row map
     Teuchos::RCP<Epetra_Vector> xwalltoggle_;
@@ -204,10 +205,10 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization> xwdiscret_;
 
     //! mass matrix for projection
-    Teuchos::RCP<LINALG::SparseMatrix> massmatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix_;
 
     //! solver for projection
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! increment of veln during projection
     Teuchos::RCP<Epetra_Vector> incveln_;
@@ -290,7 +291,8 @@ namespace FLD
    public:
     /// Standard Constructor
     XWallAleFSI(Teuchos::RCP<DRT::Discretization> dis, int nsd,
-        Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
+        Teuchos::RCP<Teuchos::ParameterList>& params,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps,
         Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
         Teuchos::RCP<Epetra_Vector> gridv);
 

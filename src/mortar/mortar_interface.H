@@ -35,10 +35,10 @@ namespace DRT
   class Exporter;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace MORTAR
 {
@@ -1207,25 +1207,25 @@ namespace MORTAR
     \brief Assemble Mortar matrices D and M
 
     */
-    void AssembleDM(LINALG::SparseMatrix& dglobal, LINALG::SparseMatrix& mglobal);
+    void AssembleDM(CORE::LINALG::SparseMatrix& dglobal, CORE::LINALG::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble Mortar matrix D
 
     */
-    void AssembleD(LINALG::SparseMatrix& dglobal);
+    void AssembleD(CORE::LINALG::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar matrix M
 
     */
-    void AssembleM(LINALG::SparseMatrix& mglobal);
+    void AssembleM(CORE::LINALG::SparseMatrix& mglobal);
 
     /*!
     \brief Assemble matrix of normals N
 
     */
-    void AssembleNormals(LINALG::SparseMatrix& nglobal);
+    void AssembleNormals(CORE::LINALG::SparseMatrix& nglobal);
 
     /*!
     \brief Assemble transformation matrices T and T^(-1)
@@ -1239,8 +1239,8 @@ namespace MORTAR
     {d}, we have to apply the transformation matrix T and vice
     versa with the transformation matrix T^(-1).
     */
-    void AssembleTrafo(
-        LINALG::SparseMatrix& trafo, LINALG::SparseMatrix& invtrafo, std::set<int>& donebefore);
+    void AssembleTrafo(CORE::LINALG::SparseMatrix& trafo, CORE::LINALG::SparseMatrix& invtrafo,
+        std::set<int>& donebefore);
 
     /*!
     \brief Detect actual meshtying zone (node by node)

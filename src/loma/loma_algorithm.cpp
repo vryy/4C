@@ -174,7 +174,7 @@ void LOMA::Algorithm::Setup()
     if (dofrowmaps[0]->NumGlobalElements() == 0) dserror("No fluid elements!");
     if (dofrowmaps[1]->NumGlobalElements() == 0) dserror("No scatra elements!");
 
-    Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(dofrowmaps);
+    Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(dofrowmaps);
 
     // full loma block dofrowmap
     lomablockdofrowmap_.Setup(*fullmap, dofrowmaps);
@@ -210,7 +210,7 @@ void LOMA::Algorithm::Setup()
           linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = Teuchos::rcp(new LINALG::Solver(lomasolverparams,
+    lomasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(lomasolverparams,
         FluidField()->Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     // todo extract ScalarTransportFluidSolver
@@ -244,7 +244,7 @@ void LOMA::Algorithm::Setup()
 
     // create loma block matrix
     lomasystemmatrix_ =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
             lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true));
 
     // create loma rhs vector
@@ -259,7 +259,7 @@ void LOMA::Algorithm::Setup()
     // create combined Dirichlet boundary condition map
     const Teuchos::RCP<const Epetra_Map> fdbcmap = FluidField()->GetDBCMapExtractor()->CondMap();
     const Teuchos::RCP<const Epetra_Map> sdbcmap = ScaTraField()->DirichMaps()->CondMap();
-    lomadbcmap_ = LINALG::MergeMap(fdbcmap, sdbcmap, false);
+    lomadbcmap_ = CORE::LINALG::MergeMap(fdbcmap, sdbcmap, false);
   }
 
   return;
@@ -634,25 +634,25 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   // 1st diagonal block (upper left): fluid weighting - fluid solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ff = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ff = FluidField()->SystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ff->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(0, 0, LINALG::View, *mat_ff);
+  lomasystemmatrix_->Assign(0, 0, CORE::LINALG::View, *mat_ff);
 
   //----------------------------------------------------------------------
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ss = ScaTraField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ss = ScaTraField()->SystemMatrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(1, 1, LINALG::View, *mat_ss);
+  lomasystemmatrix_->Assign(1, 1, CORE::LINALG::View, *mat_ss);
 
   // complete loma block matrix
   lomasystemmatrix_->Complete();
@@ -661,9 +661,9 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   // 1st off-diagonal block (upper right): fluid weighting - scatra solution
   //----------------------------------------------------------------------
   // create matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_fs = Teuchos::null;
-  mat_fs = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(FluidField()->Discretization()->DofRowMap(0)), 27, true, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs = Teuchos::null;
+  mat_fs = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(FluidField()->Discretization()->DofRowMap(0)), 27, true, true));
 
   // evaluate loma off-diagonal matrix block in fluid
   EvaluateLomaODBlockMatFluid(mat_fs);
@@ -672,15 +672,15 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_fs->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(0, 1, LINALG::View, *mat_fs);
+  lomasystemmatrix_->Assign(0, 1, CORE::LINALG::View, *mat_fs);
 
   //----------------------------------------------------------------------
   // 2nd off-diagonal block (lower left): scatra weighting - fluid solution
   //----------------------------------------------------------------------
   // create matrix block
-  Teuchos::RCP<LINALG::SparseMatrix> mat_sf = Teuchos::null;
-  mat_sf = Teuchos::rcp(
-      new LINALG::SparseMatrix(*(ScaTraField()->Discretization()->DofRowMap(0)), 108, true, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_sf = Teuchos::null;
+  mat_sf = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(ScaTraField()->Discretization()->DofRowMap(0)), 108, true, true));
 
   // evaluate loma off-diagonal matrix block in scatra
   // (for present fixed-point-like iteration: no entries)
@@ -690,7 +690,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
   mat_sf->UnComplete();
 
   // assign matrix block
-  lomasystemmatrix_->Assign(1, 0, LINALG::View, *mat_sf);
+  lomasystemmatrix_->Assign(1, 0, CORE::LINALG::View, *mat_sf);
 
   // complete loma block matrix
   lomasystemmatrix_->Complete();
@@ -699,7 +699,7 @@ void LOMA::Algorithm::SetupMonoLomaMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(Teuchos::RCP<LINALG::SparseMatrix> mat_fs)
+void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs)
 {
   // create parameters for fluid discretization
   Teuchos::ParameterList fparams;
@@ -786,7 +786,7 @@ void LOMA::Algorithm::MonoLomaSystemSolve()
   lomaincrement_->PutScalar(0.0);
 
   // apply Dirichlet boundary conditions to system
-  LINALG::ApplyDirichlettoSystem(
+  CORE::LINALG::ApplyDirichlettoSystem(
       lomasystemmatrix_, lomaincrement_, lomarhs_, Teuchos::null, zeros_, *lomadbcmap_);
 
   // solve monolithic low-Mach-number system

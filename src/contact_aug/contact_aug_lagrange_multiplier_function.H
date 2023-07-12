@@ -21,12 +21,12 @@ class Epetra_MultiVector;
 class Epetra_Vector;
 class Epetra_Comm;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -58,10 +58,11 @@ namespace CONTACT
           const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dincr);
 
      private:
-      Teuchos::RCP<LINALG::Solver> CreateLinearSolver(const int lin_sol_id, const Epetra_Comm& comm,
-          enum INPAR::SOLVER::SolverType& solver_type) const;
+      Teuchos::RCP<CORE::LINALG::Solver> CreateLinearSolver(const int lin_sol_id,
+          const Epetra_Comm& comm, enum INPAR::SOLVER::SolverType& solver_type) const;
 
-      void LinSolve(LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
+      void LinSolve(
+          CORE::LINALG::SparseOperator& mat, Epetra_MultiVector& rhs, Epetra_MultiVector& sol);
 
       inline void CheckInit() const
       {
@@ -97,10 +98,10 @@ namespace CONTACT
 
       enum INPAR::SOLVER::SolverType lin_solver_type_;
 
-      Teuchos::RCP<LINALG::Solver> lin_solver_;
+      Teuchos::RCP<CORE::LINALG::Solver> lin_solver_;
 
       // B-matrix
-      Teuchos::RCP<LINALG::SparseMatrix> bmat_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> bmat_;
 
     };  // class LagrangeMultiplierFunction
   }     // namespace AUG

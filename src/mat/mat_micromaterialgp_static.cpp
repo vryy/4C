@@ -37,8 +37,8 @@ MAT::MicroMaterialGP::MicroMaterialGP(
 {
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
-  dis_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
-  disn_ = LINALG::CreateVector(*microdis->DofRowMap(), true);
+  dis_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
+  disn_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
   oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
   oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
@@ -278,8 +278,8 @@ void MAT::MicroMaterialGP::ResetTimeAndStep()
 
 /// perform microscale simulation
 
-void MAT::MicroMaterialGP::PerformMicroSimulation(
-    LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat)
+void MAT::MicroMaterialGP::PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* defgrd,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];

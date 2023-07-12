@@ -132,7 +132,7 @@ namespace CORE::GEO
       /*!
       \brief Write output of a coord as point with idx
        */
-      void GmshCoordDump(std::ofstream& file, LINALG::Matrix<3, 1> coord, double idx,
+      void GmshCoordDump(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord, double idx,
           bool to_local = false, Element* ele = NULL);
 
 
@@ -235,10 +235,11 @@ namespace CORE::GEO
       /*!
       \brief Simplify output of for normal output options.
        */
-      void GmshScalar(std::ofstream& file, LINALG::Matrix<3, 1> coord, double scalar,
+      void GmshScalar(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord, double scalar,
           bool to_local = false, Element* ele = NULL);
-      void GmshVector(std::ofstream& file, LINALG::Matrix<3, 1> coord, std::vector<double> vector,
-          bool normalize = false, bool to_local = false, Element* ele = NULL);
+      void GmshVector(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord,
+          std::vector<double> vector, bool normalize = false, bool to_local = false,
+          Element* ele = NULL);
 
       /*!
       \brief Write cuttest for this element!
@@ -294,8 +295,8 @@ namespace CORE::GEO
       void GmshWriteCoords(std::ofstream& file, std::vector<double> coord, bool to_local = false,
           Element* ele = NULL);
 
-      void GmshWriteCoords(std::ofstream& file, LINALG::Matrix<3, 1> coord, bool to_local = false,
-          Element* ele = NULL);
+      void GmshWriteCoords(std::ofstream& file, CORE::LINALG::Matrix<3, 1> coord,
+          bool to_local = false, Element* ele = NULL);
 
       void GmshWriteCoords(
           std::ofstream& file, Node* node, bool to_local = false, Element* ele = NULL);

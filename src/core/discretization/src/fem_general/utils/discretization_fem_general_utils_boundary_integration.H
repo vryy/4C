@@ -513,14 +513,15 @@ namespace CORE::DRT::UTILS
 
     ----------------------------------------------------------------------------------*/
   template <const int NSD>
-  void BoundaryGPToParentGP(LINALG::SerialDenseMatrix& pqxg, Epetra_SerialDenseMatrix& derivtrafo,
+  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
+      Epetra_SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
+  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       Epetra_SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
@@ -528,7 +529,7 @@ namespace CORE::DRT::UTILS
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
+  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       Epetra_SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
@@ -537,21 +538,24 @@ namespace CORE::DRT::UTILS
 
 
   template <const int NSD>
-  void BoundaryGPToParentGP(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<NSD, NSD>& derivtrafo,
+  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<NSD, NSD>& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<3, 3>& derivtrafo,
+  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<3, 3>& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<2, 2>& derivtrafo,
+  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<2, 2>& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
@@ -559,39 +563,43 @@ namespace CORE::DRT::UTILS
 
 
   template <const int NSD>
-  void BoundaryGPToParentGP(LINALG::SerialDenseMatrix& pqxg, Epetra_SerialDenseMatrix& derivtrafo,
-      const GaussPoints& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
+      Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg,
+  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
       Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg,
+  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
       Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   template <const int NSD>
-  void BoundaryGPToParentGP(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<NSD, NSD>& derivtrafo,
-      const GaussPoints& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<NSD, NSD>& derivtrafo, const GaussPoints& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
-  void BoundaryGPToParentGP<3>(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<3, 3>& derivtrafo,
-      const GaussPoints& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<3, 3>& derivtrafo, const GaussPoints& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
-  void BoundaryGPToParentGP<2>(LINALG::SerialDenseMatrix& pqxg, LINALG::Matrix<2, 2>& derivtrafo,
-      const GaussPoints& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
+      CORE::LINALG::Matrix<2, 2>& derivtrafo, const GaussPoints& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   /*----------------------------------------------------------------------------------------*/
@@ -605,14 +613,15 @@ namespace CORE::DRT::UTILS
   //! normal vector at the Gauss-point (template)
   template <::DRT::Element::DiscretizationType DISTYPE, int probdim, typename valueType = double>
   void ComputeMetricTensorForBoundaryEle(
-      const LINALG::Matrix<probdim,
+      const CORE::LINALG::Matrix<probdim,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& xyze,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement, valueType>& deriv,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, valueType>& metrictensor,
       valueType& sqrtdetg, const bool throw_error,
-      LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr, const bool unit_normal = true)
+      CORE::LINALG::Matrix<probdim, 1, valueType>* normalvec = nullptr,
+      const bool unit_normal = true)
   {
     /* 2D boundary Element
     |                                              0 1 2
@@ -645,7 +654,8 @@ namespace CORE::DRT::UTILS
     |
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
-    LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim, valueType> dxyzdrs;
+    CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim, probdim, valueType>
+        dxyzdrs;
     dxyzdrs.MultiplyNT(deriv, xyze);
 
     /* 2D boundary Element
@@ -741,14 +751,15 @@ namespace CORE::DRT::UTILS
   //! normal vector at the Gausspoint (template)
   template <::DRT::Element::DiscretizationType DISTYPE>
   void ComputeMetricTensorForBoundaryEle(
-      const LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim),
+      const CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim),
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& xyze,
-      const LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+      const CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement>& deriv,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim,
           ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim>& metrictensor,
       double& sqrtdetg,
-      LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec = nullptr)
+      CORE::LINALG::Matrix<(1 + ::CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim), 1>* normalvec =
+          nullptr)
   {
     const bool throw_error_if_negative_determinant(true);
     ComputeMetricTensorForBoundaryEle<DISTYPE,
@@ -1575,14 +1586,14 @@ namespace CORE::DRT::UTILS
    *----------------------------------------------------------------------*/
   template <::DRT::Element::DiscretizationType distype>
   void EvalShapeFuncAtBouIntPoint(
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
-          funct,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          1>& funct,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
       double& fac,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
+      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>&
           intpoints,
@@ -1615,7 +1626,7 @@ namespace CORE::DRT::UTILS
 
     // compute measure tensor for surface element, infinitesimal area element drs
     // and (outward-pointing) unit normal vector
-    LINALG::Matrix<bdrynsd, bdrynsd> metrictensor(true);
+    CORE::LINALG::Matrix<bdrynsd, bdrynsd> metrictensor(true);
     CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
         xyze, deriv, metrictensor, drs, &unitnormal);
 
@@ -1629,14 +1640,14 @@ namespace CORE::DRT::UTILS
    *----------------------------------------------------------------------*/
   template <::DRT::Element::DiscretizationType distype>
   void ElementNodeNormal(
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
-          funct,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
+          1>& funct,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
       double& fac,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
-      double& drs, LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
-      LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1, 1>& unitnormal,
+      double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
+      CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
       ::DRT::Element* ele, ::DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1,
       const std::vector<double>& edispnp, const bool isnurbs, const bool isale)
@@ -1673,7 +1684,8 @@ namespace CORE::DRT::UTILS
         ::DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
-    CORE::GEO::fillInitialPositionArray<distype, nsd, LINALG::Matrix<nsd, bdrynen>>(ele, xyze);
+    CORE::GEO::fillInitialPositionArray<distype, nsd, CORE::LINALG::Matrix<nsd, bdrynen>>(
+        ele, xyze);
 
     // Add displacements to reference coordinates, if an ALE description is used
     if (isale)

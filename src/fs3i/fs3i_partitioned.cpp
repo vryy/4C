@@ -467,7 +467,8 @@ void FS3I::PartFS3I::SetupSystem()
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
     const int numscal = currscatra->ScaTraField()->NumScal();
-    Teuchos::RCP<LINALG::MultiMapExtractor> mapex = Teuchos::rcp(new LINALG::MultiMapExtractor());
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
+        Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new DRT::UTILS::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
@@ -503,7 +504,7 @@ void FS3I::PartFS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[0]->FullMap());
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   scatraglobalex_->Setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
@@ -515,19 +516,19 @@ void FS3I::PartFS3I::SetupSystem()
           Teuchos::rcp(new Epetra_Vector(*(scatraglobalex_->Map(i)), true));
       scatracoupforce_.push_back(scatracoupforce);
 
-      Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
-          Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> scatracoupmat =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
 
   // create scatra block matrix
   scatrasystemmatrix_ =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *scatraglobalex_, *scatraglobalex_, 27, false, true));
 
   // create scatra rhs vector
@@ -546,7 +547,7 @@ void FS3I::PartFS3I::SetupSystem()
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   scatrasolvparams->set("solver", "umfpack");
-  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       scatrasolvparams, firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
@@ -572,8 +573,8 @@ void FS3I::PartFS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams,
+      firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // get the solver number used for fluid ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
@@ -768,7 +769,7 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>& 
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structure =
-      LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
+      CORE::LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )

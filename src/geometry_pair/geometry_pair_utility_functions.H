@@ -48,9 +48,9 @@ namespace GEOMETRYPAIR
    * @tparam n_dof Length of the in- and output vectors.
    */
   template <typename scalar_type_normal, unsigned int n_dof>
-  LINALG::Matrix<n_dof, 1, double>* VectorPointerToVectorDouble(
-      const LINALG::Matrix<n_dof, 1, scalar_type_normal>* vector_scalar_type_ptr,
-      LINALG::Matrix<n_dof, 1, double>& vector_double)
+  CORE::LINALG::Matrix<n_dof, 1, double>* VectorPointerToVectorDouble(
+      const CORE::LINALG::Matrix<n_dof, 1, scalar_type_normal>* vector_scalar_type_ptr,
+      CORE::LINALG::Matrix<n_dof, 1, double>& vector_double)
   {
     if (vector_scalar_type_ptr == nullptr)
     {

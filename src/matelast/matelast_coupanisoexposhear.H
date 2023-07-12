@@ -45,8 +45,8 @@ namespace MAT
       /// @}
 
       double GetScalarProduct(int gp) const override;
-      const LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
+      const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
 
       /*!
        * /copydoc
@@ -68,12 +68,12 @@ namespace MAT
       /**
        * Coupling structural tensor of the fibers in stress like Voigt notation at the Gauss points
        */
-      std::vector<LINALG::Matrix<6, 1>> structuralTensors_stress_;
+      std::vector<CORE::LINALG::Matrix<6, 1>> structuralTensors_stress_;
 
       /**
        * Coupling structural tensor of the fibers at the Gauss points
        */
-      std::vector<LINALG::Matrix<3, 3>> structuralTensors_;
+      std::vector<CORE::LINALG::Matrix<3, 3>> structuralTensors_;
 
       /// Flag whether fibers are initialized
       bool isInitialized_{};
@@ -161,14 +161,14 @@ namespace MAT
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,       ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+      void SetFiberVecs(double newgamma,             ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
      protected:

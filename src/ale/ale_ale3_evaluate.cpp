@@ -260,7 +260,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
     dserror("not implemented!");
   }
 
-  LINALG::Matrix<3, iel> xyze;
+  CORE::LINALG::Matrix<3, iel> xyze;
 
   // get node coordinates
   DRT::Node** nodes = ele->Nodes();
@@ -280,10 +280,10 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  LINALG::Matrix<iel, 1> funct;
-  LINALG::Matrix<3, iel> deriv;
-  LINALG::Matrix<3, 3> xjm;
-  LINALG::Matrix<3, 3> xji;
+  CORE::LINALG::Matrix<iel, 1> funct;
+  CORE::LINALG::Matrix<3, iel> deriv;
+  CORE::LINALG::Matrix<3, 3> xjm;
+  CORE::LINALG::Matrix<3, 3> xji;
 
   // gaussian points
   const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
@@ -327,7 +327,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
-    const LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
+    const CORE::LINALG::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
 {
   /*---------------------------------------------- x-, y- and z-difference ---*/
   dx = xyze(0, j) - xyze(0, i);
@@ -344,13 +344,13 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_edge_geometry(int i, int j,
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q, int node_r,
-    int node_s, const LINALG::Matrix<3, 1>& sq, const double len_sq, const LINALG::Matrix<3, 1>& rp,
-    const double len_rp, const LINALG::Matrix<3, 1>& qp, const LINALG::Matrix<3, 1>& local_x,
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat)
+    int node_s, const CORE::LINALG::Matrix<3, 1>& sq, const double len_sq,
+    const CORE::LINALG::Matrix<3, 1>& rp, const double len_rp, const CORE::LINALG::Matrix<3, 1>& qp,
+    const CORE::LINALG::Matrix<3, 1>& local_x, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat)
 {
   // Positions for dynamic triangle (2D)
   // sequence: s,j,q
-  LINALG::Matrix<2, 3> xyze_dyn_tria;
+  CORE::LINALG::Matrix<2, 3> xyze_dyn_tria;
 
   // Some matrices that can be found in the paper are not assembled
   // here, because it can be done with less memory. I use only one
@@ -360,18 +360,18 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
   // transformation matrix from the plane of the triangle to the
   // three-dimensional global frame.
   // This corresponds to (R(sjq) x r(sjq) x S^T)^T from Farhat et al.
-  LINALG::Matrix<12, 3> trans_matrix;
+  CORE::LINALG::Matrix<12, 3> trans_matrix;
 
   // rotational stiffness matrix for tetrahedron with given dynamic triangle
-  LINALG::Matrix<12, 12> k_dyn_tet;
+  CORE::LINALG::Matrix<12, 12> k_dyn_tet;
 
   // local x,y in the plane of the dynamic triangle
   // these are the 3d-vectors that span this plane
-  LINALG::Matrix<3, 1> local_y;
+  CORE::LINALG::Matrix<3, 1> local_y;
 
   // the point p relativ to the point (0,0) in the triangle plane
   // transformed into 3d space
-  LINALG::Matrix<3, 1> p;
+  CORE::LINALG::Matrix<3, 1> p;
 
   // local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   // local y-value of s xyze_dyn_tria(1,0 := 0.0
@@ -653,12 +653,13 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tria_stiffness(int node_p, int 
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
-    int tet_3, LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    int tet_3, CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat,
+    const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   // according to Farhat et al.
   // twelve-triangle configuration
 
-  LINALG::Matrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
+  CORE::LINALG::Matrix<3, 1> e01, e02, e03, e10, e12, e13, e20, e21, e23, e30, e31, e32, local_x;
   double l01, l02, l03, l12, l13, l23;
   ale3_edge_geometry(tet_0, tet_1, xyze, l01, e01(0), e01(1), e01(2));
   ale3_edge_geometry(tet_0, tet_2, xyze, l02, e02(0), e02(1), e02(2));
@@ -722,7 +723,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int 
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 2, 3, sys_mat, xyze);
 }
@@ -731,7 +732,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_tet4(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
   ale3_add_tetra_stiffness(0, 1, 2, 4, sys_mat, xyze);
@@ -743,7 +744,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_pyramid5(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
   ale3_add_tetra_stiffness(2, 0, 1, 4, sys_mat, xyze);
@@ -765,7 +766,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_wedge6(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   // Use 8 tetrahedra to prevent node-face-penetration
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
@@ -783,7 +784,7 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_hex8(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
-    LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const LINALG::Matrix<3, iel>& xyze)
+    CORE::LINALG::Matrix<3 * iel, 3 * iel>& sys_mat, const CORE::LINALG::Matrix<3, iel>& xyze)
 {
   //                          v
   //                         /
@@ -916,15 +917,15 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     Epetra_SerialDenseMatrix& sys_mat_epetra, Epetra_SerialDenseVector& residual_epetra,
     const std::vector<double>& displacements, const bool spatialconfiguration)
 {
-  LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.A(), true);
-  LINALG::Matrix<3 * iel, 1> residual(residual_epetra.A(), true);
+  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.A(), true);
   int node_i, node_j;  // end nodes of spring
   double length;       // length of edge
   double dx, dy, dz;   // deltas in each direction
   double factor;
 
   // get node coordinates
-  LINALG::Matrix<3, iel> xyze;
+  CORE::LINALG::Matrix<3, iel> xyze;
   DRT::Node** nodes = ele->Nodes();
   for (int i = 0; i < iel; i++)
   {
@@ -1353,10 +1354,10 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
 {
   const int numdof = NODDOF_ALE3 * iel;
   // A view to sys_mat_epetra
-  LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.A(), true);
   // update element geometry
-  LINALG::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
-  LINALG::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
   for (int i = 0; i < iel; ++i)
   {
     xrefe(i, 0) = ele->Nodes()[i]->X()[0];
@@ -1377,7 +1378,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots;
-  LINALG::Matrix<iel, 1> weights(iel);
+  CORE::LINALG::Matrix<iel, 1> weights(iel);
 
   if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
   {
@@ -1399,13 +1400,13 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     }
   }
   /*----------------------------------------- declaration of variables ---*/
-  LINALG::Matrix<iel, 1> funct;
-  LINALG::Matrix<NUMDIM_ALE3, iel> deriv;
-  // LINALG::Matrix<3,  iel> deriv;
-  LINALG::Matrix<3, 3> xjm;
-  LINALG::Matrix<3, 3> xji;
-  LINALG::Matrix<6, numdof> bop;
-  LINALG::Matrix<6, 6> D(true);
+  CORE::LINALG::Matrix<iel, 1> funct;
+  CORE::LINALG::Matrix<NUMDIM_ALE3, iel> deriv;
+  // CORE::LINALG::Matrix<3,  iel> deriv;
+  CORE::LINALG::Matrix<3, 3> xjm;
+  CORE::LINALG::Matrix<3, 3> xji;
+  CORE::LINALG::Matrix<6, numdof> bop;
+  CORE::LINALG::Matrix<6, 6> D(true);
   // gaussian points
   const CORE::DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -1441,7 +1442,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     **     J = [ x_,s  y_,s  z_,s ]
     **         [ x_,t  y_,t  z_,t ]
     */
-    LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> jac, jacinv;
+    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> jac, jacinv;
     jac.MultiplyNN(deriv, xrefe);
     const double detJ = jac.Invert();
 
@@ -1454,19 +1455,19 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
     */
-    LINALG::Matrix<NUMDIM_ALE3, iel> N_XYZ;
+    CORE::LINALG::Matrix<NUMDIM_ALE3, iel> N_XYZ;
     N_XYZ.MultiplyNN(jac, deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> defgrd;
+    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> defgrd;
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> cauchygreen;
+    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1494,7 +1495,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> bop;
     for (int i = 0; i < iel; ++i)
     {
       bop(0, NODDOF_ALE3 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -1518,28 +1519,28 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
       bop(5, NODDOF_ALE3 * i + 2) = defgrd(2, 2) * N_XYZ(0, i) + defgrd(2, 0) * N_XYZ(2, i);
     }
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat_f(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress_f(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
-    // QUICK HACK until so_disp exclusively uses LINALG::Matrix!!!!!
-    LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat_f(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress_f(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
+    // QUICK HACK until so_disp exclusively uses CORE::LINALG::Matrix!!!!!
+    CORE::LINALG::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
     Teuchos::RCP<MAT::So3Material> so3mat =
         Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
     so3mat->Evaluate(&fixed_defgrd, &glstrain_f, params, &stress_f, &cmat_f, iquad, ele->Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-    LINALG::Matrix<numdof, 1> residual(residual_epetra, true);
+    CORE::LINALG::Matrix<numdof, 1> residual(residual_epetra, true);
     residual.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, stress_f, 1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
-    LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> cb;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, numdof> cb;
     cb.MultiplyNN(cmat_f, bop);  // temporary C . B
     sys_mat.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, cb, 1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sfac(stress_f);  // auxiliary integrated stress
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> sfac(stress_f);  // auxiliary integrated stress
     sfac.Scale(detJ * intpoints.qwgt[iquad]);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     double SmB_L[NUMDIM_ALE3];                 // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -1579,14 +1580,14 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
   const int nd = 3 * iel;
   // A view to sys_mat_epetra
-  LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.A(), true);
 
   //  get material using class StVenantKirchhoff
   //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
   //    dserror("stvenant material expected but got type %d", material->MaterialType());
   //  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
 
-  LINALG::Matrix<3, iel> xyze;
+  CORE::LINALG::Matrix<3, iel> xyze;
 
   // get node coordinates
   DRT::Node** nodes = ele->Nodes();
@@ -1612,7 +1613,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(3);
-  LINALG::Matrix<iel, 1> weights(iel);
+  CORE::LINALG::Matrix<iel, 1> weights(iel);
 
   if (distype == DRT::Element::nurbs8 or distype == DRT::Element::nurbs27)
   {
@@ -1632,13 +1633,13 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  LINALG::Matrix<iel, 1> funct(true);
-  LINALG::Matrix<3, iel> deriv(true);
-  LINALG::Matrix<3, 3> xjm(true);
-  LINALG::Matrix<3, 3> xji(true);
-  LINALG::Matrix<3, iel> deriv_xy(true);
-  LINALG::Matrix<iel, iel> tempmat(true);
-  LINALG::Matrix<3 * iel, 1> tempmat2(true);
+  CORE::LINALG::Matrix<iel, 1> funct(true);
+  CORE::LINALG::Matrix<3, iel> deriv(true);
+  CORE::LINALG::Matrix<3, 3> xjm(true);
+  CORE::LINALG::Matrix<3, 3> xji(true);
+  CORE::LINALG::Matrix<3, iel> deriv_xy(true);
+  CORE::LINALG::Matrix<iel, iel> tempmat(true);
+  CORE::LINALG::Matrix<3 * iel, 1> tempmat2(true);
 
   double vol = 0.;
 

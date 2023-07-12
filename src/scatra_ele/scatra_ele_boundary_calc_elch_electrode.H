@@ -87,20 +87,20 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingAtIntegrationPoint(
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          const LINALG::Matrix<nen_, 1>& eslavetempnp,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& eslavetempnp,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               emastertempnp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -141,20 +141,20 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephidtnp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephidtnp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphidtnp,
-          const std::vector<LINALG::Matrix<nen_, 1>>& eslavephinp,
-          const std::vector<LINALG::Matrix<
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& eslavephinp,
+          const std::vector<CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
-          double pseudo_contact_fac, const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+          double pseudo_contact_fac, const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
@@ -200,12 +200,12 @@ namespace DRT
        * @tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <DRT::Element::DiscretizationType distype_master>
-      static void CalculateRHSandGlobalSystem(const LINALG::Matrix<nen_, 1>& funct_slave,
-          const LINALG::Matrix<
+      static void CalculateRHSandGlobalSystem(const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
-          const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           double pseudo_contact_fac, double numelectrons, int nen_master, double timefacfac,
@@ -243,8 +243,9 @@ namespace DRT
        */
       template <DRT::Element::DiscretizationType distype_master>
       static void CalculateRHSandGlobalSystemCapacitiveFlux(
-          const LINALG::Matrix<nen_, 1>& funct_slave, const LINALG::Matrix<nen_, 1>& test_slave,
-          const LINALG::Matrix<
+          const CORE::LINALG::Matrix<nen_, 1>& funct_slave,
+          const CORE::LINALG::Matrix<nen_, 1>& test_slave,
+          const CORE::LINALG::Matrix<
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           double pseudo_contact_fac, int numelectrons, double timefacfac, double timefacrhsfac,

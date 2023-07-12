@@ -77,7 +77,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    virtual bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+    virtual bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
         const std::vector<DRT::Condition*> chargeconds, const double k, const double m) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
@@ -167,7 +167,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+    bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
         const std::vector<DRT::Condition*> chargeconds, const double k, const double m);
 
     /*
@@ -201,8 +201,8 @@ namespace CONTACT
     std::vector<DRT::Condition*> chargeconds_;
 
     //! current node coordinates of the two elements
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
-    LINALG::Matrix<3, 1, TYPE> ele2pos_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;
+    CORE::LINALG::Matrix<3, 1, TYPE> ele2pos_;
 
     //! parameters of the applied (point-point) potential law Phi(r)=k_ * r^(-m_)
     double k_;
@@ -227,13 +227,13 @@ namespace CONTACT
     double radius2_;
 
     //! resulting forces on element 1 and 2
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
-    LINALG::Matrix<3, 1, TYPE> fpot2_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> fpot1_;
+    CORE::LINALG::Matrix<3, 1, TYPE> fpot2_;
 
     //! stiffness contributions
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3, TYPE>
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 3 * numnodes * numnodalvalues + 3, TYPE>
         stiffpot1_;
-    LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE> stiffpot2_;
+    CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues + 3, TYPE> stiffpot2_;
 
     //@}
 
@@ -252,21 +252,21 @@ namespace CONTACT
     /*!
     \brief Assemble stiffness contributions stiffpot1/2 into stiffmatrix
     */
-    void AssembleStiffpot(LINALG::SparseMatrix& stiffmatrix);
+    void AssembleStiffpot(CORE::LINALG::SparseMatrix& stiffmatrix);
 
     /*!
     \brief Calculate shape function values for given parameter values
     */
-    void GetShapeFunctions(std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
-        std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+    void GetShapeFunctions(std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+        std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
         CORE::DRT::UTILS::IntegrationPoints1D& gausspoints);
 
     /*!
     \brief Compute coordinates of centreline points from the discretization
     */
-    void ComputeCoords(LINALG::Matrix<3, 1, TYPE>& r,
-        const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-        const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
+    void ComputeCoords(CORE::LINALG::Matrix<3, 1, TYPE>& r,
+        const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+        const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos);
 
     /*!
     \brief Get global dofs of a node

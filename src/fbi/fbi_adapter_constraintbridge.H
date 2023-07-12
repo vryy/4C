@@ -24,11 +24,11 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -80,7 +80,7 @@ namespace ADAPTER
      * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
     virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying);
+        Teuchos::RCP<CORE::LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
      * \brief Computes the coupling matrices
@@ -139,16 +139,16 @@ namespace ADAPTER
     virtual void PrepareFluidSolve() = 0;
 
     /// Matrix containing only structure side contributions \f$C_{ss}\f$
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCss() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const LINALG::SparseOperator> GetCff() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::SparseOperator> GetCff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCfs() const = 0;
 
     /// Matrix containing mixed structure side contributions \f$C_{sf}\f$
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCsf() const = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetCsf() const = 0;
 
     /// Force vector acting on the fluid side \f$f_f\f$
     virtual Teuchos::RCP<const Epetra_FEVector> GetFluidCouplingResidual() const = 0;

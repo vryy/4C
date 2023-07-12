@@ -177,9 +177,10 @@ void UTILS::Constraint::Initialize(const double& time)
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::Constraint::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   switch (constrtype_)
   {
@@ -208,9 +209,10 @@ void UTILS::Constraint::Evaluate(Teuchos::ParameterList& params,
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -335,7 +337,7 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
         if (assemblevec1)
         {
           elevector1.Scale(lagraval);
-          LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
+          CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
         }
         if (assemblevec3)
         {
@@ -343,7 +345,7 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
           std::vector<int> constrowner;
           constrlm.push_back(gindex);
           constrowner.push_back(curr->second->Owner());
-          LINALG::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+          CORE::LINALG::Assemble(*systemvector3, elevector3, constrlm, constrowner);
         }
       }
     }
@@ -414,7 +416,7 @@ void UTILS::Constraint::InitializeConstraint(
         int offsetID = params.get<int>("OffsetID");
         constrlm.push_back(condID - offsetID);
         constrowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
+        CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second = true;

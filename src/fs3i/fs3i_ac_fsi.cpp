@@ -157,12 +157,13 @@ void FS3I::ACFSI::Setup()
   meanmanager_ = Teuchos::rcp(new FS3I::MeanManager(*fsi_->FluidField()->DofRowMap(0),
       *scatravec_[0]->ScaTraField()->DofRowMap(), *fsi_->FluidField()->PressureRowMap()));
 
-  structureincrement_ = LINALG::CreateVector(*fsi_->StructureField()->DofRowMap(0), true);
-  fluidincrement_ = LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
-  aleincrement_ = LINALG::CreateVector(*fsi_->AleField()->DofRowMap(), true);
-  fluidphinp_lp_ = LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap(), true);
-  structurephinp_blts_ = LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(), true);
-  WallShearStress_lp_ = LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
+  structureincrement_ = CORE::LINALG::CreateVector(*fsi_->StructureField()->DofRowMap(0), true);
+  fluidincrement_ = CORE::LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
+  aleincrement_ = CORE::LINALG::CreateVector(*fsi_->AleField()->DofRowMap(), true);
+  fluidphinp_lp_ = CORE::LINALG::CreateVector(*scatravec_[0]->ScaTraField()->DofRowMap(), true);
+  structurephinp_blts_ =
+      CORE::LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(), true);
+  WallShearStress_lp_ = CORE::LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
 
   extractjthstructscalar_ = BuildMapExtractor();
 
@@ -207,7 +208,7 @@ void FS3I::ACFSI::ReadRestart()
 
         // some safety check:
         Teuchos::RCP<Epetra_Vector> WallShearStress_lp_new =
-            LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
+            CORE::LINALG::CreateVector(*fsi_->FluidField()->DofRowMap(0), true);
 
         fluidreaderbeginnperiod.ReadVector(WallShearStress_lp_new, "SumWss");
         const double SumDtWss = fluidreaderbeginnperiod.ReadDouble("SumDtWss");
@@ -518,7 +519,7 @@ void FS3I::ACFSI::IsFsiPeriodic()
     const Teuchos::RCP<const Epetra_Vector> wss_bar_boundary =
         meanmanager_->GetMeanValue("mean_wss");  // mean wall shear stresses at fs3i interface
     const Teuchos::RCP<Epetra_Vector> wssdiff_bar_boundary =
-        LINALG::CreateVector(*(fsi_->FluidField()->DofRowMap()));
+        CORE::LINALG::CreateVector(*(fsi_->FluidField()->DofRowMap()));
     wssdiff_bar_boundary->Update(1.0, *wss_bar_boundary, -1.0, *WallShearStress_lp_, 0.0);
 
     double wss_bar_boundary_norm(0.0);
@@ -603,7 +604,7 @@ void FS3I::ACFSI::IsScatraPeriodic()
     // calculate the difference vector
     const Teuchos::RCP<Epetra_Vector> ith_phi_diff_bar_boundary =
         extractjthstructscalar_[i]->ExtractCondVector(
-            LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(0), true));
+            CORE::LINALG::CreateVector(*scatravec_[1]->ScaTraField()->DofRowMap(0), true));
     ith_phi_diff_bar_boundary->Update(
         1.0, *ith_phinp_bar_boundary_on_struct, -1.0, *ith_phin_bar_boundary_on_struct, 0.0);
 

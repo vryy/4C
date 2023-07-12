@@ -236,7 +236,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetTurbulenceParams(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
     double& Ci_delta_sq)
 {
   // cast dimension to a double varibale -> pow()
@@ -313,7 +313,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
       double hkypow2;
       double hkzpow2;
 
-      LINALG::Matrix<nsd_, nsd_> velderxy;
+      CORE::LINALG::Matrix<nsd_, nsd_> velderxy;
 
       velderxy.MultiplyNT(evelaf, derxy_);
 
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
                   node j
       */
 
-      LINALG::Matrix<nsd_, 1> centernodecoord;
+      CORE::LINALG::Matrix<nsd_, 1> centernodecoord;
       centernodecoord.Multiply(xyze_, funct_);
 
       if (centernodecoord(1, 0) > 0)
@@ -538,8 +538,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcSubgrVisc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcFineScaleSubgrVisc(
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& fsevelaf,
-    const double vol)
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const double vol)
 {
   // cast dimension to a double varibale -> pow()
   const double dim = double(nsd_);
@@ -601,8 +601,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcFineScaleSubgrVisc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScales(
-    LINALG::Matrix<nsd_, 1>& B_mfs, double& D_mfs, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nsd_, nen_>& fsevelaf, const double vol)
+    CORE::LINALG::Matrix<nsd_, 1>& B_mfs, double& D_mfs,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const double vol)
 {
   // set input parameters
   double Csgs = fldpara_->Csgs();
@@ -639,7 +640,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       {
         // a) streamlength due to Tezduyar et al. (1992)
         // normed velocity vector
-        LINALG::Matrix<nsd_, 1> velino(true);
+        CORE::LINALG::Matrix<nsd_, 1> velino(true);
         if (vel_norm >= 1e-6)
           velino.Update(1.0 / vel_norm, velint_);
         else
@@ -647,11 +648,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
           velino.Clear();
           velino(0, 0) = 1.0;
         }
-        LINALG::Matrix<nen_, 1> tmp;
+        CORE::LINALG::Matrix<nen_, 1> tmp;
         // enriched dofs are not interpolatory with respect to geometry
         if (enrtype == DRT::ELEMENTS::Fluid::xwall)
         {
-          LINALG::Matrix<nsd_, nen_> derxy_copy(derxy_);
+          CORE::LINALG::Matrix<nsd_, nen_> derxy_copy(derxy_);
           for (int inode = 1; inode < nen_; inode += 2)
           {
             for (int idim = 0; idim < nsd_; idim++) derxy_copy(idim, inode) = 0.0;
@@ -689,7 +690,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
                     |    i     j  |   |    i     j  |   |    i     j  |
                     +-           -+   +-           -+   +-           -+
         */
-        LINALG::Matrix<nsd_, nsd_> G(true);
+        CORE::LINALG::Matrix<nsd_, nsd_> G(true);
 
         for (int nn = 0; nn < nsd_; ++nn)
         {
@@ -725,7 +726,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
       case INPAR::FLUID::gradient_based:
       {
         if (nsd_ != 3) dserror("Turbulence is 3d!");
-        LINALG::Matrix<nsd_, 1> normed_velgrad;
+        CORE::LINALG::Matrix<nsd_, 1> normed_velgrad;
 
         for (int rr = 0; rr < nsd_; ++rr)
         {
@@ -1012,7 +1013,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PrepareMultifractalSubgrScal
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridVelCoef(const double Csgs,
-    const double alpha, const std::vector<double> Nvel, LINALG::Matrix<nsd_, 1>& B_mfs)
+    const double alpha, const std::vector<double> Nvel, CORE::LINALG::Matrix<nsd_, 1>& B_mfs)
 {
   //
   //          |       1              |
@@ -1120,7 +1121,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMultiFracSubgridScaCoef(
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FineScaleSubGridViscosityTerm(
-    LINALG::Matrix<nsd_, nen_>& velforce, const double& fssgviscfac)
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& fssgviscfac)
 {
   if (nsd_ == 2)
   {
@@ -1180,8 +1181,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FineScaleSubGridViscosityTer
 //----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    const double& timefacfac, const double& rhsfac)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
   //--------------------------------------------------------------------
   // rhs contribution
@@ -1255,7 +1256,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
   if (beta > 1.0e-9)
   {
     if (gridvelint_.Norm2() > 1.0e-9) dserror("left hand side terms of MFS not supported with ale");
-    LINALG::Matrix<nen_, 1> mfconv_c(true);
+    CORE::LINALG::Matrix<nen_, 1> mfconv_c(true);
     mfconv_c.MultiplyTN(derxy_, mffsvelint_);
     // convective part
     for (int ui = 0; ui < nen_; ui++)
@@ -1334,8 +1335,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesCross(
 //----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesReynolds(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nsd_, nen_>& velforce,
-    const double& timefacfac, const double& rhsfac)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
   //--------------------------------------------------------------------
   // rhs contribution
@@ -1413,7 +1414,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::MultfracSubGridScalesConsist
           "please check the implementation of the consistent residual for mfs for your "
           "time-integrator!");
 
-    LINALG::Matrix<nsd_, 1> velforce(true);
+    CORE::LINALG::Matrix<nsd_, 1> velforce(true);
 
     /* cross-stress term of residual */
     /*

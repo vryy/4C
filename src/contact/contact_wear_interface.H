@@ -37,55 +37,57 @@ namespace WEAR
     \brief Assemble second mortar D matrix for both-sided wear
 
     */
-    virtual void AssembleD2(LINALG::SparseMatrix& dglobal);
+    virtual void AssembleD2(CORE::LINALG::SparseMatrix& dglobal);
 
     /*!
     \brief Assemble Mortar wear matrices T and E
 
     */
-    virtual void AssembleTE(LINALG::SparseMatrix& tglobal, LINALG::SparseMatrix& eglobal);
+    virtual void AssembleTE(
+        CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal);
 
     /*!
     \brief Assemble Mortar wear matrices T and E (maser side)
 
     */
-    virtual void AssembleTE_Master(LINALG::SparseMatrix& tglobal, LINALG::SparseMatrix& eglobal);
+    virtual void AssembleTE_Master(
+        CORE::LINALG::SparseMatrix& tglobal, CORE::LINALG::SparseMatrix& eglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. displacements
     */
-    virtual void AssembleLinT_D(LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_D(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void AssembleLinT_D_Master(LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_D_Master(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. LM
     */
-    virtual void AssembleLinT_LM(LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_LM(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinT containing linearizations
            w.r.t. LM
     */
-    virtual void AssembleLinT_LM_Master(LINALG::SparseMatrix& lintglobal);
+    virtual void AssembleLinT_LM_Master(CORE::LINALG::SparseMatrix& lintglobal);
 
     /*!
     \brief Assemble matrices LinE containing linearizations
            w.r.t. displacements
     */
-    virtual void AssembleLinE_D(LINALG::SparseMatrix& lineglobal);
+    virtual void AssembleLinE_D(CORE::LINALG::SparseMatrix& lineglobal);
 
     /*!
     \brief Assemble matrices LinE containing linearizations
            w.r.t. displacements (for master side)
     */
-    virtual void AssembleLinE_D_Master(LINALG::SparseMatrix& lineglobal);
+    virtual void AssembleLinE_D_Master(CORE::LINALG::SparseMatrix& lineglobal);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -96,13 +98,13 @@ namespace WEAR
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleS(CORE::LINALG::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix S containing linearizations w
 
     */
-    virtual void AssembleLinG_W(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinG_W(CORE::LINALG::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix LinStick containing linearizations
@@ -113,8 +115,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-        LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    virtual void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -124,14 +126,14 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-        LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    virtual void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
     /*!
     \brief Assemble matrix LinSlip containing w linearizations
 
     */
-    virtual void AssembleLinSlip_W(LINALG::SparseMatrix& linslipWglobal);
+    virtual void AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipWglobal);
 
     /*!
     \brief Assemble matrices W containing linearizations
@@ -141,9 +143,9 @@ namespace WEAR
     --> w.r.t. lagr. mult.
 
     */
-    virtual void AssembleLinWLm(LINALG::SparseMatrix& sglobal);
-    virtual void AssembleLinWLmSl(LINALG::SparseMatrix& sglobal);
-    virtual void AssembleLinWLmSt(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLm(CORE::LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSl(CORE::LINALG::SparseMatrix& sglobal);
+    virtual void AssembleLinWLmSt(CORE::LINALG::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble wear w
@@ -196,28 +198,28 @@ namespace WEAR
       --> for wear condition
 
     */
-    void FDCheckDerivT_D(LINALG::SparseMatrix& lintdis);
+    void FDCheckDerivT_D(CORE::LINALG::SparseMatrix& lintdis);
 
     /*!
     \brief Check mortar wear T derivatives with finite differences
       --> for wear condition (Master)
 
     */
-    void FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis);
+    void FDCheckDerivT_D_Master(CORE::LINALG::SparseMatrix& lintdis);
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
       --> for wear condition
 
     */
-    void FDCheckDerivE_D(LINALG::SparseMatrix& linedis);
+    void FDCheckDerivE_D(CORE::LINALG::SparseMatrix& linedis);
 
     /*!
     \brief Check mortar wear E derivatives with finite differences
       --> for wear condition (Master)
 
     */
-    void FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis);
+    void FDCheckDerivE_D_Master(CORE::LINALG::SparseMatrix& linedis);
     /*!
     \brief Check weighted gap g derivatives with finite differences
 
@@ -248,8 +250,8 @@ namespace WEAR
     \brief Check slip condition derivatives with finite differences
 
     */
-    virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
-        LINALG::SparseMatrix& linslipDISglobal, LINALG::SparseMatrix& linslipWglobal);
+    virtual void FDCheckSlipDeriv(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, CORE::LINALG::SparseMatrix& linslipWglobal);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_w_)

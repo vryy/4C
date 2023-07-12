@@ -170,25 +170,25 @@ namespace DRT
       bool eas_{};
 
       // EAS stuff *****************************************************
-      LINALG::Matrix<num_eas, num_eas> KaaInv_;
-      LINALG::Matrix<num_eas, 1> feas_;
-      LINALG::Matrix<num_eas, NUMDOF_SOH18> Kad_;
-      LINALG::Matrix<num_eas, 1> alpha_eas_;
-      LINALG::Matrix<num_eas, 1> alpha_eas_last_timestep_;
-      LINALG::Matrix<num_eas, 1> alpha_eas_delta_over_last_timestep_;
-      LINALG::Matrix<num_eas, 1> alpha_eas_inc_;
+      CORE::LINALG::Matrix<num_eas, num_eas> KaaInv_;
+      CORE::LINALG::Matrix<num_eas, 1> feas_;
+      CORE::LINALG::Matrix<num_eas, NUMDOF_SOH18> Kad_;
+      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_;
+      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_last_timestep_;
+      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_delta_over_last_timestep_;
+      CORE::LINALG::Matrix<num_eas, 1> alpha_eas_inc_;
       double old_step_length_{};
       // EAS stuff *****************************************************
 
       // DSG factors ***************************************************
       // every DSG-modification is equivalent to a certain
       // linear combination of nodal coordinates / displacements
-      std::vector<LINALG::Matrix<9, 9>> dsg_shear_r_;
-      std::vector<LINALG::Matrix<9, 9>> dsg_shear_s_;
-      std::vector<LINALG::Matrix<9, 9>> dsg_membrane_r_;
-      std::vector<LINALG::Matrix<9, 9>> dsg_membrane_s_;
-      std::vector<LINALG::Matrix<9, 9>> dsg_membrane_rs_;
-      std::vector<LINALG::Matrix<9, 9>> dsg_transverse_t_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_shear_r_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_shear_s_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_r_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_s_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_membrane_rs_;
+      std::vector<CORE::LINALG::Matrix<9, 9>> dsg_transverse_t_;
       // DSG factors ***************************************************
 
 
@@ -203,62 +203,64 @@ namespace DRT
       int InitJacobianMapping() override;
 
       //! Calculate nonlinear stiffness and mass matrix
-      void nlnstiffmass(std::vector<int>& lm,                       ///< location matrix
-          std::vector<double>& disp,                                ///< current displacements
-          std::vector<double>& residual,                            ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
+          std::vector<double>& disp,           ///< current displacements
+          std::vector<double>& residual,       ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>*
+              stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option
           ) override;
 
       // parameter space coords of one node
-      LINALG::Matrix<3, 1> NodeParamCoord(const int node);
+      CORE::LINALG::Matrix<3, 1> NodeParamCoord(const int node);
       // parameter space coords of all nodes
-      LINALG::Matrix<18, 3> NodeParamCoord();
+      CORE::LINALG::Matrix<18, 3> NodeParamCoord();
 
       void FlipT();
 
       //! Lump mass matrix
-      void soh18_lumpmass(LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
+      void soh18_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);
 
-      void EvaluateT(const LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
+      void EvaluateT(const CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>& jac,
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT);
 
-      void EasSetup(std::vector<LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
-          LINALG::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
-          const LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
+      void EasSetup(
+          std::vector<CORE::LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
+          CORE::LINALG::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
+          const CORE::LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
 
       void SetupDSG();
-      void Integrate_dsg_shear_r(const int gp, LINALG::Matrix<9, 9>& dsg_shear_r);
-      void Integrate_dsg_shear_s(const int gp, LINALG::Matrix<9, 9>& dsg_shear_s);
-      void Integrate_dsg_membrane_r(const int gp, LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void Integrate_dsg_membrane_s(const int gp, LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void Integrate_dsg_membrane_rs(const int gp, LINALG::Matrix<9, 9>& dsg_membrane_rs);
-      void Integrate_dsg_transverse_t(const int gp, LINALG::Matrix<9, 9>& dsg_transverse_t);
+      void Integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
+      void Integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
+      void Integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
+      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
+      void Integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
+      void Integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
 
-      void CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
-          LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod);
+      void CalcConsistentDefgrd(const CORE::LINALG::Matrix<3, 3>& defgrd_disp,
+          CORE::LINALG::Matrix<6, 1> glstrain_mod, CORE::LINALG::Matrix<3, 3>& defgrd_mod);
 
-      void CalculateBopLoc(const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-          const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
-          const LINALG::Matrix<9, 1>& shape_q9, const LINALG::Matrix<2, 9>& deriv_q9, const int gp,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc);
+      void CalculateBopLoc(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+          const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+          const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+          const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH18>& bop_loc);
 
-      void CalculateLocStrain(const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
-          const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
-          const LINALG::Matrix<9, 1>& shape_q9, const LINALG::Matrix<2, 9>& deriv_q9, const int gp,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain);
+      void CalculateLocStrain(const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
+          const CORE::LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
+          const CORE::LINALG::Matrix<9, 1>& shape_q9, const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+          const int gp, CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& lstrain);
 
-      void CalculateGeoStiff(const LINALG::Matrix<9, 1>& shape_q9,
-          const LINALG::Matrix<2, 9>& deriv_q9,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
-          const double detJ_w, const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
-          LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix);
+      void CalculateGeoStiff(const CORE::LINALG::Matrix<9, 1>& shape_q9,
+          const CORE::LINALG::Matrix<2, 9>& deriv_q9,
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& TinvT, const int gp,
+          const double detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
+          CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix);
 
       void Update();
 

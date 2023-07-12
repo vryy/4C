@@ -12,11 +12,11 @@
 #include "beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace GEOMETRYPAIR
 {
@@ -113,15 +113,15 @@ namespace BEAMINTERACTION
     BeamToFluidMeshtyingPairBase();
 
     void EvaluateBeamPosition(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
-        LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
+        CORE::LINALG::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1vel_;
-    LINALG::Matrix<fluid::n_dof_, 1, scalar_type> ele2vel_;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type> ele1vel_;
+    CORE::LINALG::Matrix<fluid::n_dof_, 1, scalar_type> ele2vel_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    LINALG::Matrix<beam::n_dof_, 1, double> ele1poscur_;
-    LINALG::Matrix<fluid::n_dof_, 1, double> ele2poscur_;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, double> ele1poscur_;
+    CORE::LINALG::Matrix<fluid::n_dof_, 1, double> ele2poscur_;
   };
 }  // namespace BEAMINTERACTION
 

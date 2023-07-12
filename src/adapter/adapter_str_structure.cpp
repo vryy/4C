@@ -156,10 +156,10 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   }
 
   // create a solver
-  Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis, sdyn);
+  Teuchos::RCP<CORE::LINALG::Solver> solver = CreateLinearSolver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.
-  Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::Solver> contactsolver = Teuchos::null;
 
   if (onlymeshtying or onlycontact or meshtyingandcontact)
     contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
@@ -194,8 +194,8 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
 
     // prepare matrix for scaled thickness business of thin shell structures
-    Teuchos::RCP<LINALG::SparseMatrix> stcinv =
-        Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stcinv =
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
 
     stcinv->Zero();
     // create the parameters for the discretization
@@ -217,8 +217,8 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
       p.set("stc_layer", lay);
 
-      Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat =
-          Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> tmpstcmat =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
       tmpstcmat->Zero();
 
       actdis->Evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -227,7 +227,7 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       stcinv = MLMultiply(*stcinv, *tmpstcmat, false, false, true);
     }
 
-    Teuchos::RCP<Epetra_Vector> temp = LINALG::CreateVector(*(actdis->DofRowMap()), false);
+    Teuchos::RCP<Epetra_Vector> temp = CORE::LINALG::CreateVector(*(actdis->DofRowMap()), false);
 
     stcinv->Multiply(false, *nsv1, *temp);
     nsv1->Update(1.0, *temp, 0.0);
@@ -500,10 +500,10 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(
+Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(
     Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
 
   // get the solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -513,8 +513,9 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-      actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -523,10 +524,10 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(
+Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(
     Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
 
   // Get mortar information: contact or meshtying or both?
   bool onlymeshtying = false;
@@ -578,8 +579,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       }
 
       // build meshtying/contact solver
-      solver =
-          Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      solver = Teuchos::rcp(
+          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
               actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
@@ -624,8 +625,8 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
     default:
     {
       // build meshtying solver
-      solver =
-          Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      solver = Teuchos::rcp(
+          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
               actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }

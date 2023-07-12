@@ -210,15 +210,15 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
-    LINALG::Matrix<21, 1> x1statlocations_;
-    LINALG::Matrix<2, 1> x2statlocations_;
+    CORE::LINALG::Matrix<21, 1> x1statlocations_;
+    CORE::LINALG::Matrix<2, 1> x2statlocations_;
 
     //! coordinates of supplementary locations in x2-direction for velocity derivative
-    LINALG::Matrix<2, 1> x2supplocations_;
+    CORE::LINALG::Matrix<2, 1> x2supplocations_;
 
     //! coordinates of supplementary locations in x1-direction for statistical evaluation
     //! (check of inflow profile)
-    LINALG::Matrix<10, 1> x1supplocations_;
+    CORE::LINALG::Matrix<10, 1> x1supplocations_;
 
     //! matrices containing values
     Teuchos::RCP<Epetra_SerialDenseMatrix> x1sumu_;

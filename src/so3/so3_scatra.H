@@ -292,13 +292,14 @@ namespace DRT
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+      void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp_nodal_values,
-          const std::vector<double>& scalar_nodal_values, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
+          const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
-          LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-          LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
       /// @name params
       /// return SCATRA::ImplType
@@ -324,9 +325,9 @@ namespace DRT
        * @param[in] defgrd  deformation gradient
        * @param[in] N_XYZ   (material) derivative of shape functions
        */
-      void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
-          const LINALG::Matrix<numdim_, numdim_>* defgrd,
-          const LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
+      void CalculateBop(CORE::LINALG::Matrix<numstr_, numdofperelement_>* bop,
+          const CORE::LINALG::Matrix<numdim_, numdim_>* defgrd,
+          const CORE::LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}
 
       // action type recognized by So3_Scatra elements
@@ -341,11 +342,11 @@ namespace DRT
       //! total gauss points per element
       const int numgpt_;
       //! vector of coordinates of current integration point in reference coordinates
-      std::vector<LINALG::Matrix<numdim_, 1>> xsi_;
+      std::vector<CORE::LINALG::Matrix<numdim_, 1>> xsi_;
 
       //! vector of inverses of the jacobian (J^{-1} = \frac{\mathrm{d} \vec{r}} {\mathrm{d} \vec{X}
       //! }) at each gauss point
-      std::vector<LINALG::Matrix<numdim_, numdim_>> invJ_;
+      std::vector<CORE::LINALG::Matrix<numdim_, numdim_>> invJ_;
       //! vector of determinants of the jacobian (\det[ \frac{\mathrm{d} \vec{X}} {\mathrm{d}
       //! \vec{r}} ]) at each gauss point
       std::vector<double> detJ_;

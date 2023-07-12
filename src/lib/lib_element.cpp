@@ -1148,7 +1148,7 @@ CORE::GEOMETRICSEARCH::BoundingVolume DRT::Element::GetBoundingVolume(
     const Teuchos::RCP<const CORE::GEOMETRICSEARCH::GeometricSearchParams>& params) const
 {
   CORE::GEOMETRICSEARCH::BoundingVolume bounding_box;
-  LINALG::Matrix<3, 1, double> point;
+  CORE::LINALG::Matrix<3, 1, double> point;
 
   // The default bounding box is simply the bounding box of all element nodes.
   for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)

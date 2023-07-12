@@ -98,7 +98,7 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
     : So_base(id, owner), data_(), pstype_(INPAR::STR::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  invJ_.resize(NUMGPT_SOH27, LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
+  invJ_.resize(NUMGPT_SOH27, CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params != Teuchos::null)
@@ -215,7 +215,7 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOH27, NUMDIM_SOH27>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // prestress_

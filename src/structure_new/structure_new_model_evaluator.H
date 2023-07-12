@@ -26,11 +26,11 @@ namespace IO
   class DiscretizationReader;
 }  // namespace IO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace NOX
 {
@@ -108,7 +108,7 @@ namespace STR
     //! @name General evaluate routines
     //!@{
 
-    bool InitializeInertiaAndDamping(const Epetra_Vector& x, LINALG::SparseOperator& jac);
+    bool InitializeInertiaAndDamping(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac);
 
     bool ApplyInitialForce(const Epetra_Vector& x, Epetra_Vector& f);
 
@@ -131,7 +131,7 @@ namespace STR
      * @return Boolean flag to indicate success (true) or failure (false)
      */
     bool ApplyStiff(
-        const Epetra_Vector& x, LINALG::SparseOperator& jac, const double& timefac_np) const;
+        const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply model specific stiff
      *
@@ -143,7 +143,7 @@ namespace STR
      * @return Boolean flag to indicate success (true) or failure (false)
      */
     bool ApplyStiff(const INPAR::STR::ModelType& mt, const Epetra_Vector& x,
-        LINALG::SparseOperator& jac, const double& timefac_np) const;
+        CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply force and stiffness
      *
@@ -154,8 +154,8 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac,
-        const double& timefac_np) const;
+    bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f,
+        CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Compute cheap second order correction right hand side
      *
@@ -215,7 +215,7 @@ namespace STR
      *  \return Boolean flag to indicate success (true) or failure (false)
      *
      *  \author farah \date 07/17 */
-    bool AssembleJacobian(const double timefac_np, LINALG::SparseOperator& jac,
+    bool AssembleJacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac,
         const std::vector<INPAR::STR::ModelType>* without_these_models) const;
 
     /** \brief Assembly of all force contributions
@@ -238,7 +238,7 @@ namespace STR
      *
      *  \return Boolean flag to indicate success (true) or failure (false)
      */
-    inline bool AssembleJacobian(const double timefac_np, LINALG::SparseOperator& jac) const
+    inline bool AssembleJacobian(const double timefac_np, CORE::LINALG::SparseOperator& jac) const
     {
       return AssembleJacobian(*me_vec_ptr_, timefac_np, jac);
     }
@@ -267,8 +267,8 @@ namespace STR
      * @param timefac_np Time integration factor for the current contribution at \f$t_{n+1}\f$
      * @param modjac ??
      */
-    void AssembleJacobianContributionsFromElementLevelForPTC(
-        const Vector& me_vec, const double timefac_np, Teuchos::RCP<LINALG::SparseMatrix>& modjac);
+    void AssembleJacobianContributionsFromElementLevelForPTC(const Vector& me_vec,
+        const double timefac_np, Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac);
 
     /** \brief Assembly of a sub-set of stiffness contributions
      *
@@ -278,7 +278,7 @@ namespace STR
      *
      *  \author farah \date 07/17 */
     inline bool AssembleJacobian(
-        const Vector& me_vec, const double timefac_np, LINALG::SparseOperator& jac) const
+        const Vector& me_vec, const double timefac_np, CORE::LINALG::SparseOperator& jac) const
     {
       bool ok = true;
       AssembleJacobian(ok, me_vec, timefac_np, jac);
@@ -418,7 +418,7 @@ namespace STR
 
     //! computes element based scaling contributions for PTC
     void ComputeJacobianContributionsFromElementLevelForPTC(
-        Teuchos::RCP<LINALG::SparseMatrix>& scalingMatrixOpPtr);
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr);
 
    protected:
     //! Returns the init flag.
@@ -458,8 +458,8 @@ namespace STR
      *  \param f         (out) : jacobian matrix object which is going to be assembled.
      *
      *  \author hiermeier \date 03/17 */
-    void AssembleJacobian(
-        bool& ok, const Vector& me_vec, const double timefac_np, LINALG::SparseOperator& jac) const;
+    void AssembleJacobian(bool& ok, const Vector& me_vec, const double timefac_np,
+        CORE::LINALG::SparseOperator& jac) const;
 
     void AssembleCheapSOCRhs(
         bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const;

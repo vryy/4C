@@ -31,7 +31,7 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
@@ -60,7 +60,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -103,34 +103,34 @@ void STR::TimIntOneStepTheta::Setup()
   // create state vectors
 
   // mid-displacements
-  dist_ = LINALG::CreateVector(*DofRowMapView(), true);
+  dist_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // mid-velocities
-  velt_ = LINALG::CreateVector(*DofRowMapView(), true);
+  velt_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // mid-accelerations
-  acct_ = LINALG::CreateVector(*DofRowMapView(), true);
+  acct_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // create force vectors
 
   // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fint_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // set initial external force vector
   ApplyForceExternal((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
 
   // inertial force vector F_{int;n} at last time
-  finert_ = LINALG::CreateVector(*DofRowMapView(), true);
+  finert_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // inertial mid-force vector F_{int;n+1-alpha_f}
-  finertt_ = LINALG::CreateVector(*DofRowMapView(), true);
+  finertt_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // inertial force vector F_{int;n+1} at new time
-  finertn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  finertn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // viscous mid-point force vector F_visc
-  fvisct_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fvisct_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
@@ -675,13 +675,13 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
     discret_->SetState("acceleration", (*acc_)(0));
 
     Teuchos::RCP<Epetra_Vector> update_disp;
-    update_disp = LINALG::CreateVector(*DofRowMapView(), true);
+    update_disp = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_vel;
-    update_vel = LINALG::CreateVector(*DofRowMapView(), true);
+    update_vel = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
     Teuchos::RCP<Epetra_Vector> update_acc;
-    update_acc = LINALG::CreateVector(*DofRowMapView(), true);
+    update_acc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);

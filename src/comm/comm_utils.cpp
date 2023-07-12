@@ -362,14 +362,14 @@ bool COMM_UTILS::AreDistributedVectorsIdentical(const COMM_UTILS::Communicators&
   // gather data of vector to compare on gcomm proc 0 and last gcomm proc
   Teuchos::RCP<Epetra_Map> proc0map;
   if (lcomm->MyPID() == gcomm->MyPID())
-    proc0map = LINALG::AllreduceOverlappingEMap(*vecmap, 0);
+    proc0map = CORE::LINALG::AllreduceOverlappingEMap(*vecmap, 0);
   else
-    proc0map = LINALG::AllreduceOverlappingEMap(*vecmap, lcomm->NumProc() - 1);
+    proc0map = CORE::LINALG::AllreduceOverlappingEMap(*vecmap, lcomm->NumProc() - 1);
 
   // export full vectors to the two desired processors
   Teuchos::RCP<Epetra_MultiVector> fullvec =
       Teuchos::rcp(new Epetra_MultiVector(*proc0map, vec->NumVectors(), true));
-  LINALG::Export(*vec, *fullvec);
+  CORE::LINALG::Export(*vec, *fullvec);
 
   const int myglobalrank = gcomm->MyPID();
   double maxdiff = 0.0;
@@ -501,9 +501,9 @@ bool COMM_UTILS::AreDistributedSparseMatricesIdentical(
   // gather data of vector to compare on gcomm proc 0 and last gcomm proc
   Teuchos::RCP<Epetra_Map> serialmap;
   if (lcomm->MyPID() == gcomm->MyPID())
-    serialmap = LINALG::AllreduceOverlappingEMap(originalmap, 0);
+    serialmap = CORE::LINALG::AllreduceOverlappingEMap(originalmap, 0);
   else
-    serialmap = LINALG::AllreduceOverlappingEMap(originalmap, lcomm->NumProc() - 1);
+    serialmap = CORE::LINALG::AllreduceOverlappingEMap(originalmap, lcomm->NumProc() - 1);
 
   // export full matrices to the two desired processors
   Teuchos::RCP<Epetra_Import> serialimporter =

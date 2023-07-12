@@ -23,7 +23,7 @@
 
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
-    const LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
+    const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
     ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
     std::vector<std::string>& blocksmoother, std::vector<double>& schuromega,
     std::vector<double>& omega, std::vector<int>& iterations, std::vector<double>& somega,
@@ -217,7 +217,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   /****************************************************************************/
 
-  // LINALG::PrintMatrixInMatlabFormat("precondmat.dat",*A);
+  // CORE::LINALG::PrintMatrixInMatlabFormat("precondmat.dat",*A);
 
   // Teuchos::RCP<Ifpack_LocalFilter> localmat = Teuchos::rcp(new Ifpack_LocalFilter(A));
 
@@ -291,13 +291,14 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //  testmat->FillComplete();
   //  testmat->OptimizeStorage();
   //
-  //  Teuchos::RCP<LINALG::SOLVER::IFPACKPreconditioner> testprec;
-  //  testprec = Teuchos::rcp(new LINALG::SOLVER::IFPACKPreconditioner(&outfile,ifpacklist,azlist));
+  //  Teuchos::RCP<CORE::LINALG::SOLVER::IFPACKPreconditioner> testprec;
+  //  testprec = Teuchos::rcp(new
+  //  CORE::LINALG::SOLVER::IFPACKPreconditioner(&outfile,ifpacklist,azlist));
   //  Teuchos::RCP<Epetra_MultiVector> xtest = Teuchos::rcp(new Epetra_MultiVector(*testmap,1));
   //  testprec->Setup(true, testmat.getRawPtr(), x.getRawPtr(), x.getRawPtr());
   //
   //
-  //  LINALG::PrintMatrixInMatlabFormat("testmat.dat",*testmat);
+  //  CORE::LINALG::PrintMatrixInMatlabFormat("testmat.dat",*testmat);
   //  std::cout<<"\nEpetraMatrix: "<<std::endl;
   //  testmat->Print(std::cout);
   //

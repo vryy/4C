@@ -137,7 +137,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInterface<nsd, nen>::CreateVaria
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::ExtractElementAndNodeValues(
     const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState(dofsetnum, "phinp_fluid");
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::ExtractEleme
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract element vector from global vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*phinp, ephinp_, lm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phinp, ephinp_, lm);
 
   // set flag
   this->isextracted_ = true;
@@ -161,8 +161,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::ExtractEleme
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::EvaluateGPVariables(
-    const LINALG::Matrix<nen, 1>& funct,   //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // check
@@ -189,8 +190,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhi<nsd, nen>::EvaluateGPVa
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhiGradPhi<nsd, nen>::EvaluateGPVariables(
-    const LINALG::Matrix<nen, 1>& funct,   //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // loop over DOFs
@@ -215,7 +217,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerPhiGradPhi<nsd, nen>::Evalu
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractElementAndNodeValues(
     const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
@@ -229,8 +231,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractEl
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract values from global vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*hist, ehist_, lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*hist, ehist_, lm);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phidtnp, ephidtnp_, lm);
 
   // call wrapped class
   this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
@@ -243,8 +245,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::ExtractEl
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::EvaluateGPVariables(
-    const LINALG::Matrix<nen, 1>& funct,   //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // loop over DOFs
@@ -271,7 +274,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerInstat<nsd, nen>::EvaluateG
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractElementAndNodeValues(
     const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   if (dofsetnum != 0)
     dserror(
@@ -295,7 +298,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
   if (vel == Teuchos::null) dserror("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
   Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp_, "dispnp");
@@ -311,7 +314,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
       lmdisp[inode * nsd + idim] = la[ndsdisp_].lm_[inode * numdispdofpernode + idim];
 
   // extract local values of displacement field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd, nen>>(*dispnp, edispnp_, lmdisp);
 
   // add nodal displacements to point coordinates
   xyze += edispnp_;
@@ -324,12 +327,13 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::ExtractEl
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::EvaluateGPVariables(
-    const LINALG::Matrix<nen, 1>& funct,   //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // velocity divergence required for conservative form
-  LINALG::Matrix<nsd, nsd> vderxy;
+  CORE::LINALG::Matrix<nsd, nsd> vderxy;
   vderxy.MultiplyNT(econvelnp_, derxy);
   divconvelint_ = 0.0;
   // compute vel x,x  + vel y,y +  vel z,z at integration point
@@ -356,7 +360,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerStruct<nsd, nen>::EvaluateG
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::ExtractElementAndNodeValues(
     const DRT::Element& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    DRT::Element::LocationArray& la, CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
   this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
@@ -370,9 +374,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::ExtractEl
 
   // rebuild scalar vector
   escalarnp_.clear();
-  escalarnp_.resize(numscalardofpernode, LINALG::Matrix<nen, 1>(true));
+  escalarnp_.resize(numscalardofpernode, CORE::LINALG::Matrix<nen, 1>(true));
   // extract local values of displacement field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*scalarnp, escalarnp_, la[ndsscalar_].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(
+      *scalarnp, escalarnp_, la[ndsscalar_].lm_);
 
   return;
 };
@@ -382,8 +387,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::ExtractEl
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerScalar<nsd, nen>::EvaluateGPVariables(
-    const LINALG::Matrix<nen, 1>& funct,   //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // call wrapped class
@@ -414,7 +420,7 @@ template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,
     nen>::ExtractElementAndNodeValues(const DRT::Element& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
+    CORE::LINALG::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // call internal class
   this->varmanager_->ExtractElementAndNodeValues(ele, discretization, la, xyze, dofsetnum);
@@ -428,8 +434,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<ns
   const std::vector<int>& lm = la[dofsetnum].lm_;
 
   // extract values from global vector
-  std::vector<LINALG::Matrix<nen, 1>> ephin(this->NumDofPerNode());
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen, 1>>(*phin, ephin, lm);
+  std::vector<CORE::LINALG::Matrix<nen, 1>> ephin(this->NumDofPerNode());
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen, 1>>(*phin, ephin, lm);
 
   const int numfluidphases = (int)(this->NumDofPerNode() - 2 * numvolfrac_);
 
@@ -461,8 +467,10 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<ns
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 void DRT::ELEMENTS::POROFLUIDMANAGER::VariableManagerMaximumNodalVolFracValue<nsd,
-    nen>::EvaluateGPVariables(const LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
-    const LINALG::Matrix<nsd, nen>& derxy  //! array for shape function derivatives w.r.t x,y,z
+    nen>::EvaluateGPVariables(const CORE::LINALG::Matrix<nen, 1>&
+                                  funct,  //! array for shape functions
+    const CORE::LINALG::Matrix<nsd, nen>&
+        derxy  //! array for shape function derivatives w.r.t x,y,z
 )
 {
   // call wrapped class

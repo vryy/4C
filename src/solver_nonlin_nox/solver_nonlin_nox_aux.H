@@ -22,11 +22,11 @@
 // forward declaration
 class Epetra_Vector;
 class Epetra_Comm;
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace NOX
 {
   class Observer;
@@ -47,11 +47,12 @@ namespace NOX
       /*! \brief Returns the type of operator that is passed in.
        *
        *   Uses dynamic casting to identify the underlying object type. */
-      NOX::NLN::LinSystem::OperatorType GetOperatorType(const LINALG::SparseOperator& op);
+      NOX::NLN::LinSystem::OperatorType GetOperatorType(const CORE::LINALG::SparseOperator& op);
 
       /// return linear system type
       NOX::NLN::LinSystem::LinearSystemType GetLinearSystemType(
-          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& linsolvers);
+          const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>&
+              linsolvers);
 
       /*! \brief Calculate the root mean square for the NOX status test
        *  \f[

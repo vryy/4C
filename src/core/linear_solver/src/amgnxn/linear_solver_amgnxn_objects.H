@@ -65,12 +65,12 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     {
     }
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrix(int i, int j) const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrix(int i, int j) const
     {
       return matrices_[i * GetNumCols() + j];
     }  // Row major order
 
-    virtual void SetMatrix(Teuchos::RCP<LINALG::SparseMatrix> A, int i, int j)
+    virtual void SetMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int i, int j)
     {
       matrices_[i * GetNumCols() + j] = A;
       return;
@@ -94,8 +94,8 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
 
     int GetNumCols() const { return cols_; }
 
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix(
-        LINALG::DataAccess access);
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix(
+        CORE::LINALG::DataAccess access);
 
     void ParseBlocks(const std::string& block_string, const std::vector<int>& blocks,
         std::vector<std::vector<int>>& superblocks_to_blocks,
@@ -106,7 +106,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
     virtual Teuchos::RCP<BlockedVector> NewRangeBlockedVector(int NV, bool ZeroIt = false) const;
 
    protected:
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> matrices_;  // Row major order
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> matrices_;  // Row major order
     int rows_;
     int cols_;
   };
@@ -121,13 +121,13 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
       cols_ = rows;
     }
 
-    void SetMatrix(Teuchos::RCP<LINALG::SparseMatrix> A, int i, int j) override
+    void SetMatrix(Teuchos::RCP<CORE::LINALG::SparseMatrix> A, int i, int j) override
     {
       if (i != j) dserror("You can only set diagonal blocks");
       matrices_[i] = A;
     }
 
-    Teuchos::RCP<LINALG::SparseMatrix> GetMatrix(int i, int j) const override
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrix(int i, int j) const override
     {
       if (i != j) dserror("You can only get diagonal blocks");
       return matrices_[i];
@@ -140,7 +140,7 @@ namespace CORE::LINEAR_SOLVER::AMGNXN
       return *this;
     }
 
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix()
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> GetBlockSparseMatrix()
     {
       dserror("Function not implemented yet.");
       return Teuchos::null;

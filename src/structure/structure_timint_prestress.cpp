@@ -21,7 +21,8 @@
 STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<LINALG::Solver>& contactsolver,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<CORE::LINALG::Solver>& contactsolver,
     const Teuchos::RCP<IO::DiscretizationWriter>& output)
     : TimIntStatics(
           timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output)

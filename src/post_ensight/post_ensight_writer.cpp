@@ -40,7 +40,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   // initialize proc0map_ correctly
   const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
-  proc0map_ = LINALG::AllreduceEMap(*noderowmap, 0);
+  proc0map_ = CORE::LINALG::AllreduceEMap(*noderowmap, 0);
 
   // sort proc0map_ so that we can loop it and get nodes in ascending order.
   std::vector<int> sortmap;
@@ -1712,7 +1712,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file, PostResult& result,
     //------------------------------------------------------
 
     Teuchos::RCP<Epetra_Map> proc0datamap;
-    proc0datamap = LINALG::AllreduceEMap(*epetradatamap, 0);
+    proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -1976,7 +1976,7 @@ void EnsightWriter::WriteElementDOFResultStep(std::ofstream& file, PostResult& r
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -2143,7 +2143,7 @@ void EnsightWriter::WriteElementResultStep(std::ofstream& file,
   //------------------------------------------------------
 
   Teuchos::RCP<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap, 0);
+  proc0datamap = CORE::LINALG::AllreduceEMap(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
@@ -2504,7 +2504,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions(std::ofstream& g
   }
 
   // put all coordinate information on proc 0
-  proc0map = LINALG::AllreduceEMap(*nodemap, 0);
+  proc0map = CORE::LINALG::AllreduceEMap(*nodemap, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *nodemap);

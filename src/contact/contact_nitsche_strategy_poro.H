@@ -53,8 +53,8 @@ namespace CONTACT
     }
 
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-        const int iter, bool predictor) override;
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int step, const int iter, bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
 
@@ -67,7 +67,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
         const enum DRT::UTILS::VecBlockType& bt) const override;
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) const;
 
 
@@ -84,19 +84,19 @@ namespace CONTACT
         const enum DRT::UTILS::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<LINALG::SparseMatrix> SetupMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SetupMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void CompleteMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt, Teuchos::RCP<LINALG::SparseMatrix> kc) override;
+    void CompleteMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kc) override;
 
     bool no_penetration_;
 
     Teuchos::RCP<Epetra_FEVector> fp_;
-    Teuchos::RCP<LINALG::SparseMatrix> kpp_;
-    Teuchos::RCP<LINALG::SparseMatrix> kpd_;
-    Teuchos::RCP<LINALG::SparseMatrix> kdp_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kpp_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kpd_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> kdp_;
   };
 }  // namespace CONTACT
 #endif  // CONTACT_NITSCHE_STRATEGY_PORO_H

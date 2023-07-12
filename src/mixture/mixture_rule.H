@@ -181,8 +181,8 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Update(LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, const int gp,
-        const int eleGID)
+    virtual void Update(CORE::LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params,
+        const int gp, const int eleGID)
     {
       // Nothing needs to be updated in this simple mixture rule
     }
@@ -197,8 +197,8 @@ namespace MIXTURE
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    virtual void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
-        const int gp, const int eleGID)
+    virtual void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd,
+        Teuchos::ParameterList& params, const int gp, const int eleGID)
     {
       // Do nothing in the default case
     }
@@ -228,9 +228,10 @@ namespace MIXTURE
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) = 0;
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+        const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
+        int eleGID) = 0;
 
     /*!
      * @brief Returns the material mass density

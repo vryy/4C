@@ -112,20 +112,21 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::ScalarDepInterp::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   // evaluate elastic material corresponding to zero concentration
-  LINALG::Matrix<6, 1> stress_lambda_zero = *stress;
-  LINALG::Matrix<6, 6> cmat_zero_conc = *cmat;
+  CORE::LINALG::Matrix<6, 1> stress_lambda_zero = *stress;
+  CORE::LINALG::Matrix<6, 6> cmat_zero_conc = *cmat;
 
   lambda_zero_mat_->Evaluate(
       defgrd, glstrain, params, &stress_lambda_zero, &cmat_zero_conc, gp, eleGID);
 
   // evaluate elastic material corresponding to infinite concentration
-  LINALG::Matrix<6, 1> stress_lambda_unit = *stress;
-  LINALG::Matrix<6, 6> cmat_infty_conc = *cmat;
+  CORE::LINALG::Matrix<6, 1> stress_lambda_unit = *stress;
+  CORE::LINALG::Matrix<6, 6> cmat_infty_conc = *cmat;
 
   lambda_unit_mat_->Evaluate(
       defgrd, glstrain, params, &stress_lambda_unit, &cmat_infty_conc, gp, eleGID);
@@ -170,8 +171,8 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   if (params.isParameter("dlambda_dC"))
   {
     // get derivative of interpolation ratio w.r.t. glstrain
-    Teuchos::RCP<LINALG::Matrix<6, 1>> dlambda_dC =
-        params.get<Teuchos::RCP<LINALG::Matrix<6, 1>>>("dlambda_dC");
+    Teuchos::RCP<CORE::LINALG::Matrix<6, 1>> dlambda_dC =
+        params.get<Teuchos::RCP<CORE::LINALG::Matrix<6, 1>>>("dlambda_dC");
 
     // evaluate strain energy functions
     double psi_lambda_zero = 0.0;
@@ -365,7 +366,7 @@ void MAT::ScalarDepInterp::ReadLambda(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   // evaluate strain energy functions
   double psi_lambda_zero = 0.0;

@@ -40,10 +40,10 @@ namespace STR
         const Teuchos::ParameterList& sdynparams,        //!< input parameters
         const Teuchos::ParameterList& xparams,           //!< extra flags
         // const Teuchos::ParameterList& ab2params,  //!< AB2 flags
-        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
     //! Empty constructor
@@ -78,7 +78,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 

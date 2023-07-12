@@ -191,8 +191,8 @@ void CORE::LINEAR_SOLVER::MueLuFluidBlockPreconditioner::Setup(
   int np = 0;     // number of pressure dofs
   int numdf = 0;  // dofs per node
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("Matrix is not a BlockSparseMatrix");
 
   // store operator
@@ -324,8 +324,8 @@ void CORE::LINEAR_SOLVER::MueLuTsiBlockPreconditioner::Setup(
 
   SetupLinearProblem(matrix, x, b);
 
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
@@ -447,8 +447,8 @@ void CORE::LINEAR_SOLVER::MueLuContactSpPreconditioner::Setup(
   SetupLinearProblem(matrix, x, b);
 
   // Check whether input matrix is an actual blocked operator
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
@@ -758,9 +758,9 @@ void CORE::LINEAR_SOLVER::MueLuBeamSolidBlockPreconditioner::Setup(
       beamList.get<Teuchos::RCP<Epetra_Map>>("null space: map", Teuchos::null);
   if (beamDofRowmap == Teuchos::null) dserror("Beam row map is zero!");
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> Ablock =
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>> Ablock =
       Teuchos::null;
-  LINALG::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
+  CORE::LINALG::SplitMatrix2x2(A, Ablock, solidDofRowmap, beamDofRowmap);
 
   ///////////////////////////////////////////////////////////////////////
   // Here the actual construction of the preconditioner starts
@@ -881,8 +881,8 @@ void CORE::LINEAR_SOLVER::MueLuFsiBlockPreconditioner::Setup(
   SetupLinearProblem(matrix, x, b);
 
   // check wheter input matrix is an actual blocked operator
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> A =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
   if (A == Teuchos::null) dserror("matrix is not a BlockSparseMatrix");
 
   // split matrix into components

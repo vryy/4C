@@ -23,7 +23,7 @@
  |  Constructor (public)                                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
 LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(actdis, solver, params, extraparams, output)
 {

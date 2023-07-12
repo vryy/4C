@@ -153,20 +153,20 @@ namespace MAT
     }
 
     //! evaluates stresses for 3d
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
-        Teuchos::ParameterList& params,                //!< parameter list
-        LINALG::Matrix<6, 1>* stress,                  //!< stress
-        LINALG::Matrix<6, 6>* cmat,                    //!< elastic material tangent
-        int gp,                                        ///< Gauss point
-        int eleGID                                     //!< element GID
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          //!< Green-Lagrange strain
+        Teuchos::ParameterList& params,                      //!< parameter list
+        CORE::LINALG::Matrix<6, 1>* stress,                  //!< stress
+        CORE::LINALG::Matrix<6, 6>* cmat,                    //!< elastic material tangent
+        int gp,                                              ///< Gauss point
+        int eleGID                                           //!< element GID
         ) override;
 
     /// add strain energy
-    void StrainEnergy(const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
-        double& psi,                                         ///< strain energy functions
-        int gp,                                              ///< Gauss point
-        int eleGID                                           ///< element GID
+    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
+        double& psi,                                               ///< strain energy functions
+        int gp,                                                    ///< Gauss point
+        int eleGID                                                 ///< element GID
         ) override;
 
     //! return true if Young's modulus is temperature dependent
@@ -187,20 +187,20 @@ namespace MAT
     //! Return quick accessible material parameter data
     MAT::PAR::Parameter* Parameter() const override { return params_; }
 
-    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
-        LINALG::Matrix<3, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp, CORE::LINALG::Matrix<3, 3>& cmat,
+        CORE::LINALG::Matrix<3, 1>& heatflux) const override;
 
-    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
-        LINALG::Matrix<2, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp, CORE::LINALG::Matrix<2, 2>& cmat,
+        CORE::LINALG::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
-        LINALG::Matrix<1, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp, CORE::LINALG::Matrix<1, 1>& cmat,
+        CORE::LINALG::Matrix<1, 1>& heatflux) const override;
 
-    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override;
+    void ConductivityDerivT(CORE::LINALG::Matrix<3, 3>& dCondDT) const override;
 
-    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override;
+    void ConductivityDerivT(CORE::LINALG::Matrix<2, 2>& dCondDT) const override;
 
-    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override;
+    void ConductivityDerivT(CORE::LINALG::Matrix<1, 1>& dCondDT) const override;
 
     double CapacityDerivT() const override;
 
@@ -210,24 +210,24 @@ namespace MAT
 
     void CommitCurrentState() override;
 
-    void Reinit(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        double temperature, unsigned gp) override;
+    void Reinit(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, double temperature, unsigned gp) override;
 
-    void GetdSdT(LINALG::Matrix<6, 1>* dS_dT) override;
+    void GetdSdT(CORE::LINALG::Matrix<6, 1>* dS_dT) override;
 
     void StressTemperatureModulusAndDeriv(
-        LINALG::Matrix<6, 1>& stm, LINALG::Matrix<6, 1>& stm_dT) override;
+        CORE::LINALG::Matrix<6, 1>& stm, CORE::LINALG::Matrix<6, 1>& stm_dT) override;
 
     //! general thermal tangent of material law depending on stress-temperature modulus
-    static void FillCthermo(LINALG::Matrix<6, 1>& ctemp, double m);
+    static void FillCthermo(CORE::LINALG::Matrix<6, 1>& ctemp, double m);
 
    private:
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6, 6>& cmat);
+    void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void SetupCthermo(LINALG::Matrix<6, 1>& ctemp);
+    void SetupCthermo(CORE::LINALG::Matrix<6, 1>& ctemp);
 
     //! calculates stress-temperature modulus
     double STModulus() const;
@@ -237,11 +237,12 @@ namespace MAT
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void GetCmatAtTempnp_T(LINALG::Matrix<6, 6>& derivcmat);
+    void GetCmatAtTempnp_T(CORE::LINALG::Matrix<6, 6>& derivcmat);
 
     //! calculates derivative of Cmat with respect to current temperatures
     //! only in case of temperature-dependent material parameters
-    void GetCthermoAtTempnp_T(LINALG::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
+    void GetCthermoAtTempnp_T(
+        CORE::LINALG::Matrix<6, 1>& derivctemp  //!< linearisation of ctemp w.r.t. T
     );
 
     //! calculate temperature dependent material parameter and return value
@@ -269,7 +270,7 @@ namespace MAT
     double currentTemperature_{};
 
     //! current Green-Lagrange strain
-    const LINALG::Matrix<6, 1>* currentGlstrain_{};
+    const CORE::LINALG::Matrix<6, 1>* currentGlstrain_{};
 
   };  // ThermoStVenantKirchhoff
 }  // namespace MAT

@@ -253,7 +253,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> dis, DRT::AssembleStrategy* strategy,
     std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-    std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action,
     bool evaluateonlyboundary)
 {
   // pointer to element
@@ -278,7 +278,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
 
       params.set<int>("action", action);
       params.set<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp", structsearchtree);
-      params.set<std::map<int, LINALG::Matrix<3, 1>>*>(
+      params.set<std::map<int, CORE::LINALG::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
 
@@ -309,7 +309,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
 void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> dis, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-    std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, int action)
+    std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, int action)
 {
   // pointer to element
   DRT::Element* ele;
@@ -330,7 +330,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
       // provide important objects to ParameterList
       params.set<int>("action", action);
       params.set<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp", structsearchtree);
-      params.set<std::map<int, LINALG::Matrix<3, 1>>*>(
+      params.set<std::map<int, CORE::LINALG::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
       if (dis->Name() == "fluid")
@@ -360,7 +360,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const DRT::Discretization> idis,
     DRT::AssembleStrategy* strategy, std::map<int, std::set<int>>* elementstoeval,
     Teuchos::RCP<CORE::GEO::SearchTree> structsearchtree,
-    std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct, Teuchos::ParameterList& params,
     bool evaluateonlyboundary)
 {
   // pointer to element
@@ -386,7 +386,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
       int col = strategy->SecondDofSet();
 
       params.set<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp", structsearchtree);
-      params.set<std::map<int, LINALG::Matrix<3, 1>>*>(
+      params.set<std::map<int, CORE::LINALG::Matrix<3, 1>>*>(
           "currpositions_struct", currpositions_struct);
       params.set<int>("Physical Type", INPAR::FLUID::poro_p1);
 
@@ -553,8 +553,8 @@ void IMMERSED::ImmersedBase::EvaluateInterpolationCondition(
 void IMMERSED::ImmersedBase::SearchPotentiallyCoveredBackgrdElements(
     std::map<int, std::set<int>>* current_subset_tofill,
     Teuchos::RCP<CORE::GEO::SearchTree> backgrd_SearchTree, const DRT::Discretization& dis,
-    const std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const LINALG::Matrix<3, 1>& point,
-    const double radius, const int label)
+    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+    const CORE::LINALG::Matrix<3, 1>& point, const double radius, const int label)
 {
   *current_subset_tofill =
       backgrd_SearchTree->searchElementsInRadius(dis, currentpositions, point, radius, label);

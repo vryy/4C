@@ -42,25 +42,26 @@ namespace TUTORIAL
       virtual ~TutorialEleCalc(){};
 
       /// evaluates the desired matrix and/or vector
-      void Evaluate(TutorialElement* element, LINALG::Matrix<7, 1>* state,
-          LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector)
+      void Evaluate(TutorialElement* element, CORE::LINALG::Matrix<7, 1>* state,
+          CORE::LINALG::Matrix<2, 2>* elematrix, CORE::LINALG::Matrix<2, 1>* elevector)
       {
         Evaluate(element, state, elematrix, elevector, true, true);
         return;
       };
 
       /// evaluates the desired matrix and/or vector
-      void Evaluate(TutorialElement* element, LINALG::Matrix<7, 1>* state,
-          LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector, bool eval_mat)
+      void Evaluate(TutorialElement* element, CORE::LINALG::Matrix<7, 1>* state,
+          CORE::LINALG::Matrix<2, 2>* elematrix, CORE::LINALG::Matrix<2, 1>* elevector,
+          bool eval_mat)
       {
         Evaluate(element, state, elematrix, elevector, eval_mat, true);
         return;
       };
 
       /// evaluates the desired matrix and/or vector
-      void Evaluate(TutorialElement* element, LINALG::Matrix<7, 1>* state,
-          LINALG::Matrix<2, 2>* elematrix, LINALG::Matrix<2, 1>* elevector, bool eval_mat,
-          bool eval_vec);
+      void Evaluate(TutorialElement* element, CORE::LINALG::Matrix<7, 1>* state,
+          CORE::LINALG::Matrix<2, 2>* elematrix, CORE::LINALG::Matrix<2, 1>* elevector,
+          bool eval_mat, bool eval_vec);
 
 
      protected:

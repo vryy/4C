@@ -13,7 +13,7 @@
 #include "fsi_xfem_coupling_manager.H"
 #include "fsi_xfem_coupling_comm_manager.H"
 
-//#define FREESURFFLOW
+// #define FREESURFFLOW
 
 namespace FLD
 {
@@ -51,26 +51,27 @@ namespace XFEM
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    virtual void AddCouplingMatrix(LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    virtual void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
     virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me, double scaling);
+        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
 
     //! we need to think if inserting the ale matrixes are modifications (might conflict with other
     //! modifications)
-    virtual bool ModifySysmatandRHS(LINALG::BlockSparseMatrixBase& systemmatrix,
-        Teuchos::RCP<Epetra_Vector> rhs, const LINALG::MultiMapExtractor& me)
+    virtual bool ModifySysmatandRHS(CORE::LINALG::BlockSparseMatrixBase& systemmatrix,
+        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me)
     {
       return false;
     }
 
     //! nothing to do
     virtual void PostLinearSolve(
-        Teuchos::RCP<Epetra_Vector> inc, const LINALG::MultiMapExtractor& me)
+        Teuchos::RCP<Epetra_Vector> inc, const CORE::LINALG::MultiMapExtractor& me)
     {
       return;
     }

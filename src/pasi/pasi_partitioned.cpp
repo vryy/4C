@@ -55,9 +55,9 @@ void PASI::PartitionedAlgo::Init()
   interface_ = structurefield_->Interface();
 
   // construct interface states
-  intfdispnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfvelnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
-  intfaccnp_ = LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfdispnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfvelnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
+  intfaccnp_ = CORE::LINALG::CreateVector(*interface_->PASICondMap(), true);
 
   // set init flag
   SetIsInit(true);
@@ -197,12 +197,12 @@ void PASI::PartitionedAlgo::SetInterfaceStates(Teuchos::RCP<const Epetra_Vector>
 #endif
 
   // export displacement, velocity and acceleration states
-  LINALG::Export(*intfdispnp, *walldatastate->GetMutableDispCol());
-  LINALG::Export(*intfvelnp, *walldatastate->GetMutableVelCol());
-  LINALG::Export(*intfaccnp, *walldatastate->GetMutableAccCol());
+  CORE::LINALG::Export(*intfdispnp, *walldatastate->GetMutableDispCol());
+  CORE::LINALG::Export(*intfvelnp, *walldatastate->GetMutableVelCol());
+  CORE::LINALG::Export(*intfaccnp, *walldatastate->GetMutableAccCol());
 
   // export column to row displacements (no communication)
-  LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
+  CORE::LINALG::Export(*walldatastate->GetDispCol(), *walldatastate->GetMutableDispRow());
 
   // print norm of interface displacement to the screen
   if (PrintScreenEvry() and (Step() % PrintScreenEvry() == 0))

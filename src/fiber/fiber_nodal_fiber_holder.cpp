@@ -14,37 +14,40 @@
 #include "fiber_node.H"
 
 void DRT::FIBER::NodalFiberHolder::SetCoordinateSystemDirection(
-    DRT::FIBER::CoordinateSystemDirection type, const std::vector<LINALG::Matrix<3, 1>>& fiber)
+    DRT::FIBER::CoordinateSystemDirection type,
+    const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber)
 {
-  coordinateSystemDirections_.insert(
-      std::pair<DRT::FIBER::CoordinateSystemDirection, const std::vector<LINALG::Matrix<3, 1>>>(
-          type, fiber));
+  coordinateSystemDirections_.insert(std::pair<DRT::FIBER::CoordinateSystemDirection,
+      const std::vector<CORE::LINALG::Matrix<3, 1>>>(type, fiber));
 }
 
-const std::vector<LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirection(
+const std::vector<CORE::LINALG::Matrix<3, 1>>&
+DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirection(
     DRT::FIBER::CoordinateSystemDirection type) const
 {
   return coordinateSystemDirections_.at(type);
 }
 
-std::vector<LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirectionMutual(
+std::vector<CORE::LINALG::Matrix<3, 1>>&
+DRT::FIBER::NodalFiberHolder::GetCoordinateSystemDirectionMutual(
     DRT::FIBER::CoordinateSystemDirection type)
 {
   return coordinateSystemDirections_.at(type);
 }
 
-void DRT::FIBER::NodalFiberHolder::AddFiber(const std::vector<LINALG::Matrix<3, 1>>& fiber)
+void DRT::FIBER::NodalFiberHolder::AddFiber(const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber)
 {
   fibers_.emplace_back(fiber);
 }
 
-const std::vector<LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetFiber(
+const std::vector<CORE::LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetFiber(
     std::size_t fiberid) const
 {
   return fibers_.at(fiberid);
 }
 
-std::vector<LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetFiberMutual(std::size_t fiberid)
+std::vector<CORE::LINALG::Matrix<3, 1>>& DRT::FIBER::NodalFiberHolder::GetFiberMutual(
+    std::size_t fiberid)
 {
   return fibers_.at(fiberid);
 }

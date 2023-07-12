@@ -169,7 +169,7 @@ INPAR::CONTACT::SolvingStrategy CONTACT::AUG::ComboStrategy::Type() const { retu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::Solver* CONTACT::AUG::ComboStrategy::GetLinearSolver() const
+CORE::LINALG::Solver* CONTACT::AUG::ComboStrategy::GetLinearSolver() const
 {
   return lin_solvers_.at(switch_->Id()).get();
 }
@@ -341,7 +341,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::ComboStrategy::GetCondensedRhsPt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   return Get().GetMatrixBlockPtr(bt, cparams);
@@ -349,8 +349,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetMatrixBlockPt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetCondensedMatrixBlockPtr(
-    Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ComboStrategy::GetCondensedMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const
 {
   return Get().GetCondensedMatrixBlockPtr(kteff, timefac_np);
 }
@@ -415,7 +415,7 @@ void CONTACT::AUG::ComboStrategy::PostSetup(bool redistributed, bool init)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::ComboStrategy::PostStoreDirichletStatus(
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmaps)
 {
   no_dbc_.Assemble(*dbcmaps->CondMap(), data_);
 
@@ -429,9 +429,9 @@ void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Assemble(
 {
   const Epetra_Map& gSlMaDofRowMap = *data.GSlMaDofRowMapPtr();
 
-  Teuchos::RCP<Epetra_Map> gSlMaDbcDofRowMap = LINALG::IntersectMap(gSlMaDofRowMap, dbcmap);
+  Teuchos::RCP<Epetra_Map> gSlMaDbcDofRowMap = CORE::LINALG::IntersectMap(gSlMaDofRowMap, dbcmap);
 
-  slMaMap_ = LINALG::SplitMap(gSlMaDofRowMap, *gSlMaDbcDofRowMap);
+  slMaMap_ = CORE::LINALG::SplitMap(gSlMaDofRowMap, *gSlMaDbcDofRowMap);
 
   Reset(*slMaMap_, data);
 }
@@ -451,8 +451,8 @@ void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::AUG::
 void CONTACT::AUG::ComboStrategy::GlobalNoDbc::Reset(
     const Epetra_Map& slMaMap, const CONTACT::AUG::DataContainer& data)
 {
-  slMap_ = LINALG::IntersectMap(slMaMap, *data.GSlDofRowMapPtr());
-  maMap_ = LINALG::IntersectMap(slMaMap, *data.GMaDofRowMapPtr());
+  slMap_ = CORE::LINALG::IntersectMap(slMaMap, *data.GSlDofRowMapPtr());
+  maMap_ = CORE::LINALG::IntersectMap(slMaMap, *data.GMaDofRowMapPtr());
 
   slMaForce_ = Teuchos::rcp(new Epetra_Vector(slMaMap, true));
   slForce_ = Teuchos::rcp(new Epetra_Vector(*slMap_, true));

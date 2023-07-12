@@ -121,17 +121,18 @@ namespace XFEM
 
     /// Get the FSI traction called from contact gausspoint
     double Get_FSI_Traction(MORTAR::MortarElement* ele,  // Mortar Element
-        const LINALG::Matrix<3, 1>& xsi_parent,          // local coord in the parent element
-        const LINALG::Matrix<2, 1>& xsi_boundary,        // local coord on the boundary element
-        const LINALG::Matrix<3, 1>& normal,              // normal for projection
+        const CORE::LINALG::Matrix<3, 1>& xsi_parent,    // local coord in the parent element
+        const CORE::LINALG::Matrix<2, 1>& xsi_boundary,  // local coord on the boundary element
+        const CORE::LINALG::Matrix<3, 1>& normal,        // normal for projection
         bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
         double* poropressure = NULL);
 
     /// Get the FSI traction called from contact gausspoint
     double Get_FSI_Traction(const MORTAR::MortarElement* ele,
-        const LINALG::Matrix<2, 1>& xsi_parent, const LINALG::Matrix<1, 1>& xsi_boundary,
-        const LINALG::Matrix<2, 1>& normal, bool& FSI_integrated,
+        const CORE::LINALG::Matrix<2, 1>& xsi_parent,
+        const CORE::LINALG::Matrix<1, 1>& xsi_boundary, const CORE::LINALG::Matrix<2, 1>& normal,
+        bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
         double* poropressure = NULL)
     {
@@ -141,9 +142,10 @@ namespace XFEM
 
     /// Get_Contact_State at gausspoint called from XFSI: return true-->evaluate FSI, return false
     /// -->evaluate NIT-Contact
-    bool Get_Contact_State(int sid,                           // Solid Surface Element
-        std::string mcname, const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-        const double& full_fsi_traction,                      // stressfluid + penalty ...
+    bool Get_Contact_State(int sid,  // Solid Surface Element
+        std::string mcname,
+        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const double& full_fsi_traction,        // stressfluid + penalty ...
         double& gap);
 
     /// Is this Structural surface registered in the Xfluid Contact Communicator
@@ -214,7 +216,7 @@ namespace XFEM
     void Create_New_Gmsh_files();
 
     /// Write Gmsh files
-    void Gmsh_Write(LINALG::Matrix<3, 1> x, double val, int section);
+    void Gmsh_Write(CORE::LINALG::Matrix<3, 1> x, double val, int section);
 
     /// Increment gausspoint counter
     void Inc_GP(int state) { ++sum_gps_[state]; }
@@ -229,41 +231,42 @@ namespace XFEM
     //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
     bool CheckNitscheContactState(CONTACT::CoElement* cele,
-        const LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
-        const double& full_fsi_traction,  // stressfluid + penalty
-        double& gap                       // gap
+        const CORE::LINALG::Matrix<2, 1>& xsi,  // local coord on the ele element
+        const double& full_fsi_traction,        // stressfluid + penalty
+        double& gap                             // gap
     );
 
     /// Get the fluid states at specific selexi
     void Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
-        const DRT::ELEMENTS::StructuralSurface* sele, const LINALG::Matrix<2, 1>& selexsi,
-        const LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele, Epetra_SerialDenseMatrix& ele_xyze,
-        std::vector<double>& velpres, std::vector<double>& disp, std::vector<double>& ivel,
-        double& pres_m, LINALG::Matrix<3, 1>& vel_m, LINALG::Matrix<3, 1>& vel_s,
-        LINALG::Matrix<3, 3>& vderxy_m, LINALG::Matrix<3, 1>& velpf_s);
+        const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
+        const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
+        Epetra_SerialDenseMatrix& ele_xyze, std::vector<double>& velpres, std::vector<double>& disp,
+        std::vector<double>& ivel, double& pres_m, CORE::LINALG::Matrix<3, 1>& vel_m,
+        CORE::LINALG::Matrix<3, 1>& vel_s, CORE::LINALG::Matrix<3, 3>& vderxy_m,
+        CORE::LINALG::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
     void Get_Penalty_Param(DRT::Element* fluidele, CORE::GEO::CUT::VolumeCell* volumecell,
-        Epetra_SerialDenseMatrix& ele_xyze, const LINALG::Matrix<3, 1>& elenormal,
-        double& penalty_fac, const LINALG::Matrix<3, 1>& vel_m);
+        Epetra_SerialDenseMatrix& ele_xyze, const CORE::LINALG::Matrix<3, 1>& elenormal,
+        double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter
     void Get_Penalty_Param(DRT::ELEMENTS::StructuralSurface* sele, double& penalty_fac);
 
     /// Get the volumecell for local coord xsi on sele
-    bool GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele, LINALG::Matrix<2, 1>& xsi,
+    bool GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele, CORE::LINALG::Matrix<2, 1>& xsi,
         CORE::GEO::CUT::SideHandle*& sidehandle, std::vector<int>& nds, int& eleid,
-        CORE::GEO::CUT::VolumeCell*& volumecell, LINALG::Matrix<3, 1>& elenormal,
-        LINALG::Matrix<3, 1>& x, bool& FSI_integrated, double& distance);
+        CORE::GEO::CUT::VolumeCell*& volumecell, CORE::LINALG::Matrix<3, 1>& elenormal,
+        CORE::LINALG::Matrix<3, 1>& x, bool& FSI_integrated, double& distance);
 
     /// Evaluate the distance of x the boundary of a side
-    double DistancetoSide(
-        LINALG::Matrix<3, 1>& x, CORE::GEO::CUT::Side* side, LINALG::Matrix<3, 1>& closest_x);
+    double DistancetoSide(CORE::LINALG::Matrix<3, 1>& x, CORE::GEO::CUT::Side* side,
+        CORE::LINALG::Matrix<3, 1>& closest_x);
 
     /// Find the next physical interface side to x
-    CORE::GEO::CUT::Side* FindnextPhysicalSide(LINALG::Matrix<3, 1>& x,
+    CORE::GEO::CUT::Side* FindnextPhysicalSide(CORE::LINALG::Matrix<3, 1>& x,
         CORE::GEO::CUT::Side* initSide, CORE::GEO::CUT::SideHandle*& sidehandle,
-        LINALG::Matrix<2, 1>& newxsi, double& distance);
+        CORE::LINALG::Matrix<2, 1>& newxsi, double& distance);
 
     /// Get list of potentiall next physical sides
     void Update_physical_sides(CORE::GEO::CUT::Side* side,
@@ -356,7 +359,7 @@ namespace XFEM
     std::set<int> higher_contact_elements_comm_;
 
     /// For Gmsh Output
-    std::vector<std::vector<std::pair<LINALG::Matrix<3, 1>, double>>> plot_data_;
+    std::vector<std::vector<std::pair<CORE::LINALG::Matrix<3, 1>, double>>> plot_data_;
 
     /// Summarized Contact gps
     /// 0 ... Contact, 1 ... Contact_NoContactNoFSI, 2 ... Contact_NoContactFSI, 3 ...

@@ -42,8 +42,8 @@ namespace SCATRA
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<Teuchos::ParameterList> params,
+    ScaTraTimIntElchSCL(Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
@@ -110,10 +110,10 @@ namespace SCATRA
     std::map<int, int> coupled_micro_nodes_;
 
     //! DBC maps for coupled problem
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_elch_scl_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_elch_scl_;
 
     //! block map of coupled ELCH-SCL problem
-    Teuchos::RCP<LINALG::MultiMapExtractor> full_block_map_elch_scl_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> full_block_map_elch_scl_;
 
     //! map of coupled ELCH-SCL problem
     Teuchos::RCP<const Epetra_Map> full_map_elch_scl_;
@@ -123,21 +123,21 @@ namespace SCATRA
 
     //! map extractor to get the coupled dofs from macro discretization (CondMap) out of all macro
     //! dofs
-    Teuchos::RCP<LINALG::MapExtractor> macro_coupling_dofs_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> macro_coupling_dofs_;
 
     //! coupling adapter between micro (slave) and macro discretization (master).
     Teuchos::RCP<CORE::ADAPTER::Coupling> macro_micro_coupling_adapter_;
 
     //! map extractor to get micro and macro dofs from global vector
     //! cond. map: micro, other map: macro
-    Teuchos::RCP<LINALG::MapExtractor> macro_micro_dofs_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> macro_micro_dofs_;
 
     //! type of system matrix of coupled ELCH-SCL problem
-    const LINALG::MatrixType matrixtype_elch_scl_;
+    const CORE::LINALG::MatrixType matrixtype_elch_scl_;
 
     //! map extractor to get the coupled dofs from micro discretization (CondMap) out of all micro
     //! dofs
-    Teuchos::RCP<LINALG::MapExtractor> micro_coupling_dofs_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> micro_coupling_dofs_;
 
     //! time integrator for micro problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> micro_timint_;
@@ -146,10 +146,10 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> residual_elch_scl_;
 
     //! solver for coupled ELCH-SCL problem
-    Teuchos::RCP<LINALG::Solver> solver_elch_scl_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_elch_scl_;
 
     //! system matrix of coupled ELCH-SCL problem
-    Teuchos::RCP<LINALG::SparseOperator> system_matrix_elch_scl_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> system_matrix_elch_scl_;
   };
 }  // namespace SCATRA
 #endif

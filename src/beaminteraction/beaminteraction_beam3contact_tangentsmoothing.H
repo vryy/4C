@@ -57,12 +57,13 @@ namespace CONTACT
 
     //! \brief Get the nodal tangent matrix
     template <int numnodes>
-    LINALG::Matrix<3 * numnodes, 1> CalculateNodalTangents(
-        std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
-        LINALG::Matrix<3 * numnodes, 1> ele1pos_linalg, DRT::Element* ele1,
+    CORE::LINALG::Matrix<3 * numnodes, 1> CalculateNodalTangents(
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
+        CORE::LINALG::Matrix<3 * numnodes, 1> ele1pos_linalg, DRT::Element* ele1,
         Teuchos::RCP<B3CNeighbor> neighbors1)
     {
-      LINALG::Matrix<3 * numnodes, 1> node_tangent1(true);  // = vector of element1's node tangents
+      CORE::LINALG::Matrix<3 * numnodes, 1> node_tangent1(
+          true);  // = vector of element1's node tangents
 
       // So far, the next lines are only implemented and for linear Reissner beam elements -->
       // dserror() otherwise
@@ -107,7 +108,7 @@ namespace CONTACT
         for (int j = 0; j < numnode_ele1l; j++)
         {
           const int tempGID = (neighbors1->GetLeftNeighbor()->NodeIds())[j];
-          LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+          CORE::LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
 
@@ -120,7 +121,7 @@ namespace CONTACT
         for (int j = 0; j < numnode_ele1l; j++)
         {
           const int tempGID = (neighbors1->GetLeftNeighbor()->NodeIds())[j];
-          LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+          CORE::LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
 
           for (int k = 0; k < 3; k++)
             node_tangent1(k) += deriv_neighbors_ele1l(0, j) * tempposvector(k);
@@ -142,7 +143,7 @@ namespace CONTACT
         for (int j = 0; j < numnode_ele1r; j++)
         {
           const int tempGID = (neighbors1->GetRightNeighbor()->NodeIds())[j];
-          LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+          CORE::LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
 
@@ -155,7 +156,7 @@ namespace CONTACT
         for (int j = 0; j < numnode_ele1r; j++)
         {
           const int tempGID = (neighbors1->GetRightNeighbor()->NodeIds())[j];
-          LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
+          CORE::LINALG::Matrix<3, 1> tempposvector = currentpositions[tempGID];
 
           for (int k = 0; k < 3; k++)
             node_tangent1(k + 3 * n_right1) += deriv_neighbors_ele1r(0, j) * tempposvector(k);
@@ -170,10 +171,11 @@ namespace CONTACT
 
     //! \brief Get the tangent and derivative matrix
     template <int numnodes, int numnodalvalues>
-    void ComputeTangentsAndDerivs(LINALG::Matrix<3, 1, TYPE>& t, LINALG::Matrix<3, 1, TYPE>& t_xi,
-        const LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
-        const LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi)
+    void ComputeTangentsAndDerivs(CORE::LINALG::Matrix<3, 1, TYPE>& t,
+        CORE::LINALG::Matrix<3, 1, TYPE>& t_xi,
+        const CORE::LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N,
+        const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N_xi)
     {
       t.Clear();
       t_xi.Clear();

@@ -61,13 +61,13 @@ namespace MAT
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
-    virtual void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::Matrix<3, 3>& J) const = 0;
+    virtual void GetMassMomentOfInertiaTensorMaterialFrame(CORE::LINALG::Matrix<3, 3>& J) const = 0;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
      */
     virtual void GetMassMomentOfInertiaTensorMaterialFrame(
-        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
+        CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const = 0;
 
     /** \brief Update all material related variables at the end of a time step
      *

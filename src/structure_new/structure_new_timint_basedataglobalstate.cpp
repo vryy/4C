@@ -178,38 +178,38 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   acc_ = Teuchos::rcp(new ::TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
 
   // displacements D_{n+1} at t_{n+1}
-  disnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  disnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // velocities V_{n+1} at t_{n+1}
-  velnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  velnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
   // accelerations A_{n+1} at t_{n+1}
-  accnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  accnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fintnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fextnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fextnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  freactn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  freactnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  freactn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  freactnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  finertialn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  finertialnp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  finertialn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  finertialnp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  fviscon_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fvisconp_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fviscon_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fvisconp_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
-  fstructold_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fstructold_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  mass_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   if (datasdyn_->GetDampingType() != INPAR::STR::damp_none)
   {
     if (datasdyn_->GetMassLinType() == INPAR::STR::ml_none)
     {
-      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+      damp_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
     }
     else
     {
@@ -413,7 +413,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
     }
   }
   // create a global problem map
-  gproblem_map_ptr_ = LINALG::MergeMap(gproblem_map_ptr_, me_map_ptr);
+  gproblem_map_ptr_ = CORE::LINALG::MergeMap(gproblem_map_ptr_, me_map_ptr);
 
   return gproblem_map_ptr_->MaxAllGID();
 }
@@ -448,7 +448,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
   for (const enum INPAR::STR::EleTech et : ele_techs)
   {
     // mapextractor for element technology
-    LINALG::MultiMapExtractor mapext;
+    CORE::LINALG::MultiMapExtractor mapext;
 
     switch (et)
     {
@@ -472,7 +472,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
 
     // insert into map
     const auto check = mapextractors_.insert(
-        std::pair<INPAR::STR::EleTech, LINALG::MultiMapExtractor>(et, mapext));
+        std::pair<INPAR::STR::EleTech, CORE::LINALG::MultiMapExtractor>(et, mapext));
 
     if (not check.second) dserror("Insert failed!");
   }
@@ -482,7 +482,8 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::GetElementTechnologyMapExtractor(
+const CORE::LINALG::MultiMapExtractor&
+STR::TIMINT::BaseDataGlobalState::GetElementTechnologyMapExtractor(
     const enum INPAR::STR::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
@@ -496,7 +497,7 @@ const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::GetElementTec
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
-    LINALG::MultiMapExtractor& multimapext)
+    CORE::LINALG::MultiMapExtractor& multimapext)
 {
   CheckInit();
 
@@ -571,17 +572,18 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(LINALG::MultiMapExtractor& multimapext)
+void STR::TIMINT::BaseDataGlobalState::SetupPressExtractor(
+    CORE::LINALG::MultiMapExtractor& multimapext)
 {
   CheckInit();
 
   // identify pressure DOFs
-  LINALG::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
+  CORE::LINALG::CreateMapExtractorFromDiscretization(*discret_, 3, multimapext);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockExtractor() const
+const CORE::LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::BlockExtractor() const
 {
   // sanity check
   blockextractor_.CheckForValidMapExtractor();
@@ -650,29 +652,31 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::SparseOperator* STR::TIMINT::BaseDataGlobalState::CreateStructuralStiffnessMatrixBlock()
+CORE::LINALG::SparseOperator*
+STR::TIMINT::BaseDataGlobalState::CreateStructuralStiffnessMatrixBlock()
 {
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
 
   return stiff_.get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::CreateJacobian()
+Teuchos::RCP<CORE::LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::CreateJacobian()
 {
   CheckInit();
   jac_ = Teuchos::null;
 
   if (max_block_num_ > 1)
   {
-    jac_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        BlockExtractor(), BlockExtractor(), 81, true, true));
+    jac_ =
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+            BlockExtractor(), BlockExtractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    jac_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   }
 
   return jac_;
@@ -680,20 +684,22 @@ Teuchos::RCP<LINALG::SparseOperator>& STR::TIMINT::BaseDataGlobalState::CreateJa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::CreateAuxJacobian() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::CreateAuxJacobian()
+    const
 {
   CheckInit();
-  Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseOperator> jac = Teuchos::null;
 
   if (max_block_num_ > 1)
   {
-    jac = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        BlockExtractor(), BlockExtractor(), 81, true, true));
+    jac =
+        Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+            BlockExtractor(), BlockExtractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+    jac = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   }
 
   return jac;
@@ -773,7 +779,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractModelEntrie
   else
   {
     model_ptr = Teuchos::rcp(new Epetra_Vector(*model_maps_.at(mt)));
-    LINALG::Export(source, *model_ptr);
+    CORE::LINALG::Export(source, *model_ptr);
   }
 
 
@@ -834,7 +840,7 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSystem(
-    LINALG::SparseOperator& mass, Epetra_Vector& rhs) const
+    CORE::LINALG::SparseOperator& mass, Epetra_Vector& rhs) const
 {
   // loop all active element technologies
   const std::set<enum INPAR::STR::EleTech>& ele_techs = datasdyn_->GetElementTechnologies();
@@ -846,7 +852,7 @@ void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSyste
       case INPAR::STR::eletech_pressure:
       {
         // get map extractor
-        const LINALG::MultiMapExtractor& mapext = GetElementTechnologyMapExtractor(et);
+        const CORE::LINALG::MultiMapExtractor& mapext = GetElementTechnologyMapExtractor(et);
 
         // set 1 on pressure DOFs in mass matrix
         mass.ApplyDirichlet(*mapext.Map(1));
@@ -890,17 +896,18 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(LINALG::SparseOperator& jac,
-    const LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
-    const DRT::UTILS::MatBlockType& bt, const LINALG::DataAccess& access) const
+void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOperator& jac,
+    const CORE::LINALG::SparseMatrix& matrix, const INPAR::STR::ModelType& mt,
+    const DRT::UTILS::MatBlockType& bt, const CORE::LINALG::DataAccess& access) const
 {
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&jac);
+  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+          &jac);
   if (blockmat_ptr != NULL)
   {
     if (MaxBlockNumber() < 2)
       dserror(
-          "The jacobian is a LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
 
     const int& b_id = model_block_id_.at(mt);
@@ -942,7 +949,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(LINALG::SparseOperator& 
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
-  LINALG::SparseMatrix* stiff_ptr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
   if (stiff_ptr != NULL)
   {
     stiff_ptr->Assign(access, matrix);
@@ -950,24 +957,25 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(LINALG::SparseOperator& 
   }
 
   dserror(
-      "The jacobian has the wrong type! (no LINALG::SparseMatrix "
-      "and no LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
+      "and no CORE::LINALG::BlockSparseMatrix)");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractModelBlock(
-    LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt,
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractModelBlock(
+    CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt,
     const DRT::UTILS::MatBlockType& bt) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> block = Teuchos::null;
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> block = Teuchos::null;
+  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+          &jac);
   if (blockmat_ptr != NULL)
   {
     if (MaxBlockNumber() < 2)
       dserror(
-          "The jacobian is a LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
@@ -1008,7 +1016,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractMode
         "It seems as you are trying to access a matrix block which has "
         "not been created.");
 
-  LINALG::SparseMatrix* stiff_ptr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
   if (stiff_ptr != NULL)
   {
     block = Teuchos::rcpFromRef(*stiff_ptr);
@@ -1016,39 +1024,40 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractMode
   }
 
   dserror(
-      "The jacobian has the wrong type! (no LINALG::SparseMatrix "
-      "and no LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
+      "and no CORE::LINALG::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<LINALG::SparseMatrix*>>
-STR::TIMINT::BaseDataGlobalState::ExtractDisplRowOfBlocks(LINALG::SparseOperator& jac) const
+Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>>
+STR::TIMINT::BaseDataGlobalState::ExtractDisplRowOfBlocks(CORE::LINALG::SparseOperator& jac) const
 {
   return ExtractRowOfBlocks(jac, INPAR::STR::model_structure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<LINALG::SparseMatrix*>>
+Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>>
 STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
-    LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt) const
+    CORE::LINALG::SparseOperator& jac, const INPAR::STR::ModelType& mt) const
 {
-  Teuchos::RCP<std::vector<LINALG::SparseMatrix*>> rowofblocks = Teuchos::null;
+  Teuchos::RCP<std::vector<CORE::LINALG::SparseMatrix*>> rowofblocks = Teuchos::null;
 
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
-      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&jac);
+  CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
+      dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
+          &jac);
   if (blockmat_ptr != NULL)
   {
     if (MaxBlockNumber() < 2)
       dserror(
-          "The jacobian is a LINALG::BlockSparseMatrix but has less than"
+          "The jacobian is a CORE::LINALG::BlockSparseMatrix but has less than"
           " two blocks! Seems wrong.");
     const int& b_id = model_block_id_.at(mt);
 
     const int num_cols = blockmat_ptr->Cols();
-    rowofblocks = Teuchos::rcp(new std::vector<LINALG::SparseMatrix*>(num_cols, NULL));
+    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(num_cols, NULL));
 
     for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->Matrix(b_id, i));
 
@@ -1061,32 +1070,32 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
         "It seems as you are trying to access a matrix block row which has "
         "not been created.");
 
-  LINALG::SparseMatrix* stiff_ptr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+  CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
   if (stiff_ptr != NULL)
   {
-    rowofblocks = Teuchos::rcp(new std::vector<LINALG::SparseMatrix*>(1, NULL));
+    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(1, NULL));
     (*rowofblocks)[0] = stiff_ptr;
     return rowofblocks;
   }
 
   dserror(
-      "The jacobian has the wrong type! (no LINALG::SparseMatrix "
-      "and no LINALG::BlockSparseMatrix)");
+      "The jacobian has the wrong type! (no CORE::LINALG::SparseMatrix "
+      "and no CORE::LINALG::BlockSparseMatrix)");
   exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractDisplBlock(
-    LINALG::SparseOperator& jac) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::ExtractDisplBlock(
+    CORE::LINALG::SparseOperator& jac) const
 {
   return ExtractModelBlock(jac, INPAR::STR::model_structure, DRT::UTILS::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock()
-    const
+Teuchos::RCP<const CORE::LINALG::SparseMatrix>
+STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
 {
   if (jac_.is_null()) dserror("The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
@@ -1094,7 +1103,7 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJa
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDisplBlock()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDisplBlock()
 {
   if (jac_.is_null()) dserror("The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
@@ -1102,7 +1111,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDis
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
+Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
     const INPAR::STR::ModelType mt, const DRT::UTILS::MatBlockType bt) const
 {
   if (jac_.is_null()) dserror("The jacobian is not initialized!");
@@ -1217,9 +1226,9 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   Epetra_Vector x_rotvec = *gstate_ptr_->ExtractRotVecEntries(xold);
   Epetra_Vector dir_rotvec = *gstate_ptr_->ExtractRotVecEntries(dir);
 
-  LINALG::Matrix<4, 1> Qold;
-  LINALG::Matrix<4, 1> deltaQ;
-  LINALG::Matrix<4, 1> Qnew;
+  CORE::LINALG::Matrix<4, 1> Qold;
+  CORE::LINALG::Matrix<4, 1> deltaQ;
+  CORE::LINALG::Matrix<4, 1> Qnew;
 
   /* since parallel distribution is node-wise, the three entries belonging to
    * a rotation vector should be stored on the same processor: safety-check */
@@ -1231,12 +1240,12 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   // rotation vectors always consist of three consecutive DoFs
   for (int i = 0; i < x_rotvec.Map().NumMyElements(); i = i + 3)
   {
-    // create a LINALG::Matrix from reference to three x vector entries
-    LINALG::Matrix<3, 1> theta(&x_rotvec[i], true);
+    // create a CORE::LINALG::Matrix from reference to three x vector entries
+    CORE::LINALG::Matrix<3, 1> theta(&x_rotvec[i], true);
     CORE::LARGEROTATIONS::angletoquaternion(theta, Qold);
 
     // same for relative rotation angle deltatheta
-    LINALG::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
+    CORE::LINALG::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
     deltatheta.Scale(step);
 
     CORE::LARGEROTATIONS::angletoquaternion(deltatheta, deltaQ);
@@ -1248,7 +1257,7 @@ void NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater::runPreComputeX(
   xnew->Update(1.0, xold, step, dir, 0.0);
 
   // now replace the rotvec entries by the correct value computed before
-  LINALG::AssembleMyVector(0.0, *xnew, 1.0, x_rotvec);
+  CORE::LINALG::AssembleMyVector(0.0, *xnew, 1.0, x_rotvec);
   curr_grp_mutable.setX(xnew);
 
   /* tell the NOX::NLN::Group that the x vector has already been updated in

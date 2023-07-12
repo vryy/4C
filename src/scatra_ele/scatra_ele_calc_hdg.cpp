@@ -757,7 +757,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
 
   // coordinate of gauss points
-  LINALG::Matrix<probdim, 1> gp_coord(true);
+  CORE::LINALG::Matrix<probdim, 1> gp_coord(true);
 
   for (int q = 0; q < intpoints.IP().nquad; ++q)
   {
@@ -1120,7 +1120,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSour
 
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
   {
-    LINALG::Matrix<nsd_, 1> xyz;
+    CORE::LINALG::Matrix<nsd_, 1> xyz;
     // add it all up
     for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_->ndofs_; ++j)
@@ -1894,7 +1894,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
       for (unsigned int i = 0; i < shapes_->ndofs_; i++)
       {
         Epetra_SerialDenseVector tempVec(shapes_old->ndofs_);
-        LINALG::Matrix<nsd_, 1> point(shapes_->nodexyzunit[i]);
+        CORE::LINALG::Matrix<nsd_, 1> point(shapes_->nodexyzunit[i]);
         polySpace_old->Evaluate(point, tempVec);
         for (unsigned int j = 0; j < nsd_ + 1; j++)
           for (unsigned int k = 0; k < shapes_old->ndofs_; k++)
@@ -1951,7 +1951,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
         for (unsigned int i = 0; i < shapesface_->nfdofs_; i++)
         {
           Epetra_SerialDenseVector tempVec(shapesface_old->nfdofs_);
-          LINALG::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit[i]);
+          CORE::LINALG::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit[i]);
 
           polySpaceFace_old->Evaluate(point, tempVec);
           for (unsigned int k = 0; k < shapesface_old->nfdofs_; k++) tempMat1(i, k) = tempVec(k);
@@ -2138,7 +2138,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
         "The number of component must be one. The grandient is computed with forward auomatic "
         "differentiation.");
 
-  LINALG::Matrix<nsd_, 1> xsi;
+  CORE::LINALG::Matrix<nsd_, 1> xsi;
   double phi(nsd_);
   Epetra_SerialDenseVector gradPhi(nsd_);
 

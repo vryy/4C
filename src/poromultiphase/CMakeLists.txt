@@ -6,7 +6,6 @@ set(_poromultiphase_dependencies
     inpar
     io
     lib
-    linalg
     mat
     poroelast
     porofluidmultiphase

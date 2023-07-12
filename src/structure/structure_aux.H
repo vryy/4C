@@ -32,7 +32,7 @@ namespace STR
     );
 
     /// specific MultiMapExtractor to handle the structure field
-    class MapExtractor : public LINALG::MultiMapExtractor
+    class MapExtractor : public CORE::LINALG::MultiMapExtractor
     {
      public:
       enum

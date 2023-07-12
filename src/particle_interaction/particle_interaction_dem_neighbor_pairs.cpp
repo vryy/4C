@@ -184,18 +184,18 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
-    const LINALG::Matrix<3, 1> pos_i(
+    const CORE::LINALG::Matrix<3, 1> pos_i(
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
     DRT::Element* ele = potentialneighbors.second;
 
     // determine nodal positions of column wall element
-    std::map<int, LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
     particlewallinterface_->DetermineColWallEleNodalPos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
-    LINALG::Matrix<3, 1> closestpos;
+    CORE::LINALG::Matrix<3, 1> closestpos;
     CORE::GEO::ObjectType objecttype =
         CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
 
@@ -243,8 +243,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairs()
       UTILS::VecSetScale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
-      LINALG::Matrix<2, 1> elecoords(true);
-      const LINALG::SerialDenseMatrix xyze(
+      CORE::LINALG::Matrix<2, 1> elecoords(true);
+      const CORE::LINALG::SerialDenseMatrix xyze(
           CORE::GEO::getCurrentNodalPositions(ele, colelenodalpos));
       CORE::GEO::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
 
@@ -475,7 +475,7 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get position of particle i
-    const LINALG::Matrix<3, 1> pos_i(
+    const CORE::LINALG::Matrix<3, 1> pos_i(
         container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i));
 
     // get pointer to column wall element
@@ -500,11 +500,11 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
     if (not(surface_energy > 0.0)) continue;
 
     // determine nodal positions of column wall element
-    std::map<int, LINALG::Matrix<3, 1>> colelenodalpos;
+    std::map<int, CORE::LINALG::Matrix<3, 1>> colelenodalpos;
     particlewallinterface_->DetermineColWallEleNodalPos(ele, colelenodalpos);
 
     // get coordinates of closest point on current column wall element to particle
-    LINALG::Matrix<3, 1> closestpos;
+    CORE::LINALG::Matrix<3, 1> closestpos;
     CORE::GEO::ObjectType objecttype =
         CORE::GEO::nearest3DObjectOnElement(ele, colelenodalpos, pos_i, closestpos);
 
@@ -552,8 +552,8 @@ void PARTICLEINTERACTION::DEMNeighborPairs::EvaluateParticleWallPairsAdhesion(
       UTILS::VecSetScale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
-      LINALG::Matrix<2, 1> elecoords(true);
-      const LINALG::SerialDenseMatrix xyze(
+      CORE::LINALG::Matrix<2, 1> elecoords(true);
+      const CORE::LINALG::SerialDenseMatrix xyze(
           CORE::GEO::getCurrentNodalPositions(ele, colelenodalpos));
       CORE::GEO::CurrentToSurfaceElementCoordinates(ele->Shape(), xyze, closestpos, elecoords);
 

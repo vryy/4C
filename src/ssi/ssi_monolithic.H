@@ -25,13 +25,13 @@ namespace INPAR::SSI
   enum class ScaTraTimIntType;
 }  // namespace INPAR::SSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class Equilibration;
   enum class EquilibrationMethod;
   enum class MatrixType;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SSI
 {
@@ -53,9 +53,9 @@ namespace SSI
   //! equilibration methods applied to system matrix
   struct SSIMonoEquilibrationMethod
   {
-    const LINALG::EquilibrationMethod global;     //! unique equilibration
-    const LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
-    const LINALG::EquilibrationMethod structure;  //! equilibration for structure block
+    const CORE::LINALG::EquilibrationMethod global;     //! unique equilibration
+    const CORE::LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
+    const CORE::LINALG::EquilibrationMethod structure;  //! equilibration for structure block
   };
 
   enum class Subproblem : int
@@ -87,22 +87,22 @@ namespace SSI
     }
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> MapsSubProblems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra manifold field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapStructure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
 
     //! Return matrix type of global system matrix
-    LINALG::MatrixType MatrixType() const { return matrixtype_; };
+    CORE::LINALG::MatrixType MatrixType() const { return matrixtype_; };
 
     void ReadRestart(int restart) override;
 
@@ -124,7 +124,7 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
     //! return algebraic solver for global system of equations
-    const LINALG::Solver& Solver() const { return *solver_; };
+    const CORE::LINALG::Solver& Solver() const { return *solver_; };
 
     void Timeloop() override;
 
@@ -190,7 +190,7 @@ namespace SSI
     void EvaluateSubproblems();
 
     //! build and return vector of equilibration methods for each block of system matrix
-    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
+    std::vector<CORE::LINALG::EquilibrationMethod> GetBlockEquilibration();
 
     /*!
      * @note This is only necessary in the first iteration of the simulation, since only there the
@@ -262,7 +262,7 @@ namespace SSI
     Teuchos::RCP<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
 
     //! type of global system matrix in global system of equations
-    const LINALG::MatrixType matrixtype_;
+    const CORE::LINALG::MatrixType matrixtype_;
 
     //! print system matrix, rhs, and map of system matrix to file
     const bool print_matlab_;
@@ -271,7 +271,7 @@ namespace SSI
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
 
     //! algebraic solver for global system of equations
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
@@ -292,7 +292,7 @@ namespace SSI
     Teuchos::RCP<SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;
 
     //! strategy how to apply mesh tying on manifold domains
     Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> strategy_manifold_meshtying_;

@@ -72,21 +72,22 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const E
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(const LINALG::SparseOperator& op)
+NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(
+    const CORE::LINALG::SparseOperator& op)
 {
   const Epetra_Operator* testOperator = 0;
 
   // Is it a LINALG_BlockSparseMatrix
-  testOperator =
-      dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&op);
+  testOperator = dynamic_cast<
+      const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&op);
   if (testOperator != 0) return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
 
   // Is it a LINALG_SparseMatrix?
-  testOperator = dynamic_cast<const LINALG::SparseMatrix*>(&op);
+  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&op);
   if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrix;
 
   // Is it a LINALG_SparseMatrixBase?
-  testOperator = dynamic_cast<const LINALG::SparseMatrixBase*>(&op);
+  testOperator = dynamic_cast<const CORE::LINALG::SparseMatrixBase*>(&op);
   if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
 
   // Otherwise it must be a LINALG_SparseOperator
@@ -99,8 +100,8 @@ NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
     const NOX::NLN::LinearSystem::SolverMap& linsolvers)
 {
   const unsigned int num_ls = linsolvers.size();
-  const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>::const_iterator ci_end =
-      linsolvers.end();
+  const std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>::const_iterator
+      ci_end = linsolvers.end();
 
   switch (num_ls)
   {

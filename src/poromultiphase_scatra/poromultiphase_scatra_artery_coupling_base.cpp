@@ -96,7 +96,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::FullMap() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<LINALG::MultiMapExtractor>&
+const Teuchos::RCP<CORE::LINALG::MultiMapExtractor>&
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::GlobalExtractor() const
 {
   return globalex_;

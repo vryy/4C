@@ -67,7 +67,7 @@ bool STR::MODELEVALUATOR::Multiphysics::AssembleForce(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Multiphysics::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   CheckActiveModelType();
 

@@ -66,9 +66,10 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositionDouble(
-    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& r, bool reference) const
+    const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& r,
+    bool reference) const
 {
-  LINALG::Matrix<surface::n_dof_, 1, double> position_double;
+  CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double;
   if (reference)
     position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
   else
@@ -82,8 +83,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFacePositi
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormalDouble(
-    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, const bool reference,
-    const bool averaged_normal) const
+    const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& n,
+    const bool reference, const bool averaged_normal) const
 {
   if (averaged_normal)
   {
@@ -93,7 +94,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::EvaluateFaceNormal
   else
   {
     // Calculate the normals on the face geometry.
-    LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
+    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
     if (reference)
       position_double = CORE::FADUTILS::CastToDouble(face_reference_position_);
     else
@@ -245,14 +246,14 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
   if (evaluate_current_normals_)
   {
     // Parameter coordinates corresponding to LIDs of nodes.
-    LINALG::Matrix<3, 1, double> xi(true);
-    LINALG::SerialDenseMatrix nodal_coordinates =
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::SerialDenseMatrix nodal_coordinates =
         CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
     // Loop over the connected faces and evaluate their nodal normals.
-    LINALG::Matrix<surface::n_dof_, 1, scalar_type> q_other_face;
-    LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, scalar_type>> normals;
-    LINALG::Matrix<3, 1, scalar_type> temp_normal;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> q_other_face;
+    CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, scalar_type>> normals;
+    CORE::LINALG::Matrix<3, 1, scalar_type> temp_normal;
     for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
@@ -299,13 +300,13 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
     Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Parameter coordinates corresponding to LIDs of nodes.
-  LINALG::Matrix<3, 1, double> xi(true);
-  LINALG::SerialDenseMatrix nodal_coordinates =
+  CORE::LINALG::Matrix<3, 1, double> xi(true);
+  CORE::LINALG::SerialDenseMatrix nodal_coordinates =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
   // Loop over the connected faces and evaluate their nodal normals.
-  LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, double>> normals;
-  LINALG::Matrix<3, 1, double> temp_normal;
+  CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, double>> normals;
+  CORE::LINALG::Matrix<3, 1, double> temp_normal;
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
@@ -337,14 +338,14 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
  */
 template <typename surface, typename scalar_type>
 void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceNormalDouble(
-    const LINALG::Matrix<2, 1, double>& xi, LINALG::Matrix<3, 1, double>& n, const bool reference,
-    const bool averaged_normal) const
+    const CORE::LINALG::Matrix<2, 1, double>& xi, CORE::LINALG::Matrix<3, 1, double>& n,
+    const bool reference, const bool averaged_normal) const
 {
   if (averaged_normal)
   {
-    LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
       normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
@@ -377,8 +378,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::EvaluateFaceN
 template <typename surface, typename scalar_type>
 template <typename T>
 void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalNormals(
-    LINALG::Matrix<surface::n_nodes_, 1, LINALG::Matrix<3, 1, T>>& normals,
-    LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
+    CORE::LINALG::Matrix<surface::n_nodes_, 1, CORE::LINALG::Matrix<3, 1, T>>& normals,
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
 {
   averaged_normals.PutScalar(0.0);
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
@@ -436,7 +437,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
         volume_reference_position_(surface_dof_lid_map_(i_dof_surf));
 
   // Surface node to volume node map.
-  LINALG::Matrix<surface::n_nodes_, 1, int> surface_node_lid_map;
+  CORE::LINALG::Matrix<surface::n_nodes_, 1, int> surface_node_lid_map;
   for (unsigned i_node_surf = 0; i_node_surf < surface::n_nodes_; i_node_surf++)
     surface_node_lid_map(i_node_surf) = surface_dof_lid_map_(i_node_surf * 3) / 3;
 
@@ -543,21 +544,21 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 template <typename surface, typename scalar_type, typename volume>
 template <typename scalar_type_normal>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::CalculateNormals(const LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>&
+    volume>::CalculateNormals(const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>&
                                   volume_position,
-    const LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
-    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const
+    const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const
 {
   // Parameter coordinates corresponding to LIDs of nodes.
-  LINALG::Matrix<2, 1, double> xi_surface(true);
-  LINALG::SerialDenseMatrix nodal_coordinates =
+  CORE::LINALG::Matrix<2, 1, double> xi_surface(true);
+  CORE::LINALG::SerialDenseMatrix nodal_coordinates =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
 
   // Loop over the faces and evaluate the "normals" at the nodes.
-  LINALG::Matrix<3, 1, double> xi_volume(true);
-  LINALG::Matrix<3, 1, scalar_type_normal> r_surface;
-  LINALG::Matrix<3, 1, scalar_type_normal> r_volume;
-  LINALG::Matrix<3, 3, scalar_type_normal> dr_volume;
+  CORE::LINALG::Matrix<3, 1, double> xi_volume(true);
+  CORE::LINALG::Matrix<3, 1, scalar_type_normal> r_surface;
+  CORE::LINALG::Matrix<3, 1, scalar_type_normal> r_volume;
+  CORE::LINALG::Matrix<3, 3, scalar_type_normal> dr_volume;
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
@@ -581,14 +582,14 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  */
 template <typename surface, typename scalar_type, typename volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
-    LINALG::Matrix<3, 1, double>& n, const bool reference, const bool averaged_normal) const
+    volume>::EvaluateFaceNormalDouble(const CORE::LINALG::Matrix<2, 1, double>& xi,
+    CORE::LINALG::Matrix<3, 1, double>& n, const bool reference, const bool averaged_normal) const
 {
   if (averaged_normal)
   {
-    LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
-    LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
+    CORE::LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
+    CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, double>* normals_double_ptr;
 
     if (reference)
       normals_double_ptr = VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double);
@@ -620,8 +621,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
  */
 template <typename surface, typename scalar_type, typename volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::XiFaceToXiVolume(const LINALG::Matrix<2, 1, double>& xi_face,
-    LINALG::Matrix<3, 1, double>& xi_volume) const
+    volume>::XiFaceToXiVolume(const CORE::LINALG::Matrix<2, 1, double>& xi_face,
+    CORE::LINALG::Matrix<3, 1, double>& xi_volume) const
 {
   xi_volume(face_to_volume_coordinate_axis_map_(0)) =
       xi_face(0) * face_to_volume_coordinate_axis_factor_(0);

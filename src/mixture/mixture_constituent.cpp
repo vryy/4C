@@ -174,9 +174,9 @@ void MIXTURE::MixtureConstituent::UnpackConstituent(
   is_setup_ = (bool)DRT::ParObject::ExtractInt(position, data);
 }
 
-void MIXTURE::MixtureConstituent::EvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
+void MIXTURE::MixtureConstituent::EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   dserror("This constituent cannot handle an additional inelastic part.");
 }

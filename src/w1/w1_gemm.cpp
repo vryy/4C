@@ -68,18 +68,18 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   Epetra_SerialDenseVector Fuvo(4);  // disp-based def.grad. vector at t_{n}
   Epetra_SerialDenseVector Fuv(4);   // disp-based def.grad. vector at t_{n+1}
 
-  LINALG::SerialDenseVector Evo(4, false);  // Green-Lagrange strain vector at t_{n}
-  LINALG::SerialDenseVector Ev(4, false);   // Green-Lagrange strain vector at t_{n+1}
-  LINALG::SerialDenseVector& Evm = Evo;     // Green-Lagrange mid-strain vector
+  CORE::LINALG::SerialDenseVector Evo(4, false);  // Green-Lagrange strain vector at t_{n}
+  CORE::LINALG::SerialDenseVector Ev(4, false);   // Green-Lagrange strain vector at t_{n+1}
+  CORE::LINALG::SerialDenseVector& Evm = Evo;     // Green-Lagrange mid-strain vector
 
   Epetra_SerialDenseMatrix Xe(Wall1::numdim_, numnode);  // material/initial element co-ordinates
   Epetra_SerialDenseMatrix xeo(
       Wall1::numdim_, numnode);  // spatial/current element co-ordinates at t_{n}
   Epetra_SerialDenseMatrix xe(
       Wall1::numdim_, numnode);  // spatial/current element co-ordinates at t_{n+1}
-  LINALG::SerialDenseMatrix bopo(Wall1::numstr_, edof, false);  // non-linear B-op at t_{n}
-  LINALG::SerialDenseMatrix bop(Wall1::numstr_, edof, false);   // non-linear B-op at t_{n+1}
-  LINALG::SerialDenseMatrix& bopm = bopo;                       // non-linear mid-B-op
+  CORE::LINALG::SerialDenseMatrix bopo(Wall1::numstr_, edof, false);  // non-linear B-op at t_{n}
+  CORE::LINALG::SerialDenseMatrix bop(Wall1::numstr_, edof, false);   // non-linear B-op at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& bopm = bopo;                       // non-linear mid-B-op
   Epetra_SerialDenseMatrix Smm(4, 4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS:
                                        // STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
   Epetra_SerialDenseMatrix C(4, 4);
@@ -93,21 +93,21 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   Epetra_SerialDenseMatrix* oldKad = NULL;     // EAS history
   Epetra_SerialDenseMatrix Fenhvo;             // EAS matrix Fenhv
   Epetra_SerialDenseMatrix Fenhv;              // EAS matrix Fenhv
-  LINALG::SerialDenseMatrix Fmo;               // total def.grad. matrix at t_{n}
-  LINALG::SerialDenseMatrix Fm;                // total def.grad. matrix at t_{n+1}
-  LINALG::SerialDenseMatrix& Fmm = Fmo;        // total mid-def.grad. matrix
+  CORE::LINALG::SerialDenseMatrix Fmo;         // total def.grad. matrix at t_{n}
+  CORE::LINALG::SerialDenseMatrix Fm;          // total def.grad. matrix at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Fmm = Fmo;  // total mid-def.grad. matrix
   Epetra_SerialDenseMatrix Pvmm;               // first Piola-Kirchhoff stress vector
   Epetra_SerialDenseMatrix Xjm0;               // Jacobian Matrix (origin)
   double Xjdet0;                               // determinant of #Xjm0
   Epetra_SerialDenseVector Fuv0o;              // deformation gradient at origin at t_{n}
   Epetra_SerialDenseVector Fuv0;               // deformation gradient at origin at t_{n+1}
   Epetra_SerialDenseMatrix boplin0;            // B-operator (origin)
-  LINALG::SerialDenseMatrix W0o;               // W-operator (origin) at t_{n}
-  LINALG::SerialDenseMatrix W0;                // W-operator (origin) at t_{n+1}
-  LINALG::SerialDenseMatrix& W0m = W0o;        // mid-W-operator (origin)
-  LINALG::SerialDenseMatrix Go;                // G-operator at t_{n}
-  LINALG::SerialDenseMatrix G;                 // G-operator at t_{n+1}
-  LINALG::SerialDenseMatrix& Gm = Go;          // mid-G-operator
+  CORE::LINALG::SerialDenseMatrix W0o;         // W-operator (origin) at t_{n}
+  CORE::LINALG::SerialDenseMatrix W0;          // W-operator (origin) at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& W0m = W0o;  // mid-W-operator (origin)
+  CORE::LINALG::SerialDenseMatrix Go;          // G-operator at t_{n}
+  CORE::LINALG::SerialDenseMatrix G;           // G-operator at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Gm = Go;    // mid-G-operator
   Epetra_SerialDenseMatrix Z;                  // Z-operator
   Epetra_SerialDenseMatrix FmCF;               // FCF^T
   Epetra_SerialDenseMatrix Kda;                // EAS matrix Kda
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
     Epetra_SerialDenseMatrix& estif)
 {
   // contitutive matrix (3x3)
-  LINALG::SerialDenseMatrix C_red(3, 3, false);
+  CORE::LINALG::SerialDenseMatrix C_red(3, 3, false);
   C_red(0, 0) = C(0, 0);
   C_red(0, 1) = C(0, 1);
   C_red(0, 2) = C(0, 2);
@@ -447,7 +447,7 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
   C_red(2, 2) = C(2, 2);
 
   // FdotC (4 x 3) : F_m . C
-  LINALG::SerialDenseMatrix FmC(4, 3, true);
+  CORE::LINALG::SerialDenseMatrix FmC(4, 3, true);
   FmC.Multiply('N', 'N', 1.0, Fmm, C_red, 0.0);
 
   // FmCF (4 x 4) : ( F_m . C ) . F_{n+1}^T
@@ -455,16 +455,16 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
   FmCF.Multiply('N', 'T', 1.0, FmC, Fm, 0.0);
 
   // BplusW (4 x edof) :  B_L + W0_{n+1}
-  LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
   BplusW += boplin;  // += B_L
   BplusW += W0;      // += W0_{n+1}
 
   // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmBW (4 x 8) : S_m . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix SmBW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix SmBW(4, 2 * NumNode(), true);
   SmBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
@@ -490,15 +490,15 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(const double& alphafgemm, const dou
     const Epetra_SerialDenseMatrix& Pvmm, Epetra_SerialDenseMatrix& kda)
 {
   // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
-  LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
+  CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG (4 x 4) : S_m . G_{n+1}
-  LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
+  CORE::LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
-  LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
   BplusW += boplin;
   BplusW += W0m;
 
@@ -533,16 +533,16 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(const double& alphafgemm, const do
     const Epetra_SerialDenseMatrix& Pvmm, Epetra_SerialDenseMatrix& kad)
 {
   // BplusW (4 x 8) :  B_L + W0_{n+1}
-  LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
   BplusW += boplin;
   BplusW += W0;
 
   // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
   FmCFBW.Multiply('N', 'N', 1.0, FmCF, BplusW, 0.0);
 
   // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
-  LINALG::SerialDenseMatrix SmGBW(4, 2 * NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix SmGBW(4, 2 * NumNode(), true);
   SmGBW.Multiply('N', 'N', 1.0, Smm, BplusW, 0.0);
 
   // k_{ad} (4 x 8) :
@@ -574,11 +574,11 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(const double& alphafgemm, const dou
     Epetra_SerialDenseMatrix& kaa)
 {
   // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
-  LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
+  CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
   FmCFG.Multiply('N', 'N', 1.0, FmCF, G, 0.0);
 
   // SmG : S_m  . G_{n+1}
-  LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
+  CORE::LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
   SmG.Multiply('N', 'N', 1.0, Smm, G, 0.0);
 
   // k_{aa} (4 x 4) :

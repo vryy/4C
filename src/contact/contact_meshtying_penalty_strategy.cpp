@@ -77,8 +77,8 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
     if (lagmultquad != INPAR::MORTAR::lagmult_lin)
     {
       // modify dmatrix_
-      Teuchos::RCP<LINALG::SparseMatrix> temp1 =
-          LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> temp1 =
+          CORE::LINALG::MLMultiply(*dmatrix_, false, *invtrafo_, false, false, false, true);
       dmatrix_ = temp1;
     }
     else
@@ -88,10 +88,10 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   }
 
   // build mortar matrix products
-  mtm_ = LINALG::MLMultiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
-  mtd_ = LINALG::MLMultiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
-  dtm_ = LINALG::MLMultiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
-  dtd_ = LINALG::MLMultiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
+  mtm_ = CORE::LINALG::MLMultiply(*mmatrix_, true, *mmatrix_, false, false, false, true);
+  mtd_ = CORE::LINALG::MLMultiply(*mmatrix_, true, *dmatrix_, false, false, false, true);
+  dtm_ = CORE::LINALG::MLMultiply(*dmatrix_, true, *mmatrix_, false, false, false, true);
+  dtd_ = CORE::LINALG::MLMultiply(*dmatrix_, true, *dmatrix_, false, false, false, true);
 
   // transform rows of mortar matrix products to parallel distribution
   // of the global problem (stored in the "p"-version of dof maps)
@@ -104,7 +104,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   }
 
   // full stiffness matrix
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*ProblemDofs(), 100, false, true));
   double pp = Params().get<double>("PENALTYPARAM");
 
   // add penalty meshtying stiffness terms
@@ -150,19 +150,19 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Epetra_Vector> Xmaster = LINALG::CreateVector(*gmdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xmaster = CORE::LINALG::CreateVector(*gmdofrowmap_, true);
   AssembleCoords("master", true, Xmaster);
 
   //**********************************************************************
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // create linear problem
-  Teuchos::RCP<Epetra_Vector> Xslavemod = LINALG::CreateVector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> Xslavemod = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*gsdofrowmap_, true);
   mmatrix_->Multiply(false, *Xmaster, *rhs);
 
   // solve with default solver
-  LINALG::Solver solver(Comm());
+  CORE::LINALG::Solver solver(Comm());
   solver.Solve(dmatrix_->EpetraOperator(), Xslavemod, rhs, true);
 
   //**********************************************************************
@@ -187,8 +187,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
 /*----------------------------------------------------------------------*
  | evaluate meshtying and create linear system                popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-    Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
+    Teuchos::RCP<Epetra_Vector> dis)
 {
   // since we will modify the graph of kteff by adding additional
   // meshtyong stiffness entries, we have to uncomplete it
@@ -217,13 +218,13 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   //***************************************************************************
   Teuchos::RCP<Epetra_Vector> tempvec1 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   Teuchos::RCP<Epetra_Vector> tempvec2 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  LINALG::Export(*dis, *tempvec1);
+  CORE::LINALG::Export(*dis, *tempvec1);
   dmatrix_->Multiply(false, *tempvec1, *tempvec2);
   g_->Update(-1.0, *tempvec2, 0.0);
 
   Teuchos::RCP<Epetra_Vector> tempvec3 = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   Teuchos::RCP<Epetra_Vector> tempvec4 = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  LINALG::Export(*dis, *tempvec3);
+  CORE::LINALG::Export(*dis, *tempvec3);
   mmatrix_->Multiply(false, *tempvec3, *tempvec4);
   g_->Update(1.0, *tempvec4, 1.0);
 
@@ -239,26 +240,26 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
   Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true, *z_, *fm);
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fm, *fmexp);
+  CORE::LINALG::Export(*fm, *fmexp);
   feff->Update(1.0, *fmexp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true, *z_, *fs);
   Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fs, *fsexp);
+  CORE::LINALG::Export(*fs, *fsexp);
   feff->Update(-1.0, *fsexp, 1.0);
 
   // add old contact forces (t_n)
   Teuchos::RCP<Epetra_Vector> fsold = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(true, *zold_, *fsold);
   Teuchos::RCP<Epetra_Vector> fsoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fsold, *fsoldexp);
+  CORE::LINALG::Export(*fsold, *fsoldexp);
   feff->Update(alphaf_, *fsoldexp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fmold = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true, *zold_, *fmold);
   Teuchos::RCP<Epetra_Vector> fmoldexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fmold, *fmoldexp);
+  CORE::LINALG::Export(*fmold, *fmoldexp);
   feff->Update(-alphaf_, *fmoldexp, 1.0);
 
   return;
@@ -268,19 +269,19 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOp
  | intialize Uzawa step 2,3...                                popp 12/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtPenaltyStrategy::InitializeUzawa(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove penalty meshtying force terms
   Teuchos::RCP<Epetra_Vector> fm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true, *z_, *fm);
   Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fm, *fmexp);
+  CORE::LINALG::Export(*fm, *fmexp);
   feff->Update(-1.0, *fmexp, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *z_, *fs);
   Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fs, *fsexp);
+  CORE::LINALG::Export(*fs, *fsexp);
   feff->Update(1.0, *fsexp, 1.0);
 
   // update LM vector
@@ -292,13 +293,13 @@ void CONTACT::MtPenaltyStrategy::InitializeUzawa(
   Teuchos::RCP<Epetra_Vector> fmnew = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
   mmatrix_->Multiply(true, *z_, *fmnew);
   Teuchos::RCP<Epetra_Vector> fmexpnew = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fmnew, *fmexpnew);
+  CORE::LINALG::Export(*fmnew, *fmexpnew);
   feff->Update(1.0, *fmexpnew, 1.0);
 
   Teuchos::RCP<Epetra_Vector> fsnew = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *z_, *fsnew);
   Teuchos::RCP<Epetra_Vector> fsexpnew = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
-  LINALG::Export(*fsnew, *fsexpnew);
+  CORE::LINALG::Export(*fsnew, *fsexpnew);
   feff->Update(-1.0, *fsexpnew, 1.0);
 
   return;
@@ -470,10 +471,10 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBlockPtr(
     const enum DRT::UTILS::MatBlockType& bt) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
     case DRT::UTILS::MatBlockType::displ_displ:

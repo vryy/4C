@@ -195,7 +195,7 @@ void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vect
 void ADAPTER::FSIStructureWrapper::ApplyInterfaceForcesTemporaryDeprecated(
     Teuchos::RCP<Epetra_Vector> iforce)
 {
-  Teuchos::RCP<Epetra_Vector> fifc = LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> fifc = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
   interface_->AddFSICondVector(iforce, fifc);
 

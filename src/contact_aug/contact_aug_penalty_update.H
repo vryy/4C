@@ -31,10 +31,10 @@ namespace INPAR
   }  // namespace CONTACT
 }  // namespace INPAR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace Teuchos
 {
@@ -138,7 +138,7 @@ namespace CONTACT
 
      protected:
       /// access the structural stiffness matrix
-      Teuchos::RCP<const LINALG::SparseMatrix> GetStructuralStiffnessMatrix(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetStructuralStiffnessMatrix(
           const CONTACT::ParamsInterface& cparams) const;
 
       /// access the right hand side vector of the entire problem

@@ -125,11 +125,11 @@ void XFEM::XFLUID_TIMEINT_BASE::handleVectors(
  * check if the current point x2 changed the side compared to x1                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
-    const bool newTimeStep,    /// new/old timestep for both points x1 and x2
-    DRT::Element* ele1,        /// first element where x1 lies in
-    LINALG::Matrix<3, 1>& x1,  /// global coordinates of point x1
-    DRT::Element* ele2,        /// second element where x2 lies in
-    LINALG::Matrix<3, 1>& x2   /// global coordinates of point x2
+    const bool newTimeStep,          /// new/old timestep for both points x1 and x2
+    DRT::Element* ele1,              /// first element where x1 lies in
+    CORE::LINALG::Matrix<3, 1>& x1,  /// global coordinates of point x1
+    DRT::Element* ele2,              /// second element where x2 lies in
+    CORE::LINALG::Matrix<3, 1>& x2   /// global coordinates of point x2
 ) const
 {
 #ifdef DEBUG_TIMINT_STD
@@ -138,7 +138,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
   //-----------------------------------------------------------------------
   // special case of equal coordinates x1 and x2 -> no line
-  LINALG::Matrix<3, 1> diff(true);
+  CORE::LINALG::Matrix<3, 1> diff(true);
   diff.Update(1.0, x1, -1.0, x2);
 
   if (diff.Norm2() < 1.0e-13) return false;
@@ -395,8 +395,8 @@ bool XFEM::XFLUID_TIMEINT_BASE::Neighbors(
 bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersection(
     CORE::GEO::CUT::SideHandle* sh,  /// side handle
     int sid,                         /// side id
-    LINALG::Matrix<3, 1>& x1,        /// coordinates of edge's start point
-    LINALG::Matrix<3, 1>& x2         /// coordinates of edge's end point
+    CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
+    CORE::LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
 ) const
 {
   switch (sh->Shape())
@@ -434,14 +434,14 @@ template <DRT::Element::DiscretizationType sidetype>
 bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
     CORE::GEO::CUT::SideHandle* sh,  /// side handle
     int sid,                         /// side id
-    LINALG::Matrix<3, 1>& x1,        /// coordinates of edge's start point
-    LINALG::Matrix<3, 1>& x2         /// coordinates of edge's end point
+    CORE::LINALG::Matrix<3, 1>& x1,  /// coordinates of edge's start point
+    CORE::LINALG::Matrix<3, 1>& x2   /// coordinates of edge's end point
 ) const
 {
   const int nsd = 3;
   const int numNodesSurface = CORE::DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
 
-  LINALG::Matrix<nsd, 2> xyze_lineElement(true);
+  CORE::LINALG::Matrix<nsd, 2> xyze_lineElement(true);
 
   for (int i = 0; i < nsd; i++)
   {
@@ -452,9 +452,9 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
   Epetra_SerialDenseMatrix xyze_side;
   sh->Coordinates(xyze_side);
 
-  LINALG::Matrix<nsd, numNodesSurface> xyze_surfaceElement(xyze_side);
+  CORE::LINALG::Matrix<nsd, numNodesSurface> xyze_surfaceElement(xyze_side);
 
-  LINALG::Matrix<3, 1> xsi(true);
+  CORE::LINALG::Matrix<3, 1> xsi(true);
 
 
   Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersect =
@@ -474,13 +474,13 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
  * call the computation of local coordinates for an integration cell                 schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(const DRT::Element* ele,  /// pointer to element
-    LINALG::Matrix<3, 1>& x,   /// global coordinates of point
-    LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
-    const std::string state,   ///< state dispn or dispnp?
-    bool& pointInDomain        /// lies point in element ?
+    CORE::LINALG::Matrix<3, 1>& x,   /// global coordinates of point
+    CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
+    const std::string state,         ///< state dispn or dispnp?
+    bool& pointInDomain              /// lies point in element ?
 ) const
 {
-  LINALG::SerialDenseMatrix xyz(3, ele->NumNode(), true);
+  CORE::LINALG::SerialDenseMatrix xyz(3, ele->NumNode(), true);
   CORE::GEO::fillInitialPositionArray(ele, xyz);
 
   // add ale displacements to initial position
@@ -526,11 +526,11 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(const DRT::Element* ele,  /// po
  * with corners given by the coordinates                                             schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
-    LINALG::SerialDenseMatrix& nodecoords,     /// node coordinates of element
-    DRT::Element::DiscretizationType DISTYPE,  /// discretization type
-    LINALG::Matrix<3, 1>& x,                   /// global coordinates of point
-    LINALG::Matrix<3, 1>& xi,                  /// determined local coordinates w.r.t ele
-    bool& pointInDomain                        /// lies point in element ?
+    CORE::LINALG::SerialDenseMatrix& nodecoords,  /// node coordinates of element
+    DRT::Element::DiscretizationType DISTYPE,     /// discretization type
+    CORE::LINALG::Matrix<3, 1>& x,                /// global coordinates of point
+    CORE::LINALG::Matrix<3, 1>& xi,               /// determined local coordinates w.r.t ele
+    bool& pointInDomain                           /// lies point in element ?
 ) const
 {
   switch (DISTYPE)
@@ -556,10 +556,10 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
 //! compute local element coordinates and check whether the according point is inside the element
 template <DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
-    LINALG::SerialDenseMatrix& xyz,  /// node coordinates of element
-    LINALG::Matrix<3, 1>& x,         /// global coordinates of point
-    LINALG::Matrix<3, 1>& xi,        /// determined local coordinates w.r.t ele
-    bool& pointInCell                /// lies point in element?
+    CORE::LINALG::SerialDenseMatrix& xyz,  /// node coordinates of element
+    CORE::LINALG::Matrix<3, 1>& x,         /// global coordinates of point
+    CORE::LINALG::Matrix<3, 1>& xi,        /// determined local coordinates w.r.t ele
+    bool& pointInCell                      /// lies point in element?
 ) const
 {
   const int nsd = 3;  // dimension
@@ -567,7 +567,7 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;  // number of nodes of
                                                                              // element
 
-  LINALG::Matrix<nsd, numnode> xyze(xyz);
+  CORE::LINALG::Matrix<nsd, numnode> xyze(xyz);
 
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::PositionFactory::BuildPosition<3, DISTYPE>(xyze, x);
@@ -581,10 +581,10 @@ void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
 //! data at an arbitrary point lying in an element
 template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// pointer to element
-    LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
-    LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
-    LINALG::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
-    LINALG::Matrix<3, numnode>&
+    CORE::LINALG::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
+    CORE::LINALG::Matrix<3, 3>& xji,             /// inverse of jacobian
+    CORE::LINALG::Matrix<numnode, 1>& shapeFcn,  /// shape functions at point
+    CORE::LINALG::Matrix<3, numnode>&
         shapeFcnDerivXY,  /// derivatives of shape function w.r.t global coordiantes xyz
     bool compute_deriv    /// shall derivatives and jacobian be computed
 ) const
@@ -602,8 +602,8 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
   if (compute_deriv)
   {
-    LINALG::Matrix<nsd, numnode> nodecoords(true);       // node coordinates of the element
-    for (size_t nodeid = 0; nodeid < numnode; nodeid++)  // fill node coordinates
+    CORE::LINALG::Matrix<nsd, numnode> nodecoords(true);  // node coordinates of the element
+    for (size_t nodeid = 0; nodeid < numnode; nodeid++)   // fill node coordinates
     {
       DRT::Node* currnode = discret_->gNode(elenodeids[nodeid]);
       for (int i = 0; i < nsd; i++) nodecoords(i, nodeid) = currnode->X()[i];
@@ -635,10 +635,10 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
     }
 
     // shape function derivatives w.r.t local coordinates
-    LINALG::Matrix<3, numnode> shapeFcnDeriv;
+    CORE::LINALG::Matrix<3, numnode> shapeFcnDeriv;
     CORE::DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
 
-    LINALG::Matrix<nsd, nsd> xjm(true);         // jacobi matrix
+    CORE::LINALG::Matrix<nsd, nsd> xjm(true);   // jacobi matrix
     xjm.MultiplyNT(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
     xji.Clear();
     xji.Invert(xjm);  // jacobian inverted J^(-1) = dxi/dx
@@ -653,14 +653,14 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
 // explicit instantiations of this function...
 template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8, DRT::Element::hex8>(DRT::Element*,
-    LINALG::Matrix<3, 1>&, LINALG::Matrix<3, 3>&, LINALG::Matrix<8, 1>&, LINALG::Matrix<3, 8>&,
-    bool) const;
+    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<8, 1>&,
+    CORE::LINALG::Matrix<3, 8>&, bool) const;
 template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20, DRT::Element::hex20>(DRT::Element*,
-    LINALG::Matrix<3, 1>&, LINALG::Matrix<3, 3>&, LINALG::Matrix<20, 1>&, LINALG::Matrix<3, 20>&,
-    bool) const;
+    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<20, 1>&,
+    CORE::LINALG::Matrix<3, 20>&, bool) const;
 template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4, DRT::Element::tet4>(DRT::Element*,
-    LINALG::Matrix<3, 1>&, LINALG::Matrix<3, 3>&, LINALG::Matrix<4, 1>&, LINALG::Matrix<3, 4>&,
-    bool) const;
+    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<4, 1>&,
+    CORE::LINALG::Matrix<3, 4>&, bool) const;
 
 
 
@@ -833,7 +833,7 @@ void XFEM::XFLUID_TIMEINT_BASE::packNode(DRT::PackBuffer& dataSend, DRT::Node& n
 {
   const int nsd = 3;
   DRT::ParObject::AddtoPack(dataSend, node.Id());
-  DRT::ParObject::AddtoPack(dataSend, LINALG::Matrix<nsd, 1>(node.X()));
+  DRT::ParObject::AddtoPack(dataSend, CORE::LINALG::Matrix<nsd, 1>(node.X()));
   DRT::ParObject::AddtoPack(dataSend, node.Owner());
 }  // end packNode
 
@@ -846,10 +846,10 @@ void XFEM::XFLUID_TIMEINT_BASE::packNode(DRT::PackBuffer& dataSend, DRT::Node& n
 void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
     std::vector<char>::size_type& posinData, std::vector<char>& dataRecv, DRT::Node& node) const
 {
-  const int nsd = 3;              // dimension
-  int id;                         // global id
-  LINALG::Matrix<nsd, 1> coords;  // coordinates
-  int owner;                      // processor
+  const int nsd = 3;                    // dimension
+  int id;                               // global id
+  CORE::LINALG::Matrix<nsd, 1> coords;  // coordinates
+  int owner;                            // processor
 
   DRT::ParObject::ExtractfromPack(posinData, dataRecv, id);
   DRT::ParObject::ExtractfromPack(posinData, dataRecv, coords);
@@ -894,7 +894,7 @@ XFEM::XFLUID_STD::XFLUID_STD(
     timeIntData_ = Teuchos::rcp(
         new std::vector<TimeIntData>);  // vector containing all data used for computation
 
-    LINALG::Matrix<nsd, 1> dummyStartpoint;  // dummy startpoint for comparison
+    CORE::LINALG::Matrix<nsd, 1> dummyStartpoint;  // dummy startpoint for comparison
     for (int i = 0; i < nsd; i++) dummyStartpoint(i) = 777.777;
 
       //--------------------------------------------------------------------------------------
@@ -927,7 +927,7 @@ XFEM::XFLUID_STD::XFLUID_STD(
                      << IO::endl;
 #endif
 
-            LINALG::Matrix<3, 1> nodedispnp(true);
+            CORE::LINALG::Matrix<3, 1> nodedispnp(true);
             if (dispnp_ != Teuchos::null)  // is alefluid
             {
               //------------------------------------------------------- add ale disp
@@ -938,7 +938,7 @@ XFEM::XFLUID_STD::XFLUID_STD(
               dofset_new_->Dof(dofs, node, 0);  // dofs for standard dofset
               for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
-              LINALG::Matrix<1, 1> nodepredummy(true);
+              CORE::LINALG::Matrix<1, 1> nodepredummy(true);
               extractNodalValuesFromVector<1>(nodedispnp, nodepredummy, dispnp_, lm);
             }
 
@@ -946,12 +946,12 @@ XFEM::XFLUID_STD::XFLUID_STD(
             timeIntData_->push_back(TimeIntData(*node,  //! node for which SL-algorithm is called
                 i,  //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is
                     //! called
-                LINALG::Matrix<nsd, 1>(true),  //!  velocity at point x (=x_Lagr(t^n+1))
-                std::vector<LINALG::Matrix<nsd, nsd>>(oldVectors_.size(),
-                    LINALG::Matrix<nsd, nsd>(
+                CORE::LINALG::Matrix<nsd, 1>(true),  //!  velocity at point x (=x_Lagr(t^n+1))
+                std::vector<CORE::LINALG::Matrix<nsd, nsd>>(oldVectors_.size(),
+                    CORE::LINALG::Matrix<nsd, nsd>(
                         true)),  //! velocity gradient at point x (=x_Lagr(t^n+1))
-                std::vector<LINALG::Matrix<1, nsd>>(oldVectors_.size(),
-                    LINALG::Matrix<1, nsd>(
+                std::vector<CORE::LINALG::Matrix<1, nsd>>(oldVectors_.size(),
+                    CORE::LINALG::Matrix<1, nsd>(
                         true)),             //! pressure gradient at point x (=x_Lagr(t^n+1))
                 nodedispnp,                 //!  displacement at point x (=x_Lagr(t^n+1))
                 dummyStartpoint,            // dummy-startpoint
@@ -1025,10 +1025,10 @@ void XFEM::XFLUID_STD::compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowV
  * identify an element containing a point and additional data                        schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::elementSearch(
-    DRT::Element*& ele,        /// pointer to element if point lies in a found element
-    LINALG::Matrix<3, 1>& x,   /// global coordiantes of point
-    LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
-    bool& found                /// is element found?
+    DRT::Element*& ele,              /// pointer to element if point lies in a found element
+    CORE::LINALG::Matrix<3, 1>& x,   /// global coordiantes of point
+    CORE::LINALG::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
+    bool& found                      /// is element found?
 ) const
 {
   // REMARK: if ele!= NULL, then check that element first, before loop all row elements
@@ -1072,13 +1072,13 @@ void XFEM::XFLUID_STD::elementSearch(
  * interpolate velocity and derivatives for a point in an element                    schott 06/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
-    LINALG::Matrix<3, 1>& xi,                          ///< local coordinates of point w.r.t element
+    CORE::LINALG::Matrix<3, 1>& xi,                    ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
     XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
-    LINALG::Matrix<3, 1>& vel,                  ///< determine velocity at point
-    LINALG::Matrix<3, 3>& vel_deriv,            ///< determine velocity derivatives at point
+    CORE::LINALG::Matrix<3, 1>& vel,            ///< determine velocity at point
+    CORE::LINALG::Matrix<3, 3>& vel_deriv,      ///< determine velocity derivatives at point
     double& pres,                               ///< pressure
-    LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
+    CORE::LINALG::Matrix<1, 3>& pres_deriv,     ///< pressure gradient
     Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
     bool compute_deriv                          ///< shall derivatives be computed?
 ) const
@@ -1109,13 +1109,13 @@ void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
 //! interpolate velocity and derivatives for a point in an element
 template <DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
-    LINALG::Matrix<3, 1>& xi,                   ///< local coordinates of point w.r.t element
+    CORE::LINALG::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
     XFEM::XFEMDofSet& dofset,                   ///< XFEM dofset
-    LINALG::Matrix<3, 1>& vel,                  ///< determine velocity at point
-    LINALG::Matrix<3, 3>& vel_deriv,            ///< determine velocity derivatives at point
+    CORE::LINALG::Matrix<3, 1>& vel,            ///< determine velocity at point
+    CORE::LINALG::Matrix<3, 3>& vel_deriv,      ///< determine velocity derivatives at point
     double& pres,                               ///< pressure
-    LINALG::Matrix<1, 3>& pres_deriv,           ///< pressure gradient
+    CORE::LINALG::Matrix<1, 3>& pres_deriv,     ///< pressure gradient
     Teuchos::RCP<const Epetra_Vector> vel_vec,  ///< vector used for interpolating at gp
     bool compute_deriv                          ///< shall derivatives be computed?
 ) const
@@ -1131,9 +1131,9 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
 
   //-------------------------------------------------------
   // initialization
-  LINALG::Matrix<numnode, 1> shapeFcn(true);         /// shape function at point
-  LINALG::Matrix<nsd, numnode> shapeFcnDeriv(true);  /// xyz shape derivatives at point
-  LINALG::Matrix<nsd, nsd> xji(true);                /// inverse of jacobian
+  CORE::LINALG::Matrix<numnode, 1> shapeFcn(true);         /// shape function at point
+  CORE::LINALG::Matrix<nsd, numnode> shapeFcnDeriv(true);  /// xyz shape derivatives at point
+  CORE::LINALG::Matrix<nsd, nsd> xji(true);                /// inverse of jacobian
 
   //-------------------------------------------------------
   // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
@@ -1156,8 +1156,8 @@ void XFEM::XFLUID_STD::getGPValuesT(DRT::Element* ele,  ///< pointer to element
 
   //-------------------------------------------------------
   // get element-wise velocity/pressure field
-  LINALG::Matrix<nsd, numnode> evel(true);
-  LINALG::Matrix<numnode, 1> epre(true);
+  CORE::LINALG::Matrix<nsd, numnode> evel(true);
+  CORE::LINALG::Matrix<numnode, 1> epre(true);
 
 
   // extract local values of the global vectors
@@ -1243,7 +1243,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
   const std::string state = "idispnp";
 
   const int nsd = 3;
-  LINALG::Matrix<nsd, 1> newNodeCoords(
+  CORE::LINALG::Matrix<nsd, 1> newNodeCoords(
       data.node_.X());  // coords of endpoint of Lagrangian characteristics
   for (int i = 0; i < nsd; ++i) newNodeCoords(i) += data.dispnp_(i);
 
@@ -1348,15 +1348,15 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
   // initialize data holding information about minimal distance
 
   // smallest distance
-  LINALG::Matrix<3, 1> proj_x_np(true);  ///< projected point at t^(n+1)
-  LINALG::Matrix<3, 1> proj_x_n(
+  CORE::LINALG::Matrix<3, 1> proj_x_np(true);  ///< projected point at t^(n+1)
+  CORE::LINALG::Matrix<3, 1> proj_x_n(
       true);  ///< projected point at t^n (tracked back along structural movement)
-  LINALG::Matrix<3, 1> start_point(true);  ///< final start point for SemiLagrange algo
-  int proj_sid = -1;                       ///< id of side that contains the projected point
+  CORE::LINALG::Matrix<3, 1> start_point(true);  ///< final start point for SemiLagrange algo
+  int proj_sid = -1;                             ///< id of side that contains the projected point
   std::map<std::vector<int>, std::vector<int>>
       proj_lineid;  ///< std::map< sorted nids, global side IDs >
   // smallest distance w.r.t side
-  LINALG::Matrix<2, 1> proj_xi_side(
+  CORE::LINALG::Matrix<2, 1> proj_xi_side(
       true);  ///< local coordinates of projected point if projection w.r.t side
   // smallest distance w.r.t line
   std::map<std::vector<int>, std::vector<double>>
@@ -1688,7 +1688,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
                                               // displacement (the same as for (u,p))
     }
 
-    // fill LINALG matrix
+    // fill CORE::LINALG matrix
     for (int idim = 0; idim < 3; ++idim)  // number of dimensions
     {
       proj_x_n(idim) = point_xyze(idim,
@@ -1724,10 +1724,10 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
 }
 
 bool XFEM::XFLUID_STD::FindNearestSurfPoint(
-    LINALG::Matrix<3, 1>& x,         ///< coords of point to be projected
-    LINALG::Matrix<3, 1>& proj_x,    ///< coords of projected point
-    CORE::GEO::CUT::VolumeCell* vc,  ///< volumcell on that's cut-surface we want to project
-    const std::string state          ///< state n or np?
+    CORE::LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
+    CORE::LINALG::Matrix<3, 1>& proj_x,  ///< coords of projected point
+    CORE::GEO::CUT::VolumeCell* vc,      ///< volumcell on that's cut-surface we want to project
+    const std::string state              ///< state n or np?
 )
 {
   if (vc == NULL) dserror("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
@@ -1777,10 +1777,10 @@ bool XFEM::XFLUID_STD::FindNearestSurfPoint(
  **
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XFLUID_STD::ProjectToSurface(
-    LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
-    LINALG::Matrix<3, 1>& proj_x,  ///< coords of projected point
-    const std::string state,       ///< state n or np?
-    std::set<int>& points,         ///< node Ids of surface for that distance has to be computed
+    CORE::LINALG::Matrix<3, 1>& x,       ///< coords of point to be projected
+    CORE::LINALG::Matrix<3, 1>& proj_x,  ///< coords of projected point
+    const std::string state,             ///< state n or np?
+    std::set<int>& points,  ///< node Ids of surface for that distance has to be computed
     std::set<int>&
         sides  ///< side Ids of surface for that and it's lines the distances have to be computed
 )
@@ -1803,7 +1803,7 @@ bool XFEM::XFLUID_STD::ProjectToSurface(
   std::map<std::vector<int>, std::vector<int>>
       proj_lineid;  ///< std::map< sorted nids, global side IDs >
   // smallest distance w.r.t side
-  LINALG::Matrix<2, 1> proj_xi_side(
+  CORE::LINALG::Matrix<2, 1> proj_xi_side(
       true);  ///< local coordinates of projected point if projection w.r.t side
   // smallest distance w.r.t line
   std::map<std::vector<int>, std::vector<double>>
@@ -1903,13 +1903,13 @@ bool XFEM::XFLUID_STD::ProjectToSurface(
 void XFEM::XFLUID_STD::ComputeStartPoint_Side(DRT::Element* side,  ///< pointer to side element
     Epetra_SerialDenseMatrix& side_xyze,                           ///< side's node coordinates
     const std::vector<int>& lm,                                    ///< local map
-    LINALG::Matrix<2, 1>& xi_side,     ///< local coordinates of projected point w.r.t side
-    double& dist,                      ///< distance from point to its projection
-    LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
-    LINALG::Matrix<3, 1>& start_point  ///< final start point
+    CORE::LINALG::Matrix<2, 1>& xi_side,     ///< local coordinates of projected point w.r.t side
+    double& dist,                            ///< distance from point to its projection
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
+    CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
 )
 {
-  LINALG::Matrix<3, 1> normal(true);
+  CORE::LINALG::Matrix<3, 1> normal(true);
 
   callgetNormalSide_tn(side, normal, side_xyze, lm, proj_x_n, xi_side);
 
@@ -1925,23 +1925,23 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
     Epetra_SerialDenseMatrix& side2_xyze,                           ///< side's node coordinates
     const std::vector<int>& lm1,                                    ///< local map
     const std::vector<int>& lm2,                                    ///< local map
-    double& dist,                      ///< distance from point to its projection
-    LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
-    LINALG::Matrix<3, 1>& start_point  ///< final start point
+    double& dist,                            ///< distance from point to its projection
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
+    CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
 )
 {
-  LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
-  LINALG::Matrix<3, 1> normal1(true);
-  LINALG::Matrix<3, 1> normal2(true);
+  CORE::LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
+  CORE::LINALG::Matrix<3, 1> normal1(true);
+  CORE::LINALG::Matrix<3, 1> normal2(true);
 
-  LINALG::Matrix<2, 1> xi_side1(true);
-  LINALG::Matrix<2, 1> xi_side2(true);
+  CORE::LINALG::Matrix<2, 1> xi_side1(true);
+  CORE::LINALG::Matrix<2, 1> xi_side2(true);
 
 
-  LINALG::Matrix<3, 1> xi_1_avg(true);
-  LINALG::Matrix<3, 1> xi_2_avg(true);
+  CORE::LINALG::Matrix<3, 1> xi_1_avg(true);
+  CORE::LINALG::Matrix<3, 1> xi_2_avg(true);
 
-  LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
+  CORE::LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
 
 
   for (int i = 0; i < side1->NumNode(); i++)
@@ -1985,23 +1985,23 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
     std::vector<Epetra_SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
     const std::vector<std::vector<int>>& sides_lm,      ///< local map
     double& dist,                                       ///< distance from point to its projection
-    LINALG::Matrix<3, 1>& proj_x_n,                     ///< projected point at t^n
-    LINALG::Matrix<3, 1>& start_point                   ///< final start point
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,               ///< projected point at t^n
+    CORE::LINALG::Matrix<3, 1>& start_point             ///< final start point
 )
 {
   if (sides.size() != sides_xyze.size() or sides.size() != sides_lm.size())
     dserror("not equal number of sides, xyze-coordinates or lm-vectors ");
 
-  LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
+  CORE::LINALG::Matrix<3, 1> normal_avg(true);  // averaged normal vector
 
   ///
   for (std::vector<DRT::Element*>::const_iterator it = sides.begin(); it != sides.end(); it++)
   {
     DRT::Element* side = *it;
 
-    LINALG::Matrix<2, 1> side_center(true);
+    CORE::LINALG::Matrix<2, 1> side_center(true);
 
-    LINALG::Matrix<3, 1> local_node_coord(true);
+    CORE::LINALG::Matrix<3, 1> local_node_coord(true);
 
     // get the side-center
     for (int i = 0; i < side->NumNode(); i++)
@@ -2014,8 +2014,8 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
     side_center.Scale(1.0 / side->NumNode());
 
     // get the normal at the side center
-    LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
-    LINALG::Matrix<3, 1> side_normal(true);
+    CORE::LINALG::Matrix<3, 1> proj_x_n_dummy1(true);
+    CORE::LINALG::Matrix<3, 1> side_normal(true);
 
     callgetNormalSide_tn(side, side_normal, sides_xyze[it - sides.begin()],
         sides_lm[it - sides.begin()], proj_x_n_dummy1, side_center);
@@ -2034,11 +2034,11 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
 
 
 void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to side element
-    LINALG::Matrix<3, 1>& normal,                                ///< normal vector w.r.t side
+    CORE::LINALG::Matrix<3, 1>& normal,                          ///< normal vector w.r.t side
     Epetra_SerialDenseMatrix& side_xyze,                         ///< side's node coordinates
     const std::vector<int>& lm,                                  ///< local map
-    LINALG::Matrix<3, 1>& proj_x_n,                              ///< projected point on side
-    LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,                        ///< projected point on side
+    CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
 )
 {
   // get number of dofs for this side element
@@ -2115,11 +2115,12 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
 }
 
 template <DRT::Element::DiscretizationType side_distype, const int numdof>
-void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< normal vector w.r.t side
-    Epetra_SerialDenseMatrix& side_xyze,                               ///< side's node coordinates
-    const std::vector<int>& lm,                                        ///< local map
-    LINALG::Matrix<3, 1>& proj_x_n,                                    ///< projected point on side
-    LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
+void XFEM::XFLUID_STD::getNormalSide_tn(
+    CORE::LINALG::Matrix<3, 1>& normal,    ///< normal vector w.r.t side
+    Epetra_SerialDenseMatrix& side_xyze,   ///< side's node coordinates
+    const std::vector<int>& lm,            ///< local map
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,  ///< projected point on side
+    CORE::LINALG::Matrix<2, 1>& xi_side    ///< local coordinates of projected point w.r.t side
 )
 {
   const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
@@ -2128,19 +2129,19 @@ void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< norm
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, "idispn", lm);
 
   // fill Linalg matrix with current node coordinates including displacements
-  LINALG::Matrix<3, side_nen_> xyze_(side_xyze);
+  CORE::LINALG::Matrix<3, side_nen_> xyze_(side_xyze);
 
 
   // Initialization
-  LINALG::Matrix<side_nen_, 1> funct(true);  // shape functions
-  LINALG::Matrix<2, side_nen_> deriv(true);  // derivatives dr, ds
+  CORE::LINALG::Matrix<side_nen_, 1> funct(true);  // shape functions
+  CORE::LINALG::Matrix<2, side_nen_> deriv(true);  // derivatives dr, ds
 
 
-  LINALG::Matrix<3, 1> x(true);
+  CORE::LINALG::Matrix<3, 1> x(true);
 
-  LINALG::Matrix<3, 2> derxy(true);
-  LINALG::Matrix<3, 1> dx_dr(true);
-  LINALG::Matrix<3, 1> dx_ds(true);
+  CORE::LINALG::Matrix<3, 2> derxy(true);
+  CORE::LINALG::Matrix<3, 1> dx_dr(true);
+  CORE::LINALG::Matrix<3, 1> dx_ds(true);
 
   // get current values
   CORE::DRT::UTILS::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
@@ -2177,7 +2178,7 @@ void XFEM::XFLUID_STD::getNormalSide_tn(LINALG::Matrix<3, 1>& normal,  ///< norm
 void XFEM::XFLUID_STD::call_get_projxn_Line(
     DRT::Element* side,  ///< pointer to structural side element
     DRT::Element* line,  ///< pointer to structural line of side element
-    LINALG::Matrix<3, 1>& proj_x_n, double& xi_line)
+    CORE::LINALG::Matrix<3, 1>& proj_x_n, double& xi_line)
 {
   //-------------------------------------------------
 
@@ -2233,10 +2234,10 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
 
 template <DRT::Element::DiscretizationType line_distype, const int numdof>
 void XFEM::XFLUID_STD::get_projxn_Line(
-    Epetra_SerialDenseMatrix& line_xyze,  ///< line's node coordinates
-    const std::vector<int>& lm,           ///< local map
-    LINALG::Matrix<3, 1>& proj_x_n,       ///< projected point on side
-    double& xi_line                       ///< local coordinates of projected point w.r.t line
+    Epetra_SerialDenseMatrix& line_xyze,   ///< line's node coordinates
+    const std::vector<int>& lm,            ///< local map
+    CORE::LINALG::Matrix<3, 1>& proj_x_n,  ///< projected point on side
+    double& xi_line                        ///< local coordinates of projected point w.r.t line
 )
 {
   const int line_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
@@ -2244,15 +2245,15 @@ void XFEM::XFLUID_STD::get_projxn_Line(
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, "idispn", lm);
 
-  // fill LINALG matrix
-  LINALG::Matrix<3, line_nen_> xyze_(line_xyze);
+  // fill CORE::LINALG matrix
+  CORE::LINALG::Matrix<3, line_nen_> xyze_(line_xyze);
 
 
   // Initialization
-  LINALG::Matrix<line_nen_, 1> funct(true);  // shape functions
-  LINALG::Matrix<1, line_nen_> deriv(true);  // derivatives dr
+  CORE::LINALG::Matrix<line_nen_, 1> funct(true);  // shape functions
+  CORE::LINALG::Matrix<1, line_nen_> deriv(true);  // derivatives dr
 
-  LINALG::Matrix<3, 1> x(true);
+  CORE::LINALG::Matrix<3, 1> x(true);
 
 
   // get current values
@@ -2279,7 +2280,7 @@ void XFEM::XFLUID_STD::addeidisp(
 {
   const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  LINALG::Matrix<3, nen> eidisp(true);
+  CORE::LINALG::Matrix<3, nen> eidisp(true);
 
 
   // get state of the global vector
@@ -2317,21 +2318,22 @@ void XFEM::XFLUID_STD::addeidisp(
  **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnSide(
-    DRT::Element* side,                   ///< pointer to structural side element
-    const std::string state,              ///< state n or np?
-    LINALG::Matrix<3, 1>& newNodeCoords,  ///< node coordinates of point that has to be projected
-    int& proj_sid,                        ///< id of side when projection lies on side
-    double& min_dist,                     ///< minimal distance, potentially updated
-    LINALG::Matrix<3, 1>& proj_x_np,      ///< projection of point on this side
-    LINALG::Matrix<2, 1>&
+    DRT::Element* side,       ///< pointer to structural side element
+    const std::string state,  ///< state n or np?
+    CORE::LINALG::Matrix<3, 1>&
+        newNodeCoords,                      ///< node coordinates of point that has to be projected
+    int& proj_sid,                          ///< id of side when projection lies on side
+    double& min_dist,                       ///< minimal distance, potentially updated
+    CORE::LINALG::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
+    CORE::LINALG::Matrix<2, 1>&
         proj_xi_side,              ///< local coordinates of projection of point w.r.t to this side
     TimeIntData::projection& proj  ///< reference to data
 )
 {
-  bool on_side = false;                ///< lies projection on side?
-  double curr_dist = INFINITY;         ///< resulting distance
-  LINALG::Matrix<3, 1> x_side(true);   ///< resulting projected point
-  LINALG::Matrix<2, 1> xi_side(true);  ///< local coordinates resulting projected point
+  bool on_side = false;                      ///< lies projection on side?
+  double curr_dist = INFINITY;               ///< resulting distance
+  CORE::LINALG::Matrix<3, 1> x_side(true);   ///< resulting projected point
+  CORE::LINALG::Matrix<2, 1> xi_side(true);  ///< local coordinates resulting projected point
 
 
   // side geometry at initial state t^0
@@ -2471,13 +2473,14 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
  **
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnLine(
-    DRT::Element* side,                   ///< pointer to structural side element
-    DRT::Element* line,                   ///< pointer to structural line of side element
-    int line_count,                       ///< local line id w.r.t side element
-    const std::string state,              ///< state n or np?
-    LINALG::Matrix<3, 1>& newNodeCoords,  ///< node coordinates of point that has to be projected
-    double& min_dist,                     ///< minimal distance, potentially updated
-    LINALG::Matrix<3, 1>& proj_x_np,      ///< projection of point on this side
+    DRT::Element* side,       ///< pointer to structural side element
+    DRT::Element* line,       ///< pointer to structural line of side element
+    int line_count,           ///< local line id w.r.t side element
+    const std::string state,  ///< state n or np?
+    CORE::LINALG::Matrix<3, 1>&
+        newNodeCoords,                      ///< node coordinates of point that has to be projected
+    double& min_dist,                       ///< minimal distance, potentially updated
+    CORE::LINALG::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
     std::map<std::vector<int>, std::vector<double>>&
         proj_xi_line,  ///< std::map<sorted nids, local line coordinates of projection of point
                        ///< w.r.t sides >
@@ -2489,10 +2492,10 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     TimeIntData::projection& proj  ///< reference to data
 )
 {
-  bool on_line = false;               ///< is projection on line
-  double curr_dist = INFINITY;        ///< resulting distance
-  LINALG::Matrix<3, 1> x_line(true);  ///< resulting projected point
-  double xi_line = INFINITY;          ///< local coordinates resulting projected point
+  bool on_line = false;                     ///< is projection on line
+  double curr_dist = INFINITY;              ///< resulting distance
+  CORE::LINALG::Matrix<3, 1> x_line(true);  ///< resulting projected point
+  double xi_line = INFINITY;                ///< local coordinates resulting projected point
 
   //-------------------------------------------------
 
@@ -2648,11 +2651,12 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
     const std::string state,                                ///< state n or np?
-    LINALG::Matrix<3, 1>& newNodeCoords,  ///< node coordinates of point that has to be projected
-    double& min_dist,                     ///< minimal distance, potentially updated
-    int& proj_nid_np,                     ///< nid id of projected point on surface
-    LINALG::Matrix<3, 1>& proj_x_np,      ///< projection of point on this side
-    int& proj_sid,                        ///< id of side that contains the projected point
+    CORE::LINALG::Matrix<3, 1>&
+        newNodeCoords,                      ///< node coordinates of point that has to be projected
+    double& min_dist,                       ///< minimal distance, potentially updated
+    int& proj_nid_np,                       ///< nid id of projected point on surface
+    CORE::LINALG::Matrix<3, 1>& proj_x_np,  ///< projection of point on this side
+    int& proj_sid,                          ///< id of side that contains the projected point
     std::map<std::vector<int>, std::vector<double>>
         proj_xi_line,  ///< std::map<side ID, local coordinates of projection of point w.r.t to
                        ///< this line>
@@ -2662,8 +2666,8 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
     TimeIntData::projection& proj  ///< projection type
 )
 {
-  double curr_dist = INFINITY;         ///< resulting distance
-  LINALG::Matrix<3, 1> x_point(true);  ///< resulting projected point
+  double curr_dist = INFINITY;               ///< resulting distance
+  CORE::LINALG::Matrix<3, 1> x_point(true);  ///< resulting projected point
 
 
   // its point geometry
@@ -2712,13 +2716,13 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(DRT::Node* node,  ///< pointer to node
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType side_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnSide(
-    Epetra_SerialDenseMatrix& side_xyze,  ///< side's node coordinates
-    const std::vector<int>& lm,           ///< local map
-    const std::string state,              ///< state n or np
-    LINALG::Matrix<3, 1>& x_gp_lin,       ///< global coordinates of point that has to be projected
-    LINALG::Matrix<3, 1>& x_side,         ///< projected point on side
-    LINALG::Matrix<2, 1>& xi_side,        ///< local coordinates of projected point w.r.t side
-    double& dist                          ///< distance from point to its projection
+    Epetra_SerialDenseMatrix& side_xyze,   ///< side's node coordinates
+    const std::vector<int>& lm,            ///< local map
+    const std::string state,               ///< state n or np
+    CORE::LINALG::Matrix<3, 1>& x_gp_lin,  ///< global coordinates of point that has to be projected
+    CORE::LINALG::Matrix<3, 1>& x_side,    ///< projected point on side
+    CORE::LINALG::Matrix<2, 1>& xi_side,   ///< local coordinates of projected point w.r.t side
+    double& dist                           ///< distance from point to its projection
 )
 {
   const int side_nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
@@ -2727,37 +2731,37 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
   addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, state, lm);
 
   // fill Linalg matrix with current node coordinates including displacements
-  LINALG::Matrix<3, side_nen_> xyze_(side_xyze);
+  CORE::LINALG::Matrix<3, side_nen_> xyze_(side_xyze);
 
 
   // Initialization
-  LINALG::Matrix<side_nen_, 1> funct(true);   // shape functions
-  LINALG::Matrix<2, side_nen_> deriv(true);   // derivatives dr, ds
-  LINALG::Matrix<3, side_nen_> deriv2(true);  // 2nd derivatives drdr, dsds, drds
+  CORE::LINALG::Matrix<side_nen_, 1> funct(true);   // shape functions
+  CORE::LINALG::Matrix<2, side_nen_> deriv(true);   // derivatives dr, ds
+  CORE::LINALG::Matrix<3, side_nen_> deriv2(true);  // 2nd derivatives drdr, dsds, drds
 
 
-  LINALG::Matrix<3, 1> x(true);
+  CORE::LINALG::Matrix<3, 1> x(true);
 
-  LINALG::Matrix<3, 2> derxy(true);
-  LINALG::Matrix<3, 1> dx_dr(true);
-  LINALG::Matrix<3, 1> dx_ds(true);
+  CORE::LINALG::Matrix<3, 2> derxy(true);
+  CORE::LINALG::Matrix<3, 1> dx_dr(true);
+  CORE::LINALG::Matrix<3, 1> dx_ds(true);
 
-  LINALG::Matrix<3, 3> derxy2(true);
-  LINALG::Matrix<3, 1> dx_drdr(true);
-  LINALG::Matrix<3, 1> dx_dsds(true);
-  LINALG::Matrix<3, 1> dx_drds(true);
+  CORE::LINALG::Matrix<3, 3> derxy2(true);
+  CORE::LINALG::Matrix<3, 1> dx_drdr(true);
+  CORE::LINALG::Matrix<3, 1> dx_dsds(true);
+  CORE::LINALG::Matrix<3, 1> dx_drds(true);
 
-  LINALG::Matrix<3, 1> dx_drdr_times_dx_ds(true);
-  LINALG::Matrix<3, 1> dx_dr_times_dx_drds(true);
-  LINALG::Matrix<3, 1> dx_drds_times_dx_ds(true);
-  LINALG::Matrix<3, 1> dx_dr_times_dx_dsds(true);
-  LINALG::Matrix<3, 1> dx_dr_times_dx_ds(true);
+  CORE::LINALG::Matrix<3, 1> dx_drdr_times_dx_ds(true);
+  CORE::LINALG::Matrix<3, 1> dx_dr_times_dx_drds(true);
+  CORE::LINALG::Matrix<3, 1> dx_drds_times_dx_ds(true);
+  CORE::LINALG::Matrix<3, 1> dx_dr_times_dx_dsds(true);
+  CORE::LINALG::Matrix<3, 1> dx_dr_times_dx_ds(true);
 
-  LINALG::Matrix<3, 1> residuum(true);  // residuum of the newton iteration
-  LINALG::Matrix<3, 3> sysmat(true);    // matrix for the newton system
-  LINALG::Matrix<3, 1> incr(true);      // increment of the newton system
+  CORE::LINALG::Matrix<3, 1> residuum(true);  // residuum of the newton iteration
+  CORE::LINALG::Matrix<3, 3> sysmat(true);    // matrix for the newton system
+  CORE::LINALG::Matrix<3, 1> incr(true);      // increment of the newton system
 
-  LINALG::Matrix<3, 1> sol(true);  // sol carries xi_1, xi_2, d (distance)
+  CORE::LINALG::Matrix<3, 1> sol(true);  // sol carries xi_1, xi_2, d (distance)
 
   if (side_distype == DRT::Element::tri3 or side_distype == DRT::Element::tri6)
   {
@@ -2912,7 +2916,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
   }
   else
   {
-    LINALG::Matrix<3, 1> xsi(true);
+    CORE::LINALG::Matrix<3, 1> xsi(true);
     xsi(0) = sol(0);
     xsi(1) = sol(1);
     xsi(2) = 0;
@@ -2977,10 +2981,11 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
     Epetra_SerialDenseMatrix& line_xyze,  ///< line's node coordinates
     const std::vector<int>& lm,           ///< local map
     const std::string state,              ///< state n or np?
-    LINALG::Matrix<3, 1>& x_point_np,     ///< global coordinates of point that has to be projected
-    LINALG::Matrix<3, 1>& x_line,         ///< projected point on line
-    double& xi_line,                      ///< local coordinates of projected point w.r.t line
-    double& dist                          ///< distance from point to its projection
+    CORE::LINALG::Matrix<3, 1>&
+        x_point_np,                      ///< global coordinates of point that has to be projected
+    CORE::LINALG::Matrix<3, 1>& x_line,  ///< projected point on line
+    double& xi_line,                     ///< local coordinates of projected point w.r.t line
+    double& dist                         ///< distance from point to its projection
 )
 {
   bool on_line = false;
@@ -2990,15 +2995,15 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
   // add displacements
   addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, state, lm);
 
-  // fill LINALG matrix
-  LINALG::Matrix<3, line_nen_> xyze_(line_xyze);
+  // fill CORE::LINALG matrix
+  CORE::LINALG::Matrix<3, line_nen_> xyze_(line_xyze);
 
   // linear line
   if (line_nen_ == 2)
   {
     // get line direction
-    LINALG::Matrix<3, 1> line_dir(true);  // x2-x1
-    LINALG::Matrix<3, 1> dir_tmp(true);   // x - 0.5(x1 + x2)
+    CORE::LINALG::Matrix<3, 1> line_dir(true);  // x2-x1
+    CORE::LINALG::Matrix<3, 1> dir_tmp(true);   // x - 0.5(x1 + x2)
     for (int isd = 0; isd < 3; isd++)
     {
       line_dir(isd) = xyze_(isd, 1) - xyze_(isd, 0);
@@ -3013,7 +3018,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
     xi_line = 2.0 / (line_length * line_length) * line_dir.Dot(dir_tmp);
 
     // check if projection within line segement between x1 and x2
-    LINALG::Matrix<3, 1> xsi(true);
+    CORE::LINALG::Matrix<3, 1> xsi(true);
     xsi(0) = xi_line;
     xsi(1) = 0;
     xsi(2) = 0;
@@ -3031,7 +3036,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
       }
 
       // set distance vector between x and projection
-      LINALG::Matrix<3, 1> dist_vec(true);
+      CORE::LINALG::Matrix<3, 1> dist_vec(true);
       for (int i = 0; i < 3; i++)
       {
         dist_vec(i) = x_point_np(i) - x_line(i);
@@ -3066,9 +3071,10 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
     Epetra_SerialDenseMatrix& point_xyze,  ///< point's node coordinates
     const std::vector<int>& lm,            ///< local map
     const std::string state,               ///< state n or np?
-    LINALG::Matrix<3, 1>& x_point_np,      ///< global coordinates of point that has to be projected
-    LINALG::Matrix<3, 1>& x_point,         ///< global coordinates of point on surface
-    double& dist                           ///< distance from point to its projection
+    CORE::LINALG::Matrix<3, 1>&
+        x_point_np,                       ///< global coordinates of point that has to be projected
+    CORE::LINALG::Matrix<3, 1>& x_point,  ///< global coordinates of point on surface
+    double& dist                          ///< distance from point to its projection
 )
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState(state);
@@ -3085,11 +3091,11 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
                                               // displacement (the same as for (u,p))
   }
 
-  // fill LINALG matrix
-  LINALG::Matrix<3, 1> p(point_xyze);
+  // fill CORE::LINALG matrix
+  CORE::LINALG::Matrix<3, 1> p(point_xyze);
 
   // compute direction vector between two points
-  LINALG::Matrix<3, 1> direction(true);
+  CORE::LINALG::Matrix<3, 1> direction(true);
   direction.Update(1.0, x_point_np, -1.0, p);
 
   // compute distance
@@ -3105,7 +3111,7 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
  * check if local coordinates are within limits                      schott 07/12 *
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType elementtype>
-bool XFEM::XFLUID_STD::WithinLimits(LINALG::Matrix<3, 1>& xsi_, const double TOL)
+bool XFEM::XFLUID_STD::WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const double TOL)
 {
   switch (elementtype)
   {
@@ -3160,8 +3166,9 @@ void XFEM::XFLUID_STD::setFinalData()
     if (data->state_ != TimeIntData::doneStd_)
       dserror("when data is set, all computation has to be done");
 
-    std::vector<LINALG::Matrix<nsd, 1>>& velValues(data->velValues_);  // velocities of the node
-    std::vector<double>& presValues(data->presValues_);                // pressures of the node
+    std::vector<CORE::LINALG::Matrix<nsd, 1>>& velValues(
+        data->velValues_);                               // velocities of the node
+    std::vector<double>& presValues(data->presValues_);  // pressures of the node
 
     const int gnodeid = data->node_.Id();  // global node id
 
@@ -3267,15 +3274,15 @@ void XFEM::XFLUID_STD::exportStartData()
     std::array<double, nsd> coords = {0.0};
     DRT::Node node(0, coords.data(), 0);  // initialize node
     int nds_np = -1;
-    LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
-    std::vector<LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x
-    std::vector<LINALG::Matrix<1, nsd>> presDeriv;   // derivation of pressure at point x
-    LINALG::Matrix<nsd, 1> dispnp;                   // displacement at point x
-    LINALG::Matrix<nsd, 1> startpoint;               // startpoint
-    int searchedProcs;                               // number of searched processors
-    int counter;                                     // iteration counter
-    double dMin;                                     // minimal distance
-    int newtype;                                     // type of the data
+    CORE::LINALG::Matrix<nsd, 1> vel;                      // velocity at point x
+    std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;  // derivation of velocity at point x
+    std::vector<CORE::LINALG::Matrix<1, nsd>> presDeriv;   // derivation of pressure at point x
+    CORE::LINALG::Matrix<nsd, 1> dispnp;                   // displacement at point x
+    CORE::LINALG::Matrix<nsd, 1> startpoint;               // startpoint
+    int searchedProcs;                                     // number of searched processors
+    int counter;                                           // iteration counter
+    double dMin;                                           // minimal distance
+    int newtype;                                           // type of the data
 
     unpackNode(posinData, dataRecv, node);
     DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
@@ -3384,12 +3391,12 @@ void XFEM::XFLUID_STD::exportFinalData()
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      int gid;                                        // global id of node
-      int nds_np;                                     // dofset number of node at new timestep
-      LINALG::Matrix<nsd, 1> startpoint;              // startpoint
-      std::vector<LINALG::Matrix<nsd, 1>> velValues;  // velocity values
-      std::vector<double> presValues;                 // pressure values
-      int newtype;                                    // type of the data
+      int gid;                                              // global id of node
+      int nds_np;                                           // dofset number of node at new timestep
+      CORE::LINALG::Matrix<nsd, 1> startpoint;              // startpoint
+      std::vector<CORE::LINALG::Matrix<nsd, 1>> velValues;  // velocity values
+      std::vector<double> presValues;                       // pressure values
+      int newtype;                                          // type of the data
 
       DRT::ParObject::ExtractfromPack(posinData, dataRecv, gid);
       DRT::ParObject::ExtractfromPack(posinData, dataRecv, nds_np);
@@ -3398,7 +3405,7 @@ void XFEM::XFLUID_STD::exportFinalData()
       DRT::ParObject::ExtractfromPack(posinData, dataRecv, presValues);
       DRT::ParObject::ExtractfromPack(posinData, dataRecv, newtype);
 
-      LINALG::Matrix<3, 1> nodedispnp(true);
+      CORE::LINALG::Matrix<3, 1> nodedispnp(true);
       if (dispnp_ != Teuchos::null)  // is alefluid
       {
         //------------------------------------------------------- add ale disp
@@ -3409,7 +3416,7 @@ void XFEM::XFLUID_STD::exportFinalData()
         dofset_new_->Dof(dofs, discret_->gNode(gid), 0);  // dofs for standard dofset
         for (int j = 0; j < 4; ++j) lm.push_back(dofs[j]);
 
-        LINALG::Matrix<1, 1> nodepredummy(true);
+        CORE::LINALG::Matrix<1, 1> nodepredummy(true);
         extractNodalValuesFromVector<1>(nodedispnp, nodepredummy, dispnp_, lm);
       }
 

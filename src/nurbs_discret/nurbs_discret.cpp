@@ -162,7 +162,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       static_cast<const DRT::NURBS::NurbsDiscretization&>(discret);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
-  Teuchos::RCP<LINALG::MapExtractor> auxdbcmapextractor = Teuchos::rcp(new LINALG::MapExtractor());
+  Teuchos::RCP<CORE::LINALG::MapExtractor> auxdbcmapextractor =
+      Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
@@ -178,7 +179,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
         myglobalelements, discret.DofRowMap()->IndexBase(), discret.DofRowMap()->Comm()));
     // build the map extractor of Dirichlet-conditioned and free DOFs
-    *auxdbcmapextractor = LINALG::MapExtractor(*(discret.DofRowMap()), dbcmap);
+    *auxdbcmapextractor = CORE::LINALG::MapExtractor(*(discret.DofRowMap()), dbcmap);
   }
 
   // column map of all DOFs subjected to a least squares Dirichlet condition
@@ -241,29 +242,29 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   // -------------------------------------------------------------------
   // create empty mass matrix
   // -------------------------------------------------------------------
-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix =
-      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> massmatrix =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
 
   // -------------------------------------------------------------------
   // create empty right hand side vector
   // -------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> dbcvector = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> rhs = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> dbcvector = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   Teuchos::RCP<Epetra_Vector> rhsd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectord = Teuchos::null;
   if (systemvectors[1] != Teuchos::null)
   {
-    rhsd = LINALG::CreateVector(*dofrowmap, true);
-    dbcvectord = LINALG::CreateVector(*dofrowmap, true);
+    rhsd = CORE::LINALG::CreateVector(*dofrowmap, true);
+    dbcvectord = CORE::LINALG::CreateVector(*dofrowmap, true);
   }
 
   Teuchos::RCP<Epetra_Vector> rhsdd = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> dbcvectordd = Teuchos::null;
   if (systemvectors[2] != Teuchos::null)
   {
-    rhsdd = LINALG::CreateVector(*dofrowmap, true);
-    dbcvectordd = LINALG::CreateVector(*dofrowmap, true);
+    rhsdd = CORE::LINALG::CreateVector(*dofrowmap, true);
+    dbcvectordd = CORE::LINALG::CreateVector(*dofrowmap, true);
   }
 
   const bool assemblevecd = rhsd != Teuchos::null;
@@ -441,9 +442,9 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
 
       int eid = actele->Id();
       if (assemblemat) massmatrix->Assemble(eid, elemass, lm, lmowner);
-      if (assemblevec) LINALG::Assemble(*rhs, elerhs[0], lm, lmowner);
-      if (assemblevecd) LINALG::Assemble(*rhsd, elerhs[1], lm, lmowner);
-      if (assemblevecdd) LINALG::Assemble(*rhsdd, elerhs[2], lm, lmowner);
+      if (assemblevec) CORE::LINALG::Assemble(*rhs, elerhs[0], lm, lmowner);
+      if (assemblevecd) CORE::LINALG::Assemble(*rhsd, elerhs[1], lm, lmowner);
+      if (assemblevecdd) CORE::LINALG::Assemble(*rhsdd, elerhs[2], lm, lmowner);
     }
   }
   // -------------------------------------------------------------------
@@ -469,8 +470,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   //  if(myrank==0)
   //    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<"\n";
 
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
-      new LINALG::Solver(p, discret.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
+      new CORE::LINALG::Solver(p, discret.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
   const_cast<DRT::DiscretizationInterface&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
@@ -523,7 +524,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   const int dofblock = ndbcdofs / nen;
 
   // get node coordinates of element
-  LINALG::Matrix<dim + 1, nen> xyze;
+  CORE::LINALG::Matrix<dim + 1, nen> xyze;
   DRT::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
@@ -546,18 +547,18 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   }
 
   // shape functions
-  LINALG::Matrix<nen, 1> shpfunct;
+  CORE::LINALG::Matrix<nen, 1> shpfunct;
   // coordinates of integration points in parameter space
-  LINALG::Matrix<dim, 1> xsi;
+  CORE::LINALG::Matrix<dim, 1> xsi;
   // first derivative of shape functions
-  LINALG::Matrix<dim, nen> deriv;
+  CORE::LINALG::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
   Epetra_SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!
   // auxiliary date container for dirichlet evaluation
   std::vector<Epetra_SerialDenseVector> value(deg + 1, dofblock);
   // unit normal on boundary element
-  LINALG::Matrix<dim + 1, 1> unitnormal;
+  CORE::LINALG::Matrix<dim + 1, 1> unitnormal;
 
   // gaussian points
   const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
@@ -663,7 +664,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   const int dofblock = ndbcdofs / nen;
 
   // get node coordinates of element
-  LINALG::Matrix<dim, nen> xyze;
+  CORE::LINALG::Matrix<dim, nen> xyze;
   DRT::Node** nodes = actele->Nodes();
 
   for (int inode = 0; inode < nen; inode++)
@@ -686,13 +687,13 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   }
 
   // shape functions
-  LINALG::Matrix<nen, 1> shpfunct;
+  CORE::LINALG::Matrix<nen, 1> shpfunct;
   // coordinates of integration points in parameter space
-  LINALG::Matrix<dim, 1> xsi;
+  CORE::LINALG::Matrix<dim, 1> xsi;
   // transposed jacobian "dx/ds"
-  LINALG::Matrix<dim, dim> xjm;
+  CORE::LINALG::Matrix<dim, dim> xjm;
   // first derivative of shape functions
-  LINALG::Matrix<dim, nen> deriv;
+  CORE::LINALG::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
   Epetra_SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!

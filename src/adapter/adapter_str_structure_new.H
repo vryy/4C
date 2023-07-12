@@ -39,10 +39,10 @@ namespace STR
   }  // namespace MODELEVALUATOR
 }  // namespace STR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -357,7 +357,7 @@ namespace ADAPTER
     };
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<LINALG::Solver> LinearSolver() override = 0;
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override = 0;
 
     //@}
 
@@ -418,14 +418,14 @@ namespace ADAPTER
     [[nodiscard]] const Epetra_Map& DomainMap() const override { return GetMassDomainMap(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() override = 0;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override = 0;
 
     /// switch structure field to block matrix
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) override = 0;
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override = 0;
 
     /// return contact/meshtying bridge
     Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge() override = 0;
@@ -456,10 +456,10 @@ namespace ADAPTER
     INPAR::STR::STC_Scale GetSTCAlgo() override = 0;
 
     /// Access to scaling matrix for STC
-    Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() override = 0;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;

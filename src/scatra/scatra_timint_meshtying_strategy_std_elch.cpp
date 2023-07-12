@@ -25,9 +25,10 @@ SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntE
 /*----------------------------------------------------------------------*
  | initialize system matrix for electrochemistry problems    fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSystemMatrix()
+    const
 {
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix;
+  Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix;
 
   if (DRT::INPUT::IntegralValue<int>(*(ElchTimInt()->ElchParameterList()), "BLOCKPRECOND"))
   {
@@ -43,12 +44,12 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
     // A more precise guess for every submatrix would read:
     // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal due to electroneutrality, A_11: EMPTY matrix !!!!!
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    LINALG::MapExtractor splitter;
-    LINALG::CreateMapExtractorFromDiscretization(
+    CORE::LINALG::MapExtractor splitter;
+    CORE::LINALG::CreateMapExtractorFromDiscretization(
         *(scatratimint_->Discretization()), scatratimint_->NumScal(), splitter);
-    systemmatrix = Teuchos::rcp(
-        new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(splitter, splitter, 27, false, true));
-    Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>>(systemmatrix)
+    systemmatrix = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(
+        splitter, splitter, 27, false, true));
+    Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>>(systemmatrix)
         ->SetNumScal(scatratimint_->NumScal());
   }
 
@@ -57,18 +58,18 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
     // initialize standard (stabilized) system matrix (and save its graph)
     switch (scatratimint_->MatrixType())
     {
-      case LINALG::MatrixType::sparse:
+      case CORE::LINALG::MatrixType::sparse:
       {
-        systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+        systemmatrix = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
             *scatratimint_->Discretization()->DofRowMap(), 27, false, true));
         break;
       }
 
-      case LINALG::MatrixType::block_condition:
-      case LINALG::MatrixType::block_condition_dof:
+      case CORE::LINALG::MatrixType::block_condition:
+      case CORE::LINALG::MatrixType::block_condition_dof:
       {
-        systemmatrix =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+        systemmatrix = Teuchos::rcp(
+            new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
                 *scatratimint_->BlockMaps(), *scatratimint_->BlockMaps(), 81, false, true));
 
         break;

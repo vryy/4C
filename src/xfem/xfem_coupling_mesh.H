@@ -376,11 +376,13 @@ namespace XFEM
     virtual ~MeshCouplingWeakDirichlet() { return; }
 
    public:
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     virtual void PrepareSolve();
 
@@ -395,18 +397,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
   };
 
@@ -438,15 +440,18 @@ namespace XFEM
 
    public:
     //! Evaluate Neumann traction 3 components
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     //! Evaluate Neumann traction 6 components
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<6, 1>& itraction,
-        const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     virtual void PrepareSolve();
 
@@ -462,18 +467,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:
@@ -505,22 +510,23 @@ namespace XFEM
     virtual ~MeshCouplingNavierSlip() { return; }
 
    public:
-    void EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction,
-        LINALG::Matrix<3, 3>& proj_matrix, const LINALG::Matrix<3, 1>& x,
-        const LINALG::Matrix<3, 1>& normal, const DRT::Condition* cond,
-        const bool& eval_dirich_at_gp,
+    void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, CORE::LINALG::Matrix<3, 3>& proj_matrix,
+        const CORE::LINALG::Matrix<3, 1>& x, const CORE::LINALG::Matrix<3, 1>& normal,
+        const DRT::Condition* cond, const bool& eval_dirich_at_gp,
         double& kappa_m,  ///< fluid sided weighting
         double& visc_m,   ///< fluid sided weighting
         double& visc_s    ///< slave sided dynamic viscosity
     );
 
     /// this function has to be reviewed for usage with OST new.
-    void EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-        LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+    void EvaluateCouplingConditionsOldState(CORE::LINALG::Matrix<3, 1>& ivel,
+        CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+        const DRT::Condition* cond);
 
     /// get the slip coefficient for this coupling
     void GetSlipCoefficient(
-        double& slipcoeff, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
 
     virtual void PrepareSolve();
 
@@ -546,18 +552,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    protected:
@@ -611,7 +617,7 @@ namespace XFEM
     virtual void ReadRestart(const int step);
 
     virtual void GetSlipCoefficient(
-        double& slipcoeff, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
+        double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond);
 
     // interface foces
     Teuchos::RCP<Epetra_Vector> ITrueResidual() { return itrueresidual_; }
@@ -621,8 +627,9 @@ namespace XFEM
 
     // evaluate structural cauchy stress and linearization in case we don't have xfluid sided
     // weighting
-    void EvaluateStructuralCauchyStress(DRT::Element* coupl_ele, LINALG::Matrix<3, 1>& rst_slave,
-        std::vector<double>& eledisp, const LINALG::Matrix<3, 1>& normal,
+    void EvaluateStructuralCauchyStress(DRT::Element* coupl_ele,
+        CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
+        const CORE::LINALG::Matrix<3, 1>& normal,
         std::vector<Epetra_SerialDenseMatrix>& solid_stress);
 
     void SetTimeFac(double timefac) { timefac_ = timefac; }
@@ -689,18 +696,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     //! Updates configurationmap for specific Gausspoint for FSI with contact
@@ -708,18 +715,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     //------------------------------- vectors -----------------------------
@@ -818,18 +825,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
    private:

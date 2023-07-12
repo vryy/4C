@@ -133,8 +133,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostPartitionProblem()
     {
       // loop over all binding spots of current type j of current element
       int unsigned const numbbspot = beamele_i->GetNumberOfBindingSpots(iter.first);
-      LINALG::Matrix<3, 1> pos(true);
-      LINALG::Matrix<3, 3> triad(true);
+      CORE::LINALG::Matrix<3, 1> pos(true);
+      CORE::LINALG::Matrix<3, 3> triad(true);
       for (int unsigned k = 0; k < numbbspot; ++k)
       {
         BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot(
@@ -410,13 +410,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetAllPossibleBspotLinks(
               double const linkanglemax = mat->LinkingAngle() + mat->LinkingAngleTolerance();
 
               // get tangent of binding spot on beamele
-              LINALG::Matrix<3, 1> bindingspot_beam_tangent(true);
+              CORE::LINALG::Matrix<3, 1> bindingspot_beam_tangent(true);
               for (unsigned int idim = 0; idim < 3; ++idim)
                 bindingspot_beam_tangent(idim) =
                     beamdata_i->GetBSpotTriad(iter.first, locbspot_i)(idim, 0);
 
               // get tangent of binding spot on nb_beamele
-              LINALG::Matrix<3, 1> nb_bindingspot_beam_tangent(true);
+              CORE::LINALG::Matrix<3, 1> nb_bindingspot_beam_tangent(true);
               for (unsigned int idim = 0; idim < 3; ++idim)
                 nb_bindingspot_beam_tangent(idim) =
                     nb_beamdata_i->GetBSpotTriad(iter.first, nb_locbspot_i)(idim, 0);
@@ -550,7 +550,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UnambiguousDecisionsOnAll
   std::set<std::pair<long long, long long>, BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts>
       doublebonds;
   std::map<int, int> numpertype;
-  LINALG::Matrix<3, 1> clpos(true);
+  CORE::LINALG::Matrix<3, 1> clpos(true);
   for (auto const& iter_sort : global_bspot_linker)
   {
     for (auto const& iter : iter_sort.second)
@@ -724,7 +724,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
       for (int cltype_i_cl_j = 0; cltype_i_cl_j < numcrosslinkerpertype[cltype_i]; ++cltype_i_cl_j)
       {
         // random reference position of crosslinker in bounding box
-        LINALG::Matrix<3, 1> Xmat;
+        CORE::LINALG::Matrix<3, 1> Xmat;
         linker_init_box->RandomPosWithin(Xmat);
 
         std::vector<double> X(3);
@@ -767,8 +767,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
 #endif
 
     // init positions and triads
-    std::vector<LINALG::Matrix<3, 1>> pos(2);
-    std::vector<LINALG::Matrix<3, 3>> triad(2);
+    std::vector<CORE::LINALG::Matrix<3, 1>> pos(2);
+    std::vector<CORE::LINALG::Matrix<3, 3>> triad(2);
 
     for (int i = 0; i < 2; ++i)
     {
@@ -796,7 +796,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
     // safety check until code is better tested for potential problems with periodic boundary
     // conditions
     // **************************** DEBUG ****************************************
-    LINALG::Matrix<3, 1> dist(true);
+    CORE::LINALG::Matrix<3, 1> dist(true);
     dist.Update(1.0, pos[0], -1.0, pos[1]);
     for (unsigned int i = 0; i < 3; ++i)
     {
@@ -823,12 +823,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
   CheckInitSetup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  std::vector<LINALG::SerialDenseVector> bspotforce(2, LINALG::SerialDenseVector(6));
+  std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
 
   // resulting discrete element force vectors of the two parent elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> dummystiff;
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> dummystiff;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -869,16 +869,16 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> bspotstiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2, LINALG::SerialDenseMatrix(6, 6)));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> bspotstiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2, CORE::LINALG::SerialDenseMatrix(6, 6)));
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which
   // couple the two element stiffness blocks
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
-  std::vector<LINALG::SerialDenseVector> dummyforce;
+  std::vector<CORE::LINALG::SerialDenseVector> dummyforce;
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -919,21 +919,21 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
   CheckInitSetup();
 
   // force and moment exerted on the two connection sites due to the mechanical connection
-  std::vector<LINALG::SerialDenseVector> bspotforce(2, LINALG::SerialDenseVector(6));
+  std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
 
   /* linearizations, i.e. stiffness contributions due to forces on the two
    * connection sites due to the mechanical connection */
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> bspotstiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2, LINALG::SerialDenseMatrix(6, 6)));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> bspotstiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2, CORE::LINALG::SerialDenseMatrix(6, 6)));
 
   // resulting discrete element force vectors of the two parent elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // linearizations, i.e. discrete stiffness contributions to the two parent elements
   // we can't handle this separately for both elements because there are entries which
   // couple the two element stiffness blocks
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);
@@ -998,8 +998,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PreUpdateStepElement(bool
   Teuchos::RCP<Epetra_Vector> dis_increment =
       Teuchos::rcp(new Epetra_Vector(*BinDiscret().DofRowMap(), true));
 
-  LINALG::Matrix<3, 1> d;
-  LINALG::Matrix<3, 1> ref;
+  CORE::LINALG::Matrix<3, 1> d;
+  CORE::LINALG::Matrix<3, 1> ref;
   int doflid[3];
 
   for (int i = 0; i < BinDiscret().NumMyRowNodes(); ++i)
@@ -1161,13 +1161,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   // append all desired node and dof output data to the writer object's storage
   DRT::Discretization const& bindis = BinDiscret();
   // node
-  Teuchos::RCP<Epetra_Vector> numbond = LINALG::CreateVector(*bindis.NodeRowMap(), true);
-  Teuchos::RCP<Epetra_Vector> owner = LINALG::CreateVector(*bindis.NodeRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> numbond = CORE::LINALG::CreateVector(*bindis.NodeRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> owner = CORE::LINALG::CreateVector(*bindis.NodeRowMap(), true);
 
   // dof
-  Teuchos::RCP<Epetra_Vector> dis = LINALG::CreateVector(*bindis.DofRowMap(), true);
-  Teuchos::RCP<Epetra_Vector> orientation = LINALG::CreateVector(*bindis.DofRowMap(), true);
-  Teuchos::RCP<Epetra_Vector> force = LINALG::CreateVector(*bindis.DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> dis = CORE::LINALG::CreateVector(*bindis.DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> orientation = CORE::LINALG::CreateVector(*bindis.DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> force = CORE::LINALG::CreateVector(*bindis.DofRowMap(), true);
 
   FillStateDataVectorsForOutput(dis, orientation, numbond, owner, force);
 
@@ -1278,7 +1278,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FillStateDataVectorsForOu
   CheckInitSetup();
   DRT::Discretization const& bindis = BinDiscret();
 
-  LINALG::SerialDenseVector bspotforce(true);
+  CORE::LINALG::SerialDenseVector bspotforce(true);
 
   // todo: this is of course not nice, this needs to be done somewhere else
   for (int i = 0; i < bindis.NumMyRowNodes(); ++i)
@@ -1762,7 +1762,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 #endif
 
         // get current position of filament binding spot
-        LINALG::Matrix<3, 1> bbspotpos;
+        CORE::LINALG::Matrix<3, 1> bbspotpos;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
@@ -1812,7 +1812,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 #endif
 
         // get current position of filament binding spot
-        LINALG::Matrix<3, 1> bbspotposone;
+        CORE::LINALG::Matrix<3, 1> bbspotposone;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
@@ -1847,13 +1847,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 #endif
 
         // get current position of filament binding spot
-        LINALG::Matrix<3, 1> bbspotpostwo;
+        CORE::LINALG::Matrix<3, 1> bbspotpostwo;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
             BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
         ele->GetPosOfBindingSpot(bbspotpostwo, eledisp, crosslinker_i->GetMaterial()->LinkerType(),
             cldata_i->GetBSpots()[1].second, PeriodicBoundingBox());
 
-        LINALG::Matrix<3, 1> clpos(true);
+        CORE::LINALG::Matrix<3, 1> clpos(true);
         SetPositionOfDoubleBondedCrosslinkerPBCconsistent(clpos, bbspotposone, bbspotpostwo);
 
         std::vector<double> newpos(3, 0.0);
@@ -1899,7 +1899,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
   DRT::Problem::Instance()->Random()->SetMeanVariance(meanvalue, standarddev);
 
   // diffuse crosslinker according to brownian dynamics
-  LINALG::Matrix<3, 1> newclpos(true);
+  CORE::LINALG::Matrix<3, 1> newclpos(true);
   std::vector<double> randvec;
   int count = 3;
   // maximal diffusion given by cutoff radius (sqrt(3) = 1.73..)
@@ -1951,8 +1951,9 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetSingleOccupiedClBspot(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
-    SetPositionOfDoubleBondedCrosslinkerPBCconsistent(LINALG::Matrix<3, 1>& clpos,
-        LINALG::Matrix<3, 1> const& bspot1pos, LINALG::Matrix<3, 1> const& bspot2pos) const
+    SetPositionOfDoubleBondedCrosslinkerPBCconsistent(CORE::LINALG::Matrix<3, 1>& clpos,
+        CORE::LINALG::Matrix<3, 1> const& bspot1pos,
+        CORE::LINALG::Matrix<3, 1> const& bspot2pos) const
 {
   /* the position of (the center) of a double-bonded crosslinker is defined as
    * midpoint between the two given binding spot positions. (imagine a linker
@@ -1964,7 +1965,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   PeriodicBoundingBox().UnShift3D(clpos, bspot1pos);
 
   // fixme: to avoid senseless dserror in debug mode
-  LINALG::Matrix<3, 1> dummy(clpos);
+  CORE::LINALG::Matrix<3, 1> dummy(clpos);
   clpos.Update(0.5, bspot1pos, 0.5, dummy);
 
   // shift the interpolated position back in the periodic box if necessary
@@ -1982,8 +1983,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlyFreeCro
   // of length half the linking length to "reset" crosslink molecule position: it may now
   // reenter or leave the bonding proximity
   // todo: does this make sense?
-  LINALG::Matrix<3, 1> clpos(cldata->GetPosition());
-  LINALG::Matrix<3, 1> cldeltapos_i;
+  CORE::LINALG::Matrix<3, 1> clpos(cldata->GetPosition());
+  CORE::LINALG::Matrix<3, 1> cldeltapos_i;
   std::vector<double> randunivec(3);
   int count = 3;
   DRT::Problem::Instance()->Random()->Uni(randunivec, count);
@@ -2022,7 +2023,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetPositionOfNewlySingleB
 #endif
 
   BEAMINTERACTION::DATA::BeamData const* beamdata_i = beam_data_[collidoccbeam].get();
-  LINALG::Matrix<3, 1> clpos(beamdata_i->GetBSpotPosition(
+  CORE::LINALG::Matrix<3, 1> clpos(beamdata_i->GetBSpotPosition(
       crosslinker->GetMaterial()->LinkerType(), cldata->GetBSpots()[stayoccpotid].second));
 
   std::vector<double> newpos(3, 0.0);
@@ -2171,8 +2172,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
       {
         // loop over all binding spots of current type j of current element
         int unsigned const numbbspot = beamele_i->GetNumberOfBindingSpots(iter.first);
-        LINALG::Matrix<3, 1> pos(true);
-        LINALG::Matrix<3, 3> triad(true);
+        CORE::LINALG::Matrix<3, 1> pos(true);
+        CORE::LINALG::Matrix<3, 3> triad(true);
         for (int unsigned k = 0; k < numbbspot; ++k)
         {
           BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot(
@@ -2399,7 +2400,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckIfSphereProhibitsBin
   for (auto const& sphere_iter : neighboring_col_spheres)
   {
     // init position of linker nodes
-    LINALG::Matrix<3, 1> sphere_pos(true);
+    CORE::LINALG::Matrix<3, 1> sphere_pos(true);
 
     // sphere current position
     std::vector<double> sphereeledisp;
@@ -2410,7 +2411,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckIfSphereProhibitsBin
     for (unsigned int dim = 0; dim < 3; ++dim)
       sphere_pos(dim) = sphere_iter->Nodes()[0]->X()[dim] + sphereeledisp[dim];
 
-    LINALG::Matrix<3, 1> dist_vec(true);
+    CORE::LINALG::Matrix<3, 1> dist_vec(true);
     dist_vec.Update(1.0, sphere_pos, -1.0, cldata_i->GetPosition());
     const double distance = dist_vec.Norm2();
 
@@ -2570,7 +2571,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
    *       we can also use cldata_i.clpos in the second case*/
 
   // get current position and tangent vector of filament axis at free binding spot
-  LINALG::Matrix<3, 1> const& currbbspos = beamdata_i->GetBSpotPosition(linkertype, locnbspot);
+  CORE::LINALG::Matrix<3, 1> const& currbbspos =
+      beamdata_i->GetBSpotPosition(linkertype, locnbspot);
 
   // minimum and maximum distance at which a double-bond crosslink can be established
   double const linkdistmin = crosslinker_i->GetMaterial()->LinkingLength() -
@@ -2604,13 +2606,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckBindEventCriteria(
                               crosslinker_i->GetMaterial()->LinkingAngleTolerance();
 
   // if crosslinker is singly bound, we fetch the orientation vector
-  LINALG::Matrix<3, 1> occ_bindingspot_beam_tangent(true);
+  CORE::LINALG::Matrix<3, 1> occ_bindingspot_beam_tangent(true);
   if (cldata_i->GetNumberOfBonds() == 1)
     GetOccupiedClBSpotBeamTangent(
         crosslinker_i, cldata_i, occ_bindingspot_beam_tangent, crosslinker_i->Id());
 
   // note: we use first base vector instead of tangent vector here
-  LINALG::Matrix<3, 1> curr_bindingspot_beam_tangent(true);
+  CORE::LINALG::Matrix<3, 1> curr_bindingspot_beam_tangent(true);
   for (unsigned int idim = 0; idim < 3; ++idim)
     curr_bindingspot_beam_tangent(idim) = beamdata_i->GetBSpotTriad(linkertype, locnbspot)(idim, 0);
 
@@ -2785,7 +2787,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CheckLinkerAndFilamentTyp
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::GetOccupiedClBSpotBeamTangent(
     CROSSLINKING::CrosslinkerNode const* const crosslinker_i,
     BEAMINTERACTION::DATA::CrosslinkerData* cldata_i,
-    LINALG::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const
+    CORE::LINALG::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const
 {
   CheckInitSetup();
 
@@ -2979,7 +2981,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyCrosslinkerBindin
         cldata_i->SetNumberOfBonds(2);
 
         // update position
-        LINALG::Matrix<3, 1> clpos(cldata_i->GetPosition());
+        CORE::LINALG::Matrix<3, 1> clpos(cldata_i->GetPosition());
         SetPositionOfDoubleBondedCrosslinkerPBCconsistent(clpos,
             beamdata_i->GetBSpotPosition(crosslinker_i->GetMaterial()->LinkerType(),
                 cldata_i->GetBSpots()[freebspotid].second),
@@ -3365,14 +3367,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
     dserror(" Thermal energy (KT) set to zero, although you are about to divide by it. ");
 
   // force and moment exerted on the two binding sites of crosslinker with clgid
-  std::vector<LINALG::SerialDenseVector> bspotforce(2, LINALG::SerialDenseVector(6));
+  std::vector<CORE::LINALG::SerialDenseVector> bspotforce(2, CORE::LINALG::SerialDenseVector(6));
   elepairptr->EvaluateForce(bspotforce[0], bspotforce[1]);
 
   // check if linker is stretched -> sgn+ or compressed -> sgn- by checking orientation of force
   // vector note: this works only if there are no other forces (like inertia, stochastic, damping)
   // acting on the cl
-  LINALG::Matrix<3, 1> dist_vec(true);
-  LINALG::Matrix<3, 1> bspotforceone(true);
+  CORE::LINALG::Matrix<3, 1> dist_vec(true);
+  CORE::LINALG::Matrix<3, 1> bspotforceone(true);
   dist_vec.Update(1.0, elepairptr->GetBindSpotPos1(), -1.0, elepairptr->GetBindSpotPos2());
   for (unsigned int j = 0; j < 3; ++j) bspotforceone(j) = bspotforce[0](j);
   double sgn = (dist_vec.Dot(bspotforceone) < 0.0) ? -1.0 : 1.0;

@@ -18,7 +18,7 @@ const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoor
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     const double* x = nodes[i]->X();
@@ -27,10 +27,10 @@ const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_ElementCenterRefeCoor
     xrefe(i, 2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::Matrix<NUMNOD_SOP5, 1> funct;
+  CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.25, distype);
-  LINALG::Matrix<1, NUMDIM_SOP5> midpoint;
+  CORE::LINALG::Matrix<1, NUMDIM_SOP5> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);

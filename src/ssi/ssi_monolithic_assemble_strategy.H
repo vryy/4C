@@ -16,12 +16,12 @@
 #include "coupling_adapter.H"
 #include "ssi_utils.H"
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class Solver;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SSI
 {
@@ -56,37 +56,40 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
-    virtual void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) = 0;
+    virtual void AssembleScatraScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatra_matrix) = 0;
 
     //! assemble ScaTra-Structure-Block into system matrix
-    virtual void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_structure_matrix) = 0;
+    virtual void AssembleScatraStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_structure_matrix) = 0;
 
     //! assemble Structure-Structure-Block into system matrix
-    virtual void AssembleStructureStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_structure_matrix) = 0;
+    virtual void AssembleStructureStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_structure_matrix) = 0;
 
     //! assemble Structure-ScaTra-Block into system matrix
-    virtual void AssembleStructureScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> structure_scatra_matrix) = 0;
+    virtual void AssembleStructureScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> structure_scatra_matrix) = 0;
 
     //! assemble ScaTra Manifold-ScaTra Manifold-Block into system matrix
     virtual void AssembleScatramanifoldScatramanifold(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) = 0;
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) = 0;
 
     //! assemble ScaTra Manifold-Structure-Block into system matrix
-    virtual void AssembleScatramanifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_structure_matrix) = 0;
+    virtual void AssembleScatramanifoldStructure(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_structure_matrix) = 0;
 
     //! assemble ScaTra Manifold-ScaTra-Block into system matrix
-    virtual void AssembleScatramanifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatra_matrix) = 0;
+    virtual void AssembleScatramanifoldScatra(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix) = 0;
 
     //! assemble ScaTra-ScaTra Manifold-Block into system matrix
-    virtual void AssembleScatraScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) = 0;
+    virtual void AssembleScatraScatramanifold(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix) = 0;
 
    protected:
     //! solve additional scatra field on manifolds
@@ -111,30 +114,32 @@ namespace SSI
     explicit AssembleStrategyBlock(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
-    void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override = 0;
+    void AssembleScatraScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatra_matrix) override = 0;
 
-    void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_structure_matrix) override = 0;
+    void AssembleScatraStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_structure_matrix) override = 0;
 
-    void AssembleStructureStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_structure_matrix) override = 0;
+    void AssembleStructureStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_structure_matrix) override = 0;
 
-    void AssembleStructureScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> structure_scatra_matrix) override = 0;
+    void AssembleStructureScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> structure_scatra_matrix) override = 0;
 
-    void AssembleScatramanifoldScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) override =
+    void AssembleScatramanifoldScatramanifold(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatramanifold_matrix)
+        override = 0;
+
+    void AssembleScatramanifoldStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_structure_matrix) override =
         0;
 
-    void AssembleScatramanifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_structure_matrix) override = 0;
+    void AssembleScatramanifoldScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix) override = 0;
 
-    void AssembleScatramanifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatra_matrix) override = 0;
-
-    void AssembleScatraScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) override = 0;
+    void AssembleScatraScatramanifold(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix) override = 0;
 
    protected:
     //! position of scatra blocks in system matrix
@@ -168,29 +173,31 @@ namespace SSI
     explicit AssembleStrategyBlockBlock(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
-    void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
+    void AssembleScatraScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
-    void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_structure_matrix) override;
+    void AssembleScatraStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
-    void AssembleStructureStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_structure_matrix) override;
+    void AssembleStructureStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_structure_matrix) override;
 
-    void AssembleStructureScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> structure_scatra_matrix) override;
+    void AssembleStructureScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
 
-    void AssembleScatramanifoldScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) override;
+    void AssembleScatramanifoldScatramanifold(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatramanifold_matrix)
+        override;
 
-    void AssembleScatramanifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_structure_matrix) override;
+    void AssembleScatramanifoldStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_structure_matrix) override;
 
-    void AssembleScatramanifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
+    void AssembleScatramanifoldScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
 
-    void AssembleScatraScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
+    void AssembleScatraScatramanifold(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
   };
 
   // *********************************************************************************************
@@ -201,29 +208,31 @@ namespace SSI
     explicit AssembleStrategyBlockSparse(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
-    void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
+    void AssembleScatraScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
-    void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_structure_matrix) override;
+    void AssembleScatraStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
-    void AssembleStructureStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_structure_matrix) override;
+    void AssembleStructureStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_structure_matrix) override;
 
-    void AssembleStructureScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> structure_scatra_matrix) override;
+    void AssembleStructureScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
 
-    void AssembleScatramanifoldScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) override;
+    void AssembleScatramanifoldScatramanifold(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatramanifold_matrix)
+        override;
 
-    void AssembleScatramanifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_structure_matrix) override;
+    void AssembleScatramanifoldStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_structure_matrix) override;
 
-    void AssembleScatramanifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
+    void AssembleScatramanifoldScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
 
-    void AssembleScatraScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
+    void AssembleScatraScatramanifold(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
   };
 
   //======================================================================================================
@@ -234,35 +243,37 @@ namespace SSI
     explicit AssembleStrategySparse(
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
-    void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
+    void AssembleScatraScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatra_matrix) override;
 
-    void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_structure_matrix) override;
+    void AssembleScatraStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_structure_matrix) override;
 
-    void AssembleStructureStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_structure_matrix) override;
+    void AssembleStructureStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseMatrix> structure_structure_matrix) override;
 
-    void AssembleStructureScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> structure_scatra_matrix) override;
+    void AssembleStructureScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> structure_scatra_matrix) override;
 
-    void AssembleScatramanifoldScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatramanifold_matrix) override;
+    void AssembleScatramanifoldScatramanifold(
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatramanifold_matrix)
+        override;
 
-    void AssembleScatramanifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_structure_matrix) override;
+    void AssembleScatramanifoldStructure(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_structure_matrix) override;
 
-    void AssembleScatramanifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
+    void AssembleScatramanifoldScatra(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatramanifold_scatra_matrix) override;
 
-    void AssembleScatraScatramanifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
+    void AssembleScatraScatramanifold(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<const CORE::LINALG::SparseOperator> scatra_scatramanifold_matrix) override;
   };
 
   //! build specific assemble strategy
   Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
       Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
-      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
+      CORE::LINALG::MatrixType matrixtype_ssi, CORE::LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI
 #endif  // SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H

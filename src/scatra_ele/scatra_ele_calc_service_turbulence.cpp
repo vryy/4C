@@ -40,7 +40,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
 {
   // do preparations first
   // ---------------------------------------------
-  LINALG::Matrix<nsd_, nsd_> vderxy(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> vderxy(true);
   double alpha2 = 0.0;
   // use one-point Gauss rule to do calculations at the element center
   volume = EvalShapeFuncAndDerivsAtEleCenter();
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
   const double densnp = GetDensity(ele, material, params, tempnp);
 
   // get velocities (n+alpha_F/1,i) at integration point
-  LINALG::Matrix<nsd_, 1> convelint(true);
+  CORE::LINALG::Matrix<nsd_, 1> convelint(true);
   convelint.Multiply(evelnp_, funct_);
 
   // compute rate of strain
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(dou
   rateofstrain = GetStrainRate(evelnp_);
 
   // gradient of scalar value
-  LINALG::Matrix<nsd_, 1> gradphi(true);
+  CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
   gradphi.Multiply(derxy_, ephinp_[0]);
 
   // perform integrations, i.e., convolution
@@ -222,13 +222,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
     Teuchos::RCP<Epetra_Vector>& col_filtered_dens_temp, double& LkMk, double& MkMk,
     double& xcenter, double& ycenter, double& zcenter, const DRT::Element* ele)
 {
-  LINALG::Matrix<nsd_, nen_> evel_hat;
-  LINALG::Matrix<nsd_, nen_> edensvel_hat;
-  LINALG::Matrix<nsd_, nen_> edensveltemp_hat;
-  LINALG::Matrix<nsd_, nen_> edensstraintemp_hat;
-  LINALG::Matrix<1, nen_> etemp_hat;
-  LINALG::Matrix<1, nen_> edens_hat;
-  LINALG::Matrix<1, nen_> edenstemp_hat;
+  CORE::LINALG::Matrix<nsd_, nen_> evel_hat;
+  CORE::LINALG::Matrix<nsd_, nen_> edensvel_hat;
+  CORE::LINALG::Matrix<nsd_, nen_> edensveltemp_hat;
+  CORE::LINALG::Matrix<nsd_, nen_> edensstraintemp_hat;
+  CORE::LINALG::Matrix<1, nen_> etemp_hat;
+  CORE::LINALG::Matrix<1, nen_> edens_hat;
+  CORE::LINALG::Matrix<1, nen_> edenstemp_hat;
   // extract required (node-based) filtered quantities
   DRT::UTILS::ExtractMyNodeBasedValues(ele, evel_hat, col_filtered_vel, nsd_);
   DRT::UTILS::ExtractMyNodeBasedValues(ele, edensvel_hat, col_filtered_dens_vel, nsd_);
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
   //                     +-----
   //                    node j
   //
-  LINALG::Matrix<nsd_, 1> densvelint_hat;
+  CORE::LINALG::Matrix<nsd_, 1> densvelint_hat;
   densvelint_hat.Multiply(edensvel_hat, funct_);
 
   // get filtered dens * temp * velocities (n+alpha_F/1,i) at integration point
@@ -281,7 +281,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
   //                           +-----
   //                           node j
   //
-  LINALG::Matrix<nsd_, 1> densveltempint_hat;
+  CORE::LINALG::Matrix<nsd_, 1> densveltempint_hat;
   densveltempint_hat.Multiply(edensveltemp_hat, funct_);
 
   // get filtered dens * rate-of-strain * grad T (n+alpha_F/1,i) at integration point
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
   //                                        +-----
   //                                         node j
   //
-  LINALG::Matrix<nsd_, 1> densstraintempint_hat;
+  CORE::LINALG::Matrix<nsd_, 1> densstraintempint_hat;
   densstraintempint_hat.Multiply(edensstraintemp_hat, funct_);
 
   // get filtered density at integration point
@@ -330,15 +330,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_LkMk
   rateofstrain = GetStrainRate(evel_hat);
 
   // gradient of scalar value (i.e., of filtered temperature)
-  LINALG::Matrix<nsd_, 1> gradtemp_hat;
+  CORE::LINALG::Matrix<nsd_, 1> gradtemp_hat;
   gradtemp_hat.MultiplyNT(derxy_, etemp_hat);
 
   // this is sqrt(3)
   const double filterwidthratio = 1.73;
 
   // calculate L_k and M_k
-  LINALG::Matrix<nsd_, 1> L_k;
-  LINALG::Matrix<nsd_, 1> M_k;
+  CORE::LINALG::Matrix<nsd_, 1> L_k;
+  CORE::LINALG::Matrix<nsd_, 1> M_k;
 
   for (unsigned rr = 0; rr < nsd_; rr++)
   {
@@ -372,14 +372,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
     double& dt_denominator, const DRT::Element* ele)
 {
   double phi_hat2 = 0.0;
-  LINALG::Matrix<9, nen_> ealphaijsc_hat(true);
-  LINALG::Matrix<nsd_, nen_> ephi_hat(true);
-  LINALG::Matrix<1, nen_> ephi2_hat(true);
-  LINALG::Matrix<1, nen_> ephiexpression_hat(true);
-  LINALG::Matrix<nsd_, nsd_> alphaijsc_hat(true);
-  LINALG::Matrix<nsd_, 1> phi_hat(true);
-  LINALG::Matrix<1, 1> phi2_hat(true);
-  LINALG::Matrix<1, 1> phiexpression_hat(true);
+  CORE::LINALG::Matrix<9, nen_> ealphaijsc_hat(true);
+  CORE::LINALG::Matrix<nsd_, nen_> ephi_hat(true);
+  CORE::LINALG::Matrix<1, nen_> ephi2_hat(true);
+  CORE::LINALG::Matrix<1, nen_> ephiexpression_hat(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> alphaijsc_hat(true);
+  CORE::LINALG::Matrix<nsd_, 1> phi_hat(true);
+  CORE::LINALG::Matrix<1, 1> phi2_hat(true);
+  CORE::LINALG::Matrix<1, 1> phiexpression_hat(true);
 
   DRT::UTILS::ExtractMyNodeBasedValues(ele, ephi_hat, col_filtered_phi, nsd_);
   DRT::UTILS::ExtractMyNodeBasedValues(ele, ephi2_hat, col_filtered_phi2, 1);
@@ -712,7 +712,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
       double hkzpow2;
       double sgviscwocv = 0.0;
 
-      LINALG::Matrix<nsd_, nsd_> velderxy(true);
+      CORE::LINALG::Matrix<nsd_, nsd_> velderxy(true);
 
       velderxy.MultiplyNT(econvelnp_, derxy_);
 
@@ -781,7 +781,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(double& sgdiff,
     Epetra_SerialDenseVector& subgrdiff, DRT::Element* ele, const double vol, const int k,
-    const double densnp, const double diffus, const LINALG::Matrix<nsd_, 1> convelint)
+    const double densnp, const double diffus, const CORE::LINALG::Matrix<nsd_, 1> convelint)
 {
   // get number of dimensions
   const double dim = (double)nsd_;
@@ -879,11 +879,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(doub
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgridScales(
-    LINALG::Matrix<nsd_, 1>& B_mfs,  ///< coefficient for fine-scale velocity (will be filled)
-    double& D_mfs,                   ///< coefficient for fine-scale scalar (will be filled)
-    const double vol,                ///< volume of element
+    CORE::LINALG::Matrix<nsd_, 1>& B_mfs,  ///< coefficient for fine-scale velocity (will be filled)
+    double& D_mfs,                         ///< coefficient for fine-scale scalar (will be filled)
+    const double vol,                      ///< volume of element
     const int k, const double densnp, const double diffus, const double visc,
-    const LINALG::Matrix<nsd_, 1> convelint, const LINALG::Matrix<nsd_, 1> fsvelint)
+    const CORE::LINALG::Matrix<nsd_, 1> convelint, const CORE::LINALG::Matrix<nsd_, 1> fsvelint)
 {
   //----------------------------------------------------------------
   // calculation of B for fine-scale velocity
@@ -1172,7 +1172,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBAndDForMultifracSubgri
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
-    const double vol, const LINALG::Matrix<nsd_, 1> convelint)
+    const double vol, const CORE::LINALG::Matrix<nsd_, 1> convelint)
 {
   // calculate characteristic element length
   double hk = 1.0e+10;
@@ -1185,7 +1185,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
       // get norm of velocity
       const double vel_norm = convelint.Norm2();
       // normed velocity vector
-      LINALG::Matrix<nsd_, 1> velino(true);
+      CORE::LINALG::Matrix<nsd_, 1> velino(true);
       if (vel_norm >= 1e-6)
         velino.Update(1.0 / vel_norm, convelint);
       else
@@ -1193,7 +1193,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
         velino.Clear();
         velino(0, 0) = 1.0;
       }
-      LINALG::Matrix<nen_, 1> tmp;
+      CORE::LINALG::Matrix<nen_, 1> tmp;
       tmp.MultiplyTN(derxy_, velino);
       const double val = tmp.Norm1();
       hk = 2.0 / val;
@@ -1225,7 +1225,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
                 |    i     j  |   |    i     j  |   |    i     j  |
                 +-           -+   +-           -+   +-           -+
       */
-      LINALG::Matrix<nsd_, nsd_> G(true);
+      CORE::LINALG::Matrix<nsd_, nsd_> G(true);
 
       for (unsigned nn = 0; nn < nsd_; ++nn)
       {
@@ -1260,10 +1260,10 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRefLength(
     }
     case INPAR::FLUID::gradient_based:
     {
-      LINALG::Matrix<nsd_, nsd_> convderxy;
+      CORE::LINALG::Matrix<nsd_, nsd_> convderxy;
       convderxy.MultiplyNT(econvelnp_, derxy_);
       if (nsd_ != 3) dserror("Turbulence is 3d!");
-      LINALG::Matrix<nsd_, 1> normed_velgrad;
+      CORE::LINALG::Matrix<nsd_, 1> normed_velgrad;
 
       for (unsigned rr = 0; rr < nsd_; ++rr)
       {
@@ -1473,7 +1473,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
   // extract local values of convective velocity field from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvelnp_, lmvel);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
   rotsymmpbc_->RotateMyValuesIfNecessary(econvelnp_);
@@ -1490,7 +1490,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     if (acc == Teuchos::null) dserror("Cannot get state vector acceleration field");
 
     // extract local values of acceleration field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*acc, eaccnp_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     rotsymmpbc_->RotateMyValuesIfNecessary(eaccnp_);
@@ -1501,7 +1501,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
   }
 
   // extract local values from the global vectors
@@ -1509,8 +1509,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
     dserror("Cannot get state vector 'hist' and/or 'phinp'");
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*hist, ehist_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, la[0].lm_);
 
   // reset to zero; used in GetMaterialParams if not incremental -> used to calculate densn which is
   // not required here
@@ -1524,7 +1524,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
     if (gfsphinp == Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
 
     // get fine-scale velocity at nodes
     const Teuchos::RCP<const Epetra_Vector> fsvelocity =
@@ -1533,7 +1533,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       dserror("Cannot get fine-scale velocity field from scatra discretization!");
 
     // extract local values of fine-scale velocity field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*fsvelocity, efsvel_, lmvel);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*fsvelocity, efsvel_, lmvel);
 
     // rotate the vector field in the case of rotationally symmetric boundary conditions
     rotsymmpbc_->RotateMyValuesIfNecessary(efsvel_);
@@ -1648,7 +1648,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
   // calculation of model coefficients B (velocity) and D (scalar)
   // at element center
   // coefficient B of fine-scale velocity
-  LINALG::Matrix<nsd_, 1> B_mfs(true);
+  CORE::LINALG::Matrix<nsd_, 1> B_mfs(true);
   // coefficient D of fine-scale scalar
   double D_mfs = 0.0;
   if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -1665,7 +1665,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       }
       // provide necessary velocities and gradients at element center
       // get velocity at element center
-      LINALG::Matrix<nsd_, 1> fsvelint(true);
+      CORE::LINALG::Matrix<nsd_, 1> fsvelint(true);
       fsvelint.Multiply(efsvel_, funct_);
 
       // calculate model coefficients
@@ -1701,25 +1701,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     if (scatrapara_->MatGP()) GetMaterialParams(ele, densn, densnp, densam, visc);
 
     // get velocity at integration point
-    const LINALG::Matrix<nsd_, 1>& convelint = scatravarmanager_->ConVel(0);
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint = scatravarmanager_->ConVel(0);
 
     // scalar at integration point at time step n+1
     const double& phinp = scatravarmanager_->Phinp(0);
 
     // gradient of current scalar value at integration point
-    LINALG::Matrix<nsd_, 1> gradphi(true);
+    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(derxy_, ephinp_[0]);
 
     // reactive part of the form: (reaction coefficient)*phi
     const double rea_phi = densnp[0] * phinp * reamanager_->GetReaCoeff(0);
 
     // get fine-scale velocity and its derivatives at integration point
-    LINALG::Matrix<nsd_, 1> fsvelint(true);
+    CORE::LINALG::Matrix<nsd_, 1> fsvelint(true);
     if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
       fsvelint.Multiply(efsvel_, funct_);
 
     // compute gradient of fine-scale part of scalar value
-    LINALG::Matrix<nsd_, 1> fsgradphi(true);
+    CORE::LINALG::Matrix<nsd_, 1> fsgradphi(true);
     if (turbparams_->FSSGD()) fsgradphi.Multiply(derxy_, fsphinp_[0]);
 
     double rhsint(0.0);
@@ -1731,9 +1731,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     //--------------------------------------------------------------------
 
     // subgrid-scale convective term
-    LINALG::Matrix<nen_, 1> sgconv(true);
+    CORE::LINALG::Matrix<nen_, 1> sgconv(true);
     // subgrid-scale velocity vector in gausspoint
-    LINALG::Matrix<nsd_, 1> sgvelint(true);
+    CORE::LINALG::Matrix<nsd_, 1> sgvelint(true);
 
     if (scatrapara_->TauGP())
     {
@@ -1781,10 +1781,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     // calculation of model coefficients B (velocity) and D (scalar)
     // at Gauss point as well as calculation
     // of multifractal subgrid-scale quantities
-    LINALG::Matrix<nsd_, 1> mfsgvelint(true);
+    CORE::LINALG::Matrix<nsd_, 1> mfsgvelint(true);
     double mfsvdiv(0.0);
     double mfssgphi(0.0);
-    LINALG::Matrix<nsd_, 1> mfsggradphi(true);
+    CORE::LINALG::Matrix<nsd_, 1> mfsggradphi(true);
     if (turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       if (turbparams_->BD_Gp())
@@ -1800,7 +1800,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       if (turbparams_->MfsConservative() or scatrapara_->IsConservative())
       {
         // get divergence of subgrid-scale velocity
-        LINALG::Matrix<nsd_, nsd_> mfsvderxy;
+        CORE::LINALG::Matrix<nsd_, nsd_> mfsvderxy;
         mfsvderxy.MultiplyNT(efsvel_, derxy_);
         for (unsigned idim = 0; idim < nsd_; idim++)
           mfsvdiv += mfsvderxy(idim, idim) * B_mfs(idim, 0);

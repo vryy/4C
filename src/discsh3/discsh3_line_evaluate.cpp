@@ -92,19 +92,19 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
   SortPrimaryDOFs(*master_ele, *slave_ele, x_FAD_curr, x_FAD_master_curr, x_FAD_neighbour_curr);
 
   // Calculate unit normal at reference config. for master/current element
-  LINALG::Matrix<1, 3, FAD> NormalMasterRef = CalcSurfaceNormalMaster(x_FAD_master_ref);
+  CORE::LINALG::Matrix<1, 3, FAD> NormalMasterRef = CalcSurfaceNormalMaster(x_FAD_master_ref);
 
   // Calculate unit normal at reference config. for neighbor/slave
-  LINALG::Matrix<1, 3, FAD> NormalSlaveRef = CalcSurfaceNormalSlave(x_FAD_neighbour_ref);
+  CORE::LINALG::Matrix<1, 3, FAD> NormalSlaveRef = CalcSurfaceNormalSlave(x_FAD_neighbour_ref);
 
   // Calculate inclusive angle at reference config.
   FAD ThetaRef = CalcTheta(NormalSlaveRef, NormalMasterRef);
 
   // Calculate unit normal at spatial config. for master/current element
-  LINALG::Matrix<1, 3, FAD> NormalMasterCurr = CalcSurfaceNormalMaster(x_FAD_master_curr);
+  CORE::LINALG::Matrix<1, 3, FAD> NormalMasterCurr = CalcSurfaceNormalMaster(x_FAD_master_curr);
 
   // Calculate unit normal at spatial config. for neighbour
-  LINALG::Matrix<1, 3, FAD> NormalSlaveCurr = CalcSurfaceNormalSlave(x_FAD_neighbour_curr);
+  CORE::LINALG::Matrix<1, 3, FAD> NormalSlaveCurr = CalcSurfaceNormalSlave(x_FAD_neighbour_curr);
 
   // Calculate inclusive angle at spatial config.
   FAD ThetaCurr = CalcTheta(NormalSlaveCurr, NormalMasterCurr);
@@ -140,24 +140,24 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
   /*************** Begin Calculate forces analytically ****************************/
 
   // Calculate gradient of normal vector w.r.t location of coordinate
-  LINALG::Matrix<3, 3, FAD> DnDx1_master(true);
-  LINALG::Matrix<3, 3, FAD> DnDx3_master(true);
-  LINALG::Matrix<3, 3, FAD> DnDx4_master(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx1_master(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx3_master(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx4_master(true);
 
 
   CalcGradienNormal(x_FAD_master_curr, DnDx1_master, DnDx3_master, DnDx4_master);
 
   // Calculate gradient of normal vector w.r.t location of coordinate
-  LINALG::Matrix<3, 3, FAD> DnDx2_neighbour(true);
-  LINALG::Matrix<3, 3, FAD> DnDx4_neighbour(true);
-  LINALG::Matrix<3, 3, FAD> DnDx3_neighbour(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx2_neighbour(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx4_neighbour(true);
+  CORE::LINALG::Matrix<3, 3, FAD> DnDx3_neighbour(true);
 
   CalcGradienNormal(x_FAD_neighbour_curr, DnDx2_neighbour, DnDx4_neighbour, DnDx3_neighbour);
 
   // \partialCosTheta/\partial x = Dn1/Dx^T.n2 + Dn2/Dx^T.n1
-  LINALG::Matrix<1, 12, FAD> DcosThetaDx(true);
-  LINALG::Matrix<3, 12, FAD> DnDx_master(true);     // [DnDx1 DnDx2 DnDx3]
-  LINALG::Matrix<3, 12, FAD> DnDx_neighbour(true);  // [DnDx1 DnDx2 DnDx3]
+  CORE::LINALG::Matrix<1, 12, FAD> DcosThetaDx(true);
+  CORE::LINALG::Matrix<3, 12, FAD> DnDx_master(true);     // [DnDx1 DnDx2 DnDx3]
+  CORE::LINALG::Matrix<3, 12, FAD> DnDx_neighbour(true);  // [DnDx1 DnDx2 DnDx3]
 
 
 
@@ -191,7 +191,7 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
     }
 
 
-  LINALG::Matrix<1, 3, FAD> crossprod_normal(true);
+  CORE::LINALG::Matrix<1, 3, FAD> crossprod_normal(true);
   // Cross Product
   crossprod_normal = CalcCrossProduct(NormalMasterCurr, NormalSlaveCurr);
 
@@ -199,10 +199,10 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
 
 
 
-  LINALG::Matrix<3, 3, FAD> SkewSymmTensNormalMaster = SkewSymmetricTrans(NormalMasterCurr);
-  LINALG::Matrix<3, 3, FAD> SkewSymmTensNormalNeighbour = SkewSymmetricTrans(NormalSlaveCurr);
+  CORE::LINALG::Matrix<3, 3, FAD> SkewSymmTensNormalMaster = SkewSymmetricTrans(NormalMasterCurr);
+  CORE::LINALG::Matrix<3, 3, FAD> SkewSymmTensNormalNeighbour = SkewSymmetricTrans(NormalSlaveCurr);
 
-  LINALG::Matrix<3, 12, FAD> DCrossProdDx(true);
+  CORE::LINALG::Matrix<3, 12, FAD> DCrossProdDx(true);
   for (int row = 0; row < 3; row++)
     for (int column = 0; column < 12; column++)
       for (int k = 0; k < 3; k++)
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
                                      SkewSymmTensNormalNeighbour(row, k) * DnDx_master(k, column);
 
   /* Calculate dsinTheta/dx with sinTheta = abs(n1xn2) */
-  LINALG::Matrix<1, 12, FAD> DsinThetaDx(true);
+  CORE::LINALG::Matrix<1, 12, FAD> DsinThetaDx(true);
   for (int column = 0; column < 12; column++)
     for (int row = 0; row < 3; row++)
       DsinThetaDx(column) += DCrossProdDx(row, column) * crossprod_normal(row) /
@@ -220,14 +220,14 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
   FAD CosTheta = NormalMasterCurr.Dot(NormalSlaveCurr);
   FAD SinTheta = pow((crossprod_normal.Dot(crossprod_normal)), 0.5);
 
-  LINALG::Matrix<1, 12, FAD> DThetaDx(true);
+  CORE::LINALG::Matrix<1, 12, FAD> DThetaDx(true);
   for (int i = 0; i < 12; i++)
   {
     DThetaDx(i) = CosTheta * DsinThetaDx(i) - SinTheta * DcosThetaDx(i);
   }
 
-  LINALG::Matrix<1, 12, FAD> ana_force_aux(true);
-  LINALG::Matrix<1, 12, FAD> BehaviorFunctCurvature_dx(true);
+  CORE::LINALG::Matrix<1, 12, FAD> ana_force_aux(true);
+  CORE::LINALG::Matrix<1, 12, FAD> BehaviorFunctCurvature_dx(true);
 
   for (int i = 0; i < NUMDOF_DISCSH3 + 3; i++)
   {
@@ -243,7 +243,7 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
 
 
   // Analytical force
-  LINALG::Matrix<1, 12, FAD> FAD_force_aux(true);
+  CORE::LINALG::Matrix<1, 12, FAD> FAD_force_aux(true);
   for (int i = 0; i < NUMDOF_DISCSH3 + 3; i++)
   {
     FAD_force_aux(i) = curvature_penalty * BehaviorFunctCurvature.dx(i) * BehaviorFunctCurvature;
@@ -262,7 +262,7 @@ if(master_ele->IfHaveDamping()&& slave_ele->IfHaveDamping())
   std::vector<FAD> v_FAD_curr(NUMDOF_DISCSH3+3,0.0); // +3 because of additional node of neighbour
   AddCurrVel(*master_ele,*slave_ele,connectivity,v_FAD_curr, discretization);
 
-  LINALG::Matrix<1,9,FAD> FAD_force_viscous(true);
+  CORE::LINALG::Matrix<1,9,FAD> FAD_force_viscous(true);
 
   for(int i = 0; i < NUMDOF_DISCSH3; i++)
   {
@@ -277,8 +277,8 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
    */
   //
 
-  LINALG::Matrix<1, 12> error(true);
-  LINALG::Matrix<1, 12> ana_force_val(true);
+  CORE::LINALG::Matrix<1, 12> error(true);
+  CORE::LINALG::Matrix<1, 12> ana_force_val(true);
   for (int i = 0; i < 12; i++)
   {
     error(i) = FAD_force_aux(i).val() - ana_force_aux(i).val();
@@ -287,8 +287,8 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
 
   /* Calculate stiffness matrix */
   ////  std::cout<<"ana_force="<<ana_force<<std::endl;
-  LINALG::Matrix<12, 12, FAD> stiffmatrix_dummy(true);
-  LINALG::Matrix<12, 12> stiffmatrix_dummy_val(true);
+  CORE::LINALG::Matrix<12, 12, FAD> stiffmatrix_dummy(true);
+  CORE::LINALG::Matrix<12, 12> stiffmatrix_dummy_val(true);
   for (int i = 0; i < NUMDOF_DISCSH3 + 3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3 + 3; j++)
     {
@@ -315,7 +315,7 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
    std::vector<FAD> v_FAD_curr(NUMDOF_DISCSH3+3,0.0); // +3 because of additional node of neighbour
    AddCurrVel(*master_ele,*slave_ele,connectivity,v_FAD_curr, discretization);
 
-   LINALG::Matrix  <FAD,9,9> stiffmat_viscous(true);
+   CORE::LINALG::Matrix  <FAD,9,9> stiffmat_viscous(true);
 
    for (int i=0; i<NUMDOF_DISCSH3; i++)
      for (int j=0; j<NUMDOF_DISCSH3; j++)
@@ -335,8 +335,8 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
    */
 
   /*%%%%%%%%%%%%%%    DEBUG   %%%%%%%%%%%%%%%*/
-  /*LINALG::Matrix<12,12> stiffmatrix_print(true);
- LINALG::Matrix<12,1> force_print(true);
+  /*CORE::LINALG::Matrix<12,12> stiffmatrix_print(true);
+ CORE::LINALG::Matrix<12,1> force_print(true);
    Epetra_SerialDenseMatrix stiffmatrix_Epetra(12,12,true);
 //   stiffmatrix_Epetra.
  for (int i=0; i<NUMDOF_DISCSH3+3; i++)
@@ -350,12 +350,12 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
  if(edge->Id()==EdgeID)
  {
    std::cout<<"Stiffmatrix_print="<<stiffmatrix_print<<std::endl;
-   LINALG::PrintSerialDenseMatrixInMatlabFormat("matrix_element.m",stiffmatrix_Epetra,true);
+   CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat("matrix_element.m",stiffmatrix_Epetra,true);
  }
    */
 
-  LINALG::Matrix<NUMDOF_DISCSH3, 1> elevector_m(true);  // element vector master block
-  LINALG::Matrix<NUMDOF_DISCSH3, 1> elevector_s(true);  // element vector slave block
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1> elevector_m(true);  // element vector master block
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1> elevector_s(true);  // element vector slave block
 
 
   RemapForceVectoMasterSlave(
@@ -363,13 +363,13 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
 
 
   // element matrices in block structure master vs. slave
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_mm(
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_mm(
       true);  // element matrix master-master block
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_ms(
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_ms(
       true);  // element matrix master-slave block
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_sm(
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_sm(
       true);  // element matrix slave-master block
-  LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_ss(
+  CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3> elematrix_ss(
       true);  // element matrix slave-slave block
 
   RemapStiffmattoMasterSlave(stiffmatrix_dummy, elematrix_mm, elematrix_ms, elematrix_sm,
@@ -404,13 +404,13 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
  *---------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
     const Teuchos::ParameterList& params,
-    DRT::ELEMENTS::DiscSh3Line* intface,              ///< internal face element
-    Teuchos::RCP<MAT::Material>& material,            ///< material for face stabilization
-    std::vector<int>& nds_master,                     ///< nodal dofset w.r.t. master element
-    std::vector<int>& nds_slave,                      ///< nodal dofset w.r.t. slave element
-    DRT::DiscretizationFaces& discretization,         ///< faces discretization
-    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+    DRT::ELEMENTS::DiscSh3Line* intface,                    ///< internal face element
+    Teuchos::RCP<MAT::Material>& material,                  ///< material for face stabilization
+    std::vector<int>& nds_master,                           ///< nodal dofset w.r.t. master element
+    std::vector<int>& nds_slave,                            ///< nodal dofset w.r.t. slave element
+    DRT::DiscretizationFaces& discretization,               ///< faces discretization
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+    Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData");
@@ -548,7 +548,7 @@ void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
     // right value for shared nodes
     for (int i = 0; i < NODDOF_DISCSH3; i++)
     {
-      LINALG::Assemble(
+      CORE::LINALG::Assemble(
           *systemvector, elevec_blocks[i], patch_components_lm[i], patch_components_lmowner[i]);
     }
   }
@@ -729,9 +729,10 @@ void DRT::ELEMENTS::DiscSh3Line::PatchLocationVector(
  |  create the patch location vector (public)           mukherjee 06/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::RemapForceVectoMasterSlave(
-    LINALG::Matrix<1, 12, FAD>& force,  ///< nodal dofset w.r.t master parent element
-    LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m, LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,
-    std::vector<int>& connectivity, std::vector<int>& lm_slaveNodeToPatch)
+    CORE::LINALG::Matrix<1, 12, FAD>& force,  ///< nodal dofset w.r.t master parent element
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s, std::vector<int>& connectivity,
+    std::vector<int>& lm_slaveNodeToPatch)
 {
   // map force back to the master according to dis
   for (int i = 0; i < NODDOF_DISCSH3; i++)
@@ -763,11 +764,11 @@ void DRT::ELEMENTS::DiscSh3Line::RemapForceVectoMasterSlave(
  |  create the patch location vector (public)              mukherjee 06/15 |
  *-------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::RemapStiffmattoMasterSlave(
-    LINALG::Matrix<12, 12, FAD>& stiffmatrix,  ///< nodal dofset w.r.t master parent element
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_mm,
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ms,
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_sm,
-    LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ss,
+    CORE::LINALG::Matrix<12, 12, FAD>& stiffmatrix,  ///< nodal dofset w.r.t master parent element
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_mm,
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ms,
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_sm,
+    CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ss,
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
     std::vector<int>& connectivity)
@@ -855,7 +856,7 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
     DRT::ELEMENTS::DiscSh3Line* edge,  ///< internal face element
     std::vector<FAD>& x_FAD_curr,
     DRT::Discretization& discretization,  ///< discretization
-    LINALG::Matrix<1, 12, FAD>& ana_force_aux, LINALG::Matrix<12, 12, FAD>& stiff_dummy)
+    CORE::LINALG::Matrix<1, 12, FAD>& ana_force_aux, CORE::LINALG::Matrix<12, 12, FAD>& stiff_dummy)
 {
   //  Teuchos::ParameterList StatMechParams =
   //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD
@@ -880,7 +881,7 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
 
   FAD BehaviorFunctLine = std::pow(Edge_length_ref, 0.5) * (1 - Edge_length_curr / Edge_length_ref);
 
-  LINALG::Matrix<1, 6, FAD> FAD_force(true);
+  CORE::LINALG::Matrix<1, 6, FAD> FAD_force(true);
   // Calculate FAD force
   for (int i = 0; i < 6; i++)
   {
@@ -890,9 +891,9 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
   // Get the expressions analytically
   //  std::vector<FAD> x_FAD(12,0.0);
   // Get Spatial positions 2 nodes, 3 dims
-  LINALG::Matrix<1, 6, FAD> Ana_force(true);
-  LINALG::Matrix<1, 6, FAD> grad_edge(true);
-  LINALG::Matrix<1, 6> tol(true);
+  CORE::LINALG::Matrix<1, 6, FAD> Ana_force(true);
+  CORE::LINALG::Matrix<1, 6, FAD> grad_edge(true);
+  CORE::LINALG::Matrix<1, 6> tol(true);
 
   for (int i = 0; i < 3; i++)
   {
@@ -910,13 +911,13 @@ void DRT::ELEMENTS::DiscSh3Line::LengthConstrtStiffmass(Teuchos::ParameterList& 
     //      tol(i+3)=Ana_force(i+9).val()-FAD_force(i+3).val();
   }
 
-  LINALG::Matrix<6, 6, FAD> FAD_stiff(true);
-  LINALG::Matrix<6, 6, FAD> FAD_stiff_alt(true);
-  LINALG::Matrix<6, 6> FAD_stiff_val(true);
-  LINALG::Matrix<3, 3, FAD> FAD_aux(true);
-  LINALG::Matrix<6, 6> FAD_stiff_alt_val(true);
+  CORE::LINALG::Matrix<6, 6, FAD> FAD_stiff(true);
+  CORE::LINALG::Matrix<6, 6, FAD> FAD_stiff_alt(true);
+  CORE::LINALG::Matrix<6, 6> FAD_stiff_val(true);
+  CORE::LINALG::Matrix<3, 3, FAD> FAD_aux(true);
+  CORE::LINALG::Matrix<6, 6> FAD_stiff_alt_val(true);
 
-  LINALG::Matrix<6, 6, FAD> grad2_edge(true);
+  CORE::LINALG::Matrix<6, 6, FAD> grad2_edge(true);
 
 
   for (int i = 0; i < 6; i++)

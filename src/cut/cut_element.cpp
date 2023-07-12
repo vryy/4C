@@ -46,11 +46,11 @@ struct nextSideAlongRay
   /*--------------------------------------------------------------------*
    * check if both sides have the same normal vector
    *--------------------------------------------------------------------*/
-  bool SameNormal(
-      CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2, const LINALG::Matrix<3, 1>& cutpoint_xyz)
+  bool SameNormal(CORE::GEO::CUT::Side* s1, CORE::GEO::CUT::Side* s2,
+      const CORE::LINALG::Matrix<3, 1>& cutpoint_xyz)
   {
-    LINALG::Matrix<3, 1> rst(true);
-    LINALG::Matrix<2, 1> rs(true);
+    CORE::LINALG::Matrix<3, 1> rst(true);
+    CORE::LINALG::Matrix<2, 1> rs(true);
 
     //-------------
     // first side
@@ -59,7 +59,7 @@ struct nextSideAlongRay
     rs(0) = rst(0);
     rs(1) = rst(1);
 
-    LINALG::Matrix<3, 1> normal_1(true);
+    CORE::LINALG::Matrix<3, 1> normal_1(true);
     s1->Normal(rs, normal_1);
 
     //-------------
@@ -69,7 +69,7 @@ struct nextSideAlongRay
     rs(0) = rst(0);
     rs(1) = rst(1);
 
-    LINALG::Matrix<3, 1> normal_2(true);
+    CORE::LINALG::Matrix<3, 1> normal_2(true);
     s2->Normal(rs, normal_2);
 
     //-------------
@@ -129,8 +129,8 @@ struct nextSideAlongRay
   CORE::GEO::CUT::Point* startpoint_;
   CORE::GEO::CUT::Point* cutpoint_;
 
-  LINALG::Matrix<3, 1> startpoint_xyz_;
-  LINALG::Matrix<3, 1> cutpoint_xyz_;
+  CORE::LINALG::Matrix<3, 1> startpoint_xyz_;
+  CORE::LINALG::Matrix<3, 1> cutpoint_xyz_;
 };
 
 
@@ -638,8 +638,8 @@ bool CORE::GEO::CUT::Element::ComputePosition(Point* p, Point* cutpoint, Facet* 
  *------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s)
 {
-  LINALG::Matrix<3, 1> xyz(true);
-  LINALG::Matrix<3, 1> cut_point_xyz(true);
+  CORE::LINALG::Matrix<3, 1> xyz(true);
+  CORE::LINALG::Matrix<3, 1> cut_point_xyz(true);
 
   p->Coordinates(xyz.A());
   cutpoint->Coordinates(cut_point_xyz.A());
@@ -648,12 +648,12 @@ bool CORE::GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   // determine the inside/outside position w.r.t the chosen cut-side
   // in case of the right side the "angle-criterion" leads to the right decision (position)
 
-  LINALG::Matrix<2, 1> rs(true);  // local coordinates of the cut-point w.r.t side
+  CORE::LINALG::Matrix<2, 1> rs(true);  // local coordinates of the cut-point w.r.t side
 
-  LINALG::Matrix<3, 1> normal(true);
+  CORE::LINALG::Matrix<3, 1> normal(true);
   s->Normal(rs, normal);  // outward pointing normal at cut-point
 
-  LINALG::Matrix<3, 1> line_vec(true);
+  CORE::LINALG::Matrix<3, 1> line_vec(true);
   line_vec.Update(
       1.0, xyz, -1.0, cut_point_xyz);  // vector representing the line between p and the cut-point
 
@@ -704,9 +704,9 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
   if (s->OnEdge(cutpoint))  // check if the point lies on at least one edge of the side, otherwise
                             // it cannot be orthogonal
   {
-    LINALG::Matrix<3, 1> line(true);
-    LINALG::Matrix<3, 1> p_xyz(true);
-    LINALG::Matrix<3, 1> cut_point_xyz(true);
+    CORE::LINALG::Matrix<3, 1> line(true);
+    CORE::LINALG::Matrix<3, 1> p_xyz(true);
+    CORE::LINALG::Matrix<3, 1> cut_point_xyz(true);
 
     p->Coordinates(p_xyz.A());
     cutpoint->Coordinates(cut_point_xyz.A());
@@ -732,7 +732,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     }
 
     // tri3/quad4 element center
-    LINALG::Matrix<2, 1> rs(true);
+    CORE::LINALG::Matrix<2, 1> rs(true);
 
     if (s->Shape() == ::DRT::Element::tri3)
     {
@@ -745,7 +745,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     else
       throw std::runtime_error("unsupported side-shape");
 
-    LINALG::Matrix<3, 1> normal(true);
+    CORE::LINALG::Matrix<3, 1> normal(true);
     s->Normal(rs, normal);
 
     // check for angle=+-90 between line and normal
@@ -1065,7 +1065,7 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 template <unsigned probdim, ::DRT::Element::DiscretizationType elementtype,
     unsigned numNodesElement, unsigned dim>
 bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>::LocalCoordinates(
-    const LINALG::Matrix<probdim, 1>& xyz, LINALG::Matrix<dim, 1>& rst)
+    const CORE::LINALG::Matrix<probdim, 1>& xyz, CORE::LINALG::Matrix<dim, 1>& rst)
 {
   Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<probdim, elementtype>(*this, xyz);
   bool success = pos->Compute();
@@ -1079,7 +1079,7 @@ bool CORE::GEO::CUT::ConcreteElement<probdim, elementtype, numNodesElement, dim>
  *                                                      sudhakar 11/13
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Element::LocalCoordinatesQuad(
-    const LINALG::Matrix<3, 1>& xyz, LINALG::Matrix<3, 1>& rst)
+    const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
 {
   if (not isShadow_) dserror("This is not a shadow elemenet\n");
 

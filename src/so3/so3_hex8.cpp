@@ -125,7 +125,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner)
 {
   eastype_ = soh8_easnone;
   neas_ = 0;
-  invJ_.resize(NUMGPT_SOH8, LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
+  invJ_.resize(NUMGPT_SOH8, CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
   detJ_.resize(NUMGPT_SOH8, 0.0);
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   if (position != data.size())
@@ -410,7 +410,7 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_SOH8; ++i)
   {
     const double* x = nodes[i]->X();
@@ -419,10 +419,10 @@ std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
     xrefe(i, 2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::Matrix<NUMNOD_SOH8, 1> funct;
+  CORE::LINALG::Matrix<NUMNOD_SOH8, 1> funct;
   // Element midpoint at r=s=t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
-  LINALG::Matrix<1, NUMDIM_SOH8> midpoint;
+  CORE::LINALG::Matrix<1, NUMDIM_SOH8> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
+    const std::vector<CORE::LINALG::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
 
     // add fibers to the ParameterList
     // ParameterList does not allow to store a std::vector, so we have to add every gp fiber

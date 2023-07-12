@@ -28,7 +28,7 @@ namespace FLD
    public:
     /// Standard Constructor
     TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 

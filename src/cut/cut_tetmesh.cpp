@@ -469,22 +469,22 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
 
   if (project)  // Never used... Not working properly either, I think...
   {
-    LINALG::Matrix<3, 1> m;
+    CORE::LINALG::Matrix<3, 1> m;
     m = 0;
     double scale = 1. / n;
     for (int i = 0; i < n; ++i)  // Find mid-point (m)
     {
       Point* p = points[i];
-      LINALG::Matrix<3, 1> x(p->X());
+      CORE::LINALG::Matrix<3, 1> x(p->X());
       m.Update(scale, x, 1);
     }
     double length = 0;
-    LINALG::Matrix<3, 1> l;
+    CORE::LINALG::Matrix<3, 1> l;
     for (int i = 0; i < n;
          ++i)  // Find the distance to the point furthest away from the mid-point (length)
     {
       Point* p = points[i];
-      LINALG::Matrix<3, 1> x(p->X());
+      CORE::LINALG::Matrix<3, 1> x(p->X());
       l = m;
       l.Update(1, x, -1);
       double n = l.Norm2();
@@ -497,7 +497,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
     for (int i = 0; i < n; ++i)
     {
       Point* p = points[i];
-      LINALG::Matrix<3, 1> x(p->X());
+      CORE::LINALG::Matrix<3, 1> x(p->X());
       l = m;
       l.Update(1, x, -1);
       double n = l.Norm2();
@@ -874,21 +874,21 @@ double GEO::CUT::TetMesh::CalcVolumeOfTet(const std::vector<Point*>& t)
 {
   if (t.size() != 4) dserror("Expected a tet. Size of vector is not 4.");
   // create planes consisting of 3 nodes each
-  LINALG::Matrix<3, 1> p0(t[0]->X());
-  LINALG::Matrix<3, 1> p1(t[1]->X());
-  LINALG::Matrix<3, 1> p2(t[2]->X());
-  LINALG::Matrix<3, 1> p3(t[3]->X());
+  CORE::LINALG::Matrix<3, 1> p0(t[0]->X());
+  CORE::LINALG::Matrix<3, 1> p1(t[1]->X());
+  CORE::LINALG::Matrix<3, 1> p2(t[2]->X());
+  CORE::LINALG::Matrix<3, 1> p3(t[3]->X());
 
-  LINALG::Matrix<3, 1> v01;
-  LINALG::Matrix<3, 1> v02;
-  LINALG::Matrix<3, 1> v03;
+  CORE::LINALG::Matrix<3, 1> v01;
+  CORE::LINALG::Matrix<3, 1> v02;
+  CORE::LINALG::Matrix<3, 1> v03;
 
   v01.Update(1, p1, -1, p0, 0);
   v02.Update(1, p2, -1, p0, 0);
   v03.Update(1, p3, -1, p0, 0);
 
   // create 4 normal vectors to each tet surface plane
-  LINALG::Matrix<3, 1> nplane012;
+  CORE::LINALG::Matrix<3, 1> nplane012;
 
   // cross product
   nplane012(0) = v01(1) * v02(2) - v01(2) * v02(1);
@@ -933,21 +933,21 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
     std::vector<int>& t = *i;
 
     // create planes consisting of 3 nodes each
-    LINALG::Matrix<3, 1> p0(points_[t[0]]->X());
-    LINALG::Matrix<3, 1> p1(points_[t[1]]->X());
-    LINALG::Matrix<3, 1> p2(points_[t[2]]->X());
-    LINALG::Matrix<3, 1> p3(points_[t[3]]->X());
+    CORE::LINALG::Matrix<3, 1> p0(points_[t[0]]->X());
+    CORE::LINALG::Matrix<3, 1> p1(points_[t[1]]->X());
+    CORE::LINALG::Matrix<3, 1> p2(points_[t[2]]->X());
+    CORE::LINALG::Matrix<3, 1> p3(points_[t[3]]->X());
 
-    LINALG::Matrix<3, 1> v01;
-    LINALG::Matrix<3, 1> v02;
-    LINALG::Matrix<3, 1> v03;
+    CORE::LINALG::Matrix<3, 1> v01;
+    CORE::LINALG::Matrix<3, 1> v02;
+    CORE::LINALG::Matrix<3, 1> v03;
 
     v01.Update(1, p1, -1, p0, 0);
     v02.Update(1, p2, -1, p0, 0);
     v03.Update(1, p3, -1, p0, 0);
 
     // create 4 normal vectors to each tet surface plane
-    LINALG::Matrix<3, 1> nplane012;
+    CORE::LINALG::Matrix<3, 1> nplane012;
 
     // cross product
     nplane012(0) = v01(1) * v02(2) - v01(2) * v02(1);
@@ -960,7 +960,7 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
     // compute norm (area) of plane
     // double norm012 = nplane012.Norm2();
 
-    LINALG::Matrix<4, 1> temp(true);
+    CORE::LINALG::Matrix<4, 1> temp(true);
     temp(0, 0) = p0.Norm2();  // Distance of points to origin
     temp(1, 0) = p1.Norm2();
     temp(2, 0) = p2.Norm2();
@@ -969,7 +969,7 @@ void CORE::GEO::CUT::TetMesh::FixBrokenTets()
     // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
     double max_dist_to_orgin = temp.NormInf();
 
-    LINALG::Matrix<3, 1> v04;
+    CORE::LINALG::Matrix<3, 1> v04;
     v04.Update(1, p1, -1, p2, 0);
 
     temp(0, 0) = v01.Norm2();  // Distance between points in "base" triangle

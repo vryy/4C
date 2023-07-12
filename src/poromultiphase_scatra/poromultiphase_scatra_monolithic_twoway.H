@@ -16,7 +16,7 @@
 #include "inpar_solver.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
@@ -25,7 +25,7 @@ namespace LINALG
   class Solver;
   class Equilibration;
   enum class EquilibrationMethod;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace POROMULTIPHASESCATRA
 {
@@ -56,7 +56,10 @@ namespace POROMULTIPHASESCATRA
     void TimeStep();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
+    {
+      return blockrowdofmap_;
+    }
 
     //! unique map of all dofs that should be constrained with DBC
     Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; };
@@ -149,25 +152,25 @@ namespace POROMULTIPHASESCATRA
     virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> PoroFluidScatraCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> PoroFluidScatraCouplingMatrix();
 
     //! return scatra structure coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> ScatraStructCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ScatraStructCouplingMatrix();
 
     //! return scatra fluid coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> ScatraPoroFluidCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ScatraPoroFluidCouplingMatrix();
 
     //! evaluate scatra field
     virtual void EvaluateScatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
-    void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_pfs);
+    void ApplyPoroFluidScatraCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs);
 
     //! evaluate scatra-structure coupling sparse matrix
-    void ApplyScatraStructCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sps);
+    void ApplyScatraStructCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_sps);
 
     //! evaluate scatra-porofluid coupling sparse matrix
-    void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_spf);
+    void ApplyScatraPoroFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_spf);
 
     // update the single fields after convergence
     void PrintStructureDisabledInfo();
@@ -190,13 +193,13 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
-    LINALG::EquilibrationMethod equilibration_method_;
+    CORE::LINALG::EquilibrationMethod equilibration_method_;
 
     //! dirichlet map of monolithic system
     Teuchos::RCP<Epetra_Map> combinedDBCMap_;
@@ -209,9 +212,9 @@ namespace POROMULTIPHASESCATRA
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of struct-fluid-scatra system
 
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;           //!< tolerance to which is adpated ?
-    bool solveradapttol_;                  //!< adapt solver tolerance
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
+    bool solveradapttol_;                        //!< adapt solver tolerance
 
     // do we solve the structure?
     bool solve_structure_;
@@ -220,18 +223,18 @@ namespace POROMULTIPHASESCATRA
     int struct_offset_;
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-scatra coupling matrix --> we do not have it (yet)
-    // Teuchos::RCP<LINALG::SparseMatrix> k_pss_;
+    // Teuchos::RCP<CORE::LINALG::SparseMatrix> k_pss_;
 
     //! fluid-scatra coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_pfs_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs_;
 
     //! scatra-structure coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_sps_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_sps_;
     //! scatra-fluid coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_spf_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_spf_;
 
     double tolinc_;   //!< tolerance residual increment
     double tolfres_;  //!< tolerance force residual
@@ -325,10 +328,10 @@ namespace POROMULTIPHASESCATRA
     virtual void SetupSystem();
 
     //! return arteryscatra-artery coupling sparse matrix
-    Teuchos::RCP<LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
 
     //! evaluate arteryscatra-artery coupling sparse matrix
-    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_asa);
+    void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_asa);
 
     //! build the block null spaces
     virtual void BuildBlockNullSpaces();
@@ -340,16 +343,16 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;
 
     //! dof row map splitted in (field) blocks, only artery and porofluid
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_artporo_;
 
     //! dof row map (not splitted), only artery and artery-scatra
     Teuchos::RCP<Epetra_Map> fullmap_artscatra_;
 
     //! dof row map splitted in (field) blocks, only artery and artery-scatra
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_artscatra_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_artscatra_;
 
     //! artscatra-artery coupling matrix
-    Teuchos::RCP<LINALG::SparseOperator> k_asa_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> k_asa_;
 
     //! flag if nodal coupling active or not
     bool nodal_coupl_inactive_;

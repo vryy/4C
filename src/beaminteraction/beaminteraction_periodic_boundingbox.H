@@ -42,7 +42,7 @@ namespace CORE::GEO
       void Init();
 
       /// initialize bounding box object
-      void Init(LINALG::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
+      void Init(CORE::LINALG::Matrix<3, 2> const& box, std::vector<bool> const& pbconoff);
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
       void Setup();
@@ -51,7 +51,7 @@ namespace CORE::GEO
       double EdgeLength(int dim) const { return edgelength_[dim]; }
 
       /// get box
-      LINALG::Matrix<3, 2> const& Box() const { return box_; }
+      CORE::LINALG::Matrix<3, 2> const& Box() const { return box_; }
 
       /// get flag indicating if periodic boundary conditions are active
       bool HavePBC() const { return haveperiodicbc_; }
@@ -68,16 +68,17 @@ namespace CORE::GEO
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
       */
-      bool Shift3D(
-          LINALG::Matrix<3, 1>& d, LINALG::Matrix<3, 1> const X = LINALG::Matrix<3, 1>(true)) const;
+      bool Shift3D(CORE::LINALG::Matrix<3, 1>& d,
+          CORE::LINALG::Matrix<3, 1> const X = CORE::LINALG::Matrix<3, 1>(true)) const;
 
       /*!
       \brief get xi of intersection between two points
       */
-      void GetXiOfIntersection3D(LINALG::Matrix<3, 1> const& x1, LINALG::Matrix<3, 1> const& x2,
-          LINALG::Matrix<3, 1>& xi) const;
-      void GetXiOfIntersection3D(LINALG::Matrix<3, 1> const& x1, LINALG::Matrix<3, 1> const& x2,
-          LINALG::Matrix<3, 1>& xi, LINALG::Matrix<3, 2> const& box) const;
+      void GetXiOfIntersection3D(CORE::LINALG::Matrix<3, 1> const& x1,
+          CORE::LINALG::Matrix<3, 1> const& x2, CORE::LINALG::Matrix<3, 1>& xi) const;
+      void GetXiOfIntersection3D(CORE::LINALG::Matrix<3, 1> const& x1,
+          CORE::LINALG::Matrix<3, 1> const& x2, CORE::LINALG::Matrix<3, 1>& xi,
+          CORE::LINALG::Matrix<3, 2> const& box) const;
 
       /*! Check the distance to a reference point position (e.g. node of the
        * same element). If the distance is larger than half of the period
@@ -92,17 +93,17 @@ namespace CORE::GEO
        * Note: this should be equivalent to the previously applied criterion
        *       that the distance between given point and reference point
        *       decreases by either adding or subtracting the period length. */
-      void UnShift3D(LINALG::Matrix<3, 1>& d, LINALG::Matrix<3, 1> const& ref,
-          LINALG::Matrix<3, 1> const X = LINALG::Matrix<3, 1>(true)) const;
+      void UnShift3D(CORE::LINALG::Matrix<3, 1>& d, CORE::LINALG::Matrix<3, 1> const& ref,
+          CORE::LINALG::Matrix<3, 1> const X = CORE::LINALG::Matrix<3, 1>(true)) const;
 
-      bool CheckIfShiftBetweenPoints(LINALG::Matrix<3, 1>& d, LINALG::Matrix<3, 1> const& ref,
-          std::vector<bool>& shift_in_dim,
-          LINALG::Matrix<3, 1> const X = LINALG::Matrix<3, 1>(true)) const;
+      bool CheckIfShiftBetweenPoints(CORE::LINALG::Matrix<3, 1>& d,
+          CORE::LINALG::Matrix<3, 1> const& ref, std::vector<bool>& shift_in_dim,
+          CORE::LINALG::Matrix<3, 1> const X = CORE::LINALG::Matrix<3, 1>(true)) const;
 
       /*!
       \brief get random position inside box
       */
-      void RandomPosWithin(LINALG::Matrix<3, 1>& pos) const;
+      void RandomPosWithin(CORE::LINALG::Matrix<3, 1>& pos) const;
 
       /*!
        \brief If necessary make the boundingbox larger to include this point as one of the corners
@@ -119,8 +120,8 @@ namespace CORE::GEO
        \brief Check if the point is within this boundingbox
        */
       bool Within(const double* x, std::vector<bool>& within_in_dir) const;
-      bool Within(LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const;
-      bool Within(LINALG::Matrix<3, 2> const& box, LINALG::Matrix<3, 1> const& x,
+      bool Within(CORE::LINALG::Matrix<3, 1> const& x, std::vector<bool>& within_in_dir) const;
+      bool Within(CORE::LINALG::Matrix<3, 2> const& box, CORE::LINALG::Matrix<3, 1> const& x,
           std::vector<bool>& within_in_dir) const;
 
       /*!
@@ -137,28 +138,28 @@ namespace CORE::GEO
        \brief get min of box in certain dim
        */
       double box_min(int dim) const { return box_min(box_, dim); }
-      double box_min(LINALG::Matrix<3, 2> const& box, int dim) const { return box(dim, 0); }
+      double box_min(CORE::LINALG::Matrix<3, 2> const& box, int dim) const { return box(dim, 0); }
 
       /*!
        \brief get max of box in certain dim
        */
       double box_max(int dim) const { return box_max(box_, dim); }
-      double box_max(LINALG::Matrix<3, 2> const& box, int dim) const { return box(dim, 1); }
+      double box_max(CORE::LINALG::Matrix<3, 2> const& box, int dim) const { return box(dim, 1); }
 
       /*!
        \brief Get the outmost point of the boundingbox
        */
       void UndeformedBoxCornerPointPosition(int i, double* x) const;
-      LINALG::Matrix<3, 1> UndeformedBoxCornerPointPosition(int i) const;
+      CORE::LINALG::Matrix<3, 1> UndeformedBoxCornerPointPosition(int i) const;
       /*!
        \brief get reference position of corner point i
        */
-      LINALG::Matrix<3, 1> ReferencePosOfCornerPoint(int i) const;
+      CORE::LINALG::Matrix<3, 1> ReferencePosOfCornerPoint(int i) const;
 
       /*!
        \brief get current position of corner point i
        */
-      LINALG::Matrix<3, 1> CurrentPositionOfCornerPoint(int i) const;
+      CORE::LINALG::Matrix<3, 1> CurrentPositionOfCornerPoint(int i) const;
 
       /*!
        \brief print box
@@ -186,14 +187,14 @@ namespace CORE::GEO
 
       //! transform from undeformed to global
       void TransformFromUndeformedBoundingBoxSystemToGlobal(
-          LINALG::Matrix<3, 1> const& xi, LINALG::Matrix<3, 1>& x) const;
+          CORE::LINALG::Matrix<3, 1> const& xi, CORE::LINALG::Matrix<3, 1>& x) const;
 
       void TransformFromUndeformedBoundingBoxSystemToGlobal(double const* xi, double* x) const;
 
       //! transform from global to undeformed
       bool TransformFromGlobalToUndeformedBoundingBoxSystem(
-          LINALG::Matrix<3, 1> const& x,  ///< input  -> global position
-          LINALG::Matrix<3, 1>& xi        ///< output -> position in undeformed bounding box system
+          CORE::LINALG::Matrix<3, 1> const& x,  ///< input  -> global position
+          CORE::LINALG::Matrix<3, 1>& xi  ///< output -> position in undeformed bounding box system
       ) const;
       bool TransformFromGlobalToUndeformedBoundingBoxSystem(
           double const* x,  ///< input  -> global position
@@ -240,12 +241,13 @@ namespace CORE::GEO
 
       //! evaluate lagrange polynomial that maps from undeformed to global at xi
       void LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobal(
-          LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
+          CORE::LINALG::Matrix<8, 1>& funct,  ///< to be filled with shape function values
           double r, double s, double t) const;
 
       //! evaluate first derivative of lagrange polynomial that maps from undeformed to global at xi
       void LagrangePolynomialToMapFromUndeformedBoundingBoxSystemToGlobalDeriv1(
-          LINALG::Matrix<3, 8>& deriv1,  ///< to be filled with shape function derivative values
+          CORE::LINALG::Matrix<3, 8>&
+              deriv1,  ///< to be filled with shape function derivative values
           double r, double s, double t) const;
 
       //! @}
@@ -272,7 +274,7 @@ namespace CORE::GEO
       /// set global dbc flag
       bool havedirichletbc_;
       /// box corners
-      LINALG::Matrix<3, 2> box_;
+      CORE::LINALG::Matrix<3, 2> box_;
       /// flags for existence of periodic boundary conditions in x, y, z direction
       bool pbconoff_[3];
       ///< box edge lengths in x, y, z direction

@@ -1288,14 +1288,14 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
-    LINALG::Export(*slipset, *slipsetexp);
+    CORE::LINALG::Export(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = GetStrategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-  LINALG::Export(*activeset, *activesetexp);
+  CORE::LINALG::Export(*activeset, *activesetexp);
 
   if (GetStrategy().WearBothDiscrete())
   {
@@ -1307,11 +1307,11 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
         Teuchos::rcp(new Epetra_Vector(*GetStrategy().MasterActiveNodes()));
-    LINALG::Export(*slipset, *slipsetexp);
+    CORE::LINALG::Export(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Epetra_Vector> mactivesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
-    LINALG::Export(*mactiveset, *mactivesetexp);
+    CORE::LINALG::Export(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
 
@@ -1327,7 +1327,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
-    LINALG::Export(*gaps, *gapsexp);
+    CORE::LINALG::Export(*gaps, *gapsexp);
 
     output.WriteVector("gap", gapsexp);
   }
@@ -1345,12 +1345,12 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   // normal direction
   Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().ContactNorStress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*normalstresses, *normalstressesexp);
+  CORE::LINALG::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*tangentialstresses, *tangentialstressesexp);
+  CORE::LINALG::Export(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
   // contact tractions in normal and tangential direction
@@ -1362,12 +1362,12 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     // normal direction
     Teuchos::RCP<Epetra_Vector> normalforce = GetStrategy().ContactNorForce();
     Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*normalforce, *normalforceexp);
+    CORE::LINALG::Export(*normalforce, *normalforceexp);
 
     // tangential plane
     Teuchos::RCP<Epetra_Vector> tangentialforce = GetStrategy().ContactTanForce();
     Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*tangentialforce, *tangentialforceexp);
+    CORE::LINALG::Export(*tangentialforce, *tangentialforceexp);
 
     // write to output
     // contact tractions in normal and tangential direction
@@ -1431,7 +1431,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), allproc.data(), Comm());
+  CORE::LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), allproc.data(), Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 
@@ -1458,23 +1458,23 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   //  // master force which correcpond to the slave force!
   //  Teuchos::RCP<Epetra_Vector> slavedummy =
   //      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap(),true));
-  //  LINALG::Export(*fcmasternor,*slavedummy);
+  //  CORE::LINALG::Export(*fcmasternor,*slavedummy);
   //  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
   //  if(err!=0)
   //    dserror("ERROR");
   //
   //  Teuchos::RCP<Epetra_Vector> masterdummy =
   //      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap(),true));
-  //  LINALG::Export(*slavedummy,*masterdummy);
+  //  CORE::LINALG::Export(*slavedummy,*masterdummy);
   //  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
   //  if(err!=0)
   //    dserror("ERROR");
 
   // export
-  LINALG::Export(*fcslavenor, *fcslavenorexp);
-  LINALG::Export(*fcslavetan, *fcslavetanexp);
-  LINALG::Export(*fcmasternor, *fcmasternorexp);
-  LINALG::Export(*fcmastertan, *fcmastertanexp);
+  CORE::LINALG::Export(*fcslavenor, *fcslavenorexp);
+  CORE::LINALG::Export(*fcslavetan, *fcslavetanexp);
+  CORE::LINALG::Export(*fcmasternor, *fcmasternorexp);
+  CORE::LINALG::Export(*fcmastertan, *fcmastertanexp);
 
   // contact forces on slave and master side
   output.WriteVector("norslaveforce", fcslavenorexp);
@@ -1532,7 +1532,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*wearoutput, *wearoutputexp);
+    CORE::LINALG::Export(*wearoutput, *wearoutputexp);
     output.WriteVector("wear", wearoutputexp);
     GetStrategy().ContactWear()->Scale(0.0);
   }
@@ -1548,7 +1548,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
         dynamic_cast<CONTACT::PoroLagrangeStrategy&>(GetStrategy());
     Teuchos::RCP<Epetra_Vector> lambdaout = costrategy.LambdaNoPen();
     Teuchos::RCP<Epetra_Vector> lambdaoutexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*lambdaout, *lambdaoutexp);
+    CORE::LINALG::Export(*lambdaout, *lambdaoutexp);
     output.WriteVector("poronopen_lambda", lambdaoutexp);
   }
   return;

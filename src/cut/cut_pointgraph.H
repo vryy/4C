@@ -168,8 +168,8 @@ namespace CORE::GEO
       };  // class PointGraph
 
       // non-member function
-      bool FindCycles(graph_t &g, Cycle &cycle, std::map<vertex_t, LINALG::Matrix<3, 1>> &local,
-          std::vector<Cycle> &cycles);
+      bool FindCycles(graph_t &g, Cycle &cycle,
+          std::map<vertex_t, CORE::LINALG::Matrix<3, 1>> &local, std::vector<Cycle> &cycles);
 
       Teuchos::RCP<PointGraph> CreatePointGraph(Mesh &mesh, Element *element, Side *side,
           const PointGraph::Location &location, const PointGraph::Strategy &strategy);

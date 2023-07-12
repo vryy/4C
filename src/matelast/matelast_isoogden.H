@@ -79,11 +79,14 @@ namespace MAT
 
       /// Add coefficients with respect to modified principal stretches (or zeros)
       void AddCoefficientsStretchesModified(
-          LINALG::Matrix<3, 1>& modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
-          LINALG::Matrix<6, 1>& moddelta,  ///< [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
-                                           ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
-          const LINALG::Matrix<3, 1>& modstr  ///< modified principal stretches, [\bar{\lambda}_1,
-                                              ///< \bar{\lambda}_2, \bar{\lambda}_3]
+          CORE::LINALG::Matrix<3, 1>&
+              modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
+          CORE::LINALG::Matrix<6, 1>&
+              moddelta,  ///< [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
+                         ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
+          const CORE::LINALG::Matrix<3, 1>&
+              modstr  ///< modified principal stretches, [\bar{\lambda}_1,
+                      ///< \bar{\lambda}_2, \bar{\lambda}_3]
           ) override;
 
       /// Specify the formulation as isochoric in terms of modified principal invariants

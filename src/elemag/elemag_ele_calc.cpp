@@ -465,7 +465,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
     // Storing the values of the coordinates for the current quadrature point
     // and of the jacobian computed in that point
     const double fac = shapes_.jfac(q);
-    LINALG::Matrix<nsd_, 1> xyz;
+    CORE::LINALG::Matrix<nsd_, 1> xyz;
     for (unsigned int d = 0; d < nsd_; ++d)
       xyz(d) = shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
     // Creating the temporary electric and magnetic field vector intVal
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
       for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
       {
         const double fac = shapes_.jfac(q);
-        LINALG::Matrix<nsd_, 1> xyz;
+        CORE::LINALG::Matrix<nsd_, 1> xyz;
         for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
 
         Epetra_SerialDenseVector intVal(nsd_ * 2);
@@ -582,10 +582,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(
   // for the calculation of the error, we use a higher integration rule
   Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> highquad =
       CORE::DRT::UTILS::GaussPointCache::Instance().Create(distype, (ele->Degree() + 2) * 2);
-  LINALG::Matrix<nsd_, 1> xsi;
+  CORE::LINALG::Matrix<nsd_, 1> xsi;
   Epetra_SerialDenseVector values(shapes_.ndofs_);
-  LINALG::Matrix<nsd_, nen_> deriv;
-  LINALG::Matrix<nsd_, nsd_> xjm;
+  CORE::LINALG::Matrix<nsd_, nen_> deriv;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm;
   Epetra_SerialDenseVector electric(nsd_);
   Epetra_SerialDenseVector magnetic(nsd_);
   Epetra_SerialDenseVector analytical(2 * nsd_);
@@ -609,9 +609,9 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeError(
         magnetic(d) += values(i) * ele->eleinteriorMagnetic_(d * shapes_.ndofs_ + i);
       }
 
-    LINALG::Matrix<nen_, 1> myfunct;
+    CORE::LINALG::Matrix<nen_, 1> myfunct;
     CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
-    LINALG::Matrix<nsd_, 1> xyzmat;
+    CORE::LINALG::Matrix<nsd_, 1> xyzmat;
     xyzmat.MultiplyNN(shapes_.xyze, myfunct);
 
     // Creating the temporary electric and magnetic field vector intVal
@@ -671,7 +671,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(DRT::EL
       // Storing the values of the coordinates for the current quadrature point
       // and of the jacobian computed in that point
       const double fac = shapes_.jfac(q);
-      LINALG::Matrix<nsd_, 1> xyz;
+      CORE::LINALG::Matrix<nsd_, 1> xyz;
       for (unsigned int d = 0; d < nsd_; ++d)
         xyz(d) = shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
       // Creating the temporary electric and magnetic field vector intVal
@@ -758,7 +758,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
       // For each quadrature point we have a vector containing the field
       // components and a vector containing the spatial coordinates of that point
       Epetra_SerialDenseVector trace(nsd_);
-      LINALG::Matrix<nsd_, 1> xyz;
+      CORE::LINALG::Matrix<nsd_, 1> xyz;
 
       // Temporary variable to store the jacobian of the face (contains the weigth)
       const double fac = shapesface_->jfac(q);
@@ -854,7 +854,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectDirichField(
     // For each quadrature point we have a vector containing the field
     // components and a vector containing the spatial coordinates of that point
     Epetra_SerialDenseVector trace(nsd_);
-    LINALG::Matrix<nsd_, 1> xyz;
+    CORE::LINALG::Matrix<nsd_, 1> xyz;
 
     // Temporary variable to store the jacobian of the face (contains the weigth)
     const double fac = shapesface_->jfac(q);
@@ -907,7 +907,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectDirichField(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::EvaluateAll(const int start_func,
-    const double t, const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const
+    const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
@@ -1044,7 +1044,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
 
     // As already said, the dimension of the coordinate matrix is now nsd_-1
     // times the number of nodes in the face.
-    LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
+    CORE::LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
 
     // Cycling throught the nodes of the face to store the node positions in the
     // correct order using xsishuffle as a temporary vector
@@ -1400,7 +1400,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         // Storing the values of the coordinates for the current quadrature point
         // and of the jacobian computed in that point
         const double fac = shapesface_->jfac(q);
-        LINALG::Matrix<nsd_, 1> xyz;
+        CORE::LINALG::Matrix<nsd_, 1> xyz;
         for (unsigned int d = 0; d < nsd_; ++d)
           xyz(d) =
               shapesface_->xyzreal(d, q);  // coordinates of quadrature point in real coordinates
@@ -1547,7 +1547,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeSource(
   // double f_value = 0.0;
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
-    LINALG::Matrix<nsd_, 1> xyz;
+    CORE::LINALG::Matrix<nsd_, 1> xyz;
     for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
 
     // calculate right hand side contribution for dp/dt

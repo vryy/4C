@@ -34,12 +34,12 @@ namespace CORE::GEO
   class CutWizard;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MultiMapExtractor;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {

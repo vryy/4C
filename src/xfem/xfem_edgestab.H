@@ -50,7 +50,7 @@ namespace CORE::GEO
   }
 }  // namespace CORE::GEO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -75,12 +75,12 @@ namespace XFEM
     //! prepares edge based stabilization and ghost penaly in case of XFEM and calls evaluate
     //! routine
     void EvaluateEdgeStabGhostPenalty(
-        Teuchos::ParameterList& eleparams,                ///< element parameter list
-        Teuchos::RCP<DRT::Discretization> discret,        ///< discretization
-        DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector,         ///< systemvector
-        Teuchos::RCP<CORE::GEO::CutWizard> wizard,        ///< cut wizard
+        Teuchos::ParameterList& eleparams,                      ///< element parameter list
+        Teuchos::RCP<DRT::Discretization> discret,              ///< discretization
+        DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Teuchos::RCP<Epetra_Vector> systemvector,               ///< systemvector
+        Teuchos::RCP<CORE::GEO::CutWizard> wizard,              ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output
@@ -97,15 +97,15 @@ namespace XFEM
         std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
         std::vector<int>& nds_slave,              ///< nodal dofset vector w.r.t. slave element
         DRT::DiscretizationFaces& xdiscret,       ///< discretization with faces
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
     );
 
     //! prepares edge based stabilization for standard fluid
     void EvaluateEdgeStabStd(Teuchos::ParameterList& eleparams,  ///< element parameter list
         Teuchos::RCP<DRT::Discretization> discret,               ///< discretization
         DRT::ELEMENTS::FluidIntFace* faceele,                    ///< face element
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,         ///< systemmatrix
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,   ///< systemmatrix
         Teuchos::RCP<Epetra_Vector> systemvector                 ///< systemvector
     );
 
@@ -115,9 +115,9 @@ namespace XFEM
         Teuchos::RCP<DRT::Discretization> discret,                      ///< discretization
         Teuchos::RCP<DRT::Discretization>
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-        DRT::ELEMENTS::FluidIntFace* faceele,             ///< face element
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-        Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+        DRT::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+        Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
     );
 
     //! returns a map containing the ghost penalty stabilized internal face elements

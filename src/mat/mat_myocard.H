@@ -147,35 +147,35 @@ namespace MAT
 
     /// material call from DRT::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element
-    void Setup(const LINALG::Matrix<3, 1>& fiber1);
-    void Setup(const LINALG::Matrix<2, 1>& fiber1);
+    void Setup(const CORE::LINALG::Matrix<3, 1>& fiber1);
+    void Setup(const CORE::LINALG::Matrix<2, 1>& fiber1);
     void Setup(DRT::INPUT::LineDefinition* linedef);
 
     void SetupDiffusionTensor(const std::vector<double>& fiber1);
-    void SetupDiffusionTensor(const LINALG::Matrix<3, 1>& fiber1);
-    void SetupDiffusionTensor(const LINALG::Matrix<2, 1>& fiber1);
+    void SetupDiffusionTensor(const CORE::LINALG::Matrix<3, 1>& fiber1);
+    void SetupDiffusionTensor(const CORE::LINALG::Matrix<2, 1>& fiber1);
 
     /// diffusivity
-    void Diffusivity(LINALG::Matrix<1, 1>& diffus3) const
+    void Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
-    void Diffusivity(LINALG::Matrix<2, 2>& diffus3) const
+    void Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
-    void Diffusivity(LINALG::Matrix<3, 3>& diffus3) const
+    void Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3) const
     {
       Diffusivity(diffus3, 0);
       return;
     };
 
     /// diffusivity
-    void Diffusivity(LINALG::Matrix<1, 1>& diffus3, int gp) const;
-    void Diffusivity(LINALG::Matrix<2, 2>& diffus3, int gp) const;
-    void Diffusivity(LINALG::Matrix<3, 3>& diffus3, int gp) const;
+    void Diffusivity(CORE::LINALG::Matrix<1, 1>& diffus3, int gp) const;
+    void Diffusivity(CORE::LINALG::Matrix<2, 2>& diffus3, int gp) const;
+    void Diffusivity(CORE::LINALG::Matrix<3, 3>& diffus3, int gp) const;
 
     bool DiffusionAtEleCenter() const { return diff_at_ele_center_; };
 
@@ -258,7 +258,7 @@ namespace MAT
     MAT::PAR::Myocard* params_;
 
     /// conductivity tensor
-    std::vector<LINALG::Matrix<3, 3>> difftensor_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> difftensor_;
 
     /// number of internal state variables
     int nb_state_variables_;

@@ -28,9 +28,9 @@ MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matd
 
 MAT::ELASTIC::CoupSVK::CoupSVK(MAT::ELASTIC::PAR::CoupSVK* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
+    const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+    const int gp, const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
@@ -42,8 +42,9 @@ void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const LINALG::Matrix<3,
          0.75 * mue;
 }
 
-void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   const double lambda = params_->lambda_;
   const double mue = params_->mue_;
@@ -54,8 +55,9 @@ void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
   ddPII(0) += 0.5 * mue + 0.25 * lambda;
 }
 
-void MAT::ELASTIC::CoupSVK::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
-    const LINALG::Matrix<3, 1>& prinv_iso, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupSVK::AddThirdDerivativesPrincipalIso(
+    CORE::LINALG::Matrix<10, 1>& dddPIII_iso, const CORE::LINALG::Matrix<3, 1>& prinv_iso,
+    const int gp, const int eleGID)
 {
   // do nothing
 }

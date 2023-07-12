@@ -30,7 +30,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
 }
@@ -347,7 +347,7 @@ namespace INVANA
 
     //! Map Extractor to extract Blocks of material parameters from the optimization parameter
     //! vector
-    Teuchos::RCP<LINALG::MultiMapExtractor> paramapextractor_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> paramapextractor_;
 
     //! inidicates meta parametrization of the material parameters
     INVANA::MetaParametrization metaparams_;

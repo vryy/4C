@@ -49,11 +49,11 @@ namespace MAT
        * \brief Returns the fiber at the Gauss point
        *
        * \param gp Gauss point
-       * \return const LINALG::Matrix<3, 1>& Constant reference to the fiber
+       * \return const CORE::LINALG::Matrix<3, 1>& Constant reference to the fiber
        */
-      const LINALG::Matrix<3, 1>& GetFiber(int gp) const;
-      const LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
-      const LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
+      const CORE::LINALG::Matrix<3, 1>& GetFiber(int gp) const;
+      const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
+      const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
 
       // Tell the compiler that we still want the methods from FiberAnisotropyExtension with a
       // different signature
@@ -147,18 +147,18 @@ namespace MAT
       void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,       ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+      void SetFiberVecs(double newgamma,             ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
+      void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /*!

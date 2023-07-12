@@ -30,7 +30,7 @@ CORE::GEO::InterfacePoint::InterfacePoint() : pType_(NOTYPE), nnode_(0), nline_(
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
 CORE::GEO::InterfacePoint::InterfacePoint(CORE::GEO::pointType& pType, int nodeId,
-    std::vector<int>& lineId, std::vector<int>& surfId, LINALG::Matrix<3, 1>& coordinates)
+    std::vector<int>& lineId, std::vector<int>& surfId, CORE::LINALG::Matrix<3, 1>& coordinates)
     : pType_(pType), nodeId_(nodeId), lineId_(lineId), surfId_(surfId), coord_(coordinates)
 {
   setNodeLineSurfNumbers(pType);
@@ -172,7 +172,7 @@ void CORE::GEO::InterfacePoint::setSurfaceId(const std::vector<int>& surfId)
 /*----------------------------------------------------------------------*
  |  set coordinates of the interface point                   u.may 07/08|
  *----------------------------------------------------------------------*/
-void CORE::GEO::InterfacePoint::setCoord(const LINALG::Matrix<3, 1>& coordinates)
+void CORE::GEO::InterfacePoint::setCoord(const CORE::LINALG::Matrix<3, 1>& coordinates)
 {
   if (!coordinates.IsInitialized()) dserror("dimension of coordinates is not correct");
 

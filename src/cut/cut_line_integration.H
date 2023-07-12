@@ -26,7 +26,7 @@ class LineIntegration
 {
  public:
   LineIntegration(
-      LINALG::Matrix<2, 2> endPts, int inte_num, std::vector<double> alpha, bool bcellInt)
+      CORE::LINALG::Matrix<2, 2> endPts, int inte_num, std::vector<double> alpha, bool bcellInt)
       : end_pts_(endPts), inte_num_(inte_num), alpha_(alpha), bcellInt_(bcellInt)
   {
   }
@@ -47,18 +47,18 @@ class LineIntegration
   \brief Transform the Gauss integration point available in the limit (-1,1) to the actual line
   coordinates
    */
-  void Transform(const LINALG::Matrix<2, 2> &xyze, const double &eta,
-      LINALG::Matrix<2, 1> &x_gp_lin, LINALG::Matrix<2, 1> &normal, double &drs);
+  void Transform(const CORE::LINALG::Matrix<2, 2> &xyze, const double &eta,
+      CORE::LINALG::Matrix<2, 1> &x_gp_lin, CORE::LINALG::Matrix<2, 1> &normal, double &drs);
 
  private:
   /*!
   \brief Compute the normal vector of the line
   */
-  LINALG::Matrix<2, 1> compute_normal();
+  CORE::LINALG::Matrix<2, 1> compute_normal();
 
   //! end point of the line
   // first index decides the x or y coordinate, second index decides the start point or end point
-  LINALG::Matrix<2, 2> end_pts_;
+  CORE::LINALG::Matrix<2, 2> end_pts_;
 
   //! defines the base function to be integrated
   int inte_num_;

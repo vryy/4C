@@ -18,7 +18,8 @@ namespace STR::MODELEVALUATOR
    public:
     bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override { return true; }
 
-    bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const override
+    bool AssembleJacobian(
+        CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override
     {
       return true;
     }

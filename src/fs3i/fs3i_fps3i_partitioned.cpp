@@ -437,7 +437,8 @@ void FS3I::PartFPS3I::SetupSystem()
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
     const int numscal = currscatra->ScaTraField()->NumScal();
     Teuchos::RCP<DRT::Discretization> currdis = currscatra->ScaTraField()->Discretization();
-    Teuchos::RCP<LINALG::MultiMapExtractor> mapex = Teuchos::rcp(new LINALG::MultiMapExtractor());
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapex =
+        Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     DRT::UTILS::MultiConditionSelector mcs;
     mcs.AddSelector(Teuchos::rcp(
         new DRT::UTILS::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
@@ -473,7 +474,7 @@ void FS3I::PartFPS3I::SetupSystem()
     maps.push_back(scatrafieldexvec_[0]->FullMap());
     maps.push_back(scatrafieldexvec_[1]->FullMap());
   }
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   scatraglobalex_->Setup(*fullmap, maps);
 
   // create coupling vectors and matrices (only needed for finite surface permeabilities)
@@ -485,18 +486,18 @@ void FS3I::PartFPS3I::SetupSystem()
           Teuchos::rcp(new Epetra_Vector(*(scatraglobalex_->Map(i)), true));
       scatracoupforce_.push_back(scatracoupforce);
 
-      Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
-          Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> scatracoupmat =
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap, true);
+      Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dofrowmap, true);
       scatrazeros_.push_back(zeros);
     }
   }
   // create scatra block matrix
   scatrasystemmatrix_ =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *scatraglobalex_, *scatraglobalex_, 27, false, true));
   // create scatra rhs vector
   scatrarhs_ = Teuchos::rcp(new Epetra_Vector(*scatraglobalex_->FullMap(), true));
@@ -511,7 +512,7 @@ void FS3I::PartFPS3I::SetupSystem()
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = Teuchos::rcp(new Teuchos::ParameterList);
   scatrasolvparams->set("solver", "umfpack");
-  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       scatrasolvparams, firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
@@ -537,8 +538,8 @@ void FS3I::PartFPS3I::SetupSystem()
     dserror("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new LINALG::Solver(coupledscatrasolvparams, firstscatradis->Comm(),
-      DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_ = Teuchos::rcp(new CORE::LINALG::Solver(coupledscatrasolvparams,
+      firstscatradis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // get the solver number used for structural ScalarTransport solver
   const int linsolver1number = fs3idyn.get<int>("LINEAR_SOLVER1");
   // get the solver number used for structural ScalarTransport solver
@@ -719,7 +720,7 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
     if (!infperm_)
     {
       Teuchos::RCP<Epetra_Vector> coupforce = scatracoupforce_[i];
-      Teuchos::RCP<LINALG::SparseMatrix> coupmat = scatracoupmat_[i];
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> coupmat = scatracoupmat_[i];
 
       coupforce->PutScalar(0.0);
       coupmat->Zero();
@@ -730,7 +731,7 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
       // apply Dirichlet boundary conditions to coupling matrix and vector
       const Teuchos::RCP<const Epetra_Map> dbcmap = scatra->DirichMaps()->CondMap();
       coupmat->ApplyDirichlet(*dbcmap, false);
-      LINALG::ApplyDirichlettoSystem(coupforce, scatrazeros_[i], *dbcmap);
+      CORE::LINALG::ApplyDirichlettoSystem(coupforce, scatrazeros_[i], *dbcmap);
     }
   }
 }
@@ -783,7 +784,7 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector>>&
 
   // insert porofluid interface entries into vector with full porofluid length
   Teuchos::RCP<Epetra_Vector> porofluid =
-      LINALG::CreateVector(*(fpsi_->PoroField()->FluidField()->DofRowMap()), true);
+      CORE::LINALG::CreateVector(*(fpsi_->PoroField()->FluidField()->DofRowMap()), true);
 
   // Parameter int block of function InsertVector:
   fpsi_->FPSICoupl()->PoroFluidFpsiVelPresExtractor()->InsertVector(WallShearStress, 1, porofluid);

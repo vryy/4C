@@ -90,7 +90,7 @@ namespace DRT
               timetaufac,  //!< domain-integration factor times tau times time-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
-          LINALG::Matrix<nen_, 1>&
+          CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< rhs at Gauss point
       );
@@ -141,18 +141,18 @@ namespace DRT
       ~ScaTraEleInternalVariableManagerElchElectrodeSTIThermo() override = default;
 
       //! set internal variables for element evaluation
-      void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
-          const LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+      void SetInternalVariables(const CORE::LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephinp,  //!< nodal concentration and electric potential values at time t_(n+1) or
                        //!< t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ephin,  //!< nodal concentration and electric potential values at time t_(n)
-          const LINALG::Matrix<NEN, 1>&
+          const CORE::LINALG::Matrix<NEN, 1>&
               etempnp,  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
-          const LINALG::Matrix<NSD, NEN>&
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ehist  //!< nodal history values
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ehist  //!< nodal history values
       )
       {
         // set thermo variables

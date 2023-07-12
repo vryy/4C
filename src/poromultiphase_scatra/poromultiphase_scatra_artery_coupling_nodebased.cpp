@@ -74,13 +74,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> continuous field part
-  contfieldex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+  contfieldex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   SetupMapExtractor(contfieldex_, contdis_, coupleddofs_cont_);
   CheckDbcOnCoupledDofs(contdis_, contfieldex_->Map(1));
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> artery part
-  artex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+  artex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   SetupMapExtractor(artex_, arterydis_, coupleddofs_art_);
   CheckDbcOnCoupledDofs(arterydis_, artex_->Map(1));
 
@@ -94,18 +94,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Init()
   maps.push_back(contfieldex_->FullMap());
   maps.push_back(artex_->Map(0));
 
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+  fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+  globalex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   globalex_->Setup(*fullmap_, maps);
 
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
 
   // needed for matrix transformations
-  sbbtransform_ = Teuchos::rcp(new LINALG::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new LINALG::MatrixColTransform());
+  sbbtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowColTransform());
+  sbitransform_ = Teuchos::rcp(new CORE::LINALG::MatrixRowTransform());
+  sibtransform_ = Teuchos::rcp(new CORE::LINALG::MatrixColTransform());
 }
 
 /*----------------------------------------------------------------------*
@@ -118,8 +118,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::Setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtractor(
-    Teuchos::RCP<LINALG::MultiMapExtractor> mapextractor, Teuchos::RCP<DRT::Discretization> dis,
-    const std::vector<int>& coupleddofs)
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> mapextractor,
+    Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>& coupleddofs)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partialmaps_coupled;
 
@@ -127,7 +127,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
   for (int idof = 0; idof < num_coupled_dofs_; idof++)
   {
     DRT::UTILS::MultiConditionSelector mcs;
-    Teuchos::RCP<LINALG::MultiMapExtractor> dummy = Teuchos::rcp(new LINALG::MultiMapExtractor());
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> dummy =
+        Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
     // selector for coupleddofs[idof]
     mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(
         *dis, condname_, coupleddofs[idof], coupleddofs[idof] + 1)));
@@ -137,11 +138,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
   }
   // fullmap coupled -> all coupled dofs
   Teuchos::RCP<Epetra_Map> fullmap_coupled =
-      LINALG::MultiMapExtractor::MergeMaps(partialmaps_coupled);
+      CORE::LINALG::MultiMapExtractor::MergeMaps(partialmaps_coupled);
 
   // fullmap uncoupled -> all uncoupled dofs
-  Teuchos::RCP<LINALG::MapExtractor> temp =
-      Teuchos::rcp(new LINALG::MapExtractor(*dis->DofRowMap(), fullmap_coupled, false));
+  Teuchos::RCP<CORE::LINALG::MapExtractor> temp =
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*dis->DofRowMap(), fullmap_coupled, false));
   Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::rcp(new Epetra_Map(*temp->CondMap()));
 
   // vector for setup of extractor
@@ -155,11 +156,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMapExtrac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupSystem(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_art)
 {
   SetupRHS(rhs, rhs_cont, rhs_art);
   SetupMatrix(sysmat, sysmat_cont, sysmat_art);
@@ -204,20 +206,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupVector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art)
 {
   // uncomplete
   sysmat_cont->UnComplete();
 
   // artery
   // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockartery =
-      sysmat_art->Split<LINALG::DefaultBlockMatrixStrategy>(*(artex_), *(artex_));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockartery =
+      sysmat_art->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(*(artex_), *(artex_));
   blockartery->Complete();
 
   // inner artery dofs
-  sysmat->Assign(1, 1, LINALG::View, blockartery->Matrix(0, 0));
+  sysmat->Assign(1, 1, CORE::LINALG::View, blockartery->Matrix(0, 0));
 
   (*sibtransform_)(blockartery->FullRowMap(), blockartery->FullColMap(), blockartery->Matrix(0, 1),
       1.0, CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), sysmat->Matrix(1, 0));
@@ -230,7 +233,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::SetupMatrix(
       CORE::ADAPTER::CouplingSlaveConverter(*artcontfieldcoup_), *sysmat_cont, true, true);
 
   // continuous field
-  sysmat->Assign(0, 0, LINALG::View, *sysmat_cont);
+  sysmat->Assign(0, 0, CORE::LINALG::View, *sysmat_cont);
   // complete
   sysmat->Complete();
 }
@@ -266,9 +269,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoup
     Teuchos::RCP<DRT::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
 {
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new LINALG::MapExtractor());
+  Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
-    Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dis->DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> zeros = CORE::LINALG::CreateVector(*dis->DofRowMap(), true);
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", 0.0);
@@ -278,7 +281,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNodeBased::CheckDbcOnCoup
   std::vector<Teuchos::RCP<const Epetra_Map>> dummy;
   dummy.push_back(dbcmaps->CondMap());
   dummy.push_back(coupleddofmap);
-  Teuchos::RCP<Epetra_Map> intersect_dbc_coupled = LINALG::MultiMapExtractor::IntersectMaps(dummy);
+  Teuchos::RCP<Epetra_Map> intersect_dbc_coupled =
+      CORE::LINALG::MultiMapExtractor::IntersectMaps(dummy);
 
   if (intersect_dbc_coupled->NumGlobalElements() > 0)
   {

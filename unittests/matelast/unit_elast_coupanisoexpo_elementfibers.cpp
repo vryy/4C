@@ -76,9 +76,9 @@ namespace
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<LINALG::Matrix<3, 1>> eleFibers_;
-    std::vector<LINALG::Matrix<3, 3>> eleTensors_;
-    std::vector<LINALG::Matrix<6, 1>> eleTensors_stress_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> eleFibers_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> eleTensors_;
+    std::vector<CORE::LINALG::Matrix<6, 1>> eleTensors_stress_;
   };
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, GetScalarProduct)

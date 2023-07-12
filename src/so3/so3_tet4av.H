@@ -358,11 +358,11 @@ namespace DRT
       };
 
       //! vector of inverses of the jacobian in material frame
-      std::vector<LINALG::Matrix<3, 3>> invJ_;
+      std::vector<CORE::LINALG::Matrix<3, 3>> invJ_;
       //! determinant of Jacobian in material frame
       std::vector<double> detJ_;
       //! vector of coordinates of current integration point in reference coordinates
-      std::vector<LINALG::Matrix<3, 1>> xsi_;
+      std::vector<CORE::LINALG::Matrix<3, 1>> xsi_;
       //! Gauss point weights
       std::vector<double> wgt_;
       int numgpt_{};
@@ -377,11 +377,11 @@ namespace DRT
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
-          LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
-          LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
-          LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,
-          LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* stresses,
-          LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,
+          CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
+          CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
+          CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,
+          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* stresses,
+          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,
           Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
           const INPAR::STR::StrainType iostrain);
 

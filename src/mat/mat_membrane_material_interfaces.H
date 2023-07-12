@@ -36,8 +36,9 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void UpdateMembrane(const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, int gp, int eleGID) = 0;
+    virtual void UpdateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        Teuchos::ParameterList& params, const CORE::LINALG::Matrix<3, 3>& Q_trafo, int gp,
+        int eleGID) = 0;
 
     /*!
      * @brief Evaluate stress response plus elasticity tensor for membranes assuming
@@ -54,10 +55,10 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-        const LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
-        const LINALG::Matrix<3, 3>& Q_trafo, LINALG::Matrix<3, 1>& stress,
-        LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) = 0;
+    virtual void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        const CORE::LINALG::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& Q_trafo, CORE::LINALG::Matrix<3, 1>& stress,
+        CORE::LINALG::Matrix<3, 3>& cmat, int gp, int eleGID) = 0;
   };
 
   /*!
@@ -80,9 +81,9 @@ namespace MAT
      * @param gp (in) : Gauss point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluateMembrane(const LINALG::Matrix<3, 3>& defgrd,
-        Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) = 0;
+    virtual void EvaluateMembrane(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<3, 3>& stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) = 0;
   };
 
   /*!
@@ -107,8 +108,8 @@ namespace MAT
      *
      * @return Adapted stretch in thickness direction
      */
-    virtual double EvaluateMembraneThicknessStretch(
-        const LINALG::Matrix<3, 3>& defgrd, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
+    virtual double EvaluateMembraneThicknessStretch(const CORE::LINALG::Matrix<3, 3>& defgrd,
+        Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
 
 }  // namespace MAT

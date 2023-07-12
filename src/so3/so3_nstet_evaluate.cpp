@@ -24,8 +24,8 @@
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::InitElement()
 {
-  LINALG::Matrix<4, 3> xrefe;
-  LINALG::Matrix<4, 3 + 1> J;
+  CORE::LINALG::Matrix<4, 3> xrefe;
+  CORE::LINALG::Matrix<4, 3 + 1> J;
   {
     // compute element volume
     DRT::Node** nodes = Nodes();
@@ -48,22 +48,22 @@ void DRT::ELEMENTS::NStet::InitElement()
     // one gauss point at 0.25/0.25/0.25
     // gauss point weight is 1.0, so skip it
     const double gploc = 0.25;
-    LINALG::Matrix<4, 1> funct;
+    CORE::LINALG::Matrix<4, 1> funct;
     ShapeFunction(funct, gploc, gploc, gploc, gploc);
-    LINALG::Matrix<4, 4> deriv;
+    CORE::LINALG::Matrix<4, 4> deriv;
     ShapeFunctionDerivatives(deriv);
-    LINALG::Matrix<4 - 1, 4> tmp;
+    CORE::LINALG::Matrix<4 - 1, 4> tmp;
     tmp.MultiplyTN(xrefe, deriv);
     for (int i = 0; i < 4; i++) J(0, i) = 1;
     for (int row = 0; row < 3; row++)
       for (int col = 0; col < 4; col++) J(row + 1, col) = tmp(row, col);
 
-    LINALG::Matrix<4, 3> Iaug(true);  // initialize to zero
+    CORE::LINALG::Matrix<4, 3> Iaug(true);  // initialize to zero
     Iaug(1, 0) = 1;
     Iaug(2, 1) = 1;
     Iaug(3, 2) = 1;
-    LINALG::Matrix<4, 3> partials;
-    LINALG::FixedSizeSerialDenseSolver<4, 4, 3> solver;
+    CORE::LINALG::Matrix<4, 3> partials;
+    CORE::LINALG::FixedSizeSerialDenseSolver<4, 4, 3> solver;
     solver.SetMatrix(J);
     solver.SetVectors(partials, Iaug);
     solver.FactorWithEquilibration(true);
@@ -98,10 +98,10 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
     Epetra_SerialDenseVector& elevec3_epetra)
 {
-  LINALG::Matrix<12, 12> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<12, 12> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<12, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<12, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<12, 12> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<12, 12> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<12, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<12, 1> elevec2(elevec2_epetra.A(), true);
   // start with "none"
   DRT::ELEMENTS::NStet::ActionType act = NStet::none;
 
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<12, 12>* elemat1ptr = nullptr;
+      CORE::LINALG::Matrix<12, 12>* elemat1ptr = nullptr;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
       nstetnlnstiffmass(lm, mydisp, myres, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
@@ -207,10 +207,10 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        LINALG::Matrix<1, 6> stress(true);
-        LINALG::Matrix<1, 6> strain(true);
-        LINALG::Matrix<1, 6> elestress(true);
-        LINALG::Matrix<1, 6> elestrain(true);
+        CORE::LINALG::Matrix<1, 6> stress(true);
+        CORE::LINALG::Matrix<1, 6> strain(true);
+        CORE::LINALG::Matrix<1, 6> elestress(true);
+        CORE::LINALG::Matrix<1, 6> elestrain(true);
         nstetnlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &elestress, &elestrain,
             iostress, iostrain);
 
@@ -331,7 +331,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<12, 12> myemat(true);
+      CORE::LINALG::Matrix<12, 12> myemat(true);
       nstetnlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
@@ -372,24 +372,24 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                      // current displacements
     std::vector<double>& residual,                                  // current residuum
-    LINALG::Matrix<12, 12>* stiffmatrix,                            // element stiffness matrix
-    LINALG::Matrix<12, 12>* massmatrix,                             // element mass matrix
-    LINALG::Matrix<12, 1>* force,                                   // stress output options
-    LINALG::Matrix<1, 6>* elestress,                                // stress output
-    LINALG::Matrix<1, 6>* elestrain,                                // strain output
+    CORE::LINALG::Matrix<12, 12>* stiffmatrix,                      // element stiffness matrix
+    CORE::LINALG::Matrix<12, 12>* massmatrix,                       // element mass matrix
+    CORE::LINALG::Matrix<12, 1>* force,                             // stress output options
+    CORE::LINALG::Matrix<1, 6>* elestress,                          // stress output
+    CORE::LINALG::Matrix<1, 6>* elestrain,                          // strain output
     const INPAR::STR::StressType iostress,                          // type of stress
     const INPAR::STR::StrainType iostrain)                          // type of strain
 {
   //--------------------------------------------------- geometry update
-  LINALG::Matrix<3, 3>& defgrd = F();
+  CORE::LINALG::Matrix<3, 3>& defgrd = F();
 
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
-  LINALG::Matrix<3, 3> cauchygreen;
+  CORE::LINALG::Matrix<3, 3> cauchygreen;
   cauchygreen.MultiplyTN(defgrd, defgrd);
 
   // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  LINALG::Matrix<6, 1> glstrain;
+  CORE::LINALG::Matrix<6, 1> glstrain;
   glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -419,7 +419,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
   */
 
   // 6x12 n_stresses * number degrees of freedom per element
-  LINALG::Matrix<6, 12> bop;
+  CORE::LINALG::Matrix<6, 12> bop;
   for (int i = 0; i < 4; i++)
   {
     bop(0, 3 * i + 0) = defgrd(0, 0) * nxyz_(i, 0);
@@ -444,15 +444,15 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
   }
 
   //------------------------------------------------- call material law
-  LINALG::Matrix<6, 6> cmat(true);
-  LINALG::Matrix<6, 1> stress(true);
-  LINALG::Matrix<6, 1> glstrainbar(false);
+  CORE::LINALG::Matrix<6, 6> cmat(true);
+  CORE::LINALG::Matrix<6, 1> stress(true);
+  CORE::LINALG::Matrix<6, 1> glstrainbar(false);
   double density = -999.99;
 #ifndef PUSOSOLBERG  // dev stab on cauchy stresses
   {
     // do deviatoric F, C, E
     const double J = defgrd.Determinant();
-    LINALG::Matrix<3, 3> Cbar(cauchygreen);
+    CORE::LINALG::Matrix<3, 3> Cbar(cauchygreen);
     Cbar.Scale(pow(J, -2. / 3.));
     glstrainbar(0) = 0.5 * (Cbar(0, 0) - 1.0);
     glstrainbar(1) = 0.5 * (Cbar(1, 1) - 1.0);
@@ -460,15 +460,15 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
     glstrainbar(3) = Cbar(0, 1);
     glstrainbar(4) = Cbar(1, 2);
     glstrainbar(5) = Cbar(2, 0);
-    LINALG::Matrix<3, 3> Fbar(false);
+    CORE::LINALG::Matrix<3, 3> Fbar(false);
     Fbar.SetCopy(defgrd.A());
     Fbar.Scale(pow(J, -1. / 3.));
 
     SelectMaterial(stress, cmat, density, glstrainbar, Fbar, 0);
 
     // define stuff we need to do the split
-    LINALG::Matrix<6, 6> cmatdev;  // set to zero?
-    LINALG::Matrix<6, 1> stressdev;
+    CORE::LINALG::Matrix<6, 6> cmatdev;  // set to zero?
+    CORE::LINALG::Matrix<6, 1> stressdev;
 
     // do just the deviatoric components
     NStetType::DevStressTangent(stressdev, cmatdev, cmat, stress, cauchygreen);
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
       case INPAR::STR::strain_ea:
       {
         if (elestrain == nullptr) dserror("no strain data available");
-        LINALG::Matrix<3, 3> gl;
+        CORE::LINALG::Matrix<3, 3> gl;
         gl(0, 0) = glstrainbar(0);  // divide off-diagonals by 2
         gl(0, 1) = 0.5 * glstrainbar(3);
         gl(0, 2) = 0.5 * glstrainbar(5);
@@ -512,18 +512,18 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
         gl(2, 2) = glstrainbar(2);
 
 #ifndef PUSOSOLBERG
-        LINALG::Matrix<3, 3> Fbar(false);
+        CORE::LINALG::Matrix<3, 3> Fbar(false);
         Fbar.SetCopy(defgrd.A());
         Fbar.Scale(pow(defgrd.Determinant(), -1. / 3.));
-        LINALG::Matrix<3, 3> invdefgrd;
+        CORE::LINALG::Matrix<3, 3> invdefgrd;
         invdefgrd.Invert(Fbar);
 #else
-        LINALG::Matrix<3, 3> invdefgrd;
+        CORE::LINALG::Matrix<3, 3> invdefgrd;
         invdefgrd.Invert(defgrd);
 #endif
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> euler_almansi;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -556,7 +556,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
       {
         if (elestress == nullptr) dserror("no stress data available");
 
-        LINALG::Matrix<3, 3> pkstress;
+        CORE::LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);  // ALPHA_NSTET scaling is already in stress
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -567,11 +567,11 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
 
 #ifndef PUSOSOLBERG
-        LINALG::Matrix<3, 3> Fbar(false);
+        CORE::LINALG::Matrix<3, 3> Fbar(false);
         Fbar.SetCopy(defgrd.A());
         Fbar.Scale(pow(defgrd.Determinant(), -1. / 3.));
         temp.Multiply(1.0 / Fbar.Determinant(), Fbar, pkstress);
@@ -610,7 +610,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
   {
     // integrate elastic stiffness matrix
     // keu = keu + (B^T . C . B) * V_
-    LINALG::Matrix<6, 12> cb;
+    CORE::LINALG::Matrix<6, 12> cb;
     cb.Multiply(cmat, bop);
     stiffmatrix->MultiplyTN(V_, bop, cb, 1.0);
     // integrate `geometric' stiffness matrix and add to keu
@@ -661,7 +661,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
     xsi[3][3] = alpha;
     for (auto& gp : xsi)
     {
-      LINALG::Matrix<4, 1> funct;
+      CORE::LINALG::Matrix<4, 1> funct;
       ShapeFunction(funct, gp[0], gp[1], gp[2], gp[3]);
       const double f = density * V * weight;
       for (int i = 0; i < 4; ++i)
@@ -682,7 +682,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::nstetlumpmass(LINALG::Matrix<12, 12>* emass)
+void DRT::ELEMENTS::NStet::nstetlumpmass(CORE::LINALG::Matrix<12, 12>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -705,8 +705,9 @@ void DRT::ELEMENTS::NStet::nstetlumpmass(LINALG::Matrix<12, 12>* emass)
 /*----------------------------------------------------------------------*
  | material laws for NStet (protected)                          gee 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
-    double& density, LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<3, 3>& defgrd, int gp)
+void DRT::ELEMENTS::NStet::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
+    CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
+    CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
   Epetra_SerialDenseVector stress_e(::View, stress.A(), stress.Rows());
   Epetra_SerialDenseMatrix cmat_e(::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());

@@ -86,10 +86,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  D_ = Teuchos::rcp(new LINALG::SparseMatrix(
-      *(arterydis_->DofRowMap()), 27, false, true, LINALG::SparseMatrix::FE_MATRIX));
-  M_ = Teuchos::rcp(new LINALG::SparseMatrix(
-      *(arterydis_->DofRowMap()), 27, false, true, LINALG::SparseMatrix::FE_MATRIX));
+  D_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
+  M_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *(arterydis_->DofRowMap()), 27, false, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
   kappaInv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->DofRowMap(), true));
 
   // full map of continous and artery dofs
@@ -97,13 +97,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Init()
   maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->DofRowMap())));
   maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->DofRowMap())));
 
-  fullmap_ = LINALG::MultiMapExtractor::MergeMaps(maps);
+  fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+  globalex_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
   globalex_->Setup(*fullmap_, maps);
 
-  FEmat_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*fullmap_, 81, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  FEmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *fullmap_, 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   FErhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
 
@@ -167,7 +167,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::GetCouplin
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) dserror("Setup() has not been called");
 
@@ -188,10 +188,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::Evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSystem(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont, Teuchos::RCP<const Epetra_Map> dbcmap_art,
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
+    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const Epetra_Map> dbcmap_art,
     Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed)
 {
   // add normal part to rhs
@@ -200,8 +202,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
 
   // apply DBCs
   // 1) on vector
-  LINALG::ApplyDirichlettoSystem(rhs, zeros_cont_, *(dbcmap_cont->CondMap()));
-  LINALG::ApplyDirichlettoSystem(rhs, zeros_art_, *(dbcmap_art));
+  CORE::LINALG::ApplyDirichlettoSystem(rhs, zeros_cont_, *(dbcmap_cont->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(rhs, zeros_art_, *(dbcmap_art));
   // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
@@ -218,7 +220,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
   sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
-  sysmat_cont->Assign(LINALG::View, sysmat->Matrix(0, 0));
+  sysmat_cont->Assign(CORE::LINALG::View, sysmat->Matrix(0, 0));
 }
 
 /*----------------------------------------------------------------------*
@@ -410,7 +412,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetVarying
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCouplingPairs(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // reset
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
@@ -424,16 +426,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   FErhs_->PutScalar(0.0);
 
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element mortar coupling matrices
-  LINALG::SerialDenseMatrix D_ele;
-  LINALG::SerialDenseMatrix M_ele;
-  LINALG::SerialDenseVector Kappa_ele;
+  CORE::LINALG::SerialDenseMatrix D_ele;
+  CORE::LINALG::SerialDenseMatrix M_ele;
+  CORE::LINALG::SerialDenseVector Kappa_ele;
 
   // set states
   if (contdis_->Name() == "porofluid")
@@ -491,8 +493,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
   rhs->Update(1.0, *FErhs_, 0.0);
 
   FEmat_->Complete();
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockartery =
-      FEmat_->Split<LINALG::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blockartery =
+      FEmat_->Split<CORE::LINALG::DefaultBlockMatrixStrategy>(*globalex_, *globalex_);
 
   blockartery->Complete();
   sysmat->Matrix(1, 0).Add(blockartery->Matrix(1, 0), false, 1.0, 0.0);
@@ -510,9 +512,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::EvaluateCo
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
-        std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+        const double& integrated_diam, std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+        std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
   const DRT::Element* ele2 = contdis_->gElement(ele2gid);
@@ -539,8 +541,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssembleDMKappa(
-    const int& ele1gid, const int& ele2gid, const LINALG::SerialDenseMatrix& D_ele,
-    const LINALG::SerialDenseMatrix& M_ele, const LINALG::SerialDenseVector& Kappa_ele)
+    const int& ele1gid, const int& ele2gid, const CORE::LINALG::SerialDenseMatrix& D_ele,
+    const CORE::LINALG::SerialDenseMatrix& M_ele, const CORE::LINALG::SerialDenseVector& Kappa_ele)
 {
   const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
   const DRT::Element* ele2 = contdis_->gElement(ele2gid);
@@ -563,7 +565,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoGlobalForceStiff(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // invert
   InvertKappa();
@@ -573,26 +575,26 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoG
   M_->Complete(*contdis_->DofRowMap(), *arterydis_->DofRowMap());
 
   // get kappa matrix
-  Teuchos::RCP<LINALG::SparseMatrix> kappaInvMat =
-      Teuchos::rcp(new LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappaInv_, 0)));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kappaInvMat =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*new Epetra_Vector(Copy, *kappaInv_, 0)));
   kappaInvMat->Complete();
 
   // kappa^{-1}*M
-  Teuchos::RCP<LINALG::SparseMatrix> km =
-      LINALG::MLMultiply(*kappaInvMat, false, *M_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> km =
+      CORE::LINALG::MLMultiply(*kappaInvMat, false, *M_, false, false, false, true);
   // kappa^{-1}*D
-  Teuchos::RCP<LINALG::SparseMatrix> kd =
-      LINALG::MLMultiply(*kappaInvMat, false, *D_, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> kd =
+      CORE::LINALG::MLMultiply(*kappaInvMat, false, *D_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
-  Teuchos::RCP<LINALG::SparseMatrix> dtkd =
-      LINALG::MLMultiply(*D_, true, *kd, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkd =
+      CORE::LINALG::MLMultiply(*D_, true, *kd, false, false, false, true);
   // D^T*kappa^{-1}*M
-  Teuchos::RCP<LINALG::SparseMatrix> dtkm =
-      LINALG::MLMultiply(*D_, true, *km, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dtkm =
+      CORE::LINALG::MLMultiply(*D_, true, *km, false, false, false, true);
   // M^T*kappa^{-1}*M
-  Teuchos::RCP<LINALG::SparseMatrix> mtkm =
-      LINALG::MLMultiply(*M_, true, *km, false, false, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mtkm =
+      CORE::LINALG::MLMultiply(*M_, true, *km, false, false, false, true);
 
   // add matrices
   sysmat->Matrix(0, 0).Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);

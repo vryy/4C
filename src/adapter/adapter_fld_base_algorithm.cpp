@@ -146,7 +146,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::null;
 
   switch (DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(fdyn, "MESHTYING"))
   {
@@ -196,8 +196,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       }
 
       // create solver objects
-      solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver =
+          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
+              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       // add sub block solvers/smoothers to block preconditioners
       switch (azprectype)
@@ -241,8 +242,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
-          actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      solver =
+          Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(mshsolver),
+              actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
     }
     break;
     case INPAR::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -256,8 +258,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         dserror(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
-      solver =
-          Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+      solver = Teuchos::rcp(
+          new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
               actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       break;
@@ -1303,8 +1305,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
     dserror(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
-  Teuchos::RCP<LINALG::Solver> solver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+  Teuchos::RCP<CORE::LINALG::Solver> solver =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
           discret->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   discret->ComputeNullSpaceIfNecessary(solver->Params(), true);
@@ -1619,7 +1621,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
-    const Teuchos::RCP<LINALG::Solver> solver, const Teuchos::ParameterList& fdyn)
+    const Teuchos::RCP<CORE::LINALG::Solver> solver, const Teuchos::ParameterList& fdyn)
 {
   // The SIMPLER (yes,no) parameter only controls whether the fluid matrix is
   // assembled into a 2x2 blocked operator or a plain 1x1 block matrix

@@ -249,12 +249,12 @@ void CORE::GEO::CUT::Point::CutLines(Side* side, plain_line_set& cut_lines)
 }
 
 
-double CORE::GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
+double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& coord)
 {
   std::map<Edge*, double>::iterator i = t_.find(edge);
   if (i == t_.end())
   {
-    LINALG::Matrix<3, 1> x(coord.A());
+    CORE::LINALG::Matrix<3, 1> x(coord.A());
 
     Point* p1 = edge->BeginNode()->point();
     Point* p2 = edge->EndNode()->point();
@@ -265,8 +265,8 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
 
     if (p2 == this) return 1;
 
-    LINALG::Matrix<3, 1> x1;
-    LINALG::Matrix<3, 1> x2;
+    CORE::LINALG::Matrix<3, 1> x1;
+    CORE::LINALG::Matrix<3, 1> x2;
 
     p1->Coordinates(x1.A());
     p2->Coordinates(x2.A());
@@ -274,14 +274,14 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
 
-    LINALG::Matrix<3, 1, ClnWrapper> _cln;
+    CORE::LINALG::Matrix<3, 1, ClnWrapper> _cln;
     int prec_old = ClnWrapper::precision_;
     ClnWrapper::precision_ = 50;
     int prec = ClnWrapper::GetPrecision();
     ConvDoulbeCLN(x, x_cln., prec);
 
-    LINALG::Matrix<3, 1, ClnWrapper> x1_cln;
-    LINALG::Matrix<3, 1, ClnWrapper> x2_cln;
+    CORE::LINALG::Matrix<3, 1, ClnWrapper> x1_cln;
+    CORE::LINALG::Matrix<3, 1, ClnWrapper> x2_cln;
 
     ConvDoulbeCLN(x1, x1_cln., prec);
     ConvDoulbeCLN(x2, x2_cln., prec);
@@ -412,7 +412,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const LINALG::Matrix<3, 1>& coord)
 
 double CORE::GEO::CUT::Point::t(Edge* edge)
 {
-  LINALG::Matrix<3, 1> x;
+  CORE::LINALG::Matrix<3, 1> x;
   Coordinates(x.A());
   double rv = CORE::GEO::CUT::Point::t(edge, x);
   return rv;
@@ -478,8 +478,8 @@ bool CORE::GEO::CUT::Point::NodalPoint(const std::vector<Node*>& nodes) const
 bool CORE::GEO::CUT::Point::AlmostNodalPoint(
     const std::vector<Node*>& nodes, double tolerance) const
 {
-  LINALG::Matrix<3, 1> np;
-  LINALG::Matrix<3, 1> p;
+  CORE::LINALG::Matrix<3, 1> np;
+  CORE::LINALG::Matrix<3, 1> p;
 
   this->Coordinates(p.A());
 
@@ -768,11 +768,11 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
       GEO::CUT::OUTPUT::GmshEndSection(file, false);
       file << "// " << GetCreationInfo(*it) << "\n";
 
-      std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>>::iterator merged =
-          merged_points_info_.find(or_cut);
+      std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>::iterator
+          merged = merged_points_info_.find(or_cut);
       if (merged != merged_points_info_.end())
       {
-        std::pair<LINALG::Matrix<3, 1>, bool>& merged_coord = merged->second;
+        std::pair<CORE::LINALG::Matrix<3, 1>, bool>& merged_coord = merged->second;
         if (merged_coord.second)
         {
           file << "// original point coordinates from real intersection \n";
@@ -868,7 +868,7 @@ void CORE::GEO::CUT::Point::Replace(Point* p)
     parallel_cut_surfaces.swap(new_surfaces);
   }
 
-  LINALG::Matrix<3, 1> real_coord;
+  CORE::LINALG::Matrix<3, 1> real_coord;
   Coordinates(real_coord.A());
   for (Edge* e : cut_edges_)
   {
@@ -1004,9 +1004,9 @@ const std::string& GEO::CUT::Point::GetAdditionalCreationInfo()
 
 
 void GEO::CUT::Point::AddMergedPair(
-    const std::pair<Side*, Edge*>& inter, LINALG::Matrix<3, 1>* coord)
+    const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord)
 {
-  std::map<std::pair<Side*, Edge*>, std::pair<LINALG::Matrix<3, 1>, bool>>::iterator merged =
+  std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>::iterator merged =
       merged_points_info_.find(inter);
   if (merged != merged_points_info_.end())
   {
@@ -1017,7 +1017,7 @@ void GEO::CUT::Point::AddMergedPair(
     merged_points_info_[inter] = std::make_pair(*coord, true);
   else
   {
-    LINALG::Matrix<3, 1> dummy;
+    CORE::LINALG::Matrix<3, 1> dummy;
     merged_points_info_[inter] = std::make_pair(dummy, false);
   }
 }
@@ -1082,16 +1082,16 @@ void CORE::GEO::CUT::FindCommonElements(
 
 double CORE::GEO::CUT::DistanceBetweenPoints(Point* p1, Point* p2)
 {
-  LINALG::Matrix<3, 1> p1_x;
+  CORE::LINALG::Matrix<3, 1> p1_x;
   p1->Coordinates(p1_x.A());
-  LINALG::Matrix<3, 1> p2_x;
+  CORE::LINALG::Matrix<3, 1> p2_x;
   p2->Coordinates(p2_x.A());
   return DistanceBetweenPoints(p1_x, p2_x);
 }
 
-double CORE::GEO::CUT::DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 1>& coord_b)
+double CORE::GEO::CUT::DistanceBetweenPoints(Point* p1, const CORE::LINALG::Matrix<3, 1>& coord_b)
 {
-  LINALG::Matrix<3, 1> p1_x;
+  CORE::LINALG::Matrix<3, 1> p1_x;
   p1->Coordinates(p1_x.A());
   return DistanceBetweenPoints(p1_x, coord_b);
 }
@@ -1099,7 +1099,7 @@ double CORE::GEO::CUT::DistanceBetweenPoints(Point* p1, const LINALG::Matrix<3, 
 template <unsigned probDim>
 void CORE::GEO::CUT::ConcretePoint<probDim>::MovePoint(const double* new_coord)
 {
-  LINALG::Matrix<3, 1> coordm(new_coord, true);
+  CORE::LINALG::Matrix<3, 1> coordm(new_coord, true);
   if (CORE::GEO::CUT::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
     dserror("The point is not allowed to be moved that much");
 

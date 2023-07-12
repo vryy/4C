@@ -25,7 +25,7 @@ namespace STR
   }  // namespace TIMINT
 }  // namespace STR
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -61,7 +61,7 @@ namespace STR
 
        private:
         //! stiffness matrix after scaling
-        Teuchos::RCP<LINALG::SparseMatrix> stiff_scaled_;
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
         const enum INPAR::STR::STC_Scale stcscale_;
@@ -70,7 +70,7 @@ namespace STR
         const int stclayer_;
 
         //! scaling matrix for STC
-        Teuchos::RCP<LINALG::SparseMatrix> stcmat_;
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;
       };
     }  // namespace LinSystem
   }    // namespace NLN

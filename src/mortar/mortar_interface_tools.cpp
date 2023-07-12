@@ -123,7 +123,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
         MORTAR::MortarElement* element =
             dynamic_cast<MORTAR::MortarElement*>(idiscret_->lRowElement(i));
         int nnodes = element->NumNode();
-        LINALG::SerialDenseMatrix coord(3, nnodes);
+        CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
         element->GetNodalCoords(coord);
         double color = (double)element->Owner();
 

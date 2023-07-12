@@ -73,7 +73,7 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(DRT::Discretization& dis
  |  StoreDirichletStatus                                     farah 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::StoreDirichletStatus(
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps)
 {
   if (HaveMeshtying()) MtManager()->GetStrategy().StoreDirichletStatus(dbcmaps);
   if (HaveContact()) ContactManager()->GetStrategy().StoreDirichletStatus(dbcmaps);

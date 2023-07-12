@@ -24,10 +24,10 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -58,7 +58,7 @@ namespace UTILS
     bool HaveSpringDashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
-    void StiffnessAndInternalForces(Teuchos::RCP<LINALG::SparseMatrix> stiff,
+    void StiffnessAndInternalForces(Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff,
         Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
 

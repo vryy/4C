@@ -175,9 +175,9 @@ void DRT::ELEMENTS::NStet::Unpack(const std::vector<char>& data)
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::so_nstet_expol(
-    LINALG::Matrix<1, 6>& stresses, LINALG::Matrix<4, 6>& nodalstresses)
+    CORE::LINALG::Matrix<1, 6>& stresses, CORE::LINALG::Matrix<4, 6>& nodalstresses)
 {
-  LINALG::Matrix<4, 1> expol;
+  CORE::LINALG::Matrix<4, 1> expol;
   expol(0, 0) = 1.0;
   expol(1, 0) = 1.0;
   expol(2, 0) = 1.0;

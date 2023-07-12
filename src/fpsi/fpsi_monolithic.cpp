@@ -19,7 +19,7 @@
 // POROELAST includes
 #include "poroelast_monolithic.H"
 
-// LINALG includes
+// CORE::LINALG includes
 #include "linear_solver_method_linalg.H"
 #include "linear_solver_method_parameters.H"
 #include "linalg_utils_sparse_algebra_assemble.H"
@@ -530,8 +530,8 @@ void FPSI::Monolithic::SetupSolver()
                   solvertype == INPAR::SOLVER::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   else
     // create a linear solver
     CreateLinearSolver();
@@ -663,7 +663,7 @@ void FPSI::Monolithic::CreateLinearSolver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       fpsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // use solver blocks for structure and fluid
@@ -756,16 +756,16 @@ void FPSI::Monolithic::LinearSolve()
 
   if (directsolve_)
   {
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sparse, iterinc_, rhs_, Teuchos::null, zeros_, *FluidField()->Interface()->FSICondMap());
     }
 
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
     // line search
@@ -782,11 +782,11 @@ void FPSI::Monolithic::LinearSolve()
     if (FSI_Interface_exists_)
     {
       // remove entries in condensed dofs from matrix and rhs...
-      LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_,
+      CORE::LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_,
           *FluidField()->Interface()->FSICondMap());
     }
 
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
     // standard solver call
@@ -796,7 +796,7 @@ void FPSI::Monolithic::LinearSolve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
+void FPSI::Monolithic::LineSearch(Teuchos::RCP<CORE::LINALG::SparseMatrix>& sparse)
 {
   // Note: the line search code seems to be experimental and is not
   // working properly (perhaps just a sign is wrong somewhere ...)
@@ -876,7 +876,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
   // copy the old iterinc_ before new solve
   if (linesearch_ and islinesearch_ == false)
   {
-    rhsold_ = LINALG::CreateVector(*DofRowMap(), true);
+    rhsold_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     rhsold_->Update(1.0, *rhs_, 0.0);
     rhsold_->Norm2(&normofrhsold_);
     if (abs(normofrhs_ - normofrhsold_) > 1.e-12 and iter_ > 1) dserror(" wrong copy of rhs_ ");
@@ -892,7 +892,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
   if (islinesearch_ == false)
   {
     // check whether iterinc_ points in right direction
-    Teuchos::RCP<Epetra_Vector> tempvec = LINALG::CreateVector(*DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> tempvec = CORE::LINALG::CreateVector(*DofRowMap(), true);
     sparse->Multiply(true, *rhs_, *tempvec);
     double climb = 0.0;
     tempvec->Dot(*iterinc_, &climb);
@@ -920,7 +920,7 @@ void FPSI::Monolithic::LineSearch(Teuchos::RCP<LINALG::SparseMatrix>& sparse)
 
   if (linesearch_ and islinesearch_ == false)
   {
-    iterincold_ = LINALG::CreateVector(*DofRowMap(), true);
+    iterincold_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     iterincold_->Update(1.0, *iterinc_, 0.0);
     iterincold_->Norm2(&normofiterincold_);
   }
@@ -936,9 +936,9 @@ Teuchos::RCP<Epetra_Map> FPSI::Monolithic::CombinedDBCMap()
       PoroField()->FluidField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> acondmap = AleField()->GetDBCMapExtractor()->CondMap();
-  Teuchos::RCP<Epetra_Map> tempmap = LINALG::MergeMap(scondmap, pfcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap_0 = LINALG::MergeMap(tempmap, fcondmap, false);
-  Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(condmap_0, acondmap, false);
+  Teuchos::RCP<Epetra_Map> tempmap = CORE::LINALG::MergeMap(scondmap, pfcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap_0 = CORE::LINALG::MergeMap(tempmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(condmap_0, acondmap, false);
 
   return condmap;
 }  // CombinedDBCMap()
@@ -1052,7 +1052,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   //  Epetra_Vector(*FluidField()->DofRowMap())); Teuchos::RCP<const Epetra_Vector> rhs_fsi =
   //  Teuchos::rcp(new
   //  Epetra_Vector(*FluidField()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
-  //  rhs_fullfluid = LINALG::MergeVector(rhs_fluid,rhs_fsi,false);
+  //  rhs_fullfluid = CORE::LINALG::MergeVector(rhs_fluid,rhs_fsi,false);
 
   rhs_fluidvelocity = FluidField()->ExtractVelocityPart(rhs_fluid);
   rhs_fluidpressure = FluidField()->ExtractPressurePart(rhs_fluid);
@@ -1113,7 +1113,7 @@ void FPSI::Monolithic::BuildConvergenceNorms()
   //  Epetra_Vector(*FluidField()->DofRowMap())); Teuchos::RCP<const Epetra_Vector> iterincfsi =
   //  Teuchos::rcp(new
   //  Epetra_Vector(*FluidField()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
-  //  iterincfullfluid = LINALG::MergeVector(iterincfluid,iterincfsi,false);
+  //  iterincfullfluid = CORE::LINALG::MergeVector(iterincfluid,iterincfsi,false);
 
   iterincfluidvelocity = FluidField()->ExtractVelocityPart(iterincfluid);
   iterincfluidpressure = FluidField()->ExtractPressurePart(iterincfluid);
@@ -1478,11 +1478,11 @@ void FPSI::Monolithic::SetupNewton()
 
 
   // incremental solution vector with length of all dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 }
 
@@ -1530,13 +1530,13 @@ void FPSI::Monolithic::FPSIFDCheck()
   // matrices and vectors
   //////////////////////////////////////////////////////////////
   // build artificial iteration increment
-  Teuchos::RCP<Epetra_Vector> iterinc = LINALG::CreateVector(*DofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
   const int dofs = iterinc->GlobalLength();
   iterinc->PutScalar(0.0);
   iterinc->ReplaceGlobalValue(0, 0, delta);
 
   // build approximated FD stiffness matrix
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = CORE::LINALG::CreateMatrix(*DofRowMap(), 81);
 
   // store old rhs
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
@@ -1544,10 +1544,10 @@ void FPSI::Monolithic::FPSIFDCheck()
 
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sparse->EpetraMatrix(), CORE::LINALG::Copy));
 
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
@@ -1581,9 +1581,9 @@ void FPSI::Monolithic::FPSIFDCheck()
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     PoroField()->ClearPoroIterinc();
-    LINALG::ApplyDirichlettoSystem(sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_,
+    CORE::LINALG::ApplyDirichlettoSystem(sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_,
         *FluidField()->Interface()->FSICondMap());
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
 
     rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative
@@ -1622,8 +1622,8 @@ void FPSI::Monolithic::FPSIFDCheck()
   int err = stiff_approx->FillComplete();
   if (err) dserror("FD_Check: FillComplete failed with err-code: %d", err);
 
-  Teuchos::RCP<LINALG::SparseMatrix> temp =
-      Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp->EpetraMatrix();
 

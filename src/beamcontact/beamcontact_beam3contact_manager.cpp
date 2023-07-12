@@ -74,8 +74,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
       step_(0)
 {
   // initialize vectors of contact forces
-  fc_ = LINALG::CreateVector(*discret.DofRowMap(), false);
-  fcold_ = LINALG::CreateVector(*discret.DofRowMap(), false);
+  fc_ = CORE::LINALG::CreateVector(*discret.DofRowMap(), false);
+  fcold_ = CORE::LINALG::CreateVector(*discret.DofRowMap(), false);
   fc_->PutScalar(0.0);
   fcold_->PutScalar(0.0);
 
@@ -282,8 +282,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
     std::cout << "================================================================\n" << std::endl;
   }
 
-  dis_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
-  dis_old_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
+  dis_ = CORE::LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
+  dis_old_ = CORE::LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
 
 
 
@@ -424,7 +424,7 @@ void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
+void CONTACT::Beam3cmanager::Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
     const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
@@ -439,7 +439,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_
   dis_->Update(1.0, disrow, 0.0);
 
   // map linking node numbers and current node positions
-  std::map<int, LINALG::Matrix<3, 1>> currentpositions;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currentpositions;
   currentpositions.clear();
   // extract fully overlapping displacement vector on contact discretization from
   // displacement vector in row map format on problem discretization
@@ -550,7 +550,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_
   fc_->PutScalar(0.0);
 
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = Teuchos::rcp(new LINALG::SparseMatrix(stiffmatrix.RangeMap(), 100));
+  stiffc_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiffmatrix.RangeMap(), 100));
   stiffmatrix.UnComplete();
 
 
@@ -629,7 +629,7 @@ void CONTACT::Beam3cmanager::ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vec
     double disp = disrow[(*ProblemDiscret().DofRowMap()).LID(problem_gid)];
     discrow.ReplaceGlobalValue(btsolcontact_gid, 0, disp);
   }
-  LINALG::Export(discrow, disccol);
+  CORE::LINALG::Export(discrow, disccol);
 
   return;
 }
@@ -907,9 +907,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
-  LINALG::Gather<int>(
+  CORE::LINALG::Gather<int>(
       stproc, rtproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
-  LINALG::Gather<int>(
+  CORE::LINALG::Gather<int>(
       estproc, ertproc, BTSolDiscret().Comm().NumProc(), allproc.data(), BTSolDiscret().Comm());
 
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
@@ -919,8 +919,9 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
   std::vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  LINALG::Gather<int>(sdata, rdata, (int)rtproc.size(), rtproc.data(), BTSolDiscret().Comm());
-  LINALG::Gather<int>(esdata, erdata, (int)ertproc.size(), ertproc.data(), BTSolDiscret().Comm());
+  CORE::LINALG::Gather<int>(sdata, rdata, (int)rtproc.size(), rtproc.data(), BTSolDiscret().Comm());
+  CORE::LINALG::Gather<int>(
+      esdata, erdata, (int)ertproc.size(), ertproc.data(), BTSolDiscret().Comm());
 
   // build completely overlapping node map (on participating processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -981,7 +982,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetCurrentPositions(
-    std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
 {
   //**********************************************************************
   // get positions of all nodes (fully overlapping map) and store
@@ -1003,7 +1004,7 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(
     std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
     // nodal positions
-    LINALG::Matrix<3, 1> currpos;
+    CORE::LINALG::Matrix<3, 1> currpos;
     currpos(0) = node->X()[0] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[0])];
     currpos(1) = node->X()[1] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[1])];
     currpos(2) = node->X()[2] + disccol[BTSolDiscret().DofColMap()->LID(dofnode[2])];
@@ -1019,11 +1020,11 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetState(
-    std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const Epetra_Vector& disccol)
 {
   // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with
   // the node ID
-  std::map<int, LINALG::Matrix<3, 1>> currenttangents;
+  std::map<int, CORE::LINALG::Matrix<3, 1>> currenttangents;
   currenttangents.clear();
 
   // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in
@@ -1045,7 +1046,7 @@ void CONTACT::Beam3cmanager::SetState(
       // get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
-      LINALG::Matrix<3, 1> currtan(true);
+      CORE::LINALG::Matrix<3, 1> currtan(true);
       for (int i = 0; i < numnodes_;
            i++)  // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many
                  // nodes the function call node->Elements()[0]->NumNode() would tell you)
@@ -1107,7 +1108,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1119,7 +1120,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1129,7 +1130,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
@@ -1139,7 +1140,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele2pos(n + 3, m) = temptan(n);
@@ -1170,7 +1171,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1182,7 +1183,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1192,7 +1193,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < (btsolpairs_[i]->Element2())->NumNode(); m++)
     {
       int tempGID = ((btsolpairs_[i]->Element2())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
@@ -1214,7 +1215,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1226,7 +1227,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1238,7 +1239,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < (btsolmtgroups_[i]->Element2()[e])->NumNode(); m++)
       {
         int tempGID = ((btsolmtgroups_[i]->Element2()[e])->NodeIds())[m];
-        LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+        CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
         // store updated nodal coordinates
         for (int n = 0; n < 3; n++) (ele2pos[e])(n, m) = temppos(n);
       }
@@ -1258,7 +1259,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1270,7 +1271,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1278,7 +1279,7 @@ void CONTACT::Beam3cmanager::SetState(
     }
     // Positions: (rigid sphere element)
     int tempGID = ((btsphpairs_[i]->Element2())->NodeIds())[0];
-    LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+    CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
     // store updated nodal coordinates
     for (int n = 0; n < 3; n++) ele2pos(n, 0) = temppos(n);
 
@@ -1296,7 +1297,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1308,7 +1309,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1318,7 +1319,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
     }
@@ -1328,7 +1329,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele2pos(n + 3, m) = temptan(n);
@@ -1349,7 +1350,7 @@ void CONTACT::Beam3cmanager::SetState(
     for (int m = 0; m < numnodes_; m++)
     {
       int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-      LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
 
       // store updated nodal coordinates
       for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
@@ -1361,7 +1362,7 @@ void CONTACT::Beam3cmanager::SetState(
       for (int m = 0; m < numnodes_; m++)
       {
         int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
+        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
 
         // store updated nodal tangents
         for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
@@ -1369,7 +1370,7 @@ void CONTACT::Beam3cmanager::SetState(
     }
     // Positions: (rigid sphere element)
     int tempGID = ((btsphpotpairs_[i]->Element2())->NodeIds())[0];
-    LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
+    CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
     // store updated nodal coordinates
     for (int n = 0; n < 3; n++) ele2pos(n, 0) = temppos(n);
 
@@ -2062,7 +2063,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
  |  search possible contact element pairs                     popp 04/10|
  *----------------------------------------------------------------------*/
 std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch(
-    std::map<int, LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
+    std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const double searchradius,
     const double sphericalsearchradius)
 {
   //**********************************************************************
@@ -2106,7 +2107,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
       }
     }
 
-    LINALG::Matrix<3, 1> firstpos = currentpositions[firstgid];
+    CORE::LINALG::Matrix<3, 1> firstpos = currentpositions[firstgid];
 
     // create storage for neighbouring nodes to be excluded.
     std::vector<int> neighbournodeids(0);
@@ -2140,7 +2141,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
       // TODO see comment above
       if (currentpositions.find(secondgid) == currentpositions.end()) continue;
 
-      LINALG::Matrix<3, 1> secondpos = currentpositions[secondgid];
+      CORE::LINALG::Matrix<3, 1> secondpos = currentpositions[secondgid];
 
       // nothing to do for identical pair
       if (firstgid == secondgid) continue;
@@ -2158,7 +2159,7 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
       // compute distance by comparing firstpos <-> secondpos
       if (neighbouring == false)
       {
-        LINALG::Matrix<3, 1> distance;
+        CORE::LINALG::Matrix<3, 1> distance;
         for (int k = 0; k < 3; k++) distance(k) = secondpos(k) - firstpos(k);
 
         // nodes are near if distance < search radius
@@ -2870,9 +2871,9 @@ void CONTACT::Beam3cmanager::GmshOutput(
                   dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
 
               int nnodescl = 2;
-              LINALG::SerialDenseMatrix nodalcoords(3, nnodescl);
-              LINALG::SerialDenseMatrix nodaltangents(3, nnodescl);
-              LINALG::SerialDenseMatrix coord(3, n_axial);
+              CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodescl);
+              CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodescl);
+              CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
 
               // compute current nodal positions (center line only)
               for (int i = 0; i < 3; ++i)
@@ -2905,7 +2906,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
                       i * 2.0 /
                           (n_axial -
                               1);  // parameter coordinate of position vector on beam centerline
-                  LINALG::Matrix<3, 1> r;
+                  CORE::LINALG::Matrix<3, 1> r;
                   ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
                   for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -2929,7 +2930,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
           {
             // prepare storage for nodal coordinates
             int nnodes = element->NumNode();
-            LINALG::SerialDenseMatrix coord(3, nnodes);
+            CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
 
             // compute current nodal positions
             for (int id = 0; id < 3; ++id)
@@ -2990,9 +2991,9 @@ void CONTACT::Beam3cmanager::GmshOutput(
           const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->NumNode();
-          LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
-          LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
-          LINALG::SerialDenseMatrix coord(3, n_axial);
+          CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
+          CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
+          CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
 
           // compute current nodal positions
           for (int i = 0; i < 3; ++i)
@@ -3024,7 +3025,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
             {
               // parameter coordinate of position vector on beam centerline
               double xi = -1.0 + i * 2.0 / (n_axial - 1);
-              LINALG::Matrix<3, 1> r;
+              CORE::LINALG::Matrix<3, 1> r;
               ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -3050,9 +3051,9 @@ void CONTACT::Beam3cmanager::GmshOutput(
           const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->NumNode();
-          LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
-          LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
-          LINALG::SerialDenseMatrix coord(3, n_axial);
+          CORE::LINALG::SerialDenseMatrix nodalcoords(3, nnodes);
+          CORE::LINALG::SerialDenseMatrix nodaltangents(3, nnodes);
+          CORE::LINALG::SerialDenseMatrix coord(3, n_axial);
 
           // compute current nodal positions
           for (int i = 0; i < 3; ++i)
@@ -3082,8 +3083,8 @@ void CONTACT::Beam3cmanager::GmshOutput(
           if (ele->RotVec())
           {
             // compute tangents from rotation vectors
-            LINALG::Matrix<3, 1> theta;
-            LINALG::Matrix<3, 3> R;
+            CORE::LINALG::Matrix<3, 1> theta;
+            CORE::LINALG::Matrix<3, 3> R;
             for (int j = 0; j < element->NumNode(); ++j)
             {
               theta(0) = nodaltangents(0, j);
@@ -3120,7 +3121,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
                   -1.0 +
                   i * 2.0 /
                       (n_axial - 1);  // parameter coordinate of position vector on beam centerline
-              LINALG::Matrix<3, 1> r;
+              CORE::LINALG::Matrix<3, 1> r;
               ele->GetPosAtXi(r, xi, disp_totlag);  // position vector on beam centerline
 
               for (int j = 0; j < 3; j++) coord(j, i) = r(j);
@@ -3147,17 +3148,17 @@ void CONTACT::Beam3cmanager::GmshOutput(
       // loop over pairs vector in order to print normal vector
       for (int i = 0; i < (int)pairs_.size(); ++i)
       {
-        std::vector<LINALG::Matrix<3, 1>> r1_vec = pairs_[i]->GetX1();
-        std::vector<LINALG::Matrix<3, 1>> r2_vec = pairs_[i]->GetX2();
+        std::vector<CORE::LINALG::Matrix<3, 1>> r1_vec = pairs_[i]->GetX1();
+        std::vector<CORE::LINALG::Matrix<3, 1>> r2_vec = pairs_[i]->GetX2();
         std::vector<double> contactforce = pairs_[i]->GetContactForce();
 
         int numcps = pairs_[i]->GetNumCps();
 
         for (int j = 0; j < (int)r1_vec.size(); j++)
         {
-          LINALG::Matrix<3, 1> normal(true);
-          LINALG::Matrix<3, 1> r1(true);
-          LINALG::Matrix<3, 1> r2(true);
+          CORE::LINALG::Matrix<3, 1> normal(true);
+          CORE::LINALG::Matrix<3, 1> r1(true);
+          CORE::LINALG::Matrix<3, 1> r2(true);
 
           double fac = 1.0;
           double color = 1.0;
@@ -5303,7 +5304,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->NumNode();
-  LINALG::SerialDenseMatrix coord(3, nnodes);
+  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
 
   // Compute current nodal positions
   for (int i_dim = 0; i_dim < 3; i_dim++)
@@ -5409,7 +5410,7 @@ void CONTACT::Beam3cmanager::GMSH_SolidSurfaceElementNumbers(
 {
   // Prepare storage for nodal coordinates
   int nnodes = element->NumNode();
-  LINALG::SerialDenseMatrix coord(3, nnodes);
+  CORE::LINALG::SerialDenseMatrix coord(3, nnodes);
 
   // Compute current nodal positions
   for (int i_dim = 0; i_dim < 3; i_dim++)
@@ -5589,14 +5590,14 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
  | Is element midpoint distance smaller than search radius?  meier 02/14|
  *----------------------------------------------------------------------*/
 bool CONTACT::Beam3cmanager::CloseMidpointDistance(const DRT::Element* ele1,
-    const DRT::Element* ele2, std::map<int, LINALG::Matrix<3, 1>>& currentpositions,
+    const DRT::Element* ele2, std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
     const double sphericalsearchradius)
 {
   if (sphericalsearchradius == -1.0) return true;
 
-  LINALG::Matrix<3, 1> midpos1(true);
-  LINALG::Matrix<3, 1> midpos2(true);
-  LINALG::Matrix<3, 1> diffvector(true);
+  CORE::LINALG::Matrix<3, 1> midpos1(true);
+  CORE::LINALG::Matrix<3, 1> midpos2(true);
+  CORE::LINALG::Matrix<3, 1> diffvector(true);
 
   // get midpoint position of element 1
   if (ele1->NumNode() == 2)  // 2-noded beam element

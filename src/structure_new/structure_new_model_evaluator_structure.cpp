@@ -73,13 +73,14 @@ void STR::MODELEVALUATOR::Structure::Setup()
   }
 
   // displ-displ block
-  stiff_ptr_ = dynamic_cast<LINALG::SparseMatrix*>(GState().CreateStructuralStiffnessMatrixBlock());
+  stiff_ptr_ =
+      dynamic_cast<CORE::LINALG::SparseMatrix*>(GState().CreateStructuralStiffnessMatrixBlock());
 
   // modified stiffness pointer for storing element based scaling operator (PTC)
   stiff_ptc_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  if (stiff_ptr_ == NULL) dserror("Dynamic cast to LINALG::SparseMatrix failed!");
+  if (stiff_ptr_ == NULL) dserror("Dynamic cast to CORE::LINALG::SparseMatrix failed!");
 
   // get the structural dynamic content
   {
@@ -217,13 +218,13 @@ bool STR::MODELEVALUATOR::Structure::EvaluateForceStiff()
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f, const double& timefac_np) const
 {
-  LINALG::AssembleMyVector(1.0, f, -timefac_np, FextNp());
-  LINALG::AssembleMyVector(1.0, f, timefac_np, FintNp());
+  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, FextNp());
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, FintNp());
 
   // add the scaled force contributions of the old time step
   // structural dofs of the right-hand-side vector at t_{n+timefac_n} (read-only)
   Teuchos::RCP<const Epetra_Vector> fstructold_ptr = GState().GetFstructureOld();
-  LINALG::AssembleMyVector(1.0, f, 1.0, *fstructold_ptr);
+  CORE::LINALG::AssembleMyVector(1.0, f, 1.0, *fstructold_ptr);
 
   // add the visco and mass contributions
   Int().AddViscoMassContributions(f);
@@ -234,7 +235,7 @@ bool STR::MODELEVALUATOR::Structure::AssembleForce(Epetra_Vector& f, const doubl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
   int err = Stiff().Scale(timefac_np);
   GState().AssignModelBlock(jac, Stiff(), Type(), DRT::UTILS::MatBlockType::displ_displ);
@@ -254,7 +255,8 @@ bool STR::MODELEVALUATOR::Structure::InitializeInertiaAndDamping()
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   // create vector with zero entries
   Teuchos::RCP<const Epetra_Vector> zeros = Int().GetDbc().GetZerosPtr();
@@ -291,7 +293,8 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   // set vector values needed by elements
   Discret().ClearState();
@@ -365,7 +368,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffExternal()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::Structure::PreApplyForceStiffExternal(
-    Epetra_Vector& fextnp, LINALG::SparseMatrix& stiff) const
+    Epetra_Vector& fextnp, CORE::LINALG::SparseMatrix& stiff) const
 {
   CheckInitSetup();
 
@@ -383,7 +386,8 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   // set vector values needed by elements
   Discret().ClearState();
@@ -411,7 +415,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::StaticContributions(
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
@@ -434,7 +438,7 @@ void STR::MODELEVALUATOR::Structure::StaticContributions(Teuchos::RCP<Epetra_Vec
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::MaterialDampingContributions(
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat)
 {
   if (EvalData().GetDampingType() != INPAR::STR::damp_material) return;
 
@@ -456,7 +460,7 @@ void STR::MODELEVALUATOR::Structure::MaterialDampingContributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::InertialContributions(
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   CheckInitSetup();
 
@@ -617,7 +621,8 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData
   // Set dummy evaluation vectors and matrices.
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 
@@ -634,10 +639,10 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() co
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetDisN(), *disn_col);
+  CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
   Teuchos::RCP<Epetra_Vector> veln_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetVelN(), *veln_col);
+  CORE::LINALG::Export(*GState().GetVelN(), *veln_col);
 
   if (not GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
     WriteOutputRuntimeVtkStructure(disn_col, veln_col, GState().GetStepN(), GState().GetTimeN());
@@ -656,10 +661,10 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetDisNp(), *disnp_col);
+  CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
   Teuchos::RCP<Epetra_Vector> velnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetVelNp(), *velnp_col);
+  CORE::LINALG::Export(*GState().GetVelNp(), *velnp_col);
 
   const int augmented_timestep_number_incl_iteration_count =
       10000 * GState().GetStepN() + 1 * EvalData().GetNlnIter();
@@ -850,7 +855,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     // Set dummy evaluation vectors and matrices.
     std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
         Teuchos::null, Teuchos::null, Teuchos::null};
-    std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+    std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+        Teuchos::null, Teuchos::null};
 
     EvaluateInternal(eval_mat.data(), eval_vec.data());
 
@@ -923,7 +929,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
 
       Epetra_MultiVector row_nodal_data(*discret->NodeRowMap(), 6, true);
       PostprocessGaussPointDataToNodes(gp_stress_data, row_nodal_data);
-      LINALG::Export(row_nodal_data, *EvalData().GetStressDataNodePostprocessedMutable());
+      CORE::LINALG::Export(row_nodal_data, *EvalData().GetStressDataNodePostprocessedMutable());
 
       PostprocessGaussPointDataToElementCenter(
           gp_stress_data, *EvalData().GetStressDataElementPostprocessedMutable());
@@ -943,7 +949,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
 
       Epetra_MultiVector row_nodal_data(*discret->NodeRowMap(), 6, true);
       PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
-      LINALG::Export(row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
+      CORE::LINALG::Export(row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
 
       PostprocessGaussPointDataToElementCenter(
           gp_strain_data, *EvalData().GetStrainDataElementPostprocessedMutable());
@@ -974,7 +980,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructureGaussPointData()
 
     std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
         Teuchos::null, Teuchos::null, Teuchos::null};
-    std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+    std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+        Teuchos::null, Teuchos::null};
 
     EvaluateInternal(eval_mat.data(), eval_vec.data());
 
@@ -1003,7 +1010,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetDisN(), *disn_col);
+  CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
   Teuchos::RCP<CORE::GEO::MESHFREE::BoundingBox> bounding_box_ptr =
@@ -1029,7 +1036,7 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkBeams() const
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetDisN(), *disn_col);
+  CORE::LINALG::Export(*GState().GetDisN(), *disn_col);
 
   if (not GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
     WriteOutputRuntimeVtkBeams(disn_col, GState().GetStepN(), GState().GetTimeN());
@@ -1047,7 +1054,7 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkBeams() const
   const DRT::Discretization& discret = dynamic_cast<const DRT::Discretization&>(Discret());
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
-  LINALG::Export(*GState().GetDisNp(), *disnp_col);
+  CORE::LINALG::Export(*GState().GetDisNp(), *disnp_col);
 
   const int augmented_timestep_number_incl_iteration_count =
       10000 * GState().GetStepN() + 1 * EvalData().GetNlnIter();
@@ -1147,7 +1154,7 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternal(
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   PreEvaluateInternal();
 
@@ -1160,7 +1167,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   if (p.numParams() > 1)
     dserror(
@@ -1181,7 +1188,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternal(Teuchos::ParameterList& p,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
+    Teuchos::RCP<CORE::LINALG::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
     const Epetra_Map* ele_map_to_be_evaluated)
 {
   if (p.numParams() > 1)
@@ -1205,7 +1212,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(Teuchos::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateNeumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
-    const Teuchos::RCP<LINALG::SparseOperator>& eval_mat)
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", EvalDataPtr());
@@ -1216,7 +1223,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateNeumann(const Teuchos::RCP<Epetra_V
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::EvaluateNeumann(Teuchos::ParameterList& p,
     const Teuchos::RCP<Epetra_Vector>& eval_vec,
-    const Teuchos::RCP<LINALG::SparseOperator>& eval_mat)
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& eval_mat)
 {
   if (p.numParams() > 1)
     dserror(
@@ -1266,7 +1273,8 @@ void STR::MODELEVALUATOR::Structure::Predict(const INPAR::STR::PredEnum& pred_ty
   // set the matrix and vector pointers to Teuchos::null
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
@@ -1290,7 +1298,8 @@ void STR::MODELEVALUATOR::Structure::RunPostComputeX(
   // set the matrix and vector pointers to Teuchos::null
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
@@ -1358,7 +1367,8 @@ void STR::MODELEVALUATOR::Structure::EvaluateJacobianContributionsFromElementLev
   // currently a fixed number of matrix and vector pointers are supported
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvalData().SetActionType(DRT::ELEMENTS::struct_calc_addjacPTC);
 
@@ -1375,7 +1385,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateJacobianContributionsFromElementLev
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::AssembleJacobianContributionsFromElementLevelForPTC(
-    Teuchos::RCP<LINALG::SparseMatrix>& modjac, const double& timefac_n)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>& modjac, const double& timefac_n)
 {
   GState().AssignModelBlock(*modjac, StiffPTC(), Type(), DRT::UTILS::MatBlockType::displ_displ);
 }
@@ -1427,7 +1437,8 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
 
@@ -1460,7 +1471,8 @@ void STR::MODELEVALUATOR::Structure::DetermineStressStrain()
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
@@ -1485,7 +1497,8 @@ void STR::MODELEVALUATOR::Structure::DetermineStrainEnergy(
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   PreEvaluateInternal();
 
@@ -1525,7 +1538,7 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy(
     double kinetic_energy_times2 = 0.0;
 
     Teuchos::RCP<Epetra_Vector> linear_momentum =
-        LINALG::CreateVector(*GState().DofRowMapView(), true);
+        CORE::LINALG::CreateVector(*GState().DofRowMapView(), true);
 
     Mass().Multiply(false, *velnp, *linear_momentum);
 
@@ -1575,7 +1588,8 @@ void STR::MODELEVALUATOR::Structure::DetermineOptionalQuantity()
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
@@ -1604,10 +1618,10 @@ bool STR::MODELEVALUATOR::Structure::DetermineElementVolumes(
   const unsigned my_num_reles = relemap->NumMyElements();
 
   DRT::Element::LocationArray la(Discret().NumDofSets());
-  LINALG::SerialDenseVector ele_vol(6, true);
+  CORE::LINALG::SerialDenseVector ele_vol(6, true);
 
-  LINALG::SerialDenseMatrix empty_dummy_mat;
-  LINALG::SerialDenseVector empty_dummy_vec;
+  CORE::LINALG::SerialDenseMatrix empty_dummy_mat;
+  CORE::LINALG::SerialDenseVector empty_dummy_vec;
 
   STR::ELEMENTS::EvalErrorFlag ele_eval_error = STR::ELEMENTS::ele_error_none;
   for (unsigned elid = 0; elid < my_num_reles; ++elid)
@@ -1725,7 +1739,8 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 
   DiscretPtr()->ClearState();
@@ -1869,7 +1884,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
+CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 {
   CheckInit();
   if (not stiff_ptr_) dserror("NULL pointer!");
@@ -1879,7 +1894,7 @@ LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
+CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 {
   CheckInit();
   if (stiff_ptc_ptr_ == Teuchos::null) dserror("NULL pointer!");
@@ -1889,7 +1904,7 @@ LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
+CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 {
   CheckInit();
   if (GState().GetMutableMassMatrix().is_null()) dserror("NULL pointer!");
@@ -1899,7 +1914,7 @@ LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
+const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 {
   CheckInit();
   if (GState().GetMassMatrix().is_null()) dserror("NULL pointer!");
@@ -1909,7 +1924,7 @@ const LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
+CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 {
   CheckInit();
   if (GState().GetMutableDampMatrix().is_null()) dserror("NULL pointer!");
@@ -1919,7 +1934,7 @@ LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
+const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 {
   CheckInit();
   if (GState().GetDampMatrix().is_null()) dserror("NULL pointer!");
@@ -2072,7 +2087,8 @@ void STR::MODELEVALUATOR::Structure::CreateBackupState(const Epetra_Vector& dir)
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }
@@ -2092,7 +2108,8 @@ void STR::MODELEVALUATOR::Structure::RecoverFromBackupState()
   // set dummy evaluation vectors and matrices
   std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<LINALG::SparseOperator>, 2> eval_mat = {Teuchos::null, Teuchos::null};
+  std::array<Teuchos::RCP<CORE::LINALG::SparseOperator>, 2> eval_mat = {
+      Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat.data(), eval_vec.data());
 }

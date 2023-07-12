@@ -31,7 +31,7 @@ CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatri
     **             [ z_1  z_2  z_3  z_4 ]
     */
 
-    LINALG::Matrix<4, 4> jac;
+    CORE::LINALG::Matrix<4, 4> jac;
     for (int i = 0; i < 4; i++) jac(0, i) = 1;
     for (int row = 0; row < 3; row++)
       for (int col = 0; col < 4; col++) jac(row + 1, col) = coords_(row, col);
@@ -56,7 +56,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
 {
   double jac = 0.0;
 
-  LINALG::Matrix<3, 8> derivs;
+  CORE::LINALG::Matrix<3, 8> derivs;
   const double r = xi[0];
   const double s = xi[1];
   const double t = xi[2];
@@ -64,7 +64,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
   CORE::DRT::UTILS::shape_function_3D_deriv1(derivs, r, s, t, ::DRT::Element::hex8);
 
 
-  LINALG::Matrix<8, 3> xrefe;
+  CORE::LINALG::Matrix<8, 3> xrefe;
   for (int i = 0; i < 8; ++i)
   {
     xrefe(i, 0) = coords_(0, i);
@@ -72,7 +72,7 @@ double CORE::VOLMORTAR::Cell::CalcJac(const double* xi)
     xrefe(i, 2) = coords_(2, i);
   }
 
-  LINALG::Matrix<3, 3> invJ;
+  CORE::LINALG::Matrix<3, 3> invJ;
   invJ.Clear();
 
   invJ.Multiply(derivs, xrefe);
@@ -97,7 +97,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
-    LINALG::Matrix<n, 1> val;
+    CORE::LINALG::Matrix<n, 1> val;
     CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)
@@ -120,7 +120,7 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
 
     for (int i = 0; i < ndim; ++i) global[i] = 0.0;
 
-    LINALG::Matrix<n, 1> val;
+    CORE::LINALG::Matrix<n, 1> val;
     CORE::DRT::UTILS::shape_function_3D(val, local[0], local[1], local[2], shape_);
 
     for (int i = 0; i < n; ++i)

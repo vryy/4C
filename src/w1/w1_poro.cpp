@@ -34,9 +34,9 @@ DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = CORE::DRT::UTILS::secondDerivativesZero<distype>();
 
-  invJ_.resize(numgpt_, LINALG::Matrix<numdim_, numdim_>(true));
+  invJ_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, numdim_>(true));
   detJ_.resize(numgpt_, 0.0);
-  xsi_.resize(numgpt_, LINALG::Matrix<numdim_, 1>(true));
+  xsi_.resize(numgpt_, CORE::LINALG::Matrix<numdim_, 1>(true));
   anisotropic_permeability_directions_.resize(2, std::vector<double>(2, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(2, std::vector<double>(numnod_, 0.0));
 
@@ -133,13 +133,13 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   // invJ_
   int size = 0;
   ExtractfromPack(position, data, size);
-  invJ_.resize(size, LINALG::Matrix<numdim_, numdim_>(true));
+  invJ_.resize(size, CORE::LINALG::Matrix<numdim_, numdim_>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, invJ_[i]);
 
   // xsi_
   size = 0;
   ExtractfromPack(position, data, size);
-  xsi_.resize(size, LINALG::Matrix<numdim_, 1>(true));
+  xsi_.resize(size, CORE::LINALG::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) ExtractfromPack(position, data, xsi_[i]);
 
   // scatra_coupling_

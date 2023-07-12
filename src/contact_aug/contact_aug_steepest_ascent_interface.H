@@ -80,7 +80,7 @@ namespace CONTACT
 
           /// derived
           void AssembleDGGLinMatrix(
-              LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
+              CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
         };
 
       }  // namespace INTERFACE

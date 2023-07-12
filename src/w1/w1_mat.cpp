@@ -195,12 +195,12 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
-  LINALG::Matrix<6, 1> gl(false);
+  CORE::LINALG::Matrix<6, 1> gl(false);
   GreenLagrangePlane3d(strain, gl);
 
   // call 3d stress response
-  LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
-  LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
+  CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
+  CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
   MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
 
   // dimension reduction type
@@ -222,12 +222,12 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
     const double tol = 1e-6;
     const int n = 10;
     // working arrays
-    LINALG::Matrix<3, 3> crr(
+    CORE::LINALG::Matrix<3, 3> crr(
         true);  // LHS // constitutive matrix of restraint compo
                 // this matrix needs to be zeroed out for further usage
                 // in case the following while loop is entirely skipped during runtime
-    LINALG::Matrix<3, 1> rr(false);  // RHS // stress residual of restraint compo
-    LINALG::Matrix<3, 1> ir(false);  // SOL  // restraint strain components
+    CORE::LINALG::Matrix<3, 1> rr(false);  // RHS // stress residual of restraint compo
+    CORE::LINALG::Matrix<3, 1> ir(false);  // SOL  // restraint strain components
     // the Newton-Raphson loop
     while ((pserr > tol) and (i < n))
     {
@@ -278,7 +278,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
       // --- with an implicit function.
       // Thus the effect of the linearisation with respect to the
       // dependent strains must be added onto the free strains.
-      LINALG::Matrix<3, 3> cfr(false);
+      CORE::LINALG::Matrix<3, 3> cfr(false);
       cfr(0, 0) = cmat(0, 2);
       cfr(0, 1) = cmat(0, 4);
       cfr(0, 2) = cmat(0, 5);
@@ -288,9 +288,9 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
       cfr(2, 0) = cmat(3, 2);
       cfr(2, 1) = cmat(3, 4);
       cfr(2, 2) = cmat(3, 5);
-      LINALG::Matrix<3, 3> crrrf(false);
+      CORE::LINALG::Matrix<3, 3> crrrf(false);
       crrrf.MultiplyNT(crr, cfr);
-      LINALG::Matrix<3, 3> cfrrrrf(false);
+      CORE::LINALG::Matrix<3, 3> cfrrrrf(false);
       cfrrrrf.MultiplyNN(cfr, crrrf);
       // update constitutive matrix of free components
       cmat(0, 0) -= cfrrrrf(0, 0);
@@ -342,8 +342,8 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
-    LINALG::Matrix<6, 6>* cmat, const LINALG::Matrix<6, 1>* glstrain,
+void DRT::ELEMENTS::Wall1::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
+    CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
   SolidMaterial()->Evaluate(NULL, glstrain, params, stress, cmat, gp, Id());
@@ -375,7 +375,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
     case INPAR::MAT::m_elasthyper:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
-      LINALG::Matrix<6, 1> glstrain(true);
+      CORE::LINALG::Matrix<6, 1> glstrain(true);
       GreenLagrangePlane3d(Ev, glstrain);
 
       // strain energy
@@ -392,7 +392,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
     case INPAR::MAT::m_structpororeactionECM:
     {
       // transform the 2d Green-Lagrange strains into 3d notation
-      LINALG::Matrix<6, 1> glstrain(true);
+      CORE::LINALG::Matrix<6, 1> glstrain(true);
       GreenLagrangePlane3d(Ev, glstrain);
 
       // strain energy

@@ -140,21 +140,21 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
   const double& t = diffmanagerdiffcond_->GetTransNum(0);
 
   // current density
-  LINALG::Matrix<nsd_, 1> i = VarManager()->GradPot();
+  CORE::LINALG::Matrix<nsd_, 1> i = VarManager()->GradPot();
   i.Update((1 - t) * invfval * 2. * R * my::scatravarmanager_->Phinp(0) / concentration,
       VarManager()->GradConc(), invfval * R * log(concentration), my::scatravarmanager_->GradPhi(0),
       -1.);
   i.Scale(kappa);
 
   // derivative of current density w.r.t. temperature
-  LINALG::Matrix<nsd_, 1> di_dT = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> di_dT = VarManager()->GradConc();
   di_dT.Scale(kappa * (1 - t) * invfval * 2. * R / concentration);
 
   // formal, symbolic derivative of current density w.r.t. temperature gradient
   const double di_dgradT = kappa * invfval * R * log(concentration);
 
   // derivative of square of current density w.r.t. temperature gradient
-  LINALG::Matrix<nsd_, 1> di2_dgradT = i;
+  CORE::LINALG::Matrix<nsd_, 1> di2_dgradT = i;
   di2_dgradT.Scale(2. * di_dgradT);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -211,14 +211,14 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
   const double gasconstant =
       DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // gradient of concentration plus scaled gradient of temperature
-  LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
   a.Update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
@@ -265,13 +265,13 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // gradient of concentration plus scaled gradient of temperature
-  LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
   a.Update(concentration * soret / temperature, gradtemp, 1.);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -410,9 +410,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
 {
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
-  const LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
-  const LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradconc = VarManager()->GradConc();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double invfval =
       1. / (diffmanagerdiffcond_->GetValence(0) *
                DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
@@ -423,13 +423,13 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   const double& temperature = my::scatravarmanager_->Phinp(0);
 
   // current density
-  LINALG::Matrix<nsd_, 1> i = gradpot;
+  CORE::LINALG::Matrix<nsd_, 1> i = gradpot;
   i.Update((1 - t) * invfval * 2. * R * temperature / concentration, gradconc,
       invfval * R * log(concentration), gradtemp, -1.);
   i.Scale(kappa);
 
   // derivative of current density w.r.t. concentration
-  LINALG::Matrix<nsd_, 1> di_dc = gradpot;
+  CORE::LINALG::Matrix<nsd_, 1> di_dc = gradpot;
   di_dc.Update(kappaderiv * (1 - t) * invfval * 2. * R * temperature / concentration -
                    kappa * diffmanagerdiffcond_->GetDerivTransNum(0, 0) * invfval * 2. * R *
                        temperature / concentration -
@@ -447,11 +447,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   const double di2_dc = 2. * i.Dot(di_dc);
 
   // derivative of square of current density w.r.t. concentration gradient
-  LINALG::Matrix<nsd_, 1> di2_dgradc = i;
+  CORE::LINALG::Matrix<nsd_, 1> di2_dgradc = i;
   di2_dgradc.Scale(2. * di_dgradc);
 
   // derivative of square of current density w.r.t. gradient of electric potential
-  LINALG::Matrix<nsd_, 1> di2_dgradpot = i;
+  CORE::LINALG::Matrix<nsd_, 1> di2_dgradpot = i;
   di2_dgradpot.Scale(-2. * kappa);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -489,7 +489,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
     Epetra_SerialDenseMatrix& emat, const double& timefacfac)
 {
   // extract variables and parameters
-  const LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
+  const CORE::LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
   const double gradpot2 = gradpot.Dot(gradpot);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
@@ -526,14 +526,14 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
   const double gasconstant =
       DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // gradient of concentration plus scaled gradient of temperature
-  LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
   a.Update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
   const double& diffcoeffderiv = diffmanagerdiffcond_->GetConcDerivIsoDiffCoef(0, 0);
-  const LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
+  const CORE::LINALG::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);
   const double gasconstant =
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   const double gradtemp2 = gradtemp.Dot(gradtemp);
 
   // gradient of concentration plus scaled gradient of temperature
-  LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
+  CORE::LINALG::Matrix<nsd_, 1> a = VarManager()->GradConc();
   a.Update(concentration * soret / temperature, gradtemp, 1.);
 
   // abovementioned gradient times temperature gradient

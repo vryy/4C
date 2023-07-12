@@ -614,17 +614,17 @@ namespace DRT
       ///
       /// \author bborn \date 06/09
       void MaterialResponse3d(
-          LINALG::Matrix<6, 1>* stress,          ///< 3D 2nd Piola-Kirchhoff stress vector
-          LINALG::Matrix<6, 6>* cmat,            ///< 3D elasticity matrix
-          const LINALG::Matrix<6, 1>* glstrain,  ///< 3D Green-Lagrange strain vector
-          Teuchos::ParameterList& params,        ///< element parameter list
-          int gp                                 ///< Gauss point
+          CORE::LINALG::Matrix<6, 1>* stress,          ///< 3D 2nd Piola-Kirchhoff stress vector
+          CORE::LINALG::Matrix<6, 6>* cmat,            ///< 3D elasticity matrix
+          const CORE::LINALG::Matrix<6, 1>* glstrain,  ///< 3D Green-Lagrange strain vector
+          Teuchos::ParameterList& params,              ///< element parameter list
+          int gp                                       ///< Gauss point
       );
 
       /// Map plane Green-Lagrange strains to 3d
       void GreenLagrangePlane3d(
           const Epetra_SerialDenseVector& glplane,  ///< 2d version of GL strain (Voigt notation)
-          LINALG::Matrix<6, 1>& gl3d                ///< 3d version of GL strain (Voigt notation)
+          CORE::LINALG::Matrix<6, 1>& gl3d          ///< 3d version of GL strain (Voigt notation)
       );
 
       /// Internal/strain energy

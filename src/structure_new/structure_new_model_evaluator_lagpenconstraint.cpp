@@ -67,7 +67,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::Setup()
   // contributions of constraints to structural rhs and stiffness
   fstrconstr_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   stiff_constr_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
@@ -157,7 +157,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
 
-  LINALG::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
   if (noxinterface_prec_ptr_->IsSaddlePointSystem())
   {
@@ -174,7 +174,8 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
     const int max_gid = GetBlockDofRowMapPtr()->MaxAllGID();
     // only call when f is the rhs of the full problem (not for structural
     // equilibriate initial state call)
-    if (elements_f == max_gid + 1) LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
+    if (elements_f == max_gid + 1)
+      CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
 
   return true;
@@ -184,12 +185,12 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> block_ptr = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> block_ptr = Teuchos::null;
 
   // --- Kdd - block ---------------------------------------------------
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_constr_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_constr_ptr_->Zero();
@@ -197,8 +198,8 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
   if (noxinterface_prec_ptr_->IsSaddlePointSystem())
   {
     // --- Kdz - block - scale with time-integrator dependent value!-----
-    block_ptr =
-        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true));
+    block_ptr = (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(
+        constrman_->GetConstrMatrix(), true));
     block_ptr->Scale(timefac_np);
     GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::displ_lm);
     // reset the block pointer, just to be on the safe side
@@ -206,7 +207,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleJacobian(
 
     // --- Kzd - block - no scaling of this block (cf. diss Kloeppel p78)
     block_ptr =
-        (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true))
+        (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(constrman_->GetConstrMatrix(), true))
             ->Transpose();
     GState().AssignModelBlock(jac, *block_ptr, Type(), DRT::UTILS::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
@@ -248,7 +249,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::RunPostComputeX(
   Teuchos::RCP<Epetra_Vector> lagmult_incr =
       Teuchos::rcp(new Epetra_Vector(*GetBlockDofRowMapPtr()));
 
-  LINALG::Export(dir, *lagmult_incr);
+  CORE::LINALG::Export(dir, *lagmult_incr);
 
   constrman_->UpdateLagrMult(lagmult_incr);
 

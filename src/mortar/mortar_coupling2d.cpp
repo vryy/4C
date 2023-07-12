@@ -163,8 +163,8 @@ bool MORTAR::Coupling2d::Project()
       // of the master side element boundary.
       // Hence, we need that location
       double xm[2] = {0., 0.};
-      LINALG::SerialDenseVector mval(mele_.NumNode());
-      LINALG::SerialDenseMatrix deriv(mele_.NumNode(), 1);
+      CORE::LINALG::SerialDenseVector mval(mele_.NumNode());
+      CORE::LINALG::SerialDenseMatrix deriv(mele_.NumNode(), 1);
       mele_.EvaluateShape(xinode, mval, deriv, mele_.NumNode());
 
       for (int mn = 0; mn < MasterElement().NumNode(); mn++)
@@ -1187,13 +1187,13 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
 
   // prepare for calculation of dual shape functions
-  LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
   for (int gp = 0; gp < integrator.nGP(); ++gp)
   {
-    LINALG::SerialDenseVector sval(nnodes);
-    LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
+    CORE::LINALG::SerialDenseVector sval(nnodes);
+    CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
 
     // coordinates and weight
     std::array<double, 2> eta = {integrator.Coordinate(gp, 0), 0.0};
@@ -1229,7 +1229,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   }
 
   // declare dual shape functions coefficient matrix
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
   // compute matrix A_e for linear interpolation of quadratic element
   if (LagMultQuad() == INPAR::MORTAR::lagmult_lin)
@@ -1238,15 +1238,15 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
     const int nnodeslin = 2;
 
     // reduce me to non-zero nodes before inverting
-    LINALG::Matrix<nnodeslin, nnodeslin> melin;
+    CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
     for (int j = 0; j < nnodeslin; ++j)
       for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
     // invert bi-ortho matrix melin
-    LINALG::Inverse(melin);
+    CORE::LINALG::Inverse(melin);
 
     // re-inflate inverse of melin to full size
-    LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
+    CORE::LINALG::SerialDenseMatrix invme(nnodes, nnodes, true);
     for (int j = 0; j < nnodeslin; ++j)
       for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
@@ -1255,10 +1255,10 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   }
   // compute matrix A_e for all other cases
   else
-    LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+    CORE::LINALG::InvertAndMultiplyByCholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 
   return;
 }

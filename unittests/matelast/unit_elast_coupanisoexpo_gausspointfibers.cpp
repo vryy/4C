@@ -33,9 +33,9 @@ namespace
    protected:
     CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest()
         : anisotropy_(),
-          gpFibers_(2, std::vector<LINALG::Matrix<3, 1>>(2)),
-          gpTensors_(2, std::vector<LINALG::Matrix<3, 3>>(2)),
-          gpTensors_stress_(2, std::vector<LINALG::Matrix<6, 1>>(2))
+          gpFibers_(2, std::vector<CORE::LINALG::Matrix<3, 1>>(2)),
+          gpTensors_(2, std::vector<CORE::LINALG::Matrix<3, 3>>(2)),
+          gpTensors_stress_(2, std::vector<CORE::LINALG::Matrix<6, 1>>(2))
     {
       /// initialize dummy fibers
       // gp 0
@@ -92,9 +92,9 @@ namespace
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<std::vector<LINALG::Matrix<3, 1>>> gpFibers_;
-    std::vector<std::vector<LINALG::Matrix<3, 3>>> gpTensors_;
-    std::vector<std::vector<LINALG::Matrix<6, 1>>> gpTensors_stress_;
+    std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> gpFibers_;
+    std::vector<std::vector<CORE::LINALG::Matrix<3, 3>>> gpTensors_;
+    std::vector<std::vector<CORE::LINALG::Matrix<6, 1>>> gpTensors_stress_;
   };
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionGaussPointFiberTest, GetScalarProduct)

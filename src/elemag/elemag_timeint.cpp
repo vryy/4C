@@ -29,7 +29,8 @@
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
 ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> &actdis,
-    const Teuchos::RCP<LINALG::Solver> &solver, const Teuchos::RCP<Teuchos::ParameterList> &params,
+    const Teuchos::RCP<CORE::LINALG::Solver> &solver,
+    const Teuchos::RCP<Teuchos::ParameterList> &params,
     const Teuchos::RCP<IO::DiscretizationWriter> &output)
     : discret_(actdis),
       solver_(solver),
@@ -54,7 +55,7 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
       errfunct_(params_->get<int>("ERRORFUNCNO", -1)),
       sourcefuncno_(params_->get<int>("SOURCEFUNCNO", -1)),
       equilibration_method_(
-          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(*params, "EQUILIBRATION"))
+          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(*params, "EQUILIBRATION"))
 {
   // constructor supposed to be empty!
 
@@ -87,12 +88,12 @@ void ELEMAG::ElemagTimeInt::Init()
   permeability = Teuchos::rcp(new Epetra_Vector(*discret_->ElementRowMap()));
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  trace_ = LINALG::CreateVector(*dofrowmap, true);
+  trace_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // Map of the dirichlet conditions
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   // Why is this in a new scope?
   {
     Teuchos::ParameterList eleparams;
@@ -110,16 +111,17 @@ void ELEMAG::ElemagTimeInt::Init()
 
   // create system matrix and set to zero
   // the 108 comes from line 282 of /fluid/fluidimplicitintegration.cpp
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 108, false, true));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 108, false, true));
   // Is it possible to avoid this passage? It is a sparse matrix so it should
   // only contain non-zero entries that have to be initialized
   sysmat_->Zero();
 
   // create residual vector
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // instantiate equilibration class
-  equilibration_ = Teuchos::rcp(new LINALG::EquilibrationSparse(equilibration_method_, dofrowmap));
+  equilibration_ =
+      Teuchos::rcp(new CORE::LINALG::EquilibrationSparse(equilibration_method_, dofrowmap));
 
   // write mesh
   output_->WriteMesh(0, 0.0);
@@ -370,7 +372,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
   else
     phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->DofColMap())));
 
-  LINALG::Export(*phi, *phicol);
+  CORE::LINALG::Export(*phi, *phicol);
 
   // Loop MyColElements
   for (int el = 0; el < discret_->NumMyColElements(); ++el)
@@ -737,9 +739,9 @@ void ELEMAG::ElemagTimeInt::ApplyDirichletToSystem(bool resonly)
   discret_->EvaluateDirichlet(
       params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   if (resonly)
-    LINALG::ApplyDirichlettoSystem(residual_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(residual_, zeros_, *(dbcmaps_->CondMap()));
   else
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sysmat_, trace_, residual_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
 
   return;
@@ -1010,10 +1012,10 @@ void ELEMAG::ElemagTimeInt::WriteRestart()
   discret_->Evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1, "intVar");
-  LINALG::Export(*matrix_state, *intVar);
+  CORE::LINALG::Export(*matrix_state, *intVar);
 
   matrix_state = discret_->GetState(1, "intVarnm");
-  LINALG::Export(*matrix_state, *intVarnm);
+  CORE::LINALG::Export(*matrix_state, *intVarnm);
 
   output_->WriteVector("intVar", intVar);
   output_->WriteVector("intVarnm", intVarnm);
@@ -1083,14 +1085,14 @@ void ELEMAG::ElemagTimeInt::ReadRestart(int step)
 
 void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
 {
-  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
+  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
   std::cout << "Routine has to be implemented. In the meanwhile the Print() method from the "
                "Epetra_CsrMatrix is used."
             << std::endl;
   /*
   //Dynamic casting of the sysmat
   Epetra_CrsMatrix *matrix =
-  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
+  Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
   matrix->NumMyRows(); int c = matrix->NumMyCols(); int numentries;
   //double*& values = NULL;
   double* values;

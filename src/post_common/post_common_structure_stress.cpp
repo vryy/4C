@@ -430,7 +430,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(nodal_stress(2)))[i];
 
-        LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -452,7 +452,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(nodal_stress(1)))[i];
 
-        LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
@@ -543,7 +543,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         eigenvec(2, 1) = eigenvec(1, 2);
         eigenvec(2, 2) = (*(element_stress(2)))[i];
 
-        LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
@@ -565,7 +565,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         eigenvec(1, 0) = eigenvec(0, 1);
         eigenvec(1, 1) = (*(element_stress(1)))[i];
 
-        LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
+        CORE::LINALG::SymmetricEigenProblem(eigenvec, eigenval, true);
 
         (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
         (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);

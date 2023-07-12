@@ -142,7 +142,7 @@ namespace CORE::GEO
       Teuchos::RCP<BoundingBox> bb_;
 
       /// point coordinates where the current bounding box is split into 8 children bboxes
-      LINALG::Matrix<3, 1> splitpoint_;
+      CORE::LINALG::Matrix<3, 1> splitpoint_;
 
       /// norm
       double norm_;
@@ -196,7 +196,7 @@ namespace CORE::GEO
       {
         if (tolerance == 0.0)
         {
-          LINALG::Matrix<3, 1> px(x);
+          CORE::LINALG::Matrix<3, 1> px(x);
           return (px.NormInf() * POSITIONTOL);
         }
         else

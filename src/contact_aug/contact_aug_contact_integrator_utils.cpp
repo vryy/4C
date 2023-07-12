@@ -40,7 +40,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
   CORE::GEN::reset(msize, projInfo);
 
   std::vector<double> found_alpha(msize, 0.0);
-  std::vector<LINALG::Matrix<2, 1>> found_mxi(msize, LINALG::Matrix<2, 1>(true));
+  std::vector<CORE::LINALG::Matrix<2, 1>> found_mxi(msize, CORE::LINALG::Matrix<2, 1>(true));
   std::vector<bool> is_on_meles(msize, false);
 
   std::vector<int> unique_ids(msize, -1);
@@ -249,7 +249,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
     std::vector<ElementNormal>& adj_ele_normals, MORTAR::MortarNode& slavenode)
 {
   // access the averaged nodal normal
-  LINALG::Matrix<3, 1> avg_nodal_normal(slavenode.MoData().n(), true);
+  CORE::LINALG::Matrix<3, 1> avg_nodal_normal(slavenode.MoData().n(), true);
 
   // reset normal
   std::fill(avg_nodal_normal.A(), avg_nodal_normal.A() + 3, 0.0);
@@ -272,11 +272,11 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
     adj_ele.LocalCoordinatesOfNode(ele_node_lid, xi);
 
     // evaluate the convective base vectors
-    LINALG::Matrix<3, 2> tau;
+    CORE::LINALG::Matrix<3, 2> tau;
     adj_ele.Metrics(xi, &tau(0, 0), &tau(0, 1));
 
     // evaluate the unit normal of the adjacent element at the current slave node
-    LINALG::Matrix<3, 1>& unit_normal = adj_ele_normals[e].unit_n_;
+    CORE::LINALG::Matrix<3, 1>& unit_normal = adj_ele_normals[e].unit_n_;
     double& length_n_inv = adj_ele_normals[e].length_n_inv_;
     length_n_inv = UnitSlaveElementNormal(adj_ele, tau, unit_normal);
 
@@ -298,7 +298,7 @@ double CONTACT::INTEGRATOR::BuildAveragedNormalAtSlaveNode(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
-    const LINALG::Matrix<3, 2>& tau, LINALG::Matrix<3, 1>& unit_normal)
+    const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal)
 {
   const DRT::Element::DiscretizationType slavetype = sele.Shape();
   switch (slavetype)
@@ -307,21 +307,21 @@ double CONTACT::INTEGRATOR::UnitSlaveElementNormal(const MORTAR::MortarElement& 
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::line2> slave_policy;
 
-      LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
     case DRT::Element::nurbs2:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::nurbs2> slave_policy;
 
-      LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
     case DRT::Element::nurbs3:
     {
       const CONTACT::AUG::BaseSlaveIntPolicy<2, DRT::Element::nurbs3> slave_policy;
 
-      LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
+      CORE::LINALG::Matrix<2, 1> unit_n(unit_normal.A(), true);
       return slave_policy.UnitSlaveElementNormal(sele, tau, unit_n);
     }
     case DRT::Element::quad4:
@@ -380,14 +380,14 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 
     Deriv1st_NonUnitSlaveNormal(xi, mo_ele, d_non_unit_normal);
 
-    const LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
+    const CORE::LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
     const double adj_ele_length_n_inv = adj_ele_n.length_n_inv_;
 
     Deriv1st_UnitSlaveNormal(eletype, adj_ele_unit_n, adj_ele_length_n_inv, d_non_unit_normal,
         d_nodal_avg_normal, false);
   }
 
-  const LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
+  const CORE::LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
   Deriv1st_UnitSlaveNormal(eletype, avg_unit_normal, 1.0 / avg_normal_length, d_nodal_avg_normal,
       d_avg_unit_normal, false);
 }
@@ -395,7 +395,7 @@ void CONTACT::INTEGRATOR::Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
-    const LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+    const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset)
 {
   switch (slavetype)
@@ -405,7 +405,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::line2> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
@@ -418,7 +418,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs2> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
@@ -431,7 +431,7 @@ void CONTACT::INTEGRATOR::Deriv1st_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs3> slave_policy;
       slave_policy.Deriv1st_UnitSlaveElementNormal(
@@ -555,18 +555,18 @@ void CONTACT::INTEGRATOR::Deriv1st_NonUnitSlaveNormal(
   const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
-  LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
+  CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // evaluate the convective base vectors
-  LINALG::Matrix<3, 2> tau;
+  CORE::LINALG::Matrix<3, 2> tau;
   sele.Metrics(xi, &tau(0, 0), &tau(0, 1));
 
   // derivatives with respect to xi^1 and xi^2
-  LINALG::Matrix<slavedim, slavenumnode> deriv(true);
+  CORE::LINALG::Matrix<slavedim, slavenumnode> deriv(true);
 
   // derivative of the convective base vectors with respect to the displacement
-  const LINALG::Matrix<2, 1> xi_mat(xi, true);
+  const CORE::LINALG::Matrix<2, 1> xi_mat(xi, true);
   CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
   const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
@@ -601,7 +601,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
 
     Deriv1st_NonUnitSlaveNormal(xi, mo_ele, d_non_unit_normal);
 
-    const LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
+    const CORE::LINALG::Matrix<3, 1>& adj_ele_unit_n = adj_ele_n.unit_n_;
     const double adj_ele_length_n_inv = adj_ele_n.length_n_inv_;
 
     Deriv1st_UnitSlaveNormal(
@@ -613,7 +613,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
         d_unit_normal, dd_non_unit_normal, dd_nodal_avg_normal);
   }
 
-  const LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
+  const CORE::LINALG::Matrix<3, 1> avg_unit_normal(cnode.MoData().n(), true);
   const Deriv1stVecMap& d_avg_unit_normal = cnode.AugData().GetDeriv1st_N();
 
   Deriv2nd_UnitSlaveNormal(eletype, avg_unit_normal, 1.0 / avg_normal_length, d_nodal_avg_normal,
@@ -683,14 +683,14 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
   const unsigned slavedim = CORE::DRT::UTILS::DisTypeToDim<slavetype>::dim;
   const unsigned probdim = slavedim + 1;
 
-  LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
+  CORE::LINALG::Matrix<probdim, slavenumnode, int> nodal_dofs;
   CONTACT::INTEGRATOR::GetElementNodalDofs(sele, nodal_dofs);
 
   // derivatives with respect to xi^1 and xi^2
-  LINALG::Matrix<slavedim, slavenumnode> deriv(true);
+  CORE::LINALG::Matrix<slavedim, slavenumnode> deriv(true);
 
   // derivative of the convective base vectors with respect to the displacement
-  const LINALG::Matrix<2, 1> xi_mat(xi, true);
+  const CORE::LINALG::Matrix<2, 1> xi_mat(xi, true);
   CONTACT::AUG::shape_function_deriv1<slavetype>(sele, xi_mat, deriv);
 
   const CONTACT::AUG::BaseSlaveIntPolicy<probdim, slavetype> slave_policy;
@@ -700,7 +700,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_NonUnitSlaveNormal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
-    const LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+    const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
     const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
     const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal)
 {
@@ -711,7 +711,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::line2>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::line2> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
@@ -724,7 +724,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs2>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs2> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
@@ -737,7 +737,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
       const unsigned eledim = CORE::DRT::UTILS::DisTypeToDim<DRT::Element::nurbs3>::dim;
       const unsigned probdim = eledim + 1;
 
-      const LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
+      const CORE::LINALG::Matrix<probdim, 1> unit_normal_red(unit_normal.A(), true);
 
       const CONTACT::AUG::BaseSlaveIntPolicy<probdim, DRT::Element::nurbs3> slave_policy;
       slave_policy.Deriv2nd_UnitSlaveElementNormal(unit_normal_red, length_n_inv, d_non_unit_normal,
@@ -802,7 +802,7 @@ void CONTACT::INTEGRATOR::Deriv2nd_UnitSlaveNormal(const DRT::Element::Discretiz
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, unsigned numnode>
 void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs)
 {
   const DRT::Node* const* mynodes = ele.Nodes();
 
@@ -840,12 +840,12 @@ double CONTACT::INTEGRATOR::LeviCivitaSymbol(const int i, const int j, const int
 
 /*----------------------------------------------------------------------------*/
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<2, 2, int>& nodal_dofs);
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<2, 2, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<2, 3, int>& nodal_dofs);
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<2, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 3, int>& nodal_dofs);
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 3, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 4, int>& nodal_dofs);
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 4, int>& nodal_dofs);
 template void CONTACT::INTEGRATOR::GetElementNodalDofs(
-    const MORTAR::MortarElement& ele, LINALG::Matrix<3, 9, int>& nodal_dofs);
+    const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<3, 9, int>& nodal_dofs);

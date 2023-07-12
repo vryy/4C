@@ -23,7 +23,7 @@
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output), fsphinp_(Teuchos::null)
 {
@@ -50,7 +50,8 @@ void SCATRA::TimIntStationary::Init()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // fine-scale vector
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no) fsphinp_ = LINALG::CreateVector(*dofrowmap, true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   if (turbmodel_ != INPAR::FLUID::no_model) dserror("Turbulence is not stationary problem!");
 
   // -------------------------------------------------------------------

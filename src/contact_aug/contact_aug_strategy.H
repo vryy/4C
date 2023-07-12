@@ -229,42 +229,48 @@ namespace CONTACT
        *   transpose of the gradient of the weighted gap vector and is
        *   equal to dLmNWGapLin. In the incomplete case the B-Matrix represents
        *   an incomplete estimate of the gradient. */
-      Teuchos::RCP<LINALG::SparseMatrix>& BMatrixPtr() { return BMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
-      LINALG::SparseMatrix& BMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& BMatrixPtr() { return BMatrixPtr_; }
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> BMatrixPtr() const { return BMatrixPtr_; }
+      CORE::LINALG::SparseMatrix& BMatrix()
       {
         if (BMatrixPtr_.is_null()) dserror("The BMatrixPtr_ is not initialized!");
         return *BMatrixPtr_;
       }
 
       //! Return dGLmLinMatrix
-      Teuchos::RCP<LINALG::SparseMatrix>& DGLmLinMatrixPtr() { return dGLmLinMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> DGLmLinMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DGLmLinMatrixPtr() { return dGLmLinMatrixPtr_; }
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DGLmLinMatrixPtr() const
       {
         return dGLmLinMatrixPtr_;
       }
-      LINALG::SparseMatrix& DGLmLinMatrix()
+      CORE::LINALG::SparseMatrix& DGLmLinMatrix()
       {
         if (dGLmLinMatrixPtr_.is_null()) dserror("The dGLmLinMatrixPtr_ is not initialized!");
         return *dGLmLinMatrixPtr_;
       }
 
       //! Return dGGLinMatrix
-      Teuchos::RCP<LINALG::SparseMatrix>& DGGLinMatrixPtr() { return dGGLinMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> DGGLinMatrixPtr() const { return dGGLinMatrixPtr_; }
-      LINALG::SparseMatrix& DGGLinMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DGGLinMatrixPtr() { return dGGLinMatrixPtr_; }
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DGGLinMatrixPtr() const
+      {
+        return dGGLinMatrixPtr_;
+      }
+      CORE::LINALG::SparseMatrix& DGGLinMatrix()
       {
         if (dGGLinMatrixPtr_.is_null()) dserror("The dGGLinMatrixPtr_ is not initialized!");
         return *dGGLinMatrixPtr_;
       }
 
       //! Return dLmNWGapLinMatrix
-      Teuchos::RCP<LINALG::SparseMatrix>& DLmNWGapLinMatrixPtr() { return dLmNWGapLinMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> DLmNWGapLinMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmNWGapLinMatrixPtr()
       {
         return dLmNWGapLinMatrixPtr_;
       }
-      LINALG::SparseMatrix& DLmNWGapLinMatrix()
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmNWGapLinMatrixPtr() const
+      {
+        return dLmNWGapLinMatrixPtr_;
+      }
+      CORE::LINALG::SparseMatrix& DLmNWGapLinMatrix()
       {
         if (dLmNWGapLinMatrixPtr_.is_null())
           dserror("The dLmNWGapLinMatrixPtr_ is not initialized!");
@@ -272,47 +278,56 @@ namespace CONTACT
       }
 
       //! Return dLmTLmTMatrix
-      Teuchos::RCP<LINALG::SparseMatrix>& DLmTLmTMatrixPtr() { return dLmTLmTMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> DLmTLmTMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmTLmTMatrixPtr() { return dLmTLmTMatrixPtr_; }
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmTLmTMatrixPtr() const
       {
         return dLmTLmTMatrixPtr_;
       }
-      LINALG::SparseMatrix& DLmTLmTMatrix()
+      CORE::LINALG::SparseMatrix& DLmTLmTMatrix()
       {
         if (dLmTLmTMatrixPtr_.is_null()) dserror("The dLmTLmTMatrixPtr_ is not initialized!");
         return *dLmTLmTMatrixPtr_;
       }
 
       //! Return dLmTLmTLinMatrix
-      Teuchos::RCP<LINALG::SparseMatrix>& DLmTLmTLinMatrixPtr() { return dLmTLmTLinMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> DLmTLmTLinMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& DLmTLmTLinMatrixPtr()
       {
         return dLmTLmTLinMatrixPtr_;
       }
-      LINALG::SparseMatrix& DLmTLmTLinMatrix()
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> DLmTLmTLinMatrixPtr() const
+      {
+        return dLmTLmTLinMatrixPtr_;
+      }
+      CORE::LINALG::SparseMatrix& DLmTLmTLinMatrix()
       {
         if (dLmTLmTLinMatrixPtr_.is_null()) dserror("The dLmTLmTLinMatrixPtr_ is not initialized!");
         return *dLmTLmTLinMatrixPtr_;
       }
 
-      Teuchos::RCP<LINALG::SparseMatrix>& InactiveLinMatrixPtr() { return inactiveLinMatrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> InactiveLinMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& InactiveLinMatrixPtr()
       {
         return inactiveLinMatrixPtr_;
       }
-      LINALG::SparseMatrix& InactiveLinMatrix()
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> InactiveLinMatrixPtr() const
+      {
+        return inactiveLinMatrixPtr_;
+      }
+      CORE::LINALG::SparseMatrix& InactiveLinMatrix()
       {
         if (inactiveLinMatrixPtr_.is_null())
           dserror("The augInactiveLinMatrixPtr_ is not initialized!");
         return *inactiveLinMatrixPtr_;
       }
 
-      Teuchos::RCP<LINALG::SparseMatrix>& InactiveDDMatrixPtr() { return inactive_dd_matrixPtr_; }
-      Teuchos::RCP<const LINALG::SparseMatrix> InactiveDDMatrixPtr() const
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& InactiveDDMatrixPtr()
       {
         return inactive_dd_matrixPtr_;
       }
-      LINALG::SparseMatrix& InactiveDDMatrix()
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> InactiveDDMatrixPtr() const
+      {
+        return inactive_dd_matrixPtr_;
+      }
+      CORE::LINALG::SparseMatrix& InactiveDDMatrix()
       {
         if (inactive_dd_matrixPtr_.is_null())
           dserror("The inactive_dd_matrixPtr_ is not initialized!");
@@ -582,28 +597,28 @@ namespace CONTACT
       Teuchos::RCP<CONTACT::AUG::ParallelDistributionController> pd_control_;
 
       //! global matrix B-matrix (slave + master)
-      Teuchos::RCP<LINALG::SparseMatrix> BMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> BMatrixPtr_;
 
       //! global matrix dGLmLin (slave + master)
-      Teuchos::RCP<LINALG::SparseMatrix> dGLmLinMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> dGLmLinMatrixPtr_;
 
       //! global matrix dGGLin (slave + master)
-      Teuchos::RCP<LINALG::SparseMatrix> dGGLinMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> dGGLinMatrixPtr_;
 
       //! global matrix dLmNWGapLin
-      Teuchos::RCP<LINALG::SparseMatrix> dLmNWGapLinMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmNWGapLinMatrixPtr_;
 
       //! global matrix dLmTLmT
-      Teuchos::RCP<LINALG::SparseMatrix> dLmTLmTMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmTLmTMatrixPtr_;
 
       //! global matrix dLmTLmTLin
-      Teuchos::RCP<LINALG::SparseMatrix> dLmTLmTLinMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> dLmTLmTLinMatrixPtr_;
 
       //! global inactive linearization matrix
-      Teuchos::RCP<LINALG::SparseMatrix> inactiveLinMatrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> inactiveLinMatrixPtr_;
 
       //! global inactive 2-nd order derivative matrix w.r.t. the displacements
-      Teuchos::RCP<LINALG::SparseMatrix> inactive_dd_matrixPtr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> inactive_dd_matrixPtr_;
 
       //! global inactive diagonal matrix ( represented as vector )
       Teuchos::RCP<Epetra_Vector> inactiveDiagMatrixPtr_;
@@ -821,12 +836,13 @@ namespace CONTACT
       };
 
       //! Return the desired matrix block pointer
-      Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(const enum DRT::UTILS::MatBlockType& bt,
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+          const enum DRT::UTILS::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = NULL) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)
-      Teuchos::RCP<LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
-          Teuchos::RCP<LINALG::SparseMatrix>& kteff, const double& timefac_np) const override
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& kteff, const double& timefac_np) const override
       {
         dserror("There is no condensed matrix block in the augmented Lagrangian case!");
         exit(EXIT_FAILURE);
@@ -866,7 +882,7 @@ namespace CONTACT
        *                        will contain zero values.
        *
        *  \author hiermeier \date 09/17 */
-      Teuchos::RCP<const LINALG::SparseMatrix> GetWeightedGapGradient(
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetWeightedGapGradient(
           const enum WGapGradientType grad_type, const enum MapType map_type) const;
 
       void EvalWeightedGapGradientError(CONTACT::ParamsInterface& cparams) override;
@@ -1090,7 +1106,7 @@ namespace CONTACT
             CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
         /// perform the FD evaluate calls
-        void Evaluate(const Teuchos::RCP<LINALG::SparseMatrix>& derivMatrixPtr,
+        void Evaluate(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& derivMatrixPtr,
             Teuchos::RCP<Epetra_Vector>& rhsVector, CONTACT::ParamsInterface& cparams);
 
        private:
@@ -1120,7 +1136,7 @@ namespace CONTACT
         bool is_fd_check_;
 
         /// reference values to undo a previous perturbation
-        std::map<int, LINALG::Matrix<3, 1>> ref_x_;
+        std::map<int, CORE::LINALG::Matrix<3, 1>> ref_x_;
       };
       //@}
 
@@ -1268,25 +1284,25 @@ namespace CONTACT
        *
        *  \author hiermeier \date 03/17 */
       virtual void AddContributionsToMatrixBlockDisplDispl(
-          LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = NULL) const;
+          CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = NULL) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Displacement, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      void AddContributionsToMatrixBlockDisplLm(LINALG::SparseMatrix& kdz) const;
+      void AddContributionsToMatrixBlockDisplLm(CORE::LINALG::SparseMatrix& kdz) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Displacement
        *
        *  \author hiermeier \date 03/17 */
-      void AddContributionsToMatrixBlockLmDispl(LINALG::SparseMatrix& kzd) const;
+      void AddContributionsToMatrixBlockLmDispl(CORE::LINALG::SparseMatrix& kzd) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Lagrange Multiplier, COLUMN => Lagrange Multiplier
        *
        *  \author hiermeier \date 03/17 */
-      virtual void AddContributionsToMatrixBlockLmLm(LINALG::SparseMatrix& kzz) const;
+      virtual void AddContributionsToMatrixBlockLmLm(CORE::LINALG::SparseMatrix& kzz) const;
 
      protected:
       /*! \brief Get access to the internal data container of the strategy (mutable)
@@ -1316,19 +1332,19 @@ namespace CONTACT
 
       //! @name Deprecated methods
       //! @{
-      void EvaluateContact(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Deprecated function call!");
       };
-      void EvaluateFriction(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Deprecated function call!");
       };
-      void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+      void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
           Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
-          Teuchos::RCP<LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
+          Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
           Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
       {
         dserror("Deprecated function call!");
@@ -1370,8 +1386,8 @@ namespace CONTACT
         dserror("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
-      void InitializeUzawa(
-          Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) override
+      void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+          Teuchos::RCP<Epetra_Vector>& feff) override
       {
         dserror("Wrong strategy!");
       };
@@ -1419,7 +1435,7 @@ namespace CONTACT
      *  \return A RCP to the completed sub-sparse matrix will be returned.
      *
      *  \author hiermeier \date 06/17 */
-    Teuchos::RCP<LINALG::SparseMatrix> ExtractMatrix(const LINALG::SparseMatrix& source,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractMatrix(const CORE::LINALG::SparseMatrix& source,
         const Epetra_Map& target_row_map, const Epetra_Map& target_col_map);
 
     /*--------------------------------------------------------------------------*/

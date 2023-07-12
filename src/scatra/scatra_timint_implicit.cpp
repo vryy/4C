@@ -69,7 +69,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
     const int probnum)
     : problem_(DRT::Problem::Instance(probnum)),
@@ -85,8 +85,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       isale_(extraparams->get<bool>("isale")),
       solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params, "SOLVERTYPE")),
       equilibrationmethod_(
-          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(*params, "EQUILIBRATION")),
-      matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(*params, "MATRIXTYPE")),
+          Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(*params, "EQUILIBRATION")),
+      matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(*params, "MATRIXTYPE")),
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(INPAR::FLUID::no_model),
@@ -346,7 +346,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   {
     // do not save the graph if fine-scale subgrid diffusivity is used in non-incremental case (very
     // special case)
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
+    sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(discret_->DofRowMap()), 27));
   }
   else
     sysmat_ = InitSystemMatrix();
@@ -359,20 +359,20 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // create vectors containing problem variables
   // -------------------------------------------------------------------
   // solutions at time n+1 and n
-  phinp_ = LINALG::CreateVector(*dofrowmap, true);
-  phin_ = LINALG::CreateVector(*dofrowmap, true);
-  if (NdsMicro() != -1) phinp_micro_ = LINALG::CreateVector(*discret_->DofRowMap(NdsMicro()));
+  phinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  phin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  if (NdsMicro() != -1) phinp_micro_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsMicro()));
 
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_microtomacro)
   {
-    phinp_inc_ = LINALG::CreateVector(*dofrowmap, true);
+    phinp_inc_ = CORE::LINALG::CreateVector(*dofrowmap, true);
     if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
         solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit)
     {
-      phinp_inc_old_ = LINALG::CreateVector(*dofrowmap, true);
+      phinp_inc_old_ = CORE::LINALG::CreateVector(*dofrowmap, true);
       if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken)
         omega_.resize(1, 1.);
       else
@@ -381,22 +381,22 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   }
 
   // temporal solution derivative at time n+1
-  phidtnp_ = LINALG::CreateVector(*dofrowmap, true);
+  phidtnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // temporal solution derivative at time n
-  phidtn_ = LINALG::CreateVector(*dofrowmap, true);
+  phidtn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // history vector (a linear combination of phinm, phin (BDF)
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
-  hist_ = LINALG::CreateVector(*dofrowmap, true);
+  hist_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // create vectors associated to boundary conditions
   // -------------------------------------------------------------------
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+  dbcmaps_ = Teuchos::rcp(new CORE::LINALG::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -410,21 +410,22 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // create vectors associated to solution process
   // -------------------------------------------------------------------
   // the vector containing body and surface forces
-  neumann_loads_ = LINALG::CreateVector(*dofrowmap, true);
+  neumann_loads_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // the residual vector --- more or less the rhs
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // residual vector containing the normal boundary fluxes
-  trueresidual_ = LINALG::CreateVector(*dofrowmap, true);
+  trueresidual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // incremental solution vector
-  increment_ = LINALG::CreateVector(*dofrowmap, true);
+  increment_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // subgrid-diffusivity(-scaling) vector
   // (used either for AVM3 approach or temperature equation
   //  with all-scale subgrid-diffusivity model)
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no) subgrdiff_ = LINALG::CreateVector(*dofrowmap, true);
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+    subgrdiff_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
@@ -490,7 +491,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
       discret_->GetCondition("ScaTraFluxCalc", conditions);
 
       // set up map extractor
-      flux_boundary_maps_ = Teuchos::rcp(new LINALG::MultiMapExtractor());
+      flux_boundary_maps_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor());
       DRT::UTILS::MultiConditionSelector mcs;
       mcs.SetOverlapping(true);
       for (auto& condition : conditions)
@@ -518,7 +519,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
   {
     // allocate global density vector and initialize
-    densafnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+    densafnp_ = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
     densafnp_->PutScalar(1.);
   }
 
@@ -745,7 +746,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and
       DRT::INPUT::IntegralValue<int>(*turbparams, "TURBMODEL_LS"))
   {
-    sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 27));
+    sysmat_sd_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27));
 
     // Output
     if (myrank_ == 0)
@@ -801,7 +802,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
 
       // initalize matrix used to build the scale separation operator
-      sysmat_sd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 27));
+      sysmat_sd_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 27));
 
       Teuchos::ParameterList* mfsparams = &(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<std::string>("SCALE_SEPARATION") != "algebraic_multigrid_operator")
@@ -858,7 +859,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      forcing_ = LINALG::CreateVector(*dofrowmap, true);
+      forcing_ = CORE::LINALG::CreateVector(*dofrowmap, true);
       forcing_->PutScalar(0.0);
     }
   }
@@ -1197,8 +1198,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
   if (NdsVel() >= discret_->NumDofSets()) dserror("Too few dofsets on scatra discretization!");
 
   // initialize velocity vectors
-  Teuchos::RCP<Epetra_Vector> convel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
-  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+  Teuchos::RCP<Epetra_Vector> convel =
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
+  Teuchos::RCP<Epetra_Vector> vel =
+      CORE::LINALG::CreateVector(*discret_->DofRowMap(NdsVel()), true);
 
   switch (velocity_field_type_)
   {
@@ -1563,16 +1566,16 @@ inline void SCATRA::ScaTraTimIntImpl::PrintTimeStepInfo()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> SCATRA::ScaTraTimIntImpl::SystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSystemMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSystemMatrix()
 {
-  return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(sysmat_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1663,7 +1666,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
   {
     std::ostringstream filename;
     filename << problem_->OutputControlFile()->FileName() << "-Result_Step" << step_ << ".m";
-    LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
+    CORE::LINALG::PrintVectorInMatlabFormat(filename.str(), *phinp_);
   }
   // NOTE:
   // statistics output for normal fluxes at boundaries was already done during Update()
@@ -2163,8 +2166,8 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
 
   // create the projector
-  projector_ =
-      Teuchos::rcp(new LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
+  projector_ = Teuchos::rcp(
+      new CORE::LINALG::KrylovProjector(activemodeids, weighttype, discret_->DofRowMap()));
 
   // update the projector
   UpdateKrylovSpaceProjection();
@@ -2339,7 +2342,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
     }
   }
@@ -2348,7 +2351,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
     // time measurement: application of DBC to system
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-    LINALG::ApplyDirichlettoSystem(sysmat_, phinp_, residual_, phinp_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(
+        sysmat_, phinp_, residual_, phinp_, *(dbcmaps_->CondMap()));
   }
 }
 
@@ -2418,7 +2422,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // evaluate Robin type boundary condition
   EvaluateRobinBoundaryConditions(systemmatrix, rhs);
@@ -2435,7 +2439,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // evaluate solution depending additional models
   // this point is unequal NULL only if a scatra
@@ -2447,7 +2451,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::EvaluateRobinBoundaryConditions(
-    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -2703,7 +2707,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
 
-      LINALG::ApplyDirichlettoSystem(
+      CORE::LINALG::ApplyDirichlettoSystem(
           sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
     }
 
@@ -2995,8 +2999,8 @@ void SCATRA::ScaTraTimIntImpl::AddDirichCond(const Teuchos::RCP<const Epetra_Map
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
   condmaps.push_back(dbcmaps_->CondMap());
-  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
+  Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
 }
 
 /*----------------------------------------------------------------------------*
@@ -3014,8 +3018,8 @@ void SCATRA::ScaTraTimIntImpl::RemoveDirichCond(const Teuchos::RCP<const Epetra_
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
   othermaps.push_back(dbcmaps_->OtherMap());
-  Teuchos::RCP<Epetra_Map> othermerged = LINALG::MultiMapExtractor::MergeMaps(othermaps);
-  *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
+  Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
+  *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -3331,8 +3335,8 @@ void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMaps()
 {
-  if (matrixtype_ == LINALG::MatrixType::block_condition or
-      matrixtype_ == LINALG::MatrixType::block_condition_dof)
+  if (matrixtype_ == CORE::LINALG::MatrixType::block_condition or
+      matrixtype_ == CORE::LINALG::MatrixType::block_condition_dof)
   {
     // extract domain partitioning conditions from discretization
     std::vector<Teuchos::RCP<DRT::Condition>> partitioningconditions;
@@ -3351,7 +3355,8 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMaps()
     BuildBlockMaps(partitioningconditions, blockmaps);
 
     // initialize full map extractor associated with blocks of global system matrix
-    blockmaps_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*(discret_->DofRowMap()), blockmaps));
+    blockmaps_ =
+        Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*(discret_->DofRowMap()), blockmaps));
     // safety check
     blockmaps_->CheckForValidMapExtractor();
   }
@@ -3363,7 +3368,7 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
     const std::vector<Teuchos::RCP<DRT::Condition>>& partitioningconditions,
     std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
 {
-  if (matrixtype_ == LINALG::MatrixType::block_condition)
+  if (matrixtype_ == CORE::LINALG::MatrixType::block_condition)
   {
     // extract number of domain partitioning conditions
     const unsigned ncond = partitioningconditions.size();
@@ -3431,7 +3436,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(
-    Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
+    Teuchos::RCP<CORE::LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
   for (int iblock = init_block_number; iblock < BlockMaps()->NumMaps() + init_block_number;
@@ -3464,16 +3469,16 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
 {
   switch (MatrixType())
   {
-    // case LINALG::MatrixType::undefined:
-    case LINALG::MatrixType::sparse:
+    // case CORE::LINALG::MatrixType::undefined:
+    case CORE::LINALG::MatrixType::sparse:
     {
       // only setup the meshtying in this case, as matrix has no block structure
       strategy_->SetupMeshtying();
 
       break;
     }
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       // safety check
       if (!Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -3501,26 +3506,27 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix() const
 {
-  Teuchos::RCP<LINALG::SparseOperator> systemmatrix(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix(Teuchos::null);
 
   switch (matrixtype_)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       // initialize system matrix
       systemmatrix =
-          Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 27, false, true));
+          Teuchos::rcp(new CORE::LINALG::SparseMatrix(*discret_->DofRowMap(), 27, false, true));
       break;
     }
 
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       // initialize system matrix and associated strategy
-      systemmatrix = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *BlockMaps(), *BlockMaps(), 81, false, true));
+      systemmatrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *BlockMaps(), *BlockMaps(), 81, false, true));
 
       break;
     }

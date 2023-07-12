@@ -10,7 +10,7 @@
 
 
 (* ::Section:: *)
-(*Matrix to LINALG::TMatrix*)
+(*Matrix to CORE::LINALG::TMatrix*)
 
 
 matrixToBaci[var_,name_]:=Module[{allStringsWithZeros, stringList},  
@@ -202,17 +202,17 @@ functionStringPre="  /**
             lambda_type>();
 
     // Definition of variables for this test case.
-    LINALG::Matrix<beam_type::n_dof_, 1> q_beam;
-    LINALG::Matrix<9, 1> q_beam_rot;
-    LINALG::Matrix<solid_type::n_dof_, 1> q_solid;
-    LINALG::SerialDenseMatrix local_D;
-    LINALG::SerialDenseMatrix local_M;
-    LINALG::SerialDenseVector local_kappa;
+    CORE::LINALG::Matrix<beam_type::n_dof_, 1> q_beam;
+    CORE::LINALG::Matrix<9, 1> q_beam_rot;
+    CORE::LINALG::Matrix<solid_type::n_dof_, 1> q_solid;
+    CORE::LINALG::SerialDenseMatrix local_D;
+    CORE::LINALG::SerialDenseMatrix local_M;
+    CORE::LINALG::SerialDenseVector local_kappa;
 
     // Matrices for the results.
-    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
-    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
-    LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
+    CORE::LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_> result_local_D(true);
+    CORE::LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_> result_local_M(true);
+    CORE::LINALG::Matrix<lambda_type::n_dof_, 1> result_local_kappa(true);
 
     // Define the geometry of the two elements.
     q_beam(0) = 0.15;

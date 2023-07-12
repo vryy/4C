@@ -21,7 +21,7 @@
 STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       fint_(Teuchos::null),
@@ -42,7 +42,7 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntStatics::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntImpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -79,16 +79,16 @@ void STR::TimIntStatics::Setup()
   // create force vectors
 
   // internal force vector F_{int;n+1} at new time
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_{n+1} at new time
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // internal force vector F_{int;n} at new time
-  fint_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fint_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   // external force vector F_{n} at new time
-  fext_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fext_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   return;
 }
@@ -128,9 +128,9 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
-    LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -160,10 +160,10 @@ void STR::TimIntStatics::PredictConstAcc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Epetra_Vector> disp_inc = LINALG::CreateVector(*DofRowMapView(), true);
+    Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
-    LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -234,7 +234,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
   }
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -304,7 +304,7 @@ void STR::TimIntStatics::EvaluateForceResidual()
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;

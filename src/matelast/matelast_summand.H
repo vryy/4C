@@ -131,9 +131,11 @@ namespace MAT
 
       //! add strain energy
       virtual void AddStrainEnergy(double& psi,  ///< strain energy functions
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const LINALG::Matrix<6, 1>&
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          const CORE::LINALG::Matrix<6, 1>&
               glstrain,  ///< Green-Lagrange strain in strain like Voigt notation
           int gp,        ///< Gauss point
           int eleGID     ///< element GID
@@ -196,11 +198,12 @@ namespace MAT
        * \f]
        */
       virtual void AddDerivativesPrincipal(
-          LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
-          LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
-          const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
-          int gp,                             ///< Gauss point
-          int eleGID                          ///< element GID
+          CORE::LINALG::Matrix<3, 1>& dPI,    ///< first derivative with respect to invariants
+          CORE::LINALG::Matrix<6, 1>& ddPII,  ///< second derivative with respect to invariants
+          const CORE::LINALG::Matrix<3, 1>&
+              prinv,  ///< principal invariants of right Cauchy-Green tensor
+          int gp,     ///< Gauss point
+          int eleGID  ///< element GID
       )
       {
         return;  // do nothing
@@ -256,10 +259,11 @@ namespace MAT
        * \f]
        */
       virtual void AddThirdDerivativesPrincipalIso(
-          LINALG::Matrix<10, 1>& dddPIII_iso,     ///< third derivative with respect to invariants
-          const LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
-          int gp,                                 ///< Gauss point
-          int eleGID)                             ///< element GID
+          CORE::LINALG::Matrix<10, 1>&
+              dddPIII_iso,  ///< third derivative with respect to invariants
+          const CORE::LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
+          int gp,                                       ///< Gauss point
+          int eleGID)                                   ///< element GID
       {
         dserror("not implemented");
         return;  // do nothing
@@ -311,12 +315,14 @@ namespace MAT
        * \f]
        */
       virtual void AddDerivativesModified(
-          LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
-          LINALG::Matrix<6, 1>&
+          CORE::LINALG::Matrix<3, 1>&
+              dPmodI,  ///< first derivative with respect to modified invariants
+          CORE::LINALG::Matrix<6, 1>&
               ddPmodII,  ///< second derivative with respect to modified invariants
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          int gp,                              ///< Gauss point
-          int eleGID                           ///< global ID of element
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,  ///< modified invariants of right Cauchy-Green tensor
+          int gp,      ///< Gauss point
+          int eleGID   ///< global ID of element
       )
       {
         return;  // do nothing
@@ -341,7 +347,7 @@ namespace MAT
        *             \mathbf{C}^{-1}\otimes\mathbf{C}^{-1}
        * \f]
        */
-      virtual void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
+      virtual void Add3rdVolDeriv(const CORE::LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3)
       {
         return;  // do nothing
       };
@@ -378,8 +384,8 @@ namespace MAT
        * @param gp Gauss-Point
        * @param eleGID Global element id
        */
-      virtual void EvaluateFirstDerivativesAniso(
-          LINALG::Matrix<2, 1>& dPI_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
+      virtual void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
+          CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
 
       /*!
        * @brief Retrieve second derivative of the summand with respect to the anisotropic invariants
@@ -405,8 +411,8 @@ namespace MAT
        * @param gp Gauss-Point
        * @param eleGID Global element id
        */
-      virtual void EvaluateSecondDerivativesAniso(
-          LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
+      virtual void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+          CORE::LINALG::Matrix<3, 3> const& rcg, int gp, int eleGID);
 
       /*!
        * @brief retrieve coefficients of first and second derivative
@@ -545,21 +551,21 @@ namespace MAT
        * \f]
        */
       virtual void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
-          Teuchos::ParameterList& params,   ///< Container for additional information
-          int gp,                           ///< Gauss point
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          Teuchos::ParameterList& params,         ///< Container for additional information
+          int gp,                                 ///< Gauss point
           int eleGID)
       {
         return;  // do nothing
       };
 
       virtual void AddCoefficientsViscoPrincipal(
-          const LINALG::Matrix<3, 1>& inv,  ///< invariants of right Cauchy-Green tensor
-          LINALG::Matrix<8, 1>& mu,         ///< see above
-          LINALG::Matrix<33, 1>& xi,        ///< see above
-          LINALG::Matrix<7, 1>& rateinv,
+          const CORE::LINALG::Matrix<3, 1>& inv,  ///< invariants of right Cauchy-Green tensor
+          CORE::LINALG::Matrix<8, 1>& mu,         ///< see above
+          CORE::LINALG::Matrix<33, 1>& xi,        ///< see above
+          CORE::LINALG::Matrix<7, 1>& rateinv,
           Teuchos::ParameterList& params,  ///< Container for additional information
           int gp,                          ///< Gauss point
           int eleGID)
@@ -568,10 +574,11 @@ namespace MAT
       };
 
       virtual void AddCoefficientsViscoModified(
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          LINALG::Matrix<8, 1>& modmu,         ///< see above
-          LINALG::Matrix<33, 1>& modxi,        ///< see above
-          LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params,
+          const CORE::LINALG::Matrix<3, 1>&
+              modinv,                          ///< modified invariants of right Cauchy-Green tensor
+          CORE::LINALG::Matrix<8, 1>& modmu,   ///< see above
+          CORE::LINALG::Matrix<33, 1>& modxi,  ///< see above
+          CORE::LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params,
           int gp,  ///< Gauss point
           int eleGID)
       {
@@ -608,14 +615,14 @@ namespace MAT
 
       /// Retrieve stress and cmat of summand for fiber directions with respect to modified strains
       virtual void AddStressAnisoModified(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          const LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
-          double I3,                        ///< third principal invariant
-          int gp,                           ///< Gauss point
-          int eleGID,                       ///< element GID
-          Teuchos::ParameterList& params    ///< Container for additional information
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          const CORE::LINALG::Matrix<6, 1>& icg,  ///< inverse of right Cauchy Green Tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+          double I3,                              ///< third principal invariant
+          int gp,                                 ///< Gauss point
+          int eleGID,                             ///< element GID
+          Teuchos::ParameterList& params          ///< Container for additional information
       )
       {
         return;  // do nothing
@@ -641,10 +648,10 @@ namespace MAT
        * @note These parameters have \e nothing in common with Kronecker's delta.
        */
       virtual void AddCoefficientsStretchesPrincipal(
-          LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-          LINALG::Matrix<6, 1>&
+          CORE::LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
+          CORE::LINALG::Matrix<6, 1>&
               delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
-          const LINALG::Matrix<3, 1>&
+          const CORE::LINALG::Matrix<3, 1>&
               prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
       )
       {
@@ -673,13 +680,14 @@ namespace MAT
        * \f]
        */
       virtual void AddCoefficientsStretchesModified(
-          LINALG::Matrix<3, 1>&
+          CORE::LINALG::Matrix<3, 1>&
               modgamma,  ///< see above, [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
-          LINALG::Matrix<6, 1>&
+          CORE::LINALG::Matrix<6, 1>&
               moddelta,  ///< see above, [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
                          ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
-          const LINALG::Matrix<3, 1>& modstr  ///< modified principal stretches, [\bar{\lambda}_1,
-                                              ///< \bar{\lambda}_2, \bar{\lambda}_3]
+          const CORE::LINALG::Matrix<3, 1>&
+              modstr  ///< modified principal stretches, [\bar{\lambda}_1,
+                      ///< \bar{\lambda}_2, \bar{\lambda}_3]
       )
       {
         return;  // do nothing
@@ -687,15 +695,15 @@ namespace MAT
 
       //! Set fiber directions
       virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
+          const CORE::LINALG::Matrix<3, 3>& locsys,     ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd      ///< deformation gradient
       )
       {
         return;  // do nothing
       };
 
       //! Set fiber directions
-      virtual void SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
+      virtual void SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec  ///< new fiber vector
       )
       {
         dserror("Not implemented yet for this type of anisotropic material;");
@@ -703,7 +711,7 @@ namespace MAT
 
       //! Get fiber directions
       virtual void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
       )
       {
         return;  // do nothing
@@ -711,10 +719,10 @@ namespace MAT
 
       //! Read FIBERn
       void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& kenner,
-          LINALG::Matrix<3, 1>& fiber_vector);
+          CORE::LINALG::Matrix<3, 1>& fiber_vector);
 
       //! Read RAD-AXI-CIR
-      void ReadRadAxiCir(DRT::INPUT::LineDefinition* linedef, LINALG::Matrix<3, 3>& locsys);
+      void ReadRadAxiCir(DRT::INPUT::LineDefinition* linedef, CORE::LINALG::Matrix<3, 3>& locsys);
 
       //! Indicator for the chosen formulations
       virtual void SpecifyFormulation(

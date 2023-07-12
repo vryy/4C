@@ -18,7 +18,7 @@
 #include "coupling_adapter_base.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -138,28 +138,28 @@ feel free to write your own tailored Setup() method.
     Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixD() const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixD() const
     {
       if (D_ == Teuchos::null) dserror("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixDinv() const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixDinv() const
     {
       if (Dinv_ == Teuchos::null) dserror("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixM() const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixM() const
     {
       if (M_ == Teuchos::null) dserror("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarMatrixP() const
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMortarMatrixP() const
     {
       if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
       return P_;
@@ -262,14 +262,14 @@ feel free to write your own tailored Setup() method.
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
     void MortarCondensation(
-        Teuchos::RCP<LINALG::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
-                                                ///< out: tangent matrix w/  condensation
-        Teuchos::RCP<Epetra_Vector>& rhs        ///< in:  rhs vector     w/o condensation
-                                                ///< out: rhs vector     w/  condensation
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
+                                                      ///< out: tangent matrix w/  condensation
+        Teuchos::RCP<Epetra_Vector>& rhs              ///< in:  rhs vector     w/o condensation
+                                                      ///< out: rhs vector     w/  condensation
     ) const;
 
     /// recover slave-sided dofs
-    void MortarRecover(Teuchos::RCP<LINALG::SparseMatrix>& k,  ///< in: tangent matrix
+    void MortarRecover(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k,  ///< in: tangent matrix
         Teuchos::RCP<Epetra_Vector>& inc  ///< in:  solution vector     w/o condensation
                                           ///< out: solution vector     w/  condensation
     ) const;
@@ -340,16 +340,16 @@ feel free to write your own tailored Setup() method.
     Teuchos::RCP<const Epetra_Map> pslavedofrowmap_;
 
     /// Slave side mortar matrix \f$D\f$
-    Teuchos::RCP<LINALG::SparseMatrix> D_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_;
 
     /// Inverse \f$D^{-1}\f$ of slave side mortar matrix \f$D\f$
-    Teuchos::RCP<LINALG::SparseMatrix> Dinv_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Dinv_;
 
     /// Master side mortar matrix \f$M\f$
-    Teuchos::RCP<LINALG::SparseMatrix> M_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M_;
 
     /// Mortar projection operator \f$P=D^{-1}M\f$
-    Teuchos::RCP<LINALG::SparseMatrix> P_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> P_;
   };
 }  // namespace CORE::ADAPTER
 

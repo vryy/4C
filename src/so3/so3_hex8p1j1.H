@@ -152,9 +152,9 @@ namespace DRT
       \param D_T_bar (out): current reference moduli
       \param t (in): current volume theta
       */
-      void ConvertMat(const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t);
+      void ConvertMat(const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& cmat,
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t);
 
       So_Hex8P1J1Type& ElementType() const override { return So_Hex8P1J1Type::Instance(); }
 
@@ -225,47 +225,50 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //! Compute internal force, its stiffness and mass matrix
-      void ForceStiffMass(const std::vector<int>& lm,             ///< location matrix
-          const std::vector<double>& disp,                        ///< current displacements
-          const std::vector<double>& residual,                    ///< current residual displ
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
-          LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,   ///< element mass matrix
-          LINALG::Matrix<NUMDOF_SOH8, 1>* force,                  ///< element internal force vector
-          LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,              // structure force
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      void ForceStiffMass(const std::vector<int>& lm,  ///< location matrix
+          const std::vector<double>& disp,             ///< current displacements
+          const std::vector<double>& residual,         ///< current residual displ
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>*
+              stiffmatrix,                                             ///< element stiffness matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force,      ///< element internal force vector
+          CORE::LINALG::Matrix<NUMDOF_SOH8, 1>* force_str,  // structure force
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+          CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option
       );
 
       /// Return stress at Gauss point
-      void Stress(
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,  ///< store the stress herein
-          const INPAR::STR::StressType iostress,                       ///< stress type
-          const int gp,                                                ///< Gauss point index
-          const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
-          const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
-              defgrd,                                          ///< (assumed) deformation gradient
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress  ///< Cauchy stress vector
+      void Stress(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+                      elestress,                  ///< store the stress herein
+          const INPAR::STR::StressType iostress,  ///< stress type
+          const int gp,                           ///< Gauss point index
+          const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
+              defgrd,  ///< (assumed) deformation gradient
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress  ///< Cauchy stress vector
       );
 
       /// Return strain at Gauss point
-      void Strain(
-          LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
+      void Strain(CORE::LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>*
+                      elestrain,                  ///< store the strain herein
           const INPAR::STR::StrainType iostrain,  ///< strain type to store for post-proc
           const int gp,                           ///< Gauss point index
           const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
-          const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
-          const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain    ///< Green-Lagrange strain vector
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
+          const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>&
+              glstrain  ///< Green-Lagrange strain vector
       );
 
       /// Push-pull-operator
-      static void PushPullOperator(LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
+      static void PushPullOperator(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
                                        g,  ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
-          const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& f,  ///< [F^-1]=[F^B_b] or [F]=[F^b_B]
-          const bool& transpose,                              ///< co-variant if true
-          const double& fac                                   //  a scaling factor, eg det(F)
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
+              f,                  ///< [F^-1]=[F^B_b] or [F]=[F^b_B]
+          const bool& transpose,  ///< co-variant if true
+          const double& fac       //  a scaling factor, eg det(F)
       );
 
 
@@ -278,35 +281,36 @@ namespace DRT
       // don't want = operator
       So_Hex8P1J1& operator=(const So_Hex8P1J1& old);
 
-      LINALG::Matrix<1, NUMDOF_SOH8> K_pu_;
-      LINALG::Matrix<1, NUMDOF_SOH8> K_tu_;
-      LINALG::Matrix<1, 1> R_t_;
-      LINALG::Matrix<1, 1> R_p_;
+      CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_pu_;
+      CORE::LINALG::Matrix<1, NUMDOF_SOH8> K_tu_;
+      CORE::LINALG::Matrix<1, 1> R_t_;
+      CORE::LINALG::Matrix<1, 1> R_p_;
 
-      LINALG::Matrix<6, 1> m_;
-      LINALG::Matrix<6, 6> Identity6_;
-      LINALG::Matrix<6, 6> I_d_;
-      LINALG::Matrix<6, 6> I_0_;
+      CORE::LINALG::Matrix<6, 1> m_;
+      CORE::LINALG::Matrix<6, 6> Identity6_;
+      CORE::LINALG::Matrix<6, 6> I_d_;
+      CORE::LINALG::Matrix<6, 6> I_0_;
 
 
       /// @name Discontinuous primary field variables
       //@{
-      LINALG::Matrix<1, 1> p_;    ///< pressure at current time/load step
-      LINALG::Matrix<1, 1> p_o_;  ///< (old) pressure at last converged time/load step
-      LINALG::Matrix<1, 1> dp_;   ///< pressure increment
-      LINALG::Matrix<1, 1> t_;    ///< determinant of deformation gradient at current time/load step
-      LINALG::Matrix<1, 1>
+      CORE::LINALG::Matrix<1, 1> p_;    ///< pressure at current time/load step
+      CORE::LINALG::Matrix<1, 1> p_o_;  ///< (old) pressure at last converged time/load step
+      CORE::LINALG::Matrix<1, 1> dp_;   ///< pressure increment
+      CORE::LINALG::Matrix<1, 1>
+          t_;  ///< determinant of deformation gradient at current time/load step
+      CORE::LINALG::Matrix<1, 1>
           t_o_;  ///< (old) Jacobian of deformation gradient at last converged time/load step
-      LINALG::Matrix<1, 1> dt_;  ///< jacobian increment
+      CORE::LINALG::Matrix<1, 1> dt_;  ///< jacobian increment
       //@}
 
       double K_pt_{};
       double K_tt_{};
-      LINALG::Matrix<1, 1> p_temp_;
-      LINALG::Matrix<1, 1> t_temp_;
+      CORE::LINALG::Matrix<1, 1> p_temp_;
+      CORE::LINALG::Matrix<1, 1> t_temp_;
 
-      LINALG::Matrix<24, 24> K_uu_;
-      LINALG::Matrix<24, 1> F_u_;
+      CORE::LINALG::Matrix<24, 24> K_uu_;
+      CORE::LINALG::Matrix<24, 1> F_u_;
     };
 
 

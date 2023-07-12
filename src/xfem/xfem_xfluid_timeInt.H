@@ -46,7 +46,7 @@ namespace CORE::GEO
   }
 }  // namespace CORE::GEO
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -228,7 +228,7 @@ namespace XFEM
     bool SpecialCheck_InterfaceTips_SpaceTime(
         bool& changed_side,  /// did the node change the side ?
         DRT::Element* side, const int coup_sid,
-        const LINALG::Matrix<3, 1>& n_coord  /// node coodinates
+        const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
     /// check if the node is within the space time side
@@ -236,12 +236,12 @@ namespace XFEM
         DRT::Element::DiscretizationType space_time_distype>
     bool WithinSpaceTimeSide(bool& within_space_time_side,  /// within the space time side
         DRT::Element* side, const int coup_sid,
-        const LINALG::Matrix<3, 1>& n_coord  /// node coodinates
+        const CORE::LINALG::Matrix<3, 1>& n_coord  /// node coodinates
     );
 
     /// check the volume of the space time side, distorted space-time side ?
     template <DRT::Element::DiscretizationType space_time_distype, const int numnode_space_time>
-    bool CheckSTSideVolume(const LINALG::Matrix<3, numnode_space_time>& xyze_st);
+    bool CheckSTSideVolume(const CORE::LINALG::Matrix<3, numnode_space_time>& xyze_st);
 
     /// export data about reconstruction method to neighbor proc and receive data from previous proc
     void ExportMethods(

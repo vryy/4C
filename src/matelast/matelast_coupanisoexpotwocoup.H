@@ -107,10 +107,10 @@ namespace MAT
        * notation
        *
        * \param gp Gauss point
-       * \return const LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in stress
-       * like Voigt notation
+       * \return const CORE::LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in
+       * stress like Voigt notation
        */
-      const LINALG::Matrix<6, 1>& GetCoupledStructuralTensor_stress(int gp) const;
+      const CORE::LINALG::Matrix<6, 1>& GetCoupledStructuralTensor_stress(int gp) const;
 
       /*!
        * \brief Returns the coupled scalar product at the Gauss point
@@ -126,7 +126,7 @@ namespace MAT
 
       /// mixed structural tensor (symmetric) \f$\frac{1}{2}(a1 \otimes a2 + a2 \otimes a1)\f$ in
       /// stress like Voigt notation
-      std::vector<LINALG::Matrix<6, 1>> A1A2_;
+      std::vector<CORE::LINALG::Matrix<6, 1>> A1A2_;
     };
 
     /*!
@@ -180,9 +180,10 @@ namespace MAT
       ///@}
 
       /// Add anisotropic principal stresses
-      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(
+          const CORE::LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          CORE::LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
+          CORE::LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
@@ -190,14 +191,14 @@ namespace MAT
           ) override;
 
       /// Set fiber directions
-      void SetFiberVecs(double newgamma,       ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
+      void SetFiberVecs(double newgamma,             ///< new angle
+          const CORE::LINALG::Matrix<3, 3>& locsys,  ///< local coordinate system
+          const CORE::LINALG::Matrix<3, 3>& defgrd   ///< deformation gradient
           ) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /// Indicator for formulation

@@ -471,7 +471,7 @@ bool SCATRA::ScaTraAlgorithm::ConvergenceCheck(
   //     | phi_n+1 |_2
 
   bool stopnonliniter = false;
-  Teuchos::RCP<LINALG::MapExtractor> phisplitter = ScaTraField()->Splitter();
+  Teuchos::RCP<CORE::LINALG::MapExtractor> phisplitter = ScaTraField()->Splitter();
   // Variables to save different L2 - Norms
 
   double velincnorm_L2(0.0);

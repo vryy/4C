@@ -254,7 +254,7 @@ namespace DRT
       );
 
       //!  calculate weighted mass flux (no reactive flux so far)
-      virtual void CalculateFlux(LINALG::Matrix<3, nen_>& flux,  //!< flux to be computed
+      virtual void CalculateFlux(CORE::LINALG::Matrix<3, nen_>& flux,  //!< flux to be computed
           const DRT::Element* ele,                 //!< the element we are dealing with
           const INPAR::SCATRA::FluxType fluxtype,  //!< type fo flux
           const int k                              //!< index of current scalar
@@ -315,7 +315,7 @@ namespace DRT
           const DRT::Element* ele,            //!< the element we are dealing with
           Epetra_SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
           Epetra_SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          const std::vector<LINALG::Matrix<nen_, nsd_>>&
+          const std::vector<CORE::LINALG::Matrix<nen_, nsd_>>&
               egradphinp  //!< the gradient of phi in the x-direction
       );
 
@@ -397,14 +397,16 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const double vol                           //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double vol  //!< element volume
       );
 
       //! calculate characteristic element length
       virtual double CalcCharEleLength(const double vol,  //!< element volume
           const double vel_norm,                          //!< norm of velocity
-          const LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint  //!< convective velocity at integration point
       );
 
       //! calculation of tau according to Taylor, Hughes and Zarins
@@ -413,7 +415,8 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint  //!< convective velocity at integration point
       );
 
       //! calculation of tau according to Franca and Valentin
@@ -422,8 +425,9 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const double vol                           //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double vol  //!< element volume
       );
 
       //! calculation of tau according to Franca, Shakib and Codina
@@ -432,8 +436,9 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const double vol                           //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double vol  //!< element volume
       );
 
       //! calculation of tau according to Codina
@@ -442,8 +447,9 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const double vol                           //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double vol  //!< element volume
       );
 
       //! calculation of tau according to Franca, Madureira and Valentin
@@ -461,8 +467,9 @@ namespace DRT
           const double diffus,    //!< diffusivity or viscosity
           const double reacoeff,  //!< reaction coefficient
           const double densnp,    //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const double vol                           //!< element volume
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double vol  //!< element volume
       );
 
       //! calculation of strong residual for stabilization
@@ -476,24 +483,26 @@ namespace DRT
       );
 
       //! calculate artificial diffusivity
-      void CalcArtificialDiff(const double vol,      //!< element volume
-          const int k,                               //!< id of current scalar
-          const double densnp,                       //!< density at t_(n+1)
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at integration point
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient
-          const double conv_phi,                     //!< convective contribution
+      void CalcArtificialDiff(const double vol,  //!< element volume
+          const int k,                           //!< id of current scalar
+          const double densnp,                   //!< density at t_(n+1)
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,  //!< convective velocity at integration point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< scalar gradient
+          const double conv_phi,                         //!< convective contribution
           const double scatrares,  //!< residual of convection-diffusion-reaction eq
           const double tau         //!< the stabilisation parameter
       );
 
       //! calculate subgrid-scale velocity
       void CalcSubgrVelocity(const DRT::Element* ele,  //!< the element we are dealing with
-          LINALG::Matrix<nsd_, 1>& sgvelint,           //!< subgrid velocity at integration point
+          CORE::LINALG::Matrix<nsd_, 1>& sgvelint,     //!< subgrid velocity at integration point
           const double densam,                         //!< density at t_(n+am)
           const double densnp,                         //!< density at t_(n+1)
           const double visc,                           //!< fluid viscosity
-          const LINALG::Matrix<nsd_, 1>& convelint,    //!< convective velocity at integration point
-          const double tau                             //!< the stabilisation parameter
+          const CORE::LINALG::Matrix<nsd_, 1>&
+              convelint,    //!< convective velocity at integration point
+          const double tau  //!< the stabilisation parameter
       );
 
       /*========================================================================*/
@@ -522,32 +531,33 @@ namespace DRT
       );
 
       //!  calculate fine-scale art. subgrid diffusivity
-      void CalcFineScaleSubgrDiff(double& sgdiff,  //!< subgrid-scale diffusion
-          Epetra_SerialDenseVector& subgrdiff,     //!< subgrid-scale diffusion vector
-          DRT::Element* ele,                       //!< the element we are dealing with
-          const double vol,                        //!< element volume
-          const int k,                             //!< index of current scalar
-          const double densnp,                     //!< density at t_(n+1)
-          const double diffus,                     //!< diffusion
-          const LINALG::Matrix<nsd_, 1> convelint  //!< convective velocity
+      void CalcFineScaleSubgrDiff(double& sgdiff,        //!< subgrid-scale diffusion
+          Epetra_SerialDenseVector& subgrdiff,           //!< subgrid-scale diffusion vector
+          DRT::Element* ele,                             //!< the element we are dealing with
+          const double vol,                              //!< element volume
+          const int k,                                   //!< index of current scalar
+          const double densnp,                           //!< density at t_(n+1)
+          const double diffus,                           //!< diffusion
+          const CORE::LINALG::Matrix<nsd_, 1> convelint  //!< convective velocity
       );
 
       //! calculation of coefficients B and D for multifractal subgrid-scales
       void CalcBAndDForMultifracSubgridScales(
-          LINALG::Matrix<nsd_, 1>& B_mfs,  //!< coefficient for fine-scale velocity (will be filled)
-          double& D_mfs,                   //!< coefficient for fine-scale scalar (will be filled)
-          const double vol,                //!< volume of element
-          const int k,                     //!< index of current scalar
-          const double densnp,             //!< density at t_(n+1)
-          const double diffus,             //!< diffusivity
-          const double visc,               //!< fluid vicosity
-          const LINALG::Matrix<nsd_, 1> convelint,  //!< convective velocity
-          const LINALG::Matrix<nsd_, 1> fsvelint    //!< fine-scale velocity
+          CORE::LINALG::Matrix<nsd_, 1>&
+              B_mfs,            //!< coefficient for fine-scale velocity (will be filled)
+          double& D_mfs,        //!< coefficient for fine-scale scalar (will be filled)
+          const double vol,     //!< volume of element
+          const int k,          //!< index of current scalar
+          const double densnp,  //!< density at t_(n+1)
+          const double diffus,  //!< diffusivity
+          const double visc,    //!< fluid vicosity
+          const CORE::LINALG::Matrix<nsd_, 1> convelint,  //!< convective velocity
+          const CORE::LINALG::Matrix<nsd_, 1> fsvelint    //!< fine-scale velocity
       );
 
       // calculate reference length for multifractal subgrid-scales
-      double CalcRefLength(const double vol,       //!< volume of element
-          const LINALG::Matrix<nsd_, 1> convelint  //!< convective velocity
+      double CalcRefLength(const double vol,             //!< volume of element
+          const CORE::LINALG::Matrix<nsd_, 1> convelint  //!< convective velocity
       );
 
       //! calculate filtered quantities for dynamic Smagorinsky model
@@ -565,7 +575,7 @@ namespace DRT
           Teuchos::ParameterList& params, const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
-      virtual void CalcSubgrVelocityVisc(LINALG::Matrix<nsd_, 1>& epsilonvel);
+      virtual void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel);
 
       //! calculate turbulent Prandtl number for dynamic Smagorinsky model
       void scatra_calc_smag_const_LkMk_and_MkMk(Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
@@ -601,14 +611,15 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate the Laplacian in strong form for all shape functions
-      void GetLaplacianStrongForm(LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
+      void GetLaplacianStrongForm(
+          CORE::LINALG::Matrix<nen_, 1>& diff  //!< laplace term to be computed
       );
 
       //! calculate divergence of vector field (e.g., velocity)
-      void GetDivergence(double& vdiv, const LINALG::Matrix<nsd_, nen_>& evel);
+      void GetDivergence(double& vdiv, const CORE::LINALG::Matrix<nsd_, nen_>& evel);
 
       //! calculate rate of strain of (fine-scale) velocity
-      inline double GetStrainRate(const LINALG::Matrix<nsd_, nen_>& evel)
+      inline double GetStrainRate(const CORE::LINALG::Matrix<nsd_, nen_>& evel)
       {
         // evel is tranferred here since the evaluation of the strain rate can be performed
         // for various velocities such as velint_, fsvel_, ...
@@ -626,7 +637,7 @@ namespace DRT
         //
         // j : direction of derivative x/y/z
         //
-        LINALG::Matrix<nsd_, nsd_> velderxy;
+        CORE::LINALG::Matrix<nsd_, nsd_> velderxy;
         velderxy.MultiplyNT(evel, derxy_);
 
         // compute (resolved) rate of strain
@@ -637,7 +648,7 @@ namespace DRT
         //          |          \   / ij        \   / ij |
         //          +-                                 -+
         //
-        LINALG::Matrix<nsd_, nsd_> two_epsilon;
+        CORE::LINALG::Matrix<nsd_, nsd_> two_epsilon;
         for (unsigned rr = 0; rr < nsd_; ++rr)
         {
           for (unsigned mm = 0; mm < nsd_; ++mm)
@@ -671,10 +682,10 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakForm(double& val,          //!< ?
-          const LINALG::Matrix<nsd_, nsd_>& diffus3,  //!< ?
-          const int vi,                               //!< ?
-          const int ui                                //!< ?
+      void GetLaplacianWeakForm(double& val,                //!< ?
+          const CORE::LINALG::Matrix<nsd_, nsd_>& diffus3,  //!< ?
+          const int vi,                                     //!< ?
+          const int ui                                      //!< ?
       )
       {
         val = 0.0;
@@ -688,9 +699,9 @@ namespace DRT
       };
 
       //! calculate the Laplacian (weak form)
-      void GetLaplacianWeakFormRHS(double& val,    //!< ?
-          const LINALG::Matrix<nsd_, 1>& gradphi,  //!< ?
-          const int vi                             //!< ?
+      void GetLaplacianWeakFormRHS(double& val,          //!< ?
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< ?
+          const int vi                                   //!< ?
       )
       {
         val = 0.0;
@@ -711,7 +722,7 @@ namespace DRT
           const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
       );
 
       //! calculation of convective element matrix: add conservative contributions
@@ -735,9 +746,9 @@ namespace DRT
           const int k,                     //!< index of current scalar
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double densnp,                    //!< density  at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const double densnp,                          //!< density  at time_(n+1)
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       //! calculation of mass element matrix (standard shape functions)
@@ -758,8 +769,8 @@ namespace DRT
        * @param tfunct  test function values
        */
       void CalcMatMass(Epetra_SerialDenseMatrix& emat, const int& k, const double& fac,
-          const double& densam, const LINALG::Matrix<nen_, 1>& sfunct,
-          const LINALG::Matrix<nen_, 1>& tfunct) const;
+          const double& densam, const CORE::LINALG::Matrix<nen_, 1>& sfunct,
+          const CORE::LINALG::Matrix<nen_, 1>& tfunct) const;
 
       //! calculation of stabilization mass element matrix
       void CalcMatMassStab(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
@@ -767,8 +778,8 @@ namespace DRT
           const double taufac,                              //!< domain-integration factor times tau
           const double densam,                              //!< density at time_(n+am)
           const double densnp,                              //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv,            //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff               //!< laplace term
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,      //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff         //!< laplace term
       );
 
       //! calculation of reactive element matrix
@@ -777,16 +788,16 @@ namespace DRT
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
-          const double taufac,                    //!< domain-integration factor times tau
-          const double densnp,                    //!< density at time_(n+1)
-          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const double taufac,                          //!< domain-integration factor times tau
+          const double densnp,                          //!< density at time_(n+1)
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
-          const double scatrares, const LINALG::Matrix<nen_, 1>& sgconv,
-          const LINALG::Matrix<nen_, 1>& diff){};
+          const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+          const CORE::LINALG::Matrix<nen_, 1>& diff){};
 
       //! calculation of linearized mass rhs vector
       void CalcRHSLinMass(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
@@ -806,21 +817,21 @@ namespace DRT
 
       //! adaption of residual with respect to time integration
       void RecomputeScatraResForRhs(
-          double& scatrares,                    //!< residual of convection-diffusion-reaction eq
-          const int k,                          //!< index of current scalar
-          const LINALG::Matrix<nen_, 1>& diff,  //!< laplace term
-          const double densn,                   //!< density at time_(n)
-          const double densnp,                  //!< density at time_(n+1)
-          double& rea_phi,                      //!< reactive contribution
-          const double rhsint                   //!< rhs at Gauss point
+          double& scatrares,  //!< residual of convection-diffusion-reaction eq
+          const int k,        //!< index of current scalar
+          const CORE::LINALG::Matrix<nen_, 1>& diff,  //!< laplace term
+          const double densn,                         //!< density at time_(n)
+          const double densnp,                        //!< density at time_(n+1)
+          double& rea_phi,                            //!< reactive contribution
+          const double rhsint                         //!< rhs at Gauss point
       );
 
       //! adaption of convective term for rhs
-      virtual void RecomputeConvPhiForRhs(const int k,  //!< index of current scalar
-          const LINALG::Matrix<nsd_, 1>& sgvelint,      //!< subgrid-scale velocity at Gauss point
-          const double densnp,                          //!< density at time_(n+1)
-          const double densn,                           //!< density at time_(n)
-          const double vdiv                             //!< velocity divergence
+      virtual void RecomputeConvPhiForRhs(const int k,    //!< index of current scalar
+          const CORE::LINALG::Matrix<nsd_, 1>& sgvelint,  //!< subgrid-scale velocity at Gauss point
+          const double densnp,                            //!< density at time_(n+1)
+          const double densn,                             //!< density at time_(n)
+          const double vdiv                               //!< velocity divergence
       );
 
       //! standard Galerkin transient, old part of rhs and source term
@@ -850,8 +861,8 @@ namespace DRT
                                    //!< factor times tau
           const double densnp,     //!< density at time_(n+1)
           const double scatrares,  //!< residual of convection-diffusion-reaction eq
-          const LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
-          const LINALG::Matrix<nen_, 1>& diff     //!< laplace term
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       //! reactive terms (standard Galerkin and stabilization) on rhs
@@ -873,7 +884,7 @@ namespace DRT
           const int k,                                   //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double sgdiff,  //!< subgrid-scale diffusivity
-          const LINALG::Matrix<nsd_, 1> fsgradphi  //!< gardient of fine-scale velocity
+          const CORE::LINALG::Matrix<nsd_, 1> fsgradphi  //!< gardient of fine-scale velocity
       );
 
       //! multifractal subgrid-scale modeling on right hand side only rasthofer 11/13  |
@@ -881,11 +892,11 @@ namespace DRT
           const int k,                                 //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double densnp,  //!< density at time_(n+1)
-          const LINALG::Matrix<nsd_, 1>
-              mfsggradphi,                           //!< gradient of multifractal fine-scale scalar
-          const LINALG::Matrix<nsd_, 1> mfsgvelint,  //!< multifractal fine-scale velocity
-          const double mfssgphi,                     //!< multifractal fine-scale scalar
-          const double mfsvdiv                       //!< divergence of fine-scale velocity
+          const CORE::LINALG::Matrix<nsd_, 1>
+              mfsggradphi,  //!< gradient of multifractal fine-scale scalar
+          const CORE::LINALG::Matrix<nsd_, 1> mfsgvelint,  //!< multifractal fine-scale velocity
+          const double mfssgphi,                           //!< multifractal fine-scale scalar
+          const double mfsvdiv                             //!< divergence of fine-scale velocity
       );
 
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
@@ -914,7 +925,7 @@ namespace DRT
           const int ndofpernodefluid,      //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
       );
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
@@ -940,7 +951,7 @@ namespace DRT
           const double phinp,   //!< scalar at time_(n+1)
           const double hist,    //!< history of time integartion
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -953,7 +964,7 @@ namespace DRT
           const double fac,                //!< domain-integration factor
           const double rhsint,             //!< rhs at Gauss point
           const double J,                  //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh,  //!< derivative of det(dx/ds) w.r.t. mesh displacement
           const double densnp);
 
@@ -965,14 +976,14 @@ namespace DRT
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double densnp,  //!< density at time_(n+1)
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
-          const LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,   //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint  //!< convective velocity
       );
 
       //! standard Galerkin convective term (only shapederivative term mesh)
       void ApplyShapeDerivsConv(Epetra_SerialDenseMatrix& emat, const int k, const double rhsfac,
-          const double densnp, const double J, const LINALG::Matrix<nsd_, 1>& gradphi,
-          const LINALG::Matrix<nsd_, 1>& convelint);
+          const double densnp, const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint);
 
       /*!
        * @brief standard Galerkin convective term in conservative form (off-diagonal)
@@ -996,9 +1007,9 @@ namespace DRT
           const double fac,           //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
-          const LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -1010,7 +1021,7 @@ namespace DRT
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
-          const LINALG::Matrix<1, nsd_ * nen_>&
+          const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh  //!< derivative of det(dx/ds) w.r.t. mesh displacement
       );
 
@@ -1052,11 +1063,11 @@ namespace DRT
           const int k,                     //!< index of current scalar
           const int ndofpernodemesh,       //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-          const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
 
       //! calculate derivative of J w.r.t. nodal displacements
-      void CalcDJDMesh(LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh);
+      void CalcDJDMesh(CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh);
 
       /*========================================================================*/
       //! @name dofs and nodes
@@ -1092,13 +1103,13 @@ namespace DRT
       /*========================================================================*/
 
       //! state variables at t_(n)
-      std::vector<LINALG::Matrix<nen_, 1>> ephin_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephin_;
       //! state variables at t_(n+1) or t_(n+alpha_F)
-      std::vector<LINALG::Matrix<nen_, 1>> ephinp_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp_;
       //! history vector of transported scalars
-      std::vector<LINALG::Matrix<nen_, 1>> ehist_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ehist_;
       //! fine-scale solution ?
-      std::vector<LINALG::Matrix<nen_, 1>> fsphinp_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> fsphinp_;
 
       /*========================================================================*/
       //! @name velocity, pressure, and related
@@ -1109,19 +1120,19 @@ namespace DRT
           FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, DRT::ELEMENTS::Fluid::none>>
           rotsymmpbc_;
       //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nsd_, nen_> evelnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> evelnp_;
       //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nsd_, nen_> econvelnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> econvelnp_;
       //! nodal fine-scale velocity values at t_(n+1) or t_(n+alpha_F)
       //! required for fine-scale subgrid diffusivity of type smagorinsky_small and multifractal
       //! subgrid scales
-      LINALG::Matrix<nsd_, nen_> efsvel_;
+      CORE::LINALG::Matrix<nsd_, nen_> efsvel_;
       //! nodal acceleration values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nsd_, nen_> eaccnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> eaccnp_;
       //! nodal displacement values for ALE
-      LINALG::Matrix<nsd_, nen_> edispnp_;
+      CORE::LINALG::Matrix<nsd_, nen_> edispnp_;
       //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nen_, 1> eprenp_;
+      CORE::LINALG::Matrix<nen_, 1> eprenp_;
 
 
       /*========================================================================*/
@@ -1136,34 +1147,34 @@ namespace DRT
       /*========================================================================*/
 
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_ele_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_ele_, 1> xsi_;
       //! node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for dual shape functions
-      LINALG::Matrix<nen_, 1> dual_funct_;
+      CORE::LINALG::Matrix<nen_, 1> dual_funct_;
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
       //! array for second derivatives of shape function w.r.t r,s,t
-      LINALG::Matrix<numderiv2_, nen_> deriv2_;
+      CORE::LINALG::Matrix<numderiv2_, nen_> deriv2_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<numderiv2_, nen_> derxy2_;
+      CORE::LINALG::Matrix<numderiv2_, nen_> derxy2_;
 
       //! transposed jacobian "dx/ds"
-      LINALG::Matrix<nsd_, nsd_> xjm_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xjm_;
       //! inverse of transposed jacobian "ds/dx"
-      LINALG::Matrix<nsd_, nsd_> xij_;
+      CORE::LINALG::Matrix<nsd_, nsd_> xij_;
       //! 2nd derivatives of coord.-functions w.r.t r,s,t
-      LINALG::Matrix<numderiv2_, nsd_> xder2_;
+      CORE::LINALG::Matrix<numderiv2_, nsd_> xder2_;
 
       //! bodyforce in element nodes
-      std::vector<LINALG::Matrix<nen_, 1>> bodyforce_;
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> bodyforce_;
       //
       //! weights for nurbs elements
-      LINALG::Matrix<nen_, 1> weights_;
+      CORE::LINALG::Matrix<nen_, 1> weights_;
       //! knot vector for nurbs elements
       std::vector<Epetra_SerialDenseVector> myknots_;
 
@@ -1312,14 +1323,16 @@ namespace DRT
       virtual ~ScaTraEleInternalVariableManager() = default;
 
       // compute and set internal variables
-      void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
+      void SetInternalVariables(
+          const CORE::LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
+          const CORE::LINALG::Matrix<NSD, NEN>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,   //! scalar at t_(n)
-          const LINALG::Matrix<NSD, NEN>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
+              ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
+          const CORE::LINALG::Matrix<NSD, NEN>&
               econvelnp,  //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
+          const std::vector<CORE::LINALG::Matrix<NEN, 1>>&
               ehist  //! history vector of transported scalars
       )
       {
@@ -1356,13 +1369,16 @@ namespace DRT
       //! return scalar value at t_(n)
       virtual const double& Phin(const int k) const { return phin_[k]; };
       //! return convective velocity
-      virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const { return convelint_; };
+      virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const { return convelint_; };
       //! return convective part in convective form
-      virtual const LINALG::Matrix<NEN, 1>& Conv(const int k) const { return conv_; };
+      virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const { return conv_; };
       //! return spatial gradient of all scalar values
-      virtual const std::vector<LINALG::Matrix<NSD, 1>>& GradPhi() const { return gradphi_; };
+      virtual const std::vector<CORE::LINALG::Matrix<NSD, 1>>& GradPhi() const { return gradphi_; };
       //! return spatial gradient of current scalar value
-      virtual const LINALG::Matrix<NSD, 1>& GradPhi(const int k) const { return gradphi_[k]; };
+      virtual const CORE::LINALG::Matrix<NSD, 1>& GradPhi(const int k) const
+      {
+        return gradphi_[k];
+      };
       //! return convective term of current scalar value
       virtual const double& ConvPhi(const int k) const { return conv_phi_[k]; };
       //! return history term of current scalar value
@@ -1379,7 +1395,7 @@ namespace DRT
       // TODO: reduce number of set methods
 
       //! set spatial gradient of current scalar value
-      virtual void SetGradPhi(const int k, LINALG::Matrix<NSD, 1>& gradphi)
+      virtual void SetGradPhi(const int k, CORE::LINALG::Matrix<NSD, 1>& gradphi)
       {
         gradphi_[k] = gradphi;
       };
@@ -1400,11 +1416,11 @@ namespace DRT
       //! scalar at t_(n)
       std::vector<double> phin_;
       //! convective velocity
-      LINALG::Matrix<NSD, 1> convelint_;
+      CORE::LINALG::Matrix<NSD, 1> convelint_;
       //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      LINALG::Matrix<NEN, 1> conv_;
+      CORE::LINALG::Matrix<NEN, 1> conv_;
       //! spatial gradient of current scalar value
-      std::vector<LINALG::Matrix<NSD, 1>> gradphi_;
+      std::vector<CORE::LINALG::Matrix<NSD, 1>> gradphi_;
       //! convective term
       std::vector<double> conv_phi_;
       //! history data (or acceleration)

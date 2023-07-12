@@ -261,7 +261,7 @@ void MAT::Mixture::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 }
 
 // This method is called between two timesteps
-void MAT::Mixture::Update(LINALG::Matrix<3, 3> const& defgrd, const int gp,
+void MAT::Mixture::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
@@ -274,7 +274,7 @@ void MAT::Mixture::Update(LINALG::Matrix<3, 3> const& defgrd, const int gp,
 }
 
 // This method is called between two timesteps during prestress
-void MAT::Mixture::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, const int gp,
+void MAT::Mixture::UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp,
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
@@ -287,9 +287,10 @@ void MAT::Mixture::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, const int
 }
 
 // Evaluates the material
-void MAT::Mixture::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   // check, whether the PostSetup method was already called
   if (!setup_) dserror("The material's PostSetup() method has not been called yet.");

@@ -84,8 +84,8 @@ namespace XFEM
         dserror(
             "InitializeStrucPresMap: (pfmap->NumGlobalElements() != psmap->NumGlobalElements())!");
 
-      Teuchos::RCP<Epetra_Map> fullpfmap = LINALG::AllreduceEMap(*pfmap);
-      Teuchos::RCP<Epetra_Map> fullpsmap = LINALG::AllreduceEMap(*psmap);
+      Teuchos::RCP<Epetra_Map> fullpfmap = CORE::LINALG::AllreduceEMap(*pfmap);
+      Teuchos::RCP<Epetra_Map> fullpsmap = CORE::LINALG::AllreduceEMap(*psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         dserror(
@@ -131,7 +131,7 @@ namespace XFEM
     Teuchos::RCP<Epetra_Vector> IForcecol() { return iforcecol_; }
 
     //! Caluculate the Porosity for this FaceElement Gausspoint
-    double CalcPorosity(DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& J);
+    double CalcPorosity(DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& J);
 
     //! get distance when transition between FPSI and PSCI is started
     double Get_fpi_pcontact_exchange_dist() { return fpsi_contact_hfraction_ * h_scaling_; }
@@ -180,18 +180,18 @@ namespace XFEM
         double& visc_m,                                      //< master sided dynamic viscosity
         double& visc_s,                                      //< slave sided dynamic viscosity
         double& density_m,                                   //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     virtual void InitStateVectors();
@@ -205,21 +205,21 @@ namespace XFEM
    private:
     //! Updates configurationmap for specific Gausspoint in the contact case
     virtual void UpdateConfigurationMap_GP_Contact(double& kappa_m,  //< fluid sided weighting
-        double& visc_m,                 //< master sided dynamic viscosity
-        double& visc_s,                 //< slave sided dynamic viscosity
-        double& density_m,              //< master sided density
-        double& visc_stab_tang,         //< viscous tangential NIT Penalty scaling
-        double& full_stab,              //< full NIT Penalty scaling
-        const LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
-        const DRT::Condition* cond,     //< Condition
-        DRT::Element* ele,              //< Element
-        DRT::Element* bele,             //< Boundary Element
+        double& visc_m,                       //< master sided dynamic viscosity
+        double& visc_s,                       //< slave sided dynamic viscosity
+        double& density_m,                    //< master sided density
+        double& visc_stab_tang,               //< viscous tangential NIT Penalty scaling
+        double& full_stab,                    //< full NIT Penalty scaling
+        const CORE::LINALG::Matrix<3, 1>& x,  //< Position x in global coordinates
+        const DRT::Condition* cond,           //< Condition
+        DRT::Element* ele,                    //< Element
+        DRT::Element* bele,                   //< Boundary Element
         double* funct,  //< local shape function for Gauss Point (from fluid element)
         double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-        LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-        LINALG::Matrix<3, 1>& normal,     //< normal at gp
-        LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-        double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+        CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+        CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+        CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+        double* fulltraction  //< precomputed fsi traction (sigmaF n + gamma relvel)
     );
 
     //! Caluculate the Porosity for J,porosity pair on this FaceElement
@@ -227,7 +227,7 @@ namespace XFEM
 
     //! Compute Jacobian and extract PoroFluidPressure this FaceElement Gausspoint
     double ComputeJacobianandPressure(
-        DRT::Element* ele, LINALG::Matrix<3, 1>& rst_slave, double& pres);
+        DRT::Element* ele, CORE::LINALG::Matrix<3, 1>& rst_slave, double& pres);
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors

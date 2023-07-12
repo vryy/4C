@@ -47,7 +47,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = GState().GetMutableDisNp();
   stiff_beaminteract_ptr_ =
-      Teuchos::rcp(new LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
   f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
 
   // create beam contact manager
@@ -148,16 +148,16 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleForce(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
-  LINALG::AssembleMyVector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
+  CORE::LINALG::AssembleMyVector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
   return true;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool STR::MODELEVALUATOR::BeamInteractionOld::AssembleJacobian(
-    LINALG::SparseOperator& jac, const double& timefac_np) const
+    CORE::LINALG::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> jac_dd_ptr = GState().ExtractDisplBlock(jac);
   jac_dd_ptr->Add(*stiff_beaminteract_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_beaminteract_ptr_->Zero();

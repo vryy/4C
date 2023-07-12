@@ -274,7 +274,8 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
   // get local node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
 
   // THESE ARE NEEDED IF DENSITY OR A SCALAR IS USED in the BC (which normally is NOT the case)
@@ -287,7 +288,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
   std::vector<double> myscaaf(lm.size());
   DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
 
-  LINALG::Matrix<bdrynen_, 1> escaaf(true);
+  CORE::LINALG::Matrix<bdrynen_, 1> escaaf(true);
 
   // insert scalar into element array
   // the scalar is stored to the pressure dof
@@ -301,7 +302,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
 
   // extract pressure values from global velocity/pressure vector
   // (needed for weakly_compressible fluids)
-  LINALG::Matrix<bdrynen_, 1> epreaf(true);
+  CORE::LINALG::Matrix<bdrynen_, 1> epreaf(true);
   DRT::ELEMENTS::FluidEleParameter* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
   if (fldpara->PhysicalType() == INPAR::FLUID::weakly_compressible or
       fldpara->PhysicalType() == INPAR::FLUID::weakly_compressible_stokes)
@@ -428,7 +429,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::Fl
     double functfacn = 1.0;
 
     // global coordinates of gausspoint
-    LINALG::Matrix<(nsd_), 1> coordgp(0.0);
+    CORE::LINALG::Matrix<(nsd_), 1> coordgp(0.0);
 
     // determine coordinates of current Gauss point
     coordgp.Multiply(xyze_, funct_);
@@ -568,7 +569,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // ------------------------------------
   // get statevectors from discretisation
@@ -597,7 +599,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
   }
 
   // extract local velocities from the global vectors
-  LINALG::Matrix<nsd_, bdrynen_> evel(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> evel(true);
 
   Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
   if (vel == Teuchos::null) dserror("Cannot get state vector 'u and p (trial)'");
@@ -664,7 +666,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     const double timefac_mat_u_o_n = timefac_mat * u_o_n;
 
     // dyadic product of element's normal vector and velocity
-    LINALG::Matrix<nsd_, nsd_> n_x_u(true);
+    CORE::LINALG::Matrix<nsd_, nsd_> n_x_u(true);
 
     // dyadic product of u and n
     n_x_u.MultiplyNT(timefac_mat, velint_, unitnormal_);
@@ -681,7 +683,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     for (int ui = 0; ui < bdrynen_; ++ui)  // loop columns
     {
       // Epetra_SerialDenseMatrix  temp(nsd_,nsd_) = n_x_u (copy);
-      LINALG::Matrix<nsd_, nsd_> temp(n_x_u, false);
+      CORE::LINALG::Matrix<nsd_, nsd_> temp(n_x_u, false);
 
       // temp(nsd_,nsd) = n_x_u(nsd_,nsd_)*funct_(ui)
       temp.Scale(funct_(ui));
@@ -734,7 +736,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     // rhs
     {
       // 3 temp vector
-      LINALG::Matrix<nsd_, 1> temp(velint_, false);
+      CORE::LINALG::Matrix<nsd_, 1> temp(velint_, false);
 
       // temp(nsd, nsd_) *= timefac_rhs * u_o_n
       temp.Scale(timefac_rhs * u_o_n);
@@ -808,7 +810,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
 
   // get global node coordinates for nsd_-dimensional domain
   // (nsd_: number of spatial dimensions of FluidBoundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -844,9 +847,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
   DRT::UTILS::ExtractMyValues(*scaaf, myscaaf, lm);
 
   // create Epetra objects for scalar array and velocities
-  LINALG::Matrix<nsd_, bdrynen_> evelaf(true);
-  LINALG::Matrix<bdrynen_, 1> epreaf(true);
-  LINALG::Matrix<bdrynen_, 1> escaaf(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> evelaf(true);
+  CORE::LINALG::Matrix<bdrynen_, 1> epreaf(true);
+  CORE::LINALG::Matrix<bdrynen_, 1> escaaf(true);
 
   // insert velocity, pressure and scalar into element array
   for (int inode = 0; inode < bdrynen_; ++inode)
@@ -950,7 +953,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
         const double lhsnewtonfac = densaf_ * timefac * fac_;
 
         // dyadic product of unit normal vector and velocity vector
-        LINALG::Matrix<nsd_, nsd_> n_x_u(true);
+        CORE::LINALG::Matrix<nsd_, nsd_> n_x_u(true);
         n_x_u.MultiplyNT(velint_, unitnormal_);
 
         /*
@@ -987,7 +990,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(DRT::ELEMENTS::Flu
       }          // end of Newton loop
 
       // compute rhs contribution
-      LINALG::Matrix<nsd_, 1> vrhs(velint_, false);
+      CORE::LINALG::Matrix<nsd_, 1> vrhs(velint_, false);
       vrhs.Scale(rhsfac);
 
       for (int vi = 0; vi < bdrynen_; ++vi)  // loop over rows
@@ -1025,7 +1028,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   if (isale)
   {
@@ -1082,16 +1086,17 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
       DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // node normals &
-  LINALG::Matrix<nsd_, bdrynen_> norm_elem(true);
-  LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> norm_elem(true);
+  CORE::LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(true);
 
   // coordinates of current node in reference coordinates
-  LINALG::Matrix<bdrynsd_, 1> xsi_node(true);
+  CORE::LINALG::Matrix<bdrynsd_, 1> xsi_node(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   if (isale)
   {
@@ -1141,7 +1146,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 
     // the metric tensor and its determinant
     // Epetra_SerialDenseMatrix      metrictensor(nsd_,nsd_);
-    LINALG::Matrix<bdrynsd_, bdrynsd_> metrictensor(true);
+    CORE::LINALG::Matrix<bdrynsd_, bdrynsd_> metrictensor(true);
 
     // Addionally, compute metric tensor
     CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor, drs_);
@@ -1150,7 +1155,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 
     // calculate mean curvature H at node.
     double H = 0.0;
-    LINALG::Matrix<bdrynsd_, nsd_> dn123drs(0.0);
+    CORE::LINALG::Matrix<bdrynsd_, nsd_> dn123drs(0.0);
 
     dn123drs.MultiplyNT(deriv_, norm_elem);
 
@@ -1277,7 +1282,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   if (isale)
   {
@@ -1307,7 +1313,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
     const double fac_timefac = fac_ * timefac;
 
     // Compute dxyzdrs
-    LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(true);
+    CORE::LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(true);
     dxyzdrs.MultiplyNT(deriv_, xyze_);
 
     if (bdrynsd_ == 2)
@@ -1420,7 +1426,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   // start of actual area calculation
   //------------------------------------------------------------------
   // get node coordinates (nsd_: dimension of boundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1486,14 +1493,15 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
 
-  LINALG::Matrix<1, bdrynen_> eprenp(true);
+  CORE::LINALG::Matrix<1, bdrynen_> eprenp(true);
   for (int inode = 0; inode < bdrynen_; inode++)
   {
     eprenp(inode) = myvelnp[nsd_ + inode * numdofpernode_];
   }
 
   // get node coordinates (nsd_: dimension of boundary element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // add potential ALE displacements
   Teuchos::RCP<const Epetra_Vector> dispnp;
@@ -1563,7 +1571,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
   // GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -1595,7 +1604,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // get the surface element area
   const double elem_area = params.get<double>("area");
 
-  LINALG::Matrix<(nsd_), 1> xyzGe(true);
+  CORE::LINALG::Matrix<(nsd_), 1> xyzGe(true);
 
   for (int i = 0; i < nsd_; i++)
   {
@@ -1609,7 +1618,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
           xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
 
       // global coordinates of gausspoint
-      LINALG::Matrix<(nsd_), 1> coordgp(true);
+      CORE::LINALG::Matrix<(nsd_), 1> coordgp(true);
 
       // determine coordinates of current Gauss point
       coordgp.Multiply(xyze_, funct_);
@@ -1665,7 +1674,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vector
-  LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < bdrynen_; inode++)
@@ -1680,7 +1689,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
   // GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -1798,12 +1808,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   const int gridvel = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fdyn, "GRIDVEL");
 
   // normal vector
-  LINALG::Matrix<nsd_, 1> normal(true);
+  CORE::LINALG::Matrix<nsd_, 1> normal(true);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   if (isale)
   {
@@ -1828,7 +1839,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
   DRT::UTILS::ExtractMyValues(*convelnp, myconvelnp, lm);
 
   // allocate velocities vector
-  LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
 
   for (int inode = 0; inode < bdrynen_; ++inode)
   {
@@ -1856,7 +1867,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
     const double fac = intpoints.IP().qwgt[gpid];
 
     // dxyzdrs vector -> normal which is not normalized
-    LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(0.0);
+    CORE::LINALG::Matrix<bdrynsd_, nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(deriv_, xyze_);
     normal(0, 0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
     normal(1, 0) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -1864,7 +1875,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
 
     //-------------------------------------------------------------------
     //  Q
-    LINALG::Matrix<3, 1> u(true);
+    CORE::LINALG::Matrix<3, 1> u(true);
     for (int dim = 0; dim < 3; ++dim)
       for (int node = 0; node < bdrynen_; ++node) u(dim) += funct_(node) * evelnp(dim, node);
 
@@ -1885,7 +1896,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       // dQ/dd
 
       // determine derivatives of surface normals wrt mesh displacements
-      LINALG::Matrix<3, bdrynen_ * 3> normalderiv(true);
+      CORE::LINALG::Matrix<3, bdrynen_ * 3> normalderiv(true);
 
       for (int node = 0; node < bdrynen_; ++node)
       {
@@ -1963,7 +1974,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
       // (d^2 Q)/(dd)^2
 
       // determine second derivatives of surface normals wrt mesh displacements
-      std::vector<LINALG::Matrix<bdrynen_ * 3, bdrynen_ * 3>> normalderiv2(3);
+      std::vector<CORE::LINALG::Matrix<bdrynen_ * 3, bdrynen_ * 3>> normalderiv2(3);
 
       for (int node1 = 0; node1 < bdrynen_; ++node1)
       {
@@ -2059,7 +2070,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -2119,7 +2131,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
 
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
@@ -2172,8 +2185,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::GetDensity(
-    Teuchos::RCP<const MAT::Material> material, const LINALG::Matrix<bdrynen_, 1>& escaaf,
-    const double thermpressaf, const LINALG::Matrix<bdrynen_, 1>& epreaf)
+    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,
+    const double thermpressaf, const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf)
 {
   // initially set density and density factor for Neumann boundary conditions to 1.0
   // (the latter only changed for low-Mach-number flow/combustion problems)
@@ -2365,7 +2378,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   DRT::UTILS::ExtractMyValues(*velnp, myvelnp, lm);
 
   // allocate velocity vector
-  LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, bdrynen_> evelnp(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode = 0; inode < bdrynen_; inode++)
@@ -2435,7 +2448,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, bdrynen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
+      ele, xyze_);
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements

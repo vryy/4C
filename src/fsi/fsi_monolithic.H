@@ -56,11 +56,11 @@ namespace FSI
   }  // namespace UTILS
 }  // namespace FSI
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace NOX
 {
@@ -520,7 +520,7 @@ namespace FSI
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
 
     /// extractor to communicate between full monolithic map and block maps of single fields
-    const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    const CORE::LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //@}
 
@@ -548,7 +548,7 @@ namespace FSI
     //!
     //! CondMap()   = Dirichlet DOFs
     //! OtherMap()  = DOFs without Dirichlet boundary condition
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
@@ -944,7 +944,7 @@ namespace FSI
     //@}
 
     /// dof row map splitted in (field) blocks
-    LINALG::MultiMapExtractor blockrowdofmap_;
+    CORE::LINALG::MultiMapExtractor blockrowdofmap_;
 
     //! @name Some NOX related stuff
     //@{
@@ -1009,7 +1009,7 @@ namespace FSI
     virtual void SetupSystemMatrix() { SetupSystemMatrix(*SystemMatrix()); }
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) = 0;
+    virtual void SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat) = 0;
 
     //@}
 
@@ -1034,18 +1034,18 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
     {
     }
 
     //@}
 
     /// the composed system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
 
     //! Create #lambda_ and #lambdaold_
@@ -1249,7 +1249,8 @@ namespace FSI
     virtual void PrepareTimeStepPreconditioner();
 
     /// create the composed system matrix
-    void CreateSystemMatrix(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
+    void CreateSystemMatrix(
+        Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>& mat, bool structuresplit);
 
     /// setup solver for global block system
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem(

@@ -29,10 +29,10 @@ namespace Teuchos
 {
   class ParameterList;
 }  // namespace Teuchos
-namespace LINALG
+namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace STR
 {
   class ModelEvaluator;
@@ -129,15 +129,15 @@ namespace STR
       }
 
       /// Access linear structural solver
-      Teuchos::RCP<LINALG::Solver> LinearSolver() override
+      Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
       {
         CheckInit();
         return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
-      const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() override;
-      [[nodiscard]] Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
+      const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
+      [[nodiscard]] Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const;
 
       //! Return locsys manager
       Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override;

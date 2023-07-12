@@ -28,11 +28,11 @@ namespace DRT
   }  // namespace ELEMENTS
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace BEAMINTERACTION
 {
@@ -72,8 +72,8 @@ namespace BEAMINTERACTION
 
     //! Initialization
     virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
-        const std::vector<LINALG::Matrix<3, 1>>& initpos,
-        const std::vector<LINALG::Matrix<3, 3>>& inittriad,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
         INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
 
     //! Setup
@@ -108,19 +108,19 @@ namespace BEAMINTERACTION
     //! @name Access methods
 
     //! return orientation of first connection site as quaternion
-    inline const LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion1() const
+    inline const CORE::LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion1() const
     {
       return bspottriad1_;
     }
 
     //! return orientation of first connection site as quaternion
-    inline const LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion2() const
+    inline const CORE::LINALG::Matrix<4, 1, double>& GetBindSpotQuaternion2() const
     {
       return bspottriad2_;
     }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, LINALG::SerialDenseVector& bspotforce) const
+    virtual void GetBindingSpotForce(int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const
     {
       dserror(" needs to be implemented in derived classes.");
     }
@@ -134,28 +134,28 @@ namespace BEAMINTERACTION
     \brief Evaluate forces
     */
     virtual bool EvaluateForce(
-        LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2) = 0;
+        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2) = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    virtual bool EvaluateStiff(LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    virtual bool EvaluateForceStiff(LINALG::SerialDenseVector& forcevec1,
-        LINALG::SerialDenseVector& forcevec2, LINALG::SerialDenseMatrix& stiffmat11,
-        LINALG::SerialDenseMatrix& stiffmat12, LINALG::SerialDenseMatrix& stiffmat21,
-        LINALG::SerialDenseMatrix& stiffmat22) = 0;
+    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
+        CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
 
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
-    void ResetState(
-        std::vector<LINALG::Matrix<3, 1>>& bspotpos, std::vector<LINALG::Matrix<3, 3>>& bspottriad);
+    void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
+        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad);
 
     //! return appropriate instance of the desired class (acts as a simple factory)
     static Teuchos::RCP<BeamLinkRigidJointed> Create();
@@ -164,14 +164,14 @@ namespace BEAMINTERACTION
 
    private:
     //! current triad of the two connection sites as quaternions
-    LINALG::Matrix<4, 1> bspottriad1_;
-    LINALG::Matrix<4, 1> bspottriad2_;
+    CORE::LINALG::Matrix<4, 1> bspottriad1_;
+    CORE::LINALG::Matrix<4, 1> bspottriad2_;
 
     //! triads representing the (constant) relative rotation between the two nodal triads of the
     //! linker element
     // and cross-section orientation of its connection sites (a.k.a. binding spots)
-    LINALG::Matrix<3, 3> Lambdarel1_;
-    LINALG::Matrix<3, 3> Lambdarel2_;
+    CORE::LINALG::Matrix<3, 3> Lambdarel1_;
+    CORE::LINALG::Matrix<3, 3> Lambdarel2_;
 
     //@}
   };

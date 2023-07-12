@@ -27,11 +27,11 @@ namespace DRT
   class Condition;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -60,7 +60,7 @@ namespace ADAPTER
     /// Constructor
     XFluidFSI(Teuchos::RCP<Fluid> fluid,
         const std::string coupling_name,  // name of the FSI coupling condition
-        Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+        Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// initialize algorithm
@@ -118,9 +118,9 @@ namespace ADAPTER
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0);
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
-    Teuchos::RCP<LINALG::SparseMatrix> C_Fluid_Struct_Matrix();
-    Teuchos::RCP<LINALG::SparseMatrix> C_Struct_Struct_Matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Struct_Fluid_Matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Fluid_Struct_Matrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> C_Struct_Struct_Matrix();
 
     Teuchos::RCP<const Epetra_Vector> RHS_Struct_Vec();
 
@@ -155,14 +155,14 @@ namespace ADAPTER
     Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
 
     /// ALE dof map
-    Teuchos::RCP<LINALG::MapExtractor> meshmap_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> meshmap_;
     Teuchos::RCP<Epetra_Map> permfluidmap_;
     Teuchos::RCP<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
     std::string coupling_name_;  /// the name of the XFEM::MeshCoupling object
     Teuchos::RCP<XFEM::MeshCouplingFSI> mesh_coupling_fsi_;
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     //@}
   };

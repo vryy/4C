@@ -331,14 +331,14 @@ void CORE::GEO::CUT::ParentIntersection::CreateParallelDofSetDataVC(
       }
     }
 
-    LINALG::Matrix<3, 1> coords(true);
+    CORE::LINALG::Matrix<3, 1> coords(true);
 
-    std::vector<LINALG::Matrix<3, 1>> cut_points_coords(cut_points.size(), coords);
+    std::vector<CORE::LINALG::Matrix<3, 1>> cut_points_coords(cut_points.size(), coords);
 
     for (plain_point_set::iterator p = cut_points.begin(); p != cut_points.end(); ++p)
     {
       const int idx = std::distance(cut_points.begin(), p);
-      LINALG::Matrix<3, 1>& xyz = cut_points_coords[idx];
+      CORE::LINALG::Matrix<3, 1>& xyz = cut_points_coords[idx];
 
       std::copy((*p)->X(), (*p)->X() + 3, &xyz(0, 0));
     }

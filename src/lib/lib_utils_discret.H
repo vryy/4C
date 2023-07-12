@@ -18,10 +18,10 @@
 #include "lib_condition.H"
 
 class Epetra_Vector;
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace Teuchos
 {
   class ParameterList;
@@ -52,7 +52,7 @@ namespace DRT
      *
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = NULL);
 
     /** \brief Evaluate the elements of the given discretization and fill the
@@ -72,7 +72,7 @@ namespace DRT
      *
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        std::vector<Teuchos::RCP<LINALG::SparseOperator>>& systemmatrix,
+        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrix,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = NULL);
 
@@ -105,7 +105,7 @@ namespace DRT
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
         const Teuchos::RCP<Epetra_IntVector>& toggle,
-        const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor);
+        const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *
@@ -238,7 +238,7 @@ namespace DRT
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
           const Teuchos::RCP<Epetra_Vector>& systemvectordd,
           const Teuchos::RCP<Epetra_IntVector>& toggle,
-          const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const;
+          const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
 
      protected:
       /// create the toggle vector based on the given systemvector maps
@@ -433,7 +433,7 @@ namespace DRT
        *  \author hiermeier \date 10/16 */
       void BuildDbcMapExtractor(const DRT::DiscretizationInterface& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
-          const Teuchos::RCP<LINALG::MapExtractor>& dbcmapextractor) const;
+          const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
   }     // namespace UTILS

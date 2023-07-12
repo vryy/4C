@@ -48,7 +48,7 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::DirectDivergence::VC
       fbox->AddPoint((*p)->X());
     }
   }
-  LINALG::Matrix<3, 2> fvolume = fbox->GetBoundingVolume();
+  CORE::LINALG::Matrix<3, 2> fvolume = fbox->GetBoundingVolume();
   const double totalVolume = (fvolume(0, 1) - fvolume(0, 0)) * (fvolume(1, 1) - fvolume(1, 0)) *
                              (fvolume(2, 1) - fvolume(2, 0));
 
@@ -345,13 +345,13 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
        ++iquad)
   {
-    const LINALG::Matrix<3, 1> etaFacet(iquad.Point());
+    const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
 #ifndef OUTPUT_GLOBAL_DIVERGENCE_CELLS
     file << "SP(" << etaFacet(0, 0) << "," << etaFacet(1, 0) << "," << etaFacet(2, 0) << ","
          << "1"
          << "){0.0};" << std::endl;
 #else
-    LINALG::Matrix<3, 1> etaGlobal;
+    CORE::LINALG::Matrix<3, 1> etaGlobal;
     elem1_->GlobalCoordinates(etaFacet, etaGlobal);
     file << "SP(" << etaGlobal(0, 0) << "," << etaGlobal(1, 0) << "," << etaGlobal(2, 0) << ","
          << "1"
@@ -374,7 +374,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
     CORE::DRT::UTILS::GaussIntegration gi = intGRule[nu];
     for ( CORE::DRT::UTILS::GaussIntegration::iterator iqu=gi.begin(); iqu!=gi.end(); ++iqu )
     {
-      const LINALG::Matrix<3,1> eta( iqu.Point() );
+      const CORE::LINALG::Matrix<3,1> eta( iqu.Point() );
       file<<"SP("<<eta(0,0)<<","<<eta(1,0)<<","<<eta(2,0)<<","<<"1"<<"){0.0};"<<std::endl;
     }
     nu++;
@@ -445,7 +445,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   for ( CORE::DRT::UTILS::GaussIntegration::iterator iquad=grule.begin(); iquad!=grule.end();
   ++iquad )
   {
-    const LINALG::Matrix<3,1> eta( iquad.Point() );
+    const CORE::LINALG::Matrix<3,1> eta( iquad.Point() );
 
     double jac = fabs(refpt(0,0)-eta(0,0))*0.5; // jacobian for 1D transformation rule
     if ( jac < JAC_LINE_TOL )
@@ -493,7 +493,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
     for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
          ++iquad)
     {
-      const LINALG::Matrix<3, 1> etaFacet(iquad.Point());
+      const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
       file << "SP(" << etaFacet(0, 0) << "," << etaFacet(1, 0) << "," << etaFacet(2, 0) << ","
            << "1"
            << "){0.0};" << std::endl;
@@ -522,7 +522,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gpv.begin(); iquad != gpv.end();
        ++iquad)
   {
-    const LINALG::Matrix<3, 1> etaFacet(iquad.Point());
+    const CORE::LINALG::Matrix<3, 1> etaFacet(iquad.Point());
     const double weiFacet = iquad.Weight();
 
     TotalInteg += weiFacet;

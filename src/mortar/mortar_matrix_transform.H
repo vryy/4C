@@ -19,10 +19,10 @@ distributions
 
 class Epetra_Map;
 class Epetra_Export;
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace MORTAR
 {
   class MatrixRowColTransformer
@@ -48,17 +48,17 @@ namespace MORTAR
 
     void Setup();
 
-    Teuchos::RCP<LINALG::SparseMatrix> RedistributedToUnredistributed(
-        const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> RedistributedToUnredistributed(
+        const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
     void RedistributedToUnredistributed(const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat, LINALG::SparseMatrix& dst_mat);
+        const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
-    Teuchos::RCP<LINALG::SparseMatrix> UnredistributedToRedistributed(
-        const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> UnredistributedToRedistributed(
+        const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat);
 
     void UnredistributedToRedistributed(const DRT::UTILS::MatBlockType bt,
-        const LINALG::SparseMatrix& src_mat, LINALG::SparseMatrix& dst_mat);
+        const CORE::LINALG::SparseMatrix& src_mat, CORE::LINALG::SparseMatrix& dst_mat);
 
    private:
     void SetSlaveMapPairs(const plain_block_map_pairs& redistributed_row,

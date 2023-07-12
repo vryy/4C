@@ -34,12 +34,12 @@ namespace CORE::GEO
   class CutWizard;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MultiMapExtractor;
   class MapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {
@@ -87,9 +87,10 @@ namespace FLD
       }
 
       //! ctor  Initialize coupling matrices with fluid sysmat and fluid rhs vector
-      CouplingState(const Teuchos::RCP<LINALG::SparseMatrix>& C_sx,
-          const Teuchos::RCP<LINALG::SparseMatrix>& C_xs,
-          const Teuchos::RCP<LINALG::SparseMatrix>& C_ss, const Teuchos::RCP<Epetra_Vector>& rhC_s,
+      CouplingState(const Teuchos::RCP<CORE::LINALG::SparseMatrix>& C_sx,
+          const Teuchos::RCP<CORE::LINALG::SparseMatrix>& C_xs,
+          const Teuchos::RCP<CORE::LINALG::SparseMatrix>& C_ss,
+          const Teuchos::RCP<Epetra_Vector>& rhC_s,
           const Teuchos::RCP<Epetra_Vector>& rhC_s_col)
           : C_sx_(C_sx),  // this rcp constructor using const references copies also the ownership
                           // and increases the specific weak/strong reference counter
@@ -119,11 +120,11 @@ namespace FLD
       //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element
       //! with other active dofset, etc.)
       //@{
-      Teuchos::RCP<LINALG::SparseMatrix> C_sx_;  ///< slave - xfluid coupling block
-      Teuchos::RCP<LINALG::SparseMatrix> C_xs_;  ///< xfluid - slave coupling block
-      Teuchos::RCP<LINALG::SparseMatrix> C_ss_;  ///< slave - slave coupling block
-      Teuchos::RCP<Epetra_Vector> rhC_s_;        ///< slave rhs block
-      Teuchos::RCP<Epetra_Vector> rhC_s_col_;    ///< slave rhs block
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> C_sx_;  ///< slave - xfluid coupling block
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> C_xs_;  ///< xfluid - slave coupling block
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> C_ss_;  ///< slave - slave coupling block
+      Teuchos::RCP<Epetra_Vector> rhC_s_;              ///< slave rhs block
+      Teuchos::RCP<Epetra_Vector> rhC_s_col_;          ///< slave rhs block
       //@}
 
       bool is_active_;
@@ -176,11 +177,11 @@ namespace FLD
     //! access to the xfem-dofset
     Teuchos::RCP<XFEM::XFEMDofSet> DofSet() { return dofset_; }
 
-    virtual Teuchos::RCP<LINALG::MapExtractor> DBCMapExtractor() { return dbcmaps_; }
+    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> DBCMapExtractor() { return dbcmaps_; }
 
-    virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; }
+    virtual Teuchos::RCP<CORE::LINALG::MapExtractor> VelPresSplitter() { return velpressplitter_; }
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() { return sysmat_; }
     virtual Teuchos::RCP<Epetra_Vector>& Residual() { return residual_; }
     virtual Teuchos::RCP<Epetra_Vector>& Zeros() { return zeros_; }
     virtual Teuchos::RCP<Epetra_Vector>& IncVel() { return incvel_; }
@@ -197,7 +198,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map> xfluiddofcolmap_;
 
     /// system matrix (internally EpetraFECrs)
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
@@ -255,10 +256,10 @@ namespace FLD
     //! @name map extractors
     //@{
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     /// velocity/pressure map extractor, used for convergence check
-    Teuchos::RCP<LINALG::MapExtractor> velpressplitter_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> velpressplitter_;
 
     //@}
 

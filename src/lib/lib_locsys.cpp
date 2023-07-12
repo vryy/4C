@@ -35,7 +35,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::DiscretizationInterface& discret)
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
 
   // create locsys vector and initialize to -1
-  locsystoggle_ = LINALG::CreateVector(*noderowmap, false);
+  locsystoggle_ = CORE::LINALG::CreateVector(*noderowmap, false);
   locsystoggle_->PutScalar(-1.0);
 
   // check for locsys boundary conditions
@@ -191,7 +191,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           // Each component j of the pseudo rotation vector that rotates the global xyz system onto
           // the local system assigned to each node consists of a constant, a time dependent and
           // spatially variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
-          LINALG::Matrix<3, 1> currotangle(true);
+          CORE::LINALG::Matrix<3, 1> currotangle(true);
 
           for (int nodeGID : *nodes)
           {
@@ -270,7 +270,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
-  Teuchos::RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> already_processed = CORE::LINALG::CreateVector(*dofrowmap, true);
   already_processed->PutScalar(0.0);
 
   // Perform a check for zero diagonal elements. They will crash the SGS-like preconditioners
@@ -279,7 +279,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   // GIDs of all DoFs subjected to local co-ordinate systems
   std::set<int> locsysdofset;
 
-  trafo_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 3));
+  trafo_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 3));
 
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
@@ -305,16 +305,16 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       Epetra_SerialDenseMatrix nodetrafo(numdof, numdof);
       for (int k = 0; k < numdof; ++k) nodetrafo(k, k) = 1.0;
 
-      LINALG::Matrix<3, 1> currrotvector = nodalrotvectors_[nodeGID];
-      LINALG::Matrix<3, 3> currrotationmatrix;
+      CORE::LINALG::Matrix<3, 1> currrotvector = nodalrotvectors_[nodeGID];
+      CORE::LINALG::Matrix<3, 3> currrotationmatrix;
 
       // Compute rotation matrix out of rotation angle
       CORE::LARGEROTATIONS::angletotriad(currrotvector, currrotationmatrix);
 
       // base vectors of local system
-      LINALG::Matrix<3, 1> vec1;
-      LINALG::Matrix<3, 1> vec2;
-      LINALG::Matrix<3, 1> vec3;
+      CORE::LINALG::Matrix<3, 1> vec1;
+      CORE::LINALG::Matrix<3, 1> vec2;
+      CORE::LINALG::Matrix<3, 1> vec3;
 
       // The columns of the rotation matrix are the base vectors
       for (int j = 0; j < 3; j++)
@@ -467,14 +467,14 @@ void DRT::UTILS::LocsysManager::Print() const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform rhs vector
   RotateGlobalToLocal(rhs);
 
   // selective multiplication from left
-  Teuchos::RCP<LINALG::SparseMatrix> temp =
-      LINALG::Multiply(*subtrafo_, false, *sysmat, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp =
+      CORE::LINALG::Multiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
   sysmat->Put(*temp, 1.0, locsysdofmap_);
 }
@@ -483,10 +483,11 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
-  Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp = CORE::LINALG::MLMultiply(
       *subtrafo_, *sysmat, sysmat->ExplicitDirichlet(), sysmat->SaveGraph(), true);
 
   // put transformed rows back into global matrix
@@ -508,7 +509,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const
 {
   // transform result
   RotateLocalToGlobal(result);
@@ -517,14 +518,14 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> 
   RotateLocalToGlobal(rhs);
 
   // transform system matrix
-  Teuchos::RCP<LINALG::SparseMatrix> temp;
-  Teuchos::RCP<LINALG::SparseMatrix> temp2;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp;
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp2;
 
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
   // so we explicitly set this to false.
-  temp = LINALG::Multiply(*sysmat, false, *trafo_, false, false, sysmat->SaveGraph(), true);
-  temp2 = LINALG::Multiply(*trafo_, true, *temp, false, false, sysmat->SaveGraph(), true);
+  temp = CORE::LINALG::Multiply(*sysmat, false, *trafo_, false, false, sysmat->SaveGraph(), true);
+  temp2 = CORE::LINALG::Multiply(*trafo_, true, *temp, false, false, sysmat->SaveGraph(), true);
 
   // this is a deep copy (expensive!)
   *sysmat = *temp2;
@@ -542,10 +543,11 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const
+void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> temp2 =
-      LINALG::Multiply(*trafo_, true, *sysmat, false, false, sysmat->SaveGraph(), true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> temp2 =
+      CORE::LINALG::Multiply(*trafo_, true, *sysmat, false, false, sysmat->SaveGraph(), true);
   *sysmat = *temp2;
 }
 
@@ -559,7 +561,8 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
   // Take care for "negative times", where no information about dispnp_ is available
   if (time < 0.0)
   {
-    Teuchos::RCP<Epetra_Vector> zeroVector = LINALG::CreateVector(*Discret().DofRowMap(), true);
+    Teuchos::RCP<Epetra_Vector> zeroVector =
+        CORE::LINALG::CreateVector(*Discret().DofRowMap(), true);
     discret_.SetState("dispnp", zeroVector);
   }
 
@@ -592,7 +595,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
 
   // Declare node normal variable
   Teuchos::RCP<Epetra_Vector> massConsistentNodeNormals =
-      LINALG::CreateVector(*Discret().DofRowMap(), true);
+      CORE::LINALG::CreateVector(*Discret().DofRowMap(), true);
 
   // Evaluate boundary action
   discret_.EvaluateCondition(nodeNormalParams, massConsistentNodeNormals, "Locsys", numLocsysCond);
@@ -625,10 +628,10 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
 
     // Obtain node normal for current node and calculate its vector length
     // *******************************************************************
-    LINALG::Matrix<3, 1> nodeNormal;  // massConsistentNodeNormals contains (dim_+1) dofs
-                                      // in the fluid case and (dim_) dofs in the ale case,
-                                      // but only the first (dim_) are used.
-    nodeNormal.Clear();               // if dim_==2, then the third component is just not used
+    CORE::LINALG::Matrix<3, 1> nodeNormal;  // massConsistentNodeNormals contains (dim_+1) dofs
+                                            // in the fluid case and (dim_) dofs in the ale case,
+                                            // but only the first (dim_) are used.
+    nodeNormal.Clear();                     // if dim_==2, then the third component is just not used
     double length = 0.0;
     for (int jdim = 0; jdim < dim_; jdim++)
     {
@@ -654,7 +657,7 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
 
     // Finally, calculate the rotation vector
     // *******************************************************************
-    LINALG::Matrix<3, 1> currNodalRotVector;
+    CORE::LINALG::Matrix<3, 1> currNodalRotVector;
 
     // Determine rotation angle
     const double rotAngle = acos(nodeNormal(0, 0));

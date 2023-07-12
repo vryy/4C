@@ -41,10 +41,10 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<DRT::Discreti
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  toggleu_ = LINALG::CreateVector(*dofrowmap, true);
-  togglev_ = LINALG::CreateVector(*dofrowmap, true);
-  togglew_ = LINALG::CreateVector(*dofrowmap, true);
-  togglep_ = LINALG::CreateVector(*dofrowmap, true);
+  toggleu_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglev_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglew_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  togglep_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // bounds for extension of cavity in x1-direction
   x1min_ = +10e+19;

@@ -204,14 +204,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 {
   // --------------------------------------------------
   // construct views
-  LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.A(), true);
+  CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.A(), true);
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -229,7 +229,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     // get new node positions for isale
@@ -267,14 +267,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
 {
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
 
   if (ele->IsAle())  // Do ALE specific updates if necessary
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     // get new node positions of ALE mesh
@@ -314,7 +314,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  LINALG::Matrix<nsd_, nen_> evel(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evel(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
 
   //----------------------------------------------------------------------------
@@ -322,13 +322,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
 
     // get new node positions for isale
@@ -386,7 +386,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //   Extract velocity/pressure from global vectors
   //----------------------------------------------------------------------------
 
-  LINALG::Matrix<nen_, 1> epres(true);
+  CORE::LINALG::Matrix<nen_, 1> epres(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epres, "pres");
 
   //----------------------------------------------------------------------------
@@ -394,13 +394,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
 
     // get new node positions for isale
@@ -464,7 +464,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1, velocity for continuity equ. at
   // time n+1 ost:         velocity/pressure at time n+1
-  LINALG::Matrix<nsd_, nen_> evelaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelaf, NULL, "velaf");
 
   //----------------------------------------------------------------------------
@@ -472,7 +472,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -491,7 +491,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     // get new node positions for isale
@@ -562,15 +562,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
     const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
-  LINALG::Matrix<nsd_, 1> u(true);
+  CORE::LINALG::Matrix<nsd_, 1> u(true);
   double p = 0.0;
-  LINALG::Matrix<nsd_, nsd_> dervel(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> dervel(true);
 
   // error
-  LINALG::Matrix<nsd_, 1> deltavel(true);
+  CORE::LINALG::Matrix<nsd_, 1> deltavel(true);
   double deltap = 0.0;
-  LINALG::Matrix<nsd_, nsd_> deltadervel(true);
-  LINALG::Matrix<nsd_, nsd_> dervelint(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> deltadervel(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> dervelint(true);
 
   const INPAR::FLUID::CalcError calcerr =
       DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
@@ -584,13 +584,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  LINALG::Matrix<nsd_, nen_> evelaf(true);
-  LINALG::Matrix<nen_, 1> epreaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
+  CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
-  LINALG::Matrix<nen_, 1> eprenp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   if (fldparatimint_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
@@ -599,7 +599,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
@@ -617,7 +617,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     // get new node positions for isale
@@ -652,7 +652,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
     dervelint.MultiplyNT(evelaf, derxy_);
 
     // get coordinates at integration point
-    LINALG::Matrix<nsd_, 1> xyzint(true);
+    CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
     xyzint.Multiply(xyze_, funct_);
 
     //  the error is evaluated at the specific time of the used time integration scheme
@@ -707,9 +707,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
 
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateAnalyticSolutionPoint(
-    const LINALG::Matrix<nsd_, 1>& xyzint, const double t, const INPAR::FLUID::CalcError calcerr,
-    const int calcerrfunctno, const Teuchos::RCP<MAT::Material>& mat, LINALG::Matrix<nsd_, 1>& u,
-    double& p, LINALG::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure, double deltat)
+    const CORE::LINALG::Matrix<nsd_, 1>& xyzint, const double t,
+    const INPAR::FLUID::CalcError calcerr, const int calcerrfunctno,
+    const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::Matrix<nsd_, 1>& u, double& p,
+    CORE::LINALG::Matrix<nsd_, nsd_>& dervel, bool isFullImplPressure, double deltat)
 {
   // Compute analytical solution
   switch (calcerr)
@@ -1276,8 +1277,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
     const DRT::Discretization& discretization,  ///< discretization
     const std::vector<int>& lm,                 ///<
     FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>& rotsymmpbc,  ///<
-    LINALG::Matrix<nsd_, nen_>* matrixtofill,                                      ///< vector field
-    LINALG::Matrix<nen_, 1>* vectortofill,                                         ///< scalar field
+    CORE::LINALG::Matrix<nsd_, nen_>* matrixtofill,                                ///< vector field
+    CORE::LINALG::Matrix<nen_, 1>* vectortofill,                                   ///< scalar field
     const std::string state)  ///< state of the global vector
 {
   // get state of the global vector
@@ -1326,9 +1327,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // channel flow and with scatra body force included for variable-density flow
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
-  LINALG::Matrix<nsd_, nen_> ebofoaf(true);
-  LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
-  LINALG::Matrix<nen_, 1> escabofoaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
+  CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
   BodyForce(ele, ebofoaf, eprescpgaf, escabofoaf);
 
   // if not available, the arrays for the subscale quantities have to be
@@ -1346,12 +1347,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // af_genalpha: velocity/pressure at time n+alpha_F and n+alpha_M
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  LINALG::Matrix<nsd_, nen_> evelaf(true);
-  LINALG::Matrix<nen_, 1> epreaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
+  CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
-  LINALG::Matrix<nsd_, nen_> evelam(true);
-  LINALG::Matrix<nen_, 1> epream(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelam(true);
+  CORE::LINALG::Matrix<nen_, 1> epream(true);
   if (fldpara_->PhysicalType() == INPAR::FLUID::weakly_compressible && fldparatimint_->IsGenalpha())
   {
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelam, &epream, "velam");
@@ -1363,23 +1364,23 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
-  LINALG::Matrix<nen_, 1> eprenp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   if (fldparatimint_->IsGenalphaNP())
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
-  LINALG::Matrix<nen_, 1> escaaf(true);
+  CORE::LINALG::Matrix<nen_, 1> escaaf(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &escaaf, "scaaf");
 
-  LINALG::Matrix<nsd_, nen_> emhist(true);
+  CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &emhist, NULL, "hist");
 
-  LINALG::Matrix<nsd_, nen_> eaccam(true);
-  LINALG::Matrix<nen_, 1> escadtam(true);
+  CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
+  CORE::LINALG::Matrix<nen_, 1> escadtam(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &eaccam, &escadtam, "accam");
 
-  LINALG::Matrix<nsd_, nen_> eveln(true);
-  LINALG::Matrix<nen_, 1> escaam(true);
+  CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
+  CORE::LINALG::Matrix<nen_, 1> escaam(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &eveln, &escaam, "scaam");
 
   if (fldparatimint_->IsGenalpha())
@@ -1395,8 +1396,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
 
   // get additional state vectors for ALE case: grid displacement and vel.
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
-  LINALG::Matrix<nsd_, nen_> egridv(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
 
   if (ele->IsAle())
   {
@@ -1407,8 +1408,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   // get additional state vector for AVM3 case and multifractal subgrid scales:
   // fine-scale velocity values are at time n+alpha_F for generalized-alpha
   // scheme and at time n+1 for all other schemes
-  LINALG::Matrix<nsd_, nen_> fsevelaf(true);
-  LINALG::Matrix<nen_, 1> fsescaaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> fsevelaf(true);
+  CORE::LINALG::Matrix<nen_, 1> fsescaaf(true);
   if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv or
       fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
   {
@@ -1419,7 +1420,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   }
 
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // set element id
   eid_ = ele->Id();
@@ -1484,16 +1485,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   center /= (double)ele->NumNode();
 
   // working arrays for the quantities we want to compute
-  LINALG::Matrix<nsd_, 1> mean_res;
-  LINALG::Matrix<nsd_, 1> mean_sacc;
-  LINALG::Matrix<nsd_, 1> mean_svelaf;
-  LINALG::Matrix<nsd_, 1> mean_res_sq;
-  LINALG::Matrix<nsd_, 1> mean_sacc_sq;
-  LINALG::Matrix<nsd_, 1> mean_svelaf_sq;
-  LINALG::Matrix<nsd_, 1> mean_tauinvsvel;
+  CORE::LINALG::Matrix<nsd_, 1> mean_res;
+  CORE::LINALG::Matrix<nsd_, 1> mean_sacc;
+  CORE::LINALG::Matrix<nsd_, 1> mean_svelaf;
+  CORE::LINALG::Matrix<nsd_, 1> mean_res_sq;
+  CORE::LINALG::Matrix<nsd_, 1> mean_sacc_sq;
+  CORE::LINALG::Matrix<nsd_, 1> mean_svelaf_sq;
+  CORE::LINALG::Matrix<nsd_, 1> mean_tauinvsvel;
 
-  LINALG::Matrix<2 * nsd_, 1> mean_crossstress;
-  LINALG::Matrix<2 * nsd_, 1> mean_reystress;
+  CORE::LINALG::Matrix<2 * nsd_, 1> mean_crossstress;
+  CORE::LINALG::Matrix<2 * nsd_, 1> mean_reystress;
 
   double vol = 0.0;
 
@@ -1572,7 +1573,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
 
   // potential evaluation of multifractal subgrid-scales at element center
   // coefficient B of fine-scale velocity
-  LINALG::Matrix<nsd_, 1> B_mfs(true);
+  CORE::LINALG::Matrix<nsd_, 1> B_mfs(true);
   // coefficient D of fine-scale scalar (loma only)
   double D_mfs = 0.0;
   if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
@@ -1708,7 +1709,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
       for (int idim = 0; idim < nsd_; ++idim)
       {
         // get vdiv at time n+1 for np_genalpha,
-        LINALG::Matrix<nsd_, nsd_> vderxy(true);
+        CORE::LINALG::Matrix<nsd_, nsd_> vderxy(true);
         vderxy.MultiplyNT(evelnp, derxy_);
         vdiv_ += vderxy(idim, idim);
       }
@@ -1939,7 +1940,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     */
     if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
     {
-      LINALG::Matrix<nsd_, nsd_> fstwo_epsilon;
+      CORE::LINALG::Matrix<nsd_, nsd_> fstwo_epsilon;
       for (int rr = 0; rr < nsd_; ++rr)
       {
         for (int mm = 0; mm < nsd_; ++mm)
@@ -1976,7 +1977,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
                  turb   |       \     /         \     /   |
                          \                                /
     */
-    LINALG::Matrix<nsd_, nsd_> two_epsilon;
+    CORE::LINALG::Matrix<nsd_, nsd_> two_epsilon;
     for (int rr = 0; rr < nsd_; ++rr)
     {
       for (int mm = 0; mm < nsd_; ++mm)
@@ -2054,7 +2055,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
       const double vel_norm = velint_.Norm2();
 
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::Matrix<3, 1> normed_velint;
+      CORE::LINALG::Matrix<3, 1> normed_velint;
 
       // normed velocity at element center (we use the copy for safety reasons!)
       if (vel_norm >= 1e-6)
@@ -2086,7 +2087,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     // element size in main gradient direction
     {
       // this copy of velintaf_ will be used to store the normed velocity
-      LINALG::Matrix<3, 1> normed_velgrad;
+      CORE::LINALG::Matrix<3, 1> normed_velgrad;
 
       for (int rr = 0; rr < 3; ++rr)
       {
@@ -2132,7 +2133,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
                   |    i     j  |   |    i     j  |   |    i     j  |
                   +-           -+   +-           -+   +-           -+
       */
-      LINALG::Matrix<3, 3> G;
+      CORE::LINALG::Matrix<3, 3> G;
 
       for (int nn = 0; nn < 3; ++nn)
       {
@@ -2511,15 +2512,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
 */
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& eveln,
-    const LINALG::Matrix<nsd_, nen_>& fsevelaf, const LINALG::Matrix<nen_, 1>& epreaf,
-    const LINALG::Matrix<nsd_, nen_>& eaccam, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam,
-    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nsd_, nen_>& edispnp,
-    const LINALG::Matrix<nsd_, nen_>& egridv,
-    const LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-    const LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-    const LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const double thermpressaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>& escaam, const CORE::LINALG::Matrix<nen_, 1>& escadtam,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+    const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+    const CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
     const Teuchos::RCP<const MAT::Material> material, const double timefac, const double& Cs,
     const double& Cs_delta_sq, const double& l_tau)
@@ -2539,15 +2540,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FDcheck(
 
   // allocate arrays to compute element matrices and vectors at perturbed
   // positions
-  LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> checkmat1(true);
-  LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> checkmat2(true);
-  LINALG::Matrix<(nsd_ + 1) * nen_, 1> checkvec1(true);
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> checkmat1(true);
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> checkmat2(true);
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> checkvec1(true);
 
   // alloc the vectors that will contain the perturbed velocities or
   // pressures
-  LINALG::Matrix<nsd_, nen_> checkevelaf(true);
-  LINALG::Matrix<nsd_, nen_> checkeaccam(true);
-  LINALG::Matrix<nen_, 1> checkepreaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> checkevelaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> checkeaccam(true);
+  CORE::LINALG::Matrix<nen_, 1> checkepreaf(true);
 
   // echo to screen
   printf("+-------------------------------------------+\n");
@@ -2734,8 +2735,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // Since we need only the density, we use a lot of dummy values.
 
   // create dummy matrices
-  LINALG::Matrix<nsd_, nen_> mat1(true);
-  LINALG::Matrix<nen_, 1> mat2(true);
+  CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
+  CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
   GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
@@ -2743,12 +2744,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     // get new node positions of ALE mesh
@@ -2756,7 +2757,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   }
 
   // definition of matrices
-  LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
+  CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
 
   // ---------------------------------------------------------------------------
   // Integration loop
@@ -2830,7 +2831,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
     double compr_fac = 1.0 / (RefBulkModulus + MatParameter * (preaf_ - RefPressure));
 
     // definition of matrices
-    LINALG::Matrix<nen_, nen_> ppmat(true);
+    CORE::LINALG::Matrix<nen_, nen_> ppmat(true);
 
     // ---------------------------------------------------------------------------
     // Integration loop
@@ -2880,31 +2881,31 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
 )
 {
   // declare and initialize matrix for shapefunction evaluation
-  LINALG::Matrix<nen_, 1> shapefunct;
+  CORE::LINALG::Matrix<nen_, 1> shapefunct;
   // derivatives of shapefunctions at int point
-  LINALG::Matrix<nsd_, nen_> pderiv_loc;
+  CORE::LINALG::Matrix<nsd_, nen_> pderiv_loc;
   // velocity gradient
-  LINALG::Matrix<nsd_, nsd_> dudxi;
+  CORE::LINALG::Matrix<nsd_, nsd_> dudxi;
   // du/dxi * dxi/dx
-  LINALG::Matrix<nsd_, nsd_> dudxioJinv;
+  CORE::LINALG::Matrix<nsd_, nsd_> dudxioJinv;
   // material coord. of element
-  LINALG::Matrix<nsd_, nen_> xrefe;
+  CORE::LINALG::Matrix<nsd_, nen_> xrefe;
   // current coord. of element
-  LINALG::Matrix<nsd_, nen_> xcurr;
+  CORE::LINALG::Matrix<nsd_, nen_> xcurr;
   // element velocity at time n+1
-  LINALG::Matrix<nsd_, nen_> evelnp;
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp;
   // element pressure at time n+1
-  LINALG::Matrix<nen_, 1> eprenp;
+  CORE::LINALG::Matrix<nen_, 1> eprenp;
   // velocity at int point
-  LINALG::Matrix<nsd_, 1> velint;
+  CORE::LINALG::Matrix<nsd_, 1> velint;
   // pressure at int point
-  LINALG::Matrix<1, 1> pressint;
+  CORE::LINALG::Matrix<1, 1> pressint;
   // dx/dxi
-  LINALG::Matrix<nsd_, nsd_> xjm;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm;
   // dxi/dx
-  LINALG::Matrix<nsd_, nsd_> xji;
+  CORE::LINALG::Matrix<nsd_, nsd_> xji;
   // cauchystress
-  LINALG::Matrix<nsd_, nsd_> cauchystress(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> cauchystress(true);
 
   // get dynamic viscosity
   Teuchos::RCP<MAT::Material> currentmaterial;
@@ -2928,7 +2929,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   // elevec1_epetra.Resize(nsd_*nsd_+1);
 
   // save point anew for safety -> check later if elevec2_epetra can be use directly
-  LINALG::Matrix<nsd_, 1> xi;
+  CORE::LINALG::Matrix<nsd_, 1> xi;
   for (int i = 0; i < nsd_; ++i) xi(i) = elevec2_epetra(i);
 
   // evaluate shapefunctions at given point in reference coordinates
@@ -2945,7 +2946,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   if (isALE)
   {
     // update fluid displacements
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     DRT::Node** nodes = ele->Nodes();
@@ -3127,7 +3128,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   // update fluid displacements
   if (isALE)
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
     for (int node = 0; node < nen_; ++node)
@@ -3168,8 +3169,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
       params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
   // search tree related stuff
-  std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
-      params.get<std::map<int, LINALG::Matrix<3, 1>>*>("currpositions_struct");
+  std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct =
+      params.get<std::map<int, CORE::LINALG::Matrix<3, 1>>*>("currpositions_struct");
 
   // subset of strucutral elements immersed near the current fluid element
   std::map<int, std::set<int>> curr_subset_of_structdis;
@@ -3179,10 +3180,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
     // searchtree");
     // search radius (diagonal length of targetele (current fluid ele) )
     double radius = 0.0;
-    LINALG::Matrix<3, 1> searchcenter;  // center of fluid ele
+    CORE::LINALG::Matrix<3, 1> searchcenter;  // center of fluid ele
     if (isALE)
     {
-      LINALG::Matrix<nsd_, nen_> edispnp(true);
+      CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
       ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
       radius = sqrt(
@@ -3431,7 +3432,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
         (globalproblem->ImmersedMethodParams().get<std::string>("DEFORM_BACKGROUND_MESH") == "yes");
 
     // get element velocity at time n+1
-    LINALG::Matrix<nsd_, nen_> evelnp;
+    CORE::LINALG::Matrix<nsd_, nen_> evelnp;
     Teuchos::RCP<const Epetra_Vector> state;
     std::vector<double> myvalues(1);
     state = discretization.GetState("velnp");
@@ -3464,7 +3465,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     // update fluid displacements
     if (isALE)
     {
-      LINALG::Matrix<nsd_, nen_> edispnp(true);
+      CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
       ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
 
       for (int node = 0; node < nen_; ++node)
@@ -3510,8 +3511,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
         params.get<Teuchos::RCP<CORE::GEO::SearchTree>>("structsearchtree_rcp");
 
     // search tree related stuff
-    std::map<int, LINALG::Matrix<3, 1>>* currpositions_struct =
-        params.get<std::map<int, LINALG::Matrix<3, 1>>*>("currpositions_struct");
+    std::map<int, CORE::LINALG::Matrix<3, 1>>* currpositions_struct =
+        params.get<std::map<int, CORE::LINALG::Matrix<3, 1>>*>("currpositions_struct");
 
     // get relevant structure elements
     std::map<int, std::set<int>> curr_subset_of_structdis;
@@ -3520,7 +3521,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
       double radius = sqrt(pow(ele->Nodes()[1]->X()[0] - ele->Nodes()[7]->X()[0], 2) +
                            pow(ele->Nodes()[1]->X()[1] - ele->Nodes()[7]->X()[1], 2) +
                            pow(ele->Nodes()[1]->X()[2] - ele->Nodes()[7]->X()[2], 2));
-      LINALG::Matrix<3, 1> searchcenter;  // center of fluid element
+      CORE::LINALG::Matrix<3, 1> searchcenter;  // center of fluid element
       searchcenter(0) =
           ele->Nodes()[1]->X()[0] + (ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0]) * 0.5;
       searchcenter(1) =
@@ -3578,11 +3579,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
 
         // evaluate shape function of respective node in the closest structure point (has to  lie in
         // the current fluid element)
-        LINALG::Matrix<nen_, 1> shapefunct;
+        CORE::LINALG::Matrix<nen_, 1> shapefunct;
         double weight = 0.0;
 
         // get position of closest point in local coordinates of fluid element
-        LINALG::Matrix<nsd_, 1> xi;
+        CORE::LINALG::Matrix<nsd_, 1> xi;
         for (int i = 0; i < nsd_; ++i) xi(i) = closest_point_xi[i];
 
         // evaluate shape functions at closest point
@@ -3618,20 +3619,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
     std::vector<int>& lm, Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
 {
   // coordinates of the current integration point
-  LINALG::Matrix<nsd_, 1> elecoords = params.get<LINALG::Matrix<nsd_, 1>>("elecoords");
+  CORE::LINALG::Matrix<nsd_, 1> elecoords = params.get<CORE::LINALG::Matrix<nsd_, 1>>("elecoords");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
 
     // get new node positions for isale
@@ -3645,7 +3646,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
   //   Extract velocity from global vectors and compute velocity at point
   //----------------------------------------------------------------------------
 
-  static LINALG::Matrix<nsd_, nen_> evel;
+  static CORE::LINALG::Matrix<nsd_, nen_> evel;
   // fill the local element vector with the global values
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
   velint_.Multiply(evel, funct_);
@@ -3670,20 +3671,20 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
     std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
 {
   // coordinates of the current integration point
-  LINALG::Matrix<nsd_, 1> elecoords = params.get<LINALG::Matrix<nsd_, 1>>("elecoords");
+  CORE::LINALG::Matrix<nsd_, 1> elecoords = params.get<CORE::LINALG::Matrix<nsd_, 1>>("elecoords");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // set element id
   eid_ = ele->Id();
 
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
 
     // get new node positions for isale
@@ -3697,7 +3698,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
   //   Extract pressure from global vectors and compute pressure at point
   //----------------------------------------------------------------------------
 
-  static LINALG::Matrix<nen_, 1> epre;
+  static CORE::LINALG::Matrix<nen_, 1> epre;
 
   if (discretization.HasState("vel"))
   {
@@ -3823,7 +3824,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
   std::vector<double> mysol(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
   // get view of solution and subgrid-viscosity vector
-  LINALG::Matrix<4 * nen_, 1> sol(mysol.data(), true);
+  CORE::LINALG::Matrix<4 * nen_, 1> sol(mysol.data(), true);
 
   // the plane normal tells you in which plane the integration takes place
   const int normdirect = params.get<int>("normal direction to homogeneous plane");
@@ -3863,12 +3864,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 
   // get node coordinates of element
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edispnp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
     // get new node positions of ALE mesh
     GetGridDispALE(discretization, lm, edispnp);
 
@@ -4430,13 +4431,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
-  LINALG::Matrix<nsd_, nen_> egridv(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
   if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp, egridv);
 
 
@@ -4444,7 +4445,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   EvalShapeFuncAndDerivsAtEleCenter();
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
 
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, NULL, "velnp");
 
@@ -4465,15 +4466,15 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
 
   if (vel_norm > 1.0e-6)
   {
-    LINALG::Matrix<nsd_, 1> velino(true);
+    CORE::LINALG::Matrix<nsd_, 1> velino(true);
     velino.Update(1.0 / vel_norm, convvelint_);
 
     // get streamlength using the normed velocity at element centre
-    LINALG::Matrix<nen_, 1> tmp;
+    CORE::LINALG::Matrix<nen_, 1> tmp;
     // enriched dofs are not interpolatory with respect to geometry
     if (enrtype == DRT::ELEMENTS::Fluid::xwall)
     {
-      LINALG::Matrix<nsd_, nen_> derxy_copy(derxy_);
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_copy(derxy_);
       for (int inode = 1; inode < nen_; inode += 2)
       {
         for (int idim = 0; idim < nsd_; idim++) derxy_copy(idim, inode) = 0.0;
@@ -4510,8 +4511,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // ---------------------------------------------------------------------------
   // Since we need only the density, we use a lot of dummy values.
   // create dummy matrices
-  LINALG::Matrix<nsd_, nen_> mat1(true);
-  LINALG::Matrix<nen_, 1> mat2(true);
+  CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
+  CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
   GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
@@ -4519,16 +4520,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   // Geometry
   // ---------------------------------------------------------------------------
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
 
   // Do ALE specific updates if necessary
   if (ele->IsAle()) dserror("no ale for periodic hill");
 
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, NULL, "velnp");
 
   // definition of matrices
-  LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
+  CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
 
   // length of whole domain
   double length = params.get<double>("length");
@@ -4544,8 +4545,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
     EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(), iquad.Weight());
 
     // create dummy matrices
-    LINALG::Matrix<nsd_, nen_> mat1(true);
-    LINALG::Matrix<nen_, 1> mat2(true);
+    CORE::LINALG::Matrix<nsd_, nen_> mat1(true);
+    CORE::LINALG::Matrix<nen_, 1> mat2(true);
 
     GetMaterialParams(mat, mat1, mat2, mat2, mat2, mat2, mat2, 0.0, 0.0, 0.0, 0.0, 0.0);
 
@@ -4601,11 +4602,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
       distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
   // Do ALE specific updates if necessary
   if (ele->IsAle())
   {
-    LINALG::Matrix<nsd_, nen_> edisp(true);
+    CORE::LINALG::Matrix<nsd_, nen_> edisp(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, NULL, "disp");
 
     // get new node positions of ALE mesh
@@ -4618,7 +4619,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
   if (discretization.HasState("vel"))
   {
     // extract element velocities
-    LINALG::Matrix<nsd_, nen_> evel(true);
+    CORE::LINALG::Matrix<nsd_, nen_> evel(true);
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
 
     // get gradient of velocity at element center
@@ -4635,7 +4636,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
   }
 
   // get position of element centroid
-  LINALG::Matrix<nsd_, 1> x_centroid(true);
+  CORE::LINALG::Matrix<nsd_, 1> x_centroid(true);
   x_centroid.Multiply(xyze_, funct_);
   for (int i = 0; i < nsd_; ++i)
   {

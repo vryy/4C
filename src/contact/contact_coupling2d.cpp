@@ -482,17 +482,17 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   MORTAR::ElementIntegrator integrator(SlaveElement().Shape());
 
   // prepare for calculation of dual shape functions
-  LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
   // two-dim arrays of maps for linearization of me/de
   std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivme(nnodes,
       std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
   std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> derivde(nnodes,
       std::vector<CORE::GEN::pairedvector<int, double>>(nnodes, linsize + 2 * ndof * mnodes));
 
-  LINALG::SerialDenseVector sval(nnodes);
-  LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
-  LINALG::SerialDenseMatrix ssecderiv(nnodes, 1);
+  CORE::LINALG::SerialDenseVector sval(nnodes);
+  CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 1, true);
+  CORE::LINALG::SerialDenseMatrix ssecderiv(nnodes, 1);
 
   for (int gp = 0; gp < integrator.nGP(); ++gp)
   {
@@ -599,8 +599,8 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
 
   // declare dual shape functions coefficient matrix and
   // inverse of matrix M_e
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix meinv(nnodes, nnodes, true);
 
   // compute matrix A_e and inverse of matrix M_e for
   // linear interpolation of quadratic element
@@ -610,12 +610,12 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
     const int nnodeslin = 2;
 
     // reduce me to non-zero nodes before inverting
-    LINALG::Matrix<nnodeslin, nnodeslin> melin;
+    CORE::LINALG::Matrix<nnodeslin, nnodeslin> melin;
     for (int j = 0; j < nnodeslin; ++j)
       for (int k = 0; k < nnodeslin; ++k) melin(j, k) = me(j, k);
 
     // invert bi-ortho matrix melin
-    LINALG::Inverse(melin);
+    CORE::LINALG::Inverse(melin);
 
     // re-inflate inverse of melin to full size
     for (int j = 0; j < nnodeslin; ++j)
@@ -626,7 +626,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
-    meinv = LINALG::InvertAndMultiplyByCholesky(me, de, ae);
+    meinv = CORE::LINALG::InvertAndMultiplyByCholesky(me, de, ae);
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which
@@ -654,7 +654,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   }
 
   // store ae matrix in slave element data container
-  SlaveElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  SlaveElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 
   return;
 }

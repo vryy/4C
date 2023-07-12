@@ -72,7 +72,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "DYNAMIC to a valid number!");
 
   solver_ = Teuchos::rcp(
-      new LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
+      new CORE::LINALG::Solver(DRT::Problem::Instance(microdisnum_)->SolverParams(linsolvernumber),
           discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
 
@@ -139,40 +139,40 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 81, true, true));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 81, true, true));
 
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
   // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*dofrowmap, true);
+  zeros_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // vector of full length; for each component
   //                /  1   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  0   i-th DOF is free
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap, true);
+  dirichtoggle_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   // opposite of dirichtoggle vector, ie for each component
   //                /  0   i-th DOF is supported, ie Dirichlet BC
   //    vector_i =  <
   //                \  1   i-th DOF is free
-  invtoggle_ = LINALG::CreateVector(*dofrowmap, false);
+  invtoggle_ = CORE::LINALG::CreateVector(*dofrowmap, false);
 
   // displacements D_{n+1} at new time
-  disn_ = LINALG::CreateVector(*dofrowmap, true);
+  disn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // displacements D_{n+1} at old time
-  dis_ = LINALG::CreateVector(*dofrowmap, true);
+  dis_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
-  disi_ = LINALG::CreateVector(*dofrowmap, true);
+  disi_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // internal force vector F_int
-  fintn_ = LINALG::CreateVector(*dofrowmap, true);
+  fintn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // dynamic force residual
   // also known as out-of-balance-force
-  fresn_ = LINALG::CreateVector(*dofrowmap, false);
+  fresn_ = CORE::LINALG::CreateVector(*dofrowmap, false);
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
@@ -214,7 +214,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   STRUMULTI::MicroStatic::SetUpHomogenization();
 
   // reaction force vector at different times
-  freactn_ = LINALG::CreateVector(*pdof_, true);
+  freactn_ = CORE::LINALG::CreateVector(*pdof_, true);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -267,7 +267,7 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 }  // STRUMULTI::MicroStatic::MicroStatic
 
 
-void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3, 3>* defgrd)
+void STRUMULTI::MicroStatic::Predictor(CORE::LINALG::Matrix<3, 3>* defgrd)
 {
   if (pred_ == INPAR::STR::pred_constdis)
     PredictConstDis(defgrd);
@@ -282,7 +282,7 @@ void STRUMULTI::MicroStatic::Predictor(LINALG::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                               mwgee 03/07|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3, 3>* defgrd)
+void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 {
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -357,10 +357,10 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3, 3>* defgrd)
 /*----------------------------------------------------------------------*
  |  do predictor step (public)                                  lw 01/09|
  *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3, 3>* defgrd)
+void STRUMULTI::MicroStatic::PredictTangDis(CORE::LINALG::Matrix<3, 3>* defgrd)
 {
   // for displacement increments on Dirichlet boundary
-  Teuchos::RCP<Epetra_Vector> dbcinc = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  Teuchos::RCP<Epetra_Vector> dbcinc = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // copy last converged displacements
   dbcinc->Update(1.0, *disn_, 0.0);
@@ -423,7 +423,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3, 3>* defgrd)
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Epetra_Vector> freact = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> freact = CORE::LINALG::CreateVector(*(discret_->DofRowMap()), true);
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
@@ -439,7 +439,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3, 3>* defgrd)
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fresn_, zeros_, dirichtoggle_);
+  CORE::LINALG::ApplyDirichlettoSystem(stiff_, disi_, fresn_, zeros_, dirichtoggle_);
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -547,7 +547,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fresn_, zeros_, dirichtoggle_);
+    CORE::LINALG::ApplyDirichlettoSystem(stiff_, disi_, fresn_, zeros_, dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -818,7 +818,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> d
 
 
 void STRUMULTI::MicroStatic::EvaluateMicroBC(
-    LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
+    CORE::LINALG::Matrix<3, 3>* defgrd, Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
@@ -841,8 +841,8 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
       double disp_prescribed[3];
-      LINALG::Matrix<3, 3> Du(defgrd->A(), false);
-      LINALG::Matrix<3, 3> I(true);
+      CORE::LINALG::Matrix<3, 3> Du(defgrd->A(), false);
+      CORE::LINALG::Matrix<3, 3> I(true);
       I(0, 0) = -1.0;
       I(1, 1) = -1.0;
       I(2, 2) = -1.0;
@@ -953,8 +953,8 @@ void STRUMULTI::MicroStatic::SetEASData()
 
 
 
-void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
-    LINALG::Matrix<6, 6>* cmat, LINALG::Matrix<3, 3>* defgrd, const bool mod_newton,
+void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* stress,
+    CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<3, 3>* defgrd, const bool mod_newton,
     bool& build_stiff)
 {
   // determine macroscopic parameters via averaging (homogenization) of
@@ -987,7 +987,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
 
   freactn_->Scale(-1.0);
 
-  LINALG::Matrix<3, 3> P(true);
+  CORE::LINALG::Matrix<3, 3> P(true);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -1007,7 +1007,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
 
   // determine inverse of deformation gradient
 
-  LINALG::Matrix<3, 3> F_inv(defgrd->A(), false);
+  CORE::LINALG::Matrix<3, 3> F_inv(defgrd->A(), false);
   F_inv.Invert();
 
   // convert to second Piola-Kirchhoff stresses and store them in
@@ -1040,7 +1040,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
     Epetra_MultiVector cmatpf(D_->Map(), 9);
 
     // make a copy
-    stiff_dirich_ = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_));
+    stiff_dirich_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*stiff_));
 
     stiff_->ApplyDirichlet(dirichtoggle_);
 
@@ -1058,7 +1058,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6, 1>* stress,
         Teuchos::getIntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(
+    Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(new CORE::LINALG::Solver(
         solverparams, discret_->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     // prescribe rigid body modes

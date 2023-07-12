@@ -25,13 +25,13 @@ class Epetra_FEVector;
 class Epetra_Vector;
 class Epetra_SerialDenseMatrix;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace DRT
 {
   class Discretization;
@@ -72,7 +72,7 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      virtual void AssembleFluidMatrix(Teuchos::RCP<LINALG::SparseOperator> cff, int eid,
+      virtual void AssembleFluidMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int eid,
           const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol);
@@ -98,11 +98,13 @@ namespace FBI
        */
       virtual void Assemble(const DRT::Discretization& discretization1,
           const DRT::Discretization& discretization2, std::vector<int> const& elegid,
-          std::vector<LINALG::SerialDenseVector> const& elevec,
-          std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector> const& elevec,
+          std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> const& elemat,
           Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-          Teuchos::RCP<LINALG::SparseMatrix>& c11, Teuchos::RCP<LINALG::SparseOperator> c22,
-          Teuchos::RCP<LINALG::SparseMatrix>& c12, Teuchos::RCP<LINALG::SparseMatrix>& c21);
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c11,
+          Teuchos::RCP<CORE::LINALG::SparseOperator> c22,
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c12,
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& c21);
     };
   }  // namespace UTILS
 }  // namespace FBI

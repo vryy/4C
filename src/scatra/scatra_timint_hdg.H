@@ -21,7 +21,7 @@ namespace SCATRA
    public:
     //! standard constructor
     TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-        const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<Teuchos::ParameterList>& extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);

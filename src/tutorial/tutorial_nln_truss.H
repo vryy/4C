@@ -56,7 +56,7 @@ namespace TUTORIAL
     virtual ~NonlinearTruss(){};
 
     /// here you define your geometry and boundary conditions directly in the source code
-    std::vector<LINALG::Matrix<7, 1>> ProblemDefinition();
+    std::vector<CORE::LINALG::Matrix<7, 1>> ProblemDefinition();
 
     /// build discretization
     void SetupProblem();
@@ -80,8 +80,8 @@ namespace TUTORIAL
     \param eval_stiff (in) : bool indicating whether stiff should be evaluated
 
     */
-    void Evaluate(LINALG::Matrix<numele + 1, 1>* rhs, LINALG::Matrix<numele + 1, numele + 1>* stiff,
-        bool eval_rhs, bool eval_stiff);
+    void Evaluate(CORE::LINALG::Matrix<numele + 1, 1>* rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1>* stiff, bool eval_rhs, bool eval_stiff);
 
 
     /*!
@@ -93,7 +93,8 @@ namespace TUTORIAL
     \param stiff (out)     : system (stiffness-) matrix to be evaluated
 
     */
-    void Evaluate(LINALG::Matrix<numele + 1, 1>* rhs, LINALG::Matrix<numele + 1, numele + 1>* stiff)
+    void Evaluate(CORE::LINALG::Matrix<numele + 1, 1>* rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1>* stiff)
     {
       Evaluate(rhs, stiff, true, true);
       return;
@@ -109,8 +110,8 @@ namespace TUTORIAL
     \param eval_rhs (in)   : bool indicating whether rhs should be evaluated
 
     */
-    void Evaluate(LINALG::Matrix<numele + 1, 1>* rhs, LINALG::Matrix<numele + 1, numele + 1>* stiff,
-        bool eval_rhs)
+    void Evaluate(CORE::LINALG::Matrix<numele + 1, 1>* rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1>* stiff, bool eval_rhs)
     {
       Evaluate(rhs, stiff, eval_rhs, true);
       return;
@@ -129,21 +130,22 @@ namespace TUTORIAL
     \param eval_stiff (in) : bool indicating whether stiff should be evaluated
 
     */
-    virtual void PostEvaluate(LINALG::Matrix<numele + 1, 1> rhs,
-        LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs, bool eval_stiff)
+    virtual void PostEvaluate(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs, bool eval_stiff)
     {
       return;
     };
 
     /// solve the linear system of equations stiff*disp=rhs
-    void Solve(LINALG::Matrix<numele + 1, 1> rhs, LINALG::Matrix<numele + 1, numele + 1> stiff,
-        LINALG::Matrix<numele + 1, 1> inc);
+    void Solve(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1> stiff,
+        CORE::LINALG::Matrix<numele + 1, 1> inc);
 
     /// check if newton is converged
     bool ConvergenceCheck(double tol);
 
     /// return pointer to the solver object
-    Teuchos::RCP<LINALG::FixedSizeSerialDenseSolver<numele + 1, numele + 1, 1>> Solver()
+    Teuchos::RCP<CORE::LINALG::FixedSizeSerialDenseSolver<numele + 1, numele + 1, 1>> Solver()
     {
       return nxnsolver_;
     };
@@ -164,7 +166,7 @@ namespace TUTORIAL
 
    private:
     /// print geometry and boundary conditions
-    void PrintProblem(std::vector<LINALG::Matrix<numele + 1, 1>>& conditions);
+    void PrintProblem(std::vector<CORE::LINALG::Matrix<numele + 1, 1>>& conditions);
 
     /// print used material law
     void PrintMaterial();
@@ -181,7 +183,8 @@ namespace TUTORIAL
 
     */
     void AssembleMatrix(TUTORIAL::ELEMENTS::TutorialElement* ele,
-        LINALG::Matrix<2, 2>* ele_stiff_mat, LINALG::Matrix<numele + 1, numele + 1>* glob_stiff);
+        CORE::LINALG::Matrix<2, 2>* ele_stiff_mat,
+        CORE::LINALG::Matrix<numele + 1, numele + 1>* glob_stiff);
 
     /*!
     \brief assemble an element residual vector into the global right-hand-side
@@ -191,28 +194,28 @@ namespace TUTORIAL
     \param glob_rhs (out)   : global vector into which we assemble
 
     */
-    void AssembleVector(TUTORIAL::ELEMENTS::TutorialElement* ele, LINALG::Matrix<2, 1>* ele_rhs_vec,
-        LINALG::Matrix<numele + 1, 1>* glob_rhs);
+    void AssembleVector(TUTORIAL::ELEMENTS::TutorialElement* ele,
+        CORE::LINALG::Matrix<2, 1>* ele_rhs_vec, CORE::LINALG::Matrix<numele + 1, 1>* glob_rhs);
 
     /// discretization map ele id => TutorialElement
     std::map<int, ELEMENTS::TutorialElement*>* discretization_;
 
     /// pointer to dirichlet condition
-    LINALG::Matrix<numele + 1, 1>* dirichletvalues_;
+    CORE::LINALG::Matrix<numele + 1, 1>* dirichletvalues_;
 
     /// pointer to neumann condition
-    LINALG::Matrix<numele + 1, 1>* neumannvalues_;
+    CORE::LINALG::Matrix<numele + 1, 1>* neumannvalues_;
 
     /// the solver object
-    Teuchos::RCP<LINALG::FixedSizeSerialDenseSolver<numele + 1, numele + 1, 1>> nxnsolver_;
+    Teuchos::RCP<CORE::LINALG::FixedSizeSerialDenseSolver<numele + 1, numele + 1, 1>> nxnsolver_;
 
     //! @name Vectors and Matrices
     //@{
-    LINALG::Matrix<numele + 1, 1> rhs_;             //!< RHS vector
-    LINALG::Matrix<numele + 1, numele + 1> stiff_;  //!< stiffness matrix
-    LINALG::Matrix<numele + 1, 1> inc_;             //!< increment vector
-    LINALG::Matrix<numele + 1, 1> disp_;            //!< displacement vector
-    LINALG::Matrix<numele + 1, 1> freact_;          //!< reaction force vector
+    CORE::LINALG::Matrix<numele + 1, 1> rhs_;             //!< RHS vector
+    CORE::LINALG::Matrix<numele + 1, numele + 1> stiff_;  //!< stiffness matrix
+    CORE::LINALG::Matrix<numele + 1, 1> inc_;             //!< increment vector
+    CORE::LINALG::Matrix<numele + 1, 1> disp_;            //!< displacement vector
+    CORE::LINALG::Matrix<numele + 1, 1> freact_;          //!< reaction force vector
     //@}
 
   };  // class NonlinearTruss

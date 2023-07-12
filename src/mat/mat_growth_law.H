@@ -80,11 +80,12 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    virtual void Evaluate(double* theta, const double& thetaold,
+        CORE::LINALG::Matrix<6, 1>* dthetadC, MAT::Growth& matgrowth,
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
+        const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*! \brief derivative of theta wrt parameters
@@ -108,14 +109,16 @@ namespace MAT
      * \date 07/2015
      */
     virtual void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID) = 0;
+        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        const int eleGID) = 0;
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g) = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
+        CORE::LINALG::Matrix<3, 3>& F_g) = 0;
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta) = 0;
@@ -227,11 +230,12 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    virtual void Evaluate(double* theta, const double& thetaold,
+        CORE::LINALG::Matrix<6, 1>* dthetadC, MAT::Growth& matgrowth,
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
+        const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /*! \brief derivative of theta wrt parameters
@@ -255,8 +259,9 @@ namespace MAT
      * \date 07/2015
      */
     virtual void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        const int eleGID);
 
     //@}
 
@@ -276,8 +281,9 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta) = 0;
 
     virtual void EvaluateGrowthTrigger(double& growthtrig,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec, const LINALG::Matrix<6, 1>& Cdachvec,
-        const LINALG::Matrix<3, 1>& direction, const double& theta, const double& consttrig) = 0;
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const double& theta, const double& consttrig) = 0;
 
     /*! Evaluate growth function wrt growth factor theta
      * \param Out
@@ -293,10 +299,10 @@ namespace MAT
      *
      */
     virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM,
-        double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction) = 0;
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction) = 0;
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -312,17 +318,19 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    virtual void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction) = 0;
+    virtual void EvaluateGrowthFunctionDerivC(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction) = 0;
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g) = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
+        CORE::LINALG::Matrix<3, 3>& F_g) = 0;
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta);
@@ -398,11 +406,12 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    virtual void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    virtual void Evaluate(double* theta, const double& thetaold,
+        CORE::LINALG::Matrix<6, 1>* dthetadC, MAT::Growth& matgrowth,
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<6, 1>* glstrain,
+        const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*! \brief derivative of theta wrt parameters
@@ -426,14 +435,16 @@ namespace MAT
      * \date 07/2015
      */
     virtual void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        const int eleGID);
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g) = 0;
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd,
+        CORE::LINALG::Matrix<3, 3>& F_g) = 0;
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta);
@@ -528,8 +539,9 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta);
 
     virtual void EvaluateGrowthTrigger(double& growthtrig,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec, const LINALG::Matrix<6, 1>& Cdachvec,
-        const LINALG::Matrix<3, 1>& direction, const double& theta, const double& consttrig);
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const double& theta, const double& consttrig);
 
     /*! Evaluate growth function wrt growth factor theta
      * \param Out
@@ -545,10 +557,10 @@ namespace MAT
      *
      */
     virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM,
-        double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction);
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction);
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -564,17 +576,18 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    virtual void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction);
+    virtual void EvaluateGrowthFunctionDerivC(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction);
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta);
@@ -675,8 +688,9 @@ namespace MAT
         double& growthfunc, const double growthtrig, const double theta);
 
     virtual void EvaluateGrowthTrigger(double& growthtrig,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec, const LINALG::Matrix<6, 1>& Cdachvec,
-        const LINALG::Matrix<3, 1>& direction, const double& theta, const double& consttrig);
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
+        const double& theta, const double& consttrig);
 
     /*! Evaluate growth function wrt growth factor theta
      * \param Out
@@ -692,10 +706,10 @@ namespace MAT
      *
      */
     virtual void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM,
-        double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction);
+        double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction);
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -711,17 +725,18 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    virtual void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction);
+    virtual void EvaluateGrowthFunctionDerivC(
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec, double traceM, double theta,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction);
 
     /// calculate growth part of deformation gradient
     virtual void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     virtual double DensityScale(const double theta);
@@ -791,8 +806,9 @@ namespace MAT
     //@{
 
 
-    void EvaluateGrowthTrigger(double& growthtrig, const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<6, 1>& Cdachvec, const LINALG::Matrix<3, 1>& direction,
+    void EvaluateGrowthTrigger(double& growthtrig,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig);
 
     /*! Evaluate growth function wrt growth factor theta
@@ -809,10 +825,10 @@ namespace MAT
      *
      */
     void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction);
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction);
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -828,11 +844,11 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction);
+    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction);
 
     //@}
 
@@ -897,8 +913,9 @@ namespace MAT
     //@{
 
 
-    void EvaluateGrowthTrigger(double& growthtrig, const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<6, 1>& Cdachvec, const LINALG::Matrix<3, 1>& direction,
+    void EvaluateGrowthTrigger(double& growthtrig,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig);
 
     /*! Evaluate growth function wrt growth factor theta
@@ -915,10 +932,10 @@ namespace MAT
      *
      */
     void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction);
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction);
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -934,11 +951,11 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction);
+    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction);
 
     //@}
 
@@ -1040,8 +1057,9 @@ namespace MAT
      */
     void EvaluateGrowthFunction(double& growthfunc, const double growthtrig, const double theta);
 
-    void EvaluateGrowthTrigger(double& growthtrig, const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<6, 1>& Cdachvec, const LINALG::Matrix<3, 1>& direction,
+    void EvaluateGrowthTrigger(double& growthtrig,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<6, 1>& Cdachvec, const CORE::LINALG::Matrix<3, 1>& direction,
         const double& theta, const double& consttrig);
 
     /*! Evaluate growth function wrt growth factor theta
@@ -1058,10 +1076,10 @@ namespace MAT
      *
      */
     void EvaluateGrowthFunctionDerivTheta(double& dgrowthfunctheta, double traceM, double theta,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
-        const LINALG::Matrix<3, 3>& F_g, const LINALG::Matrix<3, 1>& direction);
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Sdachvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmatelastic,
+        const CORE::LINALG::Matrix<3, 3>& F_g, const CORE::LINALG::Matrix<3, 1>& direction);
 
     /*! Evaluate growth function wrt right cauchy green tensor
      * \param Out
@@ -1077,17 +1095,17 @@ namespace MAT
      * \param In
      * cmatelastic - elastic part of the cmat
      */
-    void EvaluateGrowthFunctionDerivC(LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
-        double traceM, double theta, const LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
-        const LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
-        const LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
-        const LINALG::Matrix<3, 1>& direction);
+    void EvaluateGrowthFunctionDerivC(CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& dgrowthfuncdCvec,
+        double traceM, double theta, const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Cvec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& Svec,
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat,
+        const CORE::LINALG::Matrix<3, 1>& direction);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     double DensityScale(const double theta);
@@ -1183,18 +1201,18 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
+        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     double DensityScale(const double theta);
@@ -1270,18 +1288,18 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
+        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     double DensityScale(const double theta);
@@ -1356,18 +1374,18 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
+        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     double DensityScale(const double theta);
@@ -1461,11 +1479,11 @@ namespace MAT
      *  \author kehl
      * \date 06/2015
      */
-    void Evaluate(double* theta, const double& thetaold, LINALG::Matrix<6, 1>* dthetadC,
-        MAT::Growth& matgrowth, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
+    void Evaluate(double* theta, const double& thetaold, CORE::LINALG::Matrix<6, 1>* dthetadC,
+        MAT::Growth& matgrowth, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, const double& consttrig,
         Teuchos::ParameterList& params, int gp, int eleGID);
 
     /*! \brief derivative of theta wrt parameters
@@ -1489,14 +1507,15 @@ namespace MAT
      * \date 07/2015
      */
     void EvaluatePDeriv(double* theta, const double& thetaold,
-        Teuchos::RCP<MAT::So3Material> matelastic, const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params, const int eleGID);
+        Teuchos::RCP<MAT::So3Material> matelastic, const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        const int eleGID);
 
     /// calculate growth part of deformation gradient
     void CalcFg(const double& theta, const double& thetaold, const int& gp,
-        const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<3, 1>& refdir,
-        const std::vector<LINALG::Matrix<3, 1>>& curdir,
-        const std::vector<LINALG::Matrix<3, 3>>& histdefgrd, LINALG::Matrix<3, 3>& F_g);
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 1>& refdir,
+        const std::vector<CORE::LINALG::Matrix<3, 1>>& curdir,
+        const std::vector<CORE::LINALG::Matrix<3, 3>>& histdefgrd, CORE::LINALG::Matrix<3, 3>& F_g);
 
     /// density scaling of specific growth law
     double DensityScale(const double theta);

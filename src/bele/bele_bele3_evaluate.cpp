@@ -58,7 +58,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
 
       // dummy size for stress/strain. size does not matter. just write something that can be
       // extracted later
-      LINALG::Matrix<1, 1> dummy(true);
+      CORE::LINALG::Matrix<1, 1> dummy(true);
 
       // write dummy stress
       {
@@ -93,7 +93,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         const int numdim = 3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
         // call submethod for volume evaluation and store rseult in third systemvector
         double volumeele = ComputeConstrVols(xscurr, NumNode());
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numdim = 3;
-      LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(NumNode(), numdim);  // material coord. of element
       SpatialConfiguration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
  * Compute Volume enclosed by surface.                          tk 10/07*
  * ---------------------------------------------------------------------*/
 double DRT::ELEMENTS::Bele3::ComputeConstrVols(
-    const LINALG::SerialDenseMatrix& xc, const int numnode)
+    const CORE::LINALG::SerialDenseMatrix& xc, const int numnode)
 {
   double V = 0.0;
 
@@ -187,8 +187,8 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
   {
     // split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
-    LINALG::SerialDenseMatrix ab = xc;
-    LINALG::SerialDenseVector c(numnode);
+    CORE::LINALG::SerialDenseMatrix ab = xc;
+    CORE::LINALG::SerialDenseVector c(numnode);
     for (int i = 0; i < numnode; i++)
     {
       ab(i, indc) = 0.0;   // project by z_i = 0.0
@@ -203,8 +203,8 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector funct(numnode);
-    LINALG::SerialDenseMatrix deriv(2, numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
@@ -220,9 +220,9 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
 
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
-      LINALG::SerialDenseMatrix metrictensor(2, 3);
+      CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
-      // LINALG::SerialDenseMatrix metrictensor(2,2);
+      // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
@@ -238,8 +238,8 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
  * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, const int numnode,
-    const int ndof, double& V, Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
+void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& xc,
+    const int numnode, const int ndof, double& V, Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
     Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
@@ -259,8 +259,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, 
   {
     // split current configuration between "ab" and "c"
     // where a!=b!=c and a,b,c are in {x,y,z}
-    LINALG::SerialDenseMatrix ab = xc;
-    LINALG::SerialDenseVector c(numnode);
+    CORE::LINALG::SerialDenseMatrix ab = xc;
+    CORE::LINALG::SerialDenseVector c(numnode);
     for (int i = 0; i < numnode; i++)
     {
       ab(i, indc) = 0.0;   // project by z_i = 0.0
@@ -275,8 +275,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, 
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
-    LINALG::SerialDenseVector funct(numnode);
-    LINALG::SerialDenseMatrix deriv(2, numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
 
     /*----------------------------------------------------------------------*
      |               start loop over integration points                     |
@@ -294,7 +294,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc, 
       std::vector<double> normal(numdim);
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
-      LINALG::SerialDenseMatrix metrictensor(2, numdim);
+      CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
       metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -

@@ -21,8 +21,8 @@ electrochemistry
 struct CONTACT::CoIntegratorNitscheSsiElch::ElementDataBundle
 {
   MORTAR::MortarElement* element;
-  const LINALG::SerialDenseVector* shape_funct;
-  const LINALG::SerialDenseMatrix* shape_deriv;
+  const CORE::LINALG::SerialDenseVector* shape_funct;
+  const CORE::LINALG::SerialDenseMatrix* shape_deriv;
   const std::vector<CORE::GEN::pairedvector<int, double>>* d_xi_dd;
 };
 
@@ -38,9 +38,10 @@ CONTACT::CoIntegratorNitscheSsiElch::CoIntegratorNitscheSsiElch(Teuchos::Paramet
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
-    LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& sval,
+    CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& lmderiv,
     CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
     CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
@@ -56,11 +57,11 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& 
  *----------------------------------------------------------------------*/
 template <int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slave_ele,
-    MORTAR::MortarElement& master_ele, const LINALG::SerialDenseVector& slave_shape,
-    const LINALG::SerialDenseMatrix& slave_shape_deriv,
+    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
+    const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    const LINALG::SerialDenseVector& master_shape,
-    const LINALG::SerialDenseMatrix& master_shape_deriv,
+    const CORE::LINALG::SerialDenseVector& master_shape,
+    const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double gp_wgt, const double gap,
     const CORE::GEN::pairedvector<int, double>& d_gap_dd, const double* gp_normal,
@@ -81,8 +82,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slav
   dsassert(dim == Dim(), "dimension inconsistency");
 
   // calculate normals and derivatives
-  const LINALG::Matrix<dim, 1> normal(gp_normal, true);
-  LINALG::Matrix<dim, 1> slave_normal, master_normal;
+  const CORE::LINALG::Matrix<dim, 1> normal(gp_normal, true);
+  CORE::LINALG::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<CORE::GEN::pairedvector<int, double>> d_slave_normal_dd(0, 0);
   std::vector<CORE::GEN::pairedvector<int, double>> d_master_normal_dd(0, 0);
   slave_ele.ComputeUnitNormalAtXi(slave_xi, slave_normal.A());
@@ -142,12 +143,13 @@ void CONTACT::CoIntegratorNitscheSsiElch::GPTSForces(MORTAR::MortarElement& slav
  *----------------------------------------------------------------------*/
 template <int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
-    MORTAR::MortarElement& ele, const LINALG::SerialDenseVector& shape,
-    const LINALG::SerialDenseMatrix& shape_deriv,
+    MORTAR::MortarElement& ele, const CORE::LINALG::SerialDenseVector& shape,
+    const CORE::LINALG::SerialDenseMatrix& shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt, const double test_val,
     const CORE::GEN::pairedvector<int, double>& d_test_val_dd,
-    const CORE::GEN::pairedvector<int, double>& d_test_val_ds, const LINALG::Matrix<dim, 1>& normal,
+    const CORE::GEN::pairedvector<int, double>& d_test_val_ds,
+    const CORE::LINALG::Matrix<dim, 1>& normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_normal_dd)
 {
   if (std::abs(fac) < 1.0e-16) return;
@@ -175,11 +177,11 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateTest(const double fac,
  *----------------------------------------------------------------------*/
 template <int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
-    MORTAR::MortarElement& slave_ele, const LINALG::SerialDenseVector& slave_shape,
-    const LINALG::SerialDenseMatrix& slave_shape_deriv,
+    MORTAR::MortarElement& slave_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
+    const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    MORTAR::MortarElement& master_ele, const LINALG::SerialDenseVector& master_shape,
-    const LINALG::SerialDenseMatrix& master_shape_deriv,
+    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+    const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, const double jac,
     const CORE::GEN::pairedvector<int, double>& d_jac_dd, const double wgt)
 {
@@ -343,8 +345,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateElchTest(double fac,
     const CORE::GEN::pairedvector<int, double>& d_test_val_ds)
 {
   MORTAR::MortarElement& ele = *ele_data_bundle.element;
-  const LINALG::SerialDenseVector& shape_func = *ele_data_bundle.shape_funct;
-  const LINALG::SerialDenseMatrix& shape_deriv = *ele_data_bundle.shape_deriv;
+  const CORE::LINALG::SerialDenseVector& shape_func = *ele_data_bundle.shape_funct;
+  const CORE::LINALG::SerialDenseMatrix& shape_deriv = *ele_data_bundle.shape_deriv;
   const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // get time integration factors
@@ -416,8 +418,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(ElementDataBundl
     CORE::GEN::pairedvector<int, double>& d_pot_dd)
 {
   MORTAR::MortarElement& ele = *ele_data_bundle.element;
-  const LINALG::SerialDenseVector& shape_func = *ele_data_bundle.shape_funct;
-  const LINALG::SerialDenseMatrix& shape_deriv = *ele_data_bundle.shape_deriv;
+  const CORE::LINALG::SerialDenseVector& shape_func = *ele_data_bundle.shape_funct;
+  const CORE::LINALG::SerialDenseMatrix& shape_deriv = *ele_data_bundle.shape_deriv;
   const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // resize and clear derivative vectors
@@ -433,8 +435,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(ElementDataBundl
   d_pot_dd.clear();
 
   // calculate the nodal concentrations, potentials and derivatives w.r.t electrochemistry dofs
-  LINALG::SerialDenseVector ele_conc(shape_func.Length());
-  LINALG::SerialDenseVector ele_pot(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_conc(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_pot(shape_func.Length());
   for (int i = 0; i < ele.NumNode(); ++i)
   {
     const int iparent = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
@@ -474,9 +476,9 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(ElementDataBundl
 template <int dim>
 void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mortar_ele,
     double* gp_coord, const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_coord_dd,
-    const double gp_wgt, const LINALG::Matrix<dim, 1>& gp_normal,
+    const double gp_wgt, const CORE::LINALG::Matrix<dim, 1>& gp_normal,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_gp_normal_dd,
-    const LINALG::Matrix<dim, 1>& test_dir,
+    const CORE::LINALG::Matrix<dim, 1>& test_dir,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd,
     const double nitsche_wgt, double& cauchy_nt_wgt,
     CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
@@ -498,11 +500,11 @@ void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mor
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegratorNitscheSsiElch::AssignElectrodeAndElectrolyteQuantities(
-    MORTAR::MortarElement& slave_ele, const LINALG::SerialDenseVector& slave_shape,
-    const LINALG::SerialDenseMatrix& slave_shape_deriv,
+    MORTAR::MortarElement& slave_ele, const CORE::LINALG::SerialDenseVector& slave_shape,
+    const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-    MORTAR::MortarElement& master_ele, const LINALG::SerialDenseVector& master_shape,
-    const LINALG::SerialDenseMatrix& master_shape_deriv,
+    MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+    const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
     bool& slave_is_electrode, ElementDataBundle& electrode_quantitites,
     ElementDataBundle& electrolyte_quantities)

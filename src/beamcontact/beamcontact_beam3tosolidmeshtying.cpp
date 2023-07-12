@@ -45,7 +45,7 @@ CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Beam3toso
     // tangents
     if (numnodalvalues == 2)
     {
-      LINALG::Matrix<3, 1> tan;
+      CORE::LINALG::Matrix<3, 1> tan;
       const DRT::ElementType& eot = element1_->ElementType();
       if (eot == DRT::ELEMENTS::Beam3rType::Instance())
       {
@@ -137,7 +137,7 @@ CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Beam3toso
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Evaluate(
-    LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp)
+    CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp)
 {
   // MASTER THESIS JK 2016
   // (...)

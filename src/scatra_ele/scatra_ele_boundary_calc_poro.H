@@ -41,8 +41,8 @@ namespace DRT
      protected:
       //! compute integral of convective mass/heat flux over boundary surface
       virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
-          const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-          const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual double ComputePorosity(
@@ -55,10 +55,10 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! nodal porosity values at t_(n+1)
-      LINALG::Matrix<nen_, 1> eporosity_;
+      CORE::LINALG::Matrix<nen_, 1> eporosity_;
 
       //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
-      LINALG::Matrix<nen_, 1> eprenp_;
+      CORE::LINALG::Matrix<nen_, 1> eprenp_;
 
       //! flag indacting a node based porosity
       bool isnodalporosity_;

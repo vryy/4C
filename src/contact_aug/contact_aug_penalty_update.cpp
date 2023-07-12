@@ -318,7 +318,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::PenaltyUpdate::GetProblemRhs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> CONTACT::AUG::PenaltyUpdate::GetStructuralStiffnessMatrix(
+Teuchos::RCP<const CORE::LINALG::SparseMatrix>
+CONTACT::AUG::PenaltyUpdate::GetStructuralStiffnessMatrix(
     const CONTACT::ParamsInterface& cparams) const
 {
   const STR::MODELEVALUATOR::Generic& model = cparams.GetModelEvaluator();
@@ -326,7 +327,7 @@ Teuchos::RCP<const LINALG::SparseMatrix> CONTACT::AUG::PenaltyUpdate::GetStructu
       dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
-  Teuchos::RCP<const LINALG::SparseMatrix> full_stiff_ptr =
+  Teuchos::RCP<const CORE::LINALG::SparseMatrix> full_stiff_ptr =
       cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ);
   return full_stiff_ptr;
 }
@@ -480,7 +481,7 @@ void CONTACT::AUG::PenaltyUpdate_SufficientAngle::SetState(
   Teuchos::RCP<Epetra_Vector> str_gradient = cmodel.AssembleForceOfModels(&without_contact, true);
 
   Epetra_Vector dincr_str(str_gradient->Map());
-  LINALG::ExtractMyVector(dir, dincr_str);
+  CORE::LINALG::ExtractMyVector(dir, dincr_str);
 
   double dstr_grad = 0.0;
   CATCH_EPETRA_ERROR(str_gradient->Dot(dincr_str, &dstr_grad));
@@ -488,7 +489,7 @@ void CONTACT::AUG::PenaltyUpdate_SufficientAngle::SetState(
   // directional derivative of the active constraint gradient
   Teuchos::RCP<const Epetra_Vector> dgapn_ptr = Get_inconsistent_DGapN(*dincr_slma);
   Epetra_Vector dgapn_active(*Data().GActiveNDofRowMapPtr());
-  LINALG::ExtractMyVector(*dgapn_ptr, dgapn_active);
+  CORE::LINALG::ExtractMyVector(*dgapn_ptr, dgapn_active);
 
   double dgapn_zn = 0.0;
   CATCH_EPETRA_ERROR(dgapn_active.Dot(*zn_active, &dgapn_zn));

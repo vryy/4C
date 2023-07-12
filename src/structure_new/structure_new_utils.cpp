@@ -91,9 +91,9 @@ enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::NLN::ConvertModelType2SolType(std::vector<enum NOX::NLN::SolutionType>& soltypes,
-    std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& slinsolvers,
+    std::map<enum NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& slinsolvers,
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
-    const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>& mlinsolvers)
+    const std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>& mlinsolvers)
 {
   // initialize the vector and/or force the length to zero
   if (soltypes.size() > 0)

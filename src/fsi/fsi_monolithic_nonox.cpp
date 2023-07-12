@@ -152,18 +152,18 @@ void FSI::MonolithicNoNOX::Newton()
   // initialise equilibrium loop
   iter_ = 1;
 
-  x_sum_ = LINALG::CreateVector(*DofRowMap(), true);
+  x_sum_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   x_sum_->PutScalar(0.0);
 
   // incremental solution vector with length of all FSI dofs
-  iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   iterinc_->PutScalar(0.0);
 
-  zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+  zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
   // residual vector with length of all FSI dofs
-  rhs_ = LINALG::CreateVector(*DofRowMap(), true);
+  rhs_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   rhs_->PutScalar(0.0);
 
   firstcall_ = true;
@@ -296,7 +296,7 @@ bool FSI::MonolithicNoNOX::Converged()
 void FSI::MonolithicNoNOX::LinearSolve()
 {
   // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
   // apply Dirichlet BCs to system of equations
   if (firstcall_)
@@ -304,18 +304,20 @@ void FSI::MonolithicNoNOX::LinearSolve()
   else
     iterinc_->PutScalar(0.0);
 
-  LINALG::ApplyDirichlettoSystem(sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+  CORE::LINALG::ApplyDirichlettoSystem(
+      sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
 #ifndef moresolvers
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
-  solver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
-      Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ =
+      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
+          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
   // get UMFPACK...
   Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
-  solver_ = Teuchos::rcp(
-      new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+      solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 #endif
 
 
@@ -387,7 +389,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
 }
 
@@ -637,6 +639,7 @@ void FSI::MonolithicNoNOX::PrepareTimeStep()
   // recreate the combined dof-map and create a new block system matrix
   // as we have to deal with a new map extrator
   CreateCombinedDofRowMap();
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      Extractor(), Extractor(), 81, false, true));
+  systemmatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          Extractor(), Extractor(), 81, false, true));
 }

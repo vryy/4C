@@ -230,7 +230,7 @@ namespace PARTICLEENGINE
      *
      * \return bounding box dimensions
      */
-    virtual LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const = 0;
+    virtual CORE::LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const = 0;
 
     //! @}
 

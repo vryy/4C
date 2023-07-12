@@ -294,10 +294,10 @@ namespace DRT
 
       //! get density
       void GetDensity(
-          Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
-          const LINALG::Matrix<bdrynen_, 1>& escaaf,   ///< scalar at time n+alpha_f / n+1
+          Teuchos::RCP<const MAT::Material> material,       ///< reference pointer to material
+          const CORE::LINALG::Matrix<bdrynen_, 1>& escaaf,  ///< scalar at time n+alpha_f / n+1
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
-          const LINALG::Matrix<bdrynen_, 1>& epreaf);  ///< pressure at time n+alpha_f / n+1
+          const CORE::LINALG::Matrix<bdrynen_, 1>& epreaf);  ///< pressure at time n+alpha_f / n+1
 
 
       //! pointer to parameter list for time integration
@@ -306,21 +306,21 @@ namespace DRT
       DRT::ELEMENTS::FluidEleParameter* fldpara_;
 
       //! node coordinates for boundary element
-      LINALG::Matrix<nsd_, bdrynen_> xyze_;
+      CORE::LINALG::Matrix<nsd_, bdrynen_> xyze_;
       //! node coordinates for boundary element at timestep n
-      LINALG::Matrix<nsd_, bdrynen_> xyze_n_;
+      CORE::LINALG::Matrix<nsd_, bdrynen_> xyze_n_;
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<bdrynsd_, 1> xsi_;
+      CORE::LINALG::Matrix<bdrynsd_, 1> xsi_;
       //! array for shape functions for boundary element
-      LINALG::Matrix<bdrynen_, 1> funct_;
+      CORE::LINALG::Matrix<bdrynen_, 1> funct_;
       //! array for shape function derivatives for boundary element
-      LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
+      CORE::LINALG::Matrix<bdrynsd_, bdrynen_> deriv_;
       //! normal vector pointing out of the domain
-      LINALG::Matrix<nsd_, 1> unitnormal_;
+      CORE::LINALG::Matrix<nsd_, 1> unitnormal_;
       //! normal vector pointing out of the domain at timestep n
-      LINALG::Matrix<nsd_, 1> unitnormal_n_;
+      CORE::LINALG::Matrix<nsd_, 1> unitnormal_n_;
       //! velocity vector at integration point
-      LINALG::Matrix<nsd_, 1> velint_;
+      CORE::LINALG::Matrix<nsd_, 1> velint_;
       //! infinitesimal area element drs
       double drs_;
       //! integration factor

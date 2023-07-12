@@ -119,9 +119,9 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     p.set("total time", -1.0);
 
     // create heatfluxes, three scalarvalued vectors
-    Teuchos::RCP<Epetra_Vector> heatfluxx = LINALG::CreateVector(*(dis->DofRowMap()), true);
-    Teuchos::RCP<Epetra_Vector> heatfluxy = LINALG::CreateVector(*(dis->DofRowMap()), true);
-    Teuchos::RCP<Epetra_Vector> heatfluxz = LINALG::CreateVector(*(dis->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxx = CORE::LINALG::CreateVector(*(dis->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxy = CORE::LINALG::CreateVector(*(dis->DofRowMap()), true);
+    Teuchos::RCP<Epetra_Vector> heatfluxz = CORE::LINALG::CreateVector(*(dis->DofRowMap()), true);
     dis->Evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
     // change the dis from a DofRowMap to a NodeRowMap, because Paraview can only visualize

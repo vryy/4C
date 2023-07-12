@@ -30,11 +30,11 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MatrixRowTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace BINSTRATEGY
 {
@@ -107,7 +107,8 @@ namespace STR
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
 
       //! derived
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      virtual bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
       //! derived
       virtual void WriteRestart(
@@ -263,7 +264,7 @@ namespace STR
       Teuchos::RCP<CORE::ADAPTER::Coupling> coupsia_;
 
       //! transform object for structure stiffness matrix
-      Teuchos::RCP<LINALG::MatrixRowTransform> siatransform_;
+      Teuchos::RCP<CORE::LINALG::MatrixRowTransform> siatransform_;
       //! @}
 
 
@@ -274,7 +275,7 @@ namespace STR
       Teuchos::RCP<::DRT::Discretization> ia_discret_;
 
       /// map extractor for split of different element types
-      Teuchos::RCP<LINALG::MultiMapExtractor> eletypeextractor_;
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> eletypeextractor_;
 
       //! pointer to the global state data container
       Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> ia_state_ptr_;
@@ -286,7 +287,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> force_beaminteraction_;
 
       //! structural stiffness matrix based on Discret()
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_beaminteraction_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_beaminteraction_;
 
       //! beam crosslinker handler
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;

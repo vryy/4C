@@ -33,16 +33,16 @@ namespace MIXTURE
    public:
     [[nodiscard]] bool HasInelasticGrowthDeformationGradient() const override { return true; };
 
-    void EvaluateInverseGrowthDeformationGradient(LINALG::Matrix<3, 3>& iFgM,
+    void EvaluateInverseGrowthDeformationGradient(CORE::LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
     void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
-        const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
-        const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
-        const int eleGID) const override;
+        const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+        const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const override;
   };
 }  // namespace MIXTURE
 

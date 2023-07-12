@@ -210,7 +210,7 @@ CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::VcycleSingle(
 /*------------------------------------------------------------------------------*/
 
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Avec)
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Avec)
 {
   if ((int)Avec.size() != NumLevels_) dserror("Error in Setting Avec_: Size dismatch.");
   for (int i = 0; i < NumLevels_; i++)
@@ -227,7 +227,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetOperators(
 /*------------------------------------------------------------------------------*/
 
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Pvec)
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Pvec)
 {
   if ((int)Pvec.size() != NumLevels_ - 1) dserror("Error in Setting Pvec_: Size dismatch.");
   for (int i = 0; i < NumLevels_ - 1; i++)
@@ -244,7 +244,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetProjectors(
 /*------------------------------------------------------------------------------*/
 
 void CORE::LINEAR_SOLVER::AMGNXN::VcycleSingle::SetRestrictors(
-    std::vector<Teuchos::RCP<LINALG::SparseMatrix>> Rvec)
+    std::vector<Teuchos::RCP<CORE::LINALG::SparseMatrix>> Rvec)
 {
   if ((int)Rvec.size() != NumLevels_ - 1) dserror("Error in Setting Rvec_: Size dismatch.");
   for (int i = 0; i < NumLevels_ - 1; i++)

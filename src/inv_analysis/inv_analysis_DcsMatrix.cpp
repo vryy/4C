@@ -30,7 +30,7 @@ INVANA::DcsMatrix::DcsMatrix(Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector>> ss
   rowmap_ = Teuchos::rcp(new Epetra_Map(
       avec->Map().NumGlobalElements(), avec->Map().NumMyElements(), ind, 0, avec->Comm()));
 
-  colmap_ = LINALG::AllreduceEMap(*rowmap_);
+  colmap_ = CORE::LINALG::AllreduceEMap(*rowmap_);
 
   numentries_ = rowmap_->NumGlobalElements();
   column_ = Teuchos::rcp(new Epetra_Vector(*rowmap_, false));

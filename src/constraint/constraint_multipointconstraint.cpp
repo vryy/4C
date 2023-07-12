@@ -46,8 +46,8 @@ void UTILS::MPConstraint::SetConstrState(const std::string& state,  ///< name of
     for (discrit = constraintdis_.begin(); discrit != constraintdis_.end(); ++discrit)
     {
       Teuchos::RCP<Epetra_Vector> tmp =
-          LINALG::CreateVector(*(discrit->second)->DofColMap(), false);
-      LINALG::Export(*V, *tmp);
+          CORE::LINALG::CreateVector(*(discrit->second)->DofColMap(), false);
+      CORE::LINALG::Export(*V, *tmp);
       (discrit->second)->ClearState();
       (discrit->second)->SetState(state, tmp);
     }

@@ -79,7 +79,7 @@ namespace MIXTURE
      * @param currentReferenceGrowthScalar (in) : current reference growth scalar
      * @param gp (in) : Gauss point
      */
-    virtual void EvaluateInverseGrowthDeformationGradient(LINALG::Matrix<3, 3>& iFgM,
+    virtual void EvaluateInverseGrowthDeformationGradient(CORE::LINALG::Matrix<3, 3>& iFgM,
         const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const = 0;
 
@@ -105,10 +105,10 @@ namespace MIXTURE
      */
     virtual void EvaluateGrowthStressCmat(const MIXTURE::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
-        const LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC, const LINALG::Matrix<3, 3>& F,
-        const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-        LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp,
-        const int eleGID) const = 0;
+        const CORE::LINALG::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
+        const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID) const = 0;
   };
 }  // namespace MIXTURE
 

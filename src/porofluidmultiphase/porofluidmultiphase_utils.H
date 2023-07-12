@@ -91,9 +91,10 @@ namespace POROFLUIDMULTIPHASE
      * @param[in] ele        compute AABB for this element
      * @param[in] positions  nodal positions of discretization
      * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
-     * @return               AABB of element as 3x2 LINALG::Matrix
+     * @return               AABB of element as 3x2 CORE::LINALG::Matrix
      */
-    LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions,
+    CORE::LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>& positions,
         const bool evaluate_on_lateral_surface);
 
     /// maximum distance between two nodes of an element
@@ -121,9 +122,9 @@ namespace POROFLUIDMULTIPHASE
      * \brief get nodal positions of discretization as std::map
      * @param[in] dis      discretization for which nodal positions will be returned
      * @param[in] nodemap  node-map of the discretization (can be either in row or column format)
-     * @return             nodal position as a std::map<int, LINALG::Matrix<3, 1>>
+     * @return             nodal position as a std::map<int, CORE::LINALG::Matrix<3, 1>>
      */
-    std::map<int, LINALG::Matrix<3, 1>> GetNodalPositions(
+    std::map<int, CORE::LINALG::Matrix<3, 1>> GetNodalPositions(
         Teuchos::RCP<DRT::Discretization> dis, const Epetra_Map* nodemap);
 
     //! Determine norm of vector

@@ -228,13 +228,13 @@ namespace MAT
     virtual void Update();
 
     //! evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID);
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp, int eleGID);
 
     /// evaluate strain energy function
     virtual void StrainEnergy(
-        const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID);
+        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID);
 
 
     //@}
@@ -258,19 +258,20 @@ namespace MAT
     virtual int Kron(int i, int j);
 
     //! Returns the pullback of the 4th order tensor in voigt notation
-    virtual void Pullback4thTensorVoigt(const double jacobian, const LINALG::Matrix<3, 3>& defgr,
-        const LINALG::Matrix<6, 6>& cmat_eul, LINALG::Matrix<6, 6>* cmat_lag);
+    virtual void Pullback4thTensorVoigt(const double jacobian,
+        const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cmat_eul,
+        CORE::LINALG::Matrix<6, 6>* cmat_lag);
 
     //! Returns the 4th order identity tensor in tensor notation
     virtual double Idev(int i, int j, int k, int l);
 
     //! Returns the residual of the local Newton step
-    virtual LINALG::Matrix<2, 1> ComputeLocalNewtonResidual(
-        LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
+    virtual CORE::LINALG::Matrix<2, 1> ComputeLocalNewtonResidual(
+        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
 
     //! Returns the system matrix of the local Newton step
-    virtual LINALG::Matrix<2, 2> ComputeLocalNewtonJacobian(
-        LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
+    virtual CORE::LINALG::Matrix<2, 2> ComputeLocalNewtonJacobian(
+        CORE::LINALG::Matrix<2, 1> lambda_s, double xi_s, loadingData loading, material mat_data);
 
     //! Returns the loading in the local Newton step, without historical data.
     virtual loadingData ComputeLocalNewtonLoading(

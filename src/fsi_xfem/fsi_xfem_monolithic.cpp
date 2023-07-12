@@ -425,8 +425,8 @@ void FSI::MonolithicXFEM::CreateSystemMatrix()
     systemmatrix_ = Teuchos::null;
   }
 
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      Extractor(), Extractor(), 0,
+  systemmatrix_ = Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<
+      CORE::LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 0,
       false,  // explicit dirichlet, do not change the graph and do not create a new matrix when
               // applying Dirichlet values
       false   // savegraph (used when submatrices will be reset), we create new fluid sysmats anyway
@@ -449,7 +449,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   /*----------------------------------------------------------------------*/
   // extract Jacobian matrices and put them into composite system
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -488,7 +488,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   if (!StructurePoro()->isPoro())
   {
     // extract Jacobian matrices and put them into composite system
-    Teuchos::RCP<LINALG::SparseMatrix> s = StructurePoro()->SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> s = StructurePoro()->SystemMatrix();
 
     // Uncomplete structure matrix to be able to deal with slightly defective interface meshes.
     //
@@ -507,17 +507,21 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
     s->Scale(scaling_S);
 
     // assign the structure sysmat diagonal block
-    systemmatrix_->Assign(structp_block_, structp_block_, LINALG::View, *s);
+    systemmatrix_->Assign(structp_block_, structp_block_, CORE::LINALG::View, *s);
   }
   else  // we use a block structure for poro
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ps = StructurePoro()->BlockSystemMatrix();
     ps->UnComplete();
     ps->Scale(scaling_S);
-    systemmatrix_->Assign(structp_block_, structp_block_, LINALG::View, ps->Matrix(0, 0));  // psps
-    systemmatrix_->Assign(fluidp_block_, structp_block_, LINALG::View, ps->Matrix(1, 0));   // pfps
-    systemmatrix_->Assign(structp_block_, fluidp_block_, LINALG::View, ps->Matrix(0, 1));   // pspf
-    systemmatrix_->Assign(fluidp_block_, fluidp_block_, LINALG::View, ps->Matrix(1, 1));    // pfpf
+    systemmatrix_->Assign(
+        structp_block_, structp_block_, CORE::LINALG::View, ps->Matrix(0, 0));  // psps
+    systemmatrix_->Assign(
+        fluidp_block_, structp_block_, CORE::LINALG::View, ps->Matrix(1, 0));  // pfps
+    systemmatrix_->Assign(
+        structp_block_, fluidp_block_, CORE::LINALG::View, ps->Matrix(0, 1));  // pspf
+    systemmatrix_->Assign(
+        fluidp_block_, fluidp_block_, CORE::LINALG::View, ps->Matrix(1, 1));  // pfpf
   }
 
   /*----------------------------------------------------------------------*/
@@ -528,7 +532,7 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   f->Scale(scaling_F);  //<  1/(theta_f*dt) = 1/weight(t^f_np)
 
   // assign the fluid diagonal block
-  systemmatrix_->Assign(fluid_block_, fluid_block_, LINALG::View, *f);
+  systemmatrix_->Assign(fluid_block_, fluid_block_, CORE::LINALG::View, *f);
 
   // Add Coupling Sysmat
   for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager>>::iterator coupit = coup_man_.begin();
@@ -619,7 +623,7 @@ void FSI::MonolithicXFEM::ApplyDBC()
   // evaluate (PrepareSystemForNewtonSolve()) are applied twice
 
   // apply combined Dirichlet to whole XFSI system
-  LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_,
+  CORE::LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_,
       Teuchos::null,  // possible trafo?!
       zeros_, *CombinedDBCMap());
 
@@ -700,7 +704,7 @@ void FSI::MonolithicXFEM::CreateCombinedDofRowMap()
 void FSI::MonolithicXFEM::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps,
     const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
+  Teuchos::RCP<Epetra_Map> fullmap = CORE::LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap, maps);
   blockrowdofmap_mergedporo_.Setup(*fullmap, maps_mergedporo);
 }
@@ -1038,7 +1042,7 @@ bool FSI::MonolithicXFEM::Newton()
     // actually hold large chunks of memory this ensures that the single field matrices can be
     // really deleted (memory can be freed) before we can create a new state class in fluid's
     // Evaluate NOTE: the blocksparsematrix' sparse matrices hold strong RCP's to the single-fields
-    // EpetraMatrix objects NOTE: fluid's Evaluate will create a new LINALG::SparseMatrix and
+    // EpetraMatrix objects NOTE: fluid's Evaluate will create a new CORE::LINALG::SparseMatrix and
     // coupling matrices anyway
     systemmatrix_ = Teuchos::null;
     // TODO: can we delete the solver here? this is done in solver_->Reset after solving the last
@@ -1147,7 +1151,7 @@ bool FSI::MonolithicXFEM::Newton()
       //     this vector remains unchanged/non-permuted until the next restart has to be performed.
       //     In order to update this vector and to use it for further evaluate-calls permutations
       //     backward/forward of the fluid block have to be applied
-      x_sum_ = LINALG::CreateVector(*DofRowMap(), true);
+      x_sum_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
 
       //-------------------
@@ -1165,18 +1169,18 @@ bool FSI::MonolithicXFEM::Newton()
       // dofsets,
       //       directly after the LinearSolve the vector is permuted backwards to the initial
       //       ordering of creation
-      iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+      iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
       // Global residual vector, unchanged/permuting dofsets (the same as for the iterinc_ vector)
       // note: for the assembly and during the solve the residual vector can have permuted dofsets,
       //       directly after the LinearSolve the vector is permuted backwards to the initial
       //       ordering of creation
-      rhs_ = LINALG::CreateVector(*DofRowMap(), true);
+      rhs_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
       // Global zero vector for DBCs, unchanged/permuting dofsets (the same as for the iterinc_
       // vector) note: this vector is just used during the solve and is NOT permuted backwards as
       // iterinc or rhs
-      zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+      zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     }
     else
       dserror("the Newton iteration index is assumed to be >= 0");
@@ -1323,7 +1327,7 @@ void FSI::MonolithicXFEM::BuildCovergenceNorms()
   std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
   fluidvelpres.push_back(FluidField()->VelocityRowMap());
   fluidvelpres.push_back(FluidField()->PressureRowMap());
-  LINALG::MultiMapExtractor fluidvelpresextract(*(FluidField()->DofRowMap()), fluidvelpres);
+  CORE::LINALG::MultiMapExtractor fluidvelpresextract(*(FluidField()->DofRowMap()), fluidvelpres);
 
 
   //-------------------------------
@@ -2021,8 +2025,8 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     else if (solvertype == INPAR::SOLVER::SolverType::superlu)
       solverparams->set("solver", "superlu");
 
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
     return;
   }
@@ -2101,7 +2105,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     case INPAR::SOLVER::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
-      solver_ = Teuchos::rcp(new LINALG::Solver(xfsisolverparams,
+      solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -2147,7 +2151,8 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
 
       if (azprectype == INPAR::SOLVER::PreconditionerType::cheap_simple)
       {
-        // Tell to the LINALG::SOLVER::SimplePreconditioner that we use the general implementation
+        // Tell to the CORE::LINALG::SOLVER::SimplePreconditioner that we use the general
+        // implementation
         solver_->Params().set<bool>("GENERAL", true);
       }
 
@@ -2155,7 +2160,7 @@ void FSI::MonolithicXFEM::CreateLinearSolver()
     }
     case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
     {
-      solver_ = Teuchos::rcp(new LINALG::Solver(xfsisolverparams,
+      solver_ = Teuchos::rcp(new CORE::LINALG::Solver(xfsisolverparams,
           // ggfs. explizit Comm von STR wie lungscatra
           Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -2266,7 +2271,7 @@ void FSI::MonolithicXFEM::LinearSolve()
 
     //------------------------------------------
     // merge blockmatrix to SparseMatrix and solve
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     //------------------------------------------
     // standard solver call
@@ -2276,8 +2281,8 @@ void FSI::MonolithicXFEM::LinearSolve()
   ApplyNewtonDamping();
 
   // TODO: can we do this?!
-  // reset the solver (frees the pointer to the LINALG:: matrix' EpetraOperator and vectors also!)
-  // std::cout << "reset the solver" << std::endl;
+  // reset the solver (frees the pointer to the CORE::LINALG:: matrix' EpetraOperator and vectors
+  // also!) std::cout << "reset the solver" << std::endl;
   solver_->Reset();
 
   //---------------------------------------------
@@ -2306,7 +2311,7 @@ void FSI::MonolithicXFEM::LinearSolve()
 /*----------------------------------------------------------------------*/
 // apply infnorm scaling to linear block system            schott 10/14 |
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::MonolithicXFEM::ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   if (scaling_infnorm_)
   {
@@ -2339,7 +2344,7 @@ void FSI::MonolithicXFEM::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra
 // undo infnorm scaling from scaled solution               schott 10/14 |
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::UnscaleSolution(
-    LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+    CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   if (scaling_infnorm_)
   {
@@ -2376,7 +2381,7 @@ Teuchos::RCP<Epetra_Map> FSI::MonolithicXFEM::CombinedDBCMap()
   Teuchos::RCP<const Epetra_Map> scondmap = StructurePoro()->CombinedDBCMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
 
-  Teuchos::RCP<Epetra_Map> condmap = LINALG::MergeMap(scondmap, fcondmap, false);
+  Teuchos::RCP<Epetra_Map> condmap = CORE::LINALG::MergeMap(scondmap, fcondmap, false);
 
   return condmap;
 }
@@ -2637,7 +2642,7 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
       fluidvelpres.push_back(StructurePoro()->FluidField()->VelocityRowMap());
       fluidvelpres.push_back(StructurePoro()->FluidField()->PressureRowMap());
-      LINALG::MultiMapExtractor fluidvelpresextract(
+      CORE::LINALG::MultiMapExtractor fluidvelpresextract(
           *(StructurePoro()->FluidField()->DofRowMap()), fluidvelpres);
       Extractor().ExtractVector(iterinc_, structp_block_)->NormInf(incnorm.data());
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluidp_block_), 0)
@@ -2651,7 +2656,8 @@ void FSI::MonolithicXFEM::ApplyNewtonDamping()
       std::vector<Teuchos::RCP<const Epetra_Map>> fluidvelpres;
       fluidvelpres.push_back(FluidField()->VelocityRowMap());
       fluidvelpres.push_back(FluidField()->PressureRowMap());
-      LINALG::MultiMapExtractor fluidvelpresextract(*(FluidField()->DofRowMap()), fluidvelpres);
+      CORE::LINALG::MultiMapExtractor fluidvelpresextract(
+          *(FluidField()->DofRowMap()), fluidvelpres);
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 0)
           ->NormInf(&incnorm[1]);  // fluid velocity Dofs
       fluidvelpresextract.ExtractVector(Extractor().ExtractVector(iterinc_, fluid_block_), 1)

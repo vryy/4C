@@ -1139,12 +1139,12 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stre
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
-  LINALG::Matrix<6, 1> gl(false);
+  CORE::LINALG::Matrix<6, 1> gl(false);
   GreenLagrangePlane3d(strain, gl);
 
   // call 3d stress response
-  LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
-  LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
+  CORE::LINALG::Matrix<6, 1> pk2(true);   // must be zerofied!!!
+  CORE::LINALG::Matrix<6, 6> cmat(true);  // must be zerofied!!!
   MaterialResponse3d(&pk2, &cmat, &gl, params, gp);
 
   // we have plain strain
@@ -1182,8 +1182,8 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stre
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
-    LINALG::Matrix<6, 6>* cmat, const LINALG::Matrix<6, 1>* glstrain,
+void DRT::ELEMENTS::Ale2::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,
+    CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
@@ -1197,7 +1197,7 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3d(LINALG::Matrix<6, 1>* stress,
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::GreenLagrangePlane3d(
-    const Epetra_SerialDenseVector& glplane, LINALG::Matrix<6, 1>& gl3d)
+    const Epetra_SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}
   gl3d(1) = glplane(1);               // E_{22}

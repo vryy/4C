@@ -58,8 +58,8 @@ namespace MAT
     const std::string NewResultFilePath(const std::string& newprefix);
 
     /// Perform microscale simulation
-    void PerformMicroSimulation(
-        LINALG::Matrix<3, 3>* defgrd, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat);
+    void PerformMicroSimulation(CORE::LINALG::Matrix<3, 3>* defgrd,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat);
 
     void Update();
 

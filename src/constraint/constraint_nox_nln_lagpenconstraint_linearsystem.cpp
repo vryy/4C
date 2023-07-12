@@ -30,10 +30,10 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
     : NOX::NLN::LinearSystem(printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M,
           cloneVector, scalingObject),
@@ -50,10 +50,10 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
-    const Teuchos::RCP<LINALG::SparseOperator>& J,
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& J,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
-    const Teuchos::RCP<LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector)
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& M, const NOX::Epetra::Vector& cloneVector)
     : NOX::NLN::LinearSystem(
           printParams, linearSolverParams, solvers, iReq, iJac, J, iPrec, M, cloneVector),
       iConstr_(iConstr),
@@ -65,7 +65,7 @@ NOX::NLN::LAGPENCONSTRAINT::LinearSystem::LinearSystem(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType)
+    Teuchos::RCP<CORE::LINALG::Solver>& solverPtr, const NOX::NLN::SolutionType& solverType)
 {
   bool isAdaptiveControl = p.get<bool>("Adaptive Control");
   double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
@@ -94,13 +94,13 @@ void NOX::NLN::LAGPENCONSTRAINT::LinearSystem::SetSolverOptions(Teuchos::Paramet
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 NOX::NLN::SolutionType NOX::NLN::LAGPENCONSTRAINT::LinearSystem::GetActiveLinSolver(
-    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<LINALG::Solver>>& solvers,
-    Teuchos::RCP<LINALG::Solver>& currSolver)
+    const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
+    Teuchos::RCP<CORE::LINALG::Solver>& currSolver)
 {
   // check input
   if (solvers.size() > 2)
     throwError("GetCurrentLinSolver",
-        "There have to be exactly two LINALG::Solvers (structure + contact)!");
+        "There have to be exactly two CORE::LINALG::Solvers (structure + contact)!");
   // ---------------------------------------------------------------------
   // Solving a saddle point system
   // Lagrange multiplier constraints -> SaddlePoint

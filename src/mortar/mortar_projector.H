@@ -270,7 +270,7 @@ namespace MORTAR
     \brief Evaluate GradF for AuxPlane Gauss point projection (3D)
 
     */
-    bool EvaluateGradFGaussPointAuxn3D(LINALG::Matrix<3, 3>& fgrad, const double* globgp,
+    bool EvaluateGradFGaussPointAuxn3D(CORE::LINALG::Matrix<3, 3>& fgrad, const double* globgp,
         const double* auxn, MORTAR::MortarElement& ele, const double* eta, const double& alpha);
   };
 
@@ -468,7 +468,7 @@ namespace MORTAR
     \brief Evaluate GradF for Gauss point projection (3D)
 
     */
-    bool EvaluateGradFGaussPoint3D(LINALG::Matrix<3, 3>& fgrad, const double* gpx,
+    bool EvaluateGradFGaussPoint3D(CORE::LINALG::Matrix<3, 3>& fgrad, const double* gpx,
         const double* gpn, MORTAR::MortarElement& ele, const double* eta, const double& alpha);
   };
 }  // namespace MORTAR

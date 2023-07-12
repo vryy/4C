@@ -124,9 +124,10 @@ void UTILS::MPConstraint2::Initialize(
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   switch (Type())
   {
@@ -262,9 +263,10 @@ void UTILS::MPConstraint2::ReorderConstraintNodes(
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> disc,
-    Teuchos::ParameterList& params, Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(disc->Filled())) dserror("FillComplete() was not called");
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
@@ -360,7 +362,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       if (assemblevec1)
       {
         elevector1.Scale(lagraval);
-        LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
+        CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)
       {
@@ -368,7 +370,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
         std::vector<int> constrowner;
         constrlm.push_back(gindex);
         constrowner.push_back(actele->Owner());
-        LINALG::Assemble(*systemvector3, elevector3, constrlm, constrowner);
+        CORE::LINALG::Assemble(*systemvector3, elevector3, constrlm, constrowner);
       }
 
       // Load curve business

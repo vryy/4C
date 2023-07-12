@@ -130,9 +130,9 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
   params_->SetInitToTrue();
 }
 
-void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi,
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   if (params_->IsInit())
   {
@@ -160,8 +160,8 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::M
     dserror("Material parameters have not been initialized yet!");
 }
 
-void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
-    LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
+void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(CORE::LINALG::Matrix<3, 1>& dPmodI,
+    CORE::LINALG::Matrix<6, 1>& ddPmodII, const CORE::LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle

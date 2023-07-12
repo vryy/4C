@@ -197,11 +197,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  static LINALG::Matrix<nsd_, nen_> ebofoaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
   ebofoaf.Clear();
-  static LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
   eprescpgaf.Clear();
-  static LINALG::Matrix<nen_, 1> escabofoaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
   escabofoaf.Clear();
   Base::BodyForce(ele, ebofoaf, eprescpgaf, escabofoaf);
 
@@ -217,31 +217,31 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  static LINALG::Matrix<nsd_, nen_> evelaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
   evelaf.Clear();
-  static LINALG::Matrix<nen_, 1> epreaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   epreaf.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  static LINALG::Matrix<nsd_, nen_> evelnp(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
   evelnp.Clear();
-  static LINALG::Matrix<nen_, 1> eprenp(true);
+  static CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   eprenp.Clear();
   if (Base::fldparatimint_->IsGenalphaNP())
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
-  static LINALG::Matrix<nsd_, nen_> emhist(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
   emhist.Clear();
-  static LINALG::Matrix<nen_, 1> echist(true);
+  static CORE::LINALG::Matrix<nen_, 1> echist(true);
   echist.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &emhist, &echist, "hist");
 
-  static LINALG::Matrix<nsd_, nen_> eaccam(true);
-  static LINALG::Matrix<nen_, 1> epressam_timederiv(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressam_timederiv(true);
   eaccam.Clear();
   epressam_timederiv.Clear();
 
@@ -249,25 +249,25 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
-  static LINALG::Matrix<nen_, 1> epressn_timederiv(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.Clear();
   if (Base::fldparatimint_->IsGenalpha())
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
-  static LINALG::Matrix<nen_, 1> epren(true);
+  static CORE::LINALG::Matrix<nen_, 1> epren(true);
   epren.Clear();
-  static LINALG::Matrix<nsd_, nen_> eveln(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
   eveln.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &eveln, &epren, "veln");
 
-  static LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
   epressnp_timederiv.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &epressnp_timederiv, "accnp");
 
-  static LINALG::Matrix<nen_, 1> escaaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> escaaf(true);
   escaaf.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &escaaf, "scaaf");
@@ -275,16 +275,16 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  static LINALG::Matrix<nsd_, nen_> edispnp(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   edispnp.Clear();
-  static LINALG::Matrix<nsd_, nen_> egridv(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
   egridv.Clear();
-  static LINALG::Matrix<nsd_, nen_> egridvn(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> egridvn(true);
   egridvn.Clear();
-  static LINALG::Matrix<nsd_, nen_> edispn(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> edispn(true);
   edispn.Clear();
 
-  LINALG::Matrix<nen_, 1> eporositynp(true);
+  CORE::LINALG::Matrix<nen_, 1> eporositynp(true);
 
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
@@ -296,13 +296,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele
       discretization, lm, *Base::rotsymmpbc_, &edispn, nullptr, "dispn");
 
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, Base::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, Base::xyze_);
 
   // construct views
-  LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> elemat1(elemat1_epetra, true);
-  // LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_> elemat1(elemat1_epetra, true);
+  // CORE::LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>
   // elemat2(elemat2_epetra,true);
-  LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
   // elevec2 and elevec3 are currently not in use
 
   PreEvaluate(params, ele, discretization);
@@ -348,10 +349,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   Base::rotsymmpbc_->Setup(ele);
 
   // construct views
-  LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_> elemat1(elemat1_epetra, true);
-  //  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_> elemat1(elemat1_epetra, true);
+  //  CORE::LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>
   //  elemat2(elemat2_epetra,true);
-  LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
+  CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1> elevec1(elevec1_epetra, true);
   // elevec2 and elevec3 are currently not in use
 
   // ---------------------------------------------------------------------
@@ -361,9 +362,9 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   // (evaluation at time n+alpha_F for generalized-alpha scheme,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
-  static LINALG::Matrix<nsd_, nen_> ebofoaf(true);
-  static LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
-  static LINALG::Matrix<nen_, 1> escabofoaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> ebofoaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eprescpgaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> escabofoaf(true);
   ebofoaf.Clear();
   eprescpgaf.Clear();
   escabofoaf.Clear();
@@ -381,31 +382,31 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  static LINALG::Matrix<nsd_, nen_> evelaf(true);
-  static LINALG::Matrix<nen_, 1> epreaf(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   evelaf.Clear();
   epreaf.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  static LINALG::Matrix<nsd_, nen_> evelnp(true);
-  static LINALG::Matrix<nen_, 1> eprenp(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  static CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   evelnp.Clear();
   eprenp.Clear();
   if (Base::fldparatimint_->IsGenalphaNP())
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
-  static LINALG::Matrix<nsd_, nen_> eveln(true);
-  static LINALG::Matrix<nen_, 1> epren(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eveln(true);
+  static CORE::LINALG::Matrix<nen_, 1> epren(true);
   eveln.Clear();
   epren.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &eveln, &epren, "veln");
 
-  static LINALG::Matrix<nsd_, nen_> eaccam(true);
-  static LINALG::Matrix<nen_, 1> epressam_timederiv(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressam_timederiv(true);
   eaccam.Clear();
   epressam_timederiv.Clear();
 
@@ -413,24 +414,24 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, &eaccam, &epressam_timederiv, "accam");
 
-  static LINALG::Matrix<nen_, 1> epressn_timederiv(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressn_timederiv(true);
   epressn_timederiv.Clear();
   if (Base::fldparatimint_->IsGenalpha())
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, nullptr, &epressn_timederiv, "accn");
 
-  static LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
+  static CORE::LINALG::Matrix<nen_, 1> epressnp_timederiv(true);
   epressnp_timederiv.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &epressnp_timederiv, "accnp");
 
-  static LINALG::Matrix<nen_, 1> escaaf(true);
+  static CORE::LINALG::Matrix<nen_, 1> escaaf(true);
   epressnp_timederiv.Clear();
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
-  static LINALG::Matrix<nsd_, nen_> emhist(true);
-  static LINALG::Matrix<nen_, 1> echist(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
+  static CORE::LINALG::Matrix<nen_, 1> echist(true);
   emhist.Clear();
   echist.Clear();
   Base::ExtractValuesFromGlobalVector(
@@ -439,13 +440,13 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
-  static LINALG::Matrix<nsd_, nen_> edispnp(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   edispnp.Clear();
-  static LINALG::Matrix<nsd_, nen_> edispn(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> edispn(true);
   edispn.Clear();
-  static LINALG::Matrix<nsd_, nen_> egridv(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> egridv(true);
   egridv.Clear();
-  static LINALG::Matrix<nsd_, nen_> egridvn(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> egridvn(true);
   egridvn.Clear();
 
   Base::ExtractValuesFromGlobalVector(
@@ -458,7 +459,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
       discretization, lm, *Base::rotsymmpbc_, &egridvn, nullptr, "gridvn");
 
   // get node coordinates and number of elements per node
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, Base::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, Base::xyze_);
 
   PreEvaluate(params, ele, discretization);
 
@@ -470,20 +472,22 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nsd_, nen_>& evelnp,
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nsd_, nen_>& emhist,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nen_, 1>* eporositynp,
-    const LINALG::Matrix<nen_, 1>* eporositydot, const LINALG::Matrix<nen_, 1>* eporositydotn,
-    Teuchos::RCP<MAT::Material> mat, bool isale,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& eprenp, const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispn, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridvn, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydotn, Teuchos::RCP<MAT::Material> mat, bool isale,
     const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -505,19 +509,20 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(Teuchos::ParameterList& p
 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& elemat1,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nsd_, nen_>& evelnp,
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nsd_, nen_>& emhist,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
-    Teuchos::RCP<MAT::Material> mat, bool isale,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& elemat1,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& eprenp, const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispn, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridvn, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<MAT::Material> mat, bool isale,
     const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -543,30 +548,31 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(Teuchos::ParameterList&
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& eveln,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nen_, 1>& echist,
-    const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& edispnp,
-    const LINALG::Matrix<nsd_, nen_>& edispn, const LINALG::Matrix<nsd_, nen_>& egridv,
-    const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nen_, 1>* eporositynp, const LINALG::Matrix<nen_, 1>* eporositydot,
-    const LINALG::Matrix<nen_, 1>* eporositydotn,
-    LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+    const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv, const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
+    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydotn,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
     bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
   //------------------------------------------------------------------------
   // definition of matrices (static to avoid unnecessary reallocation of memory)
-  static LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
-  static LINALG::Matrix<nen_ * nsd_, nen_> estif_p_v(true);
-  static LINALG::Matrix<nen_, nen_ * nsd_> estif_q_u(true);
-  static LINALG::Matrix<nen_, nen_> ppmat(true);
+  static CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
+  static CORE::LINALG::Matrix<nen_ * nsd_, nen_> estif_p_v(true);
+  static CORE::LINALG::Matrix<nen_, nen_ * nsd_> estif_q_u(true);
+  static CORE::LINALG::Matrix<nen_, nen_> ppmat(true);
 
   estif_u.Clear();
   estif_p_v.Clear();
@@ -574,8 +580,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& pa
   ppmat.Clear();
 
   // definition of vectors (static to avoid unnecessary reallocation of memory)
-  LINALG::Matrix<nen_, 1> preforce(true);
-  LINALG::Matrix<nsd_, nen_> velforce(true);
+  CORE::LINALG::Matrix<nen_, 1> preforce(true);
+  CORE::LINALG::Matrix<nsd_, nen_> velforce(true);
   preforce.Clear();
   velforce.Clear();
 
@@ -698,30 +704,30 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(Teuchos::ParameterList& pa
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& eveln,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& edispnp,
-    const LINALG::Matrix<nsd_, nen_>& edispn, const LINALG::Matrix<nsd_, nen_>& egridv,
-    const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nen_, 1>& echist,
-    const LINALG::Matrix<nen_, 1>* eporositynp,
-    LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+    const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv, const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
+    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
+    const CORE::LINALG::Matrix<nen_, 1>& echist, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, Teuchos::RCP<const MAT::Material> material,
     bool isale, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
   //  preliminary definitions and evaluations
   //------------------------------------------------------------------------
   // definition of matrices
-  static LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> ecoupl_u(
+  static CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> ecoupl_u(
       true);  // coupling matrix for momentum equation
-  static LINALG::Matrix<nen_, nen_ * nsd_> ecoupl_p(
+  static CORE::LINALG::Matrix<nen_, nen_ * nsd_> ecoupl_p(
       true);  // coupling matrix for continuity equation
-  // LINALG::Matrix<(nsd_ + 1) * nen_, nen_ * nsd_> emesh(true); //
+  // CORE::LINALG::Matrix<(nsd_ + 1) * nen_, nen_ * nsd_> emesh(true); //
   // linearisation of mesh motion
 
   ecoupl_u.Clear();
@@ -804,10 +810,11 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
-    const LINALG::Matrix<nen_, 1>* eporositydot, const LINALG::Matrix<nen_, 1>* eporositydotn,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
-    LINALG::Matrix<nen_, 1>& preforce)
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydotn, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce)
 {
   // first evaluate terms without porosity time derivative
   EvaluatePressureEquationNonTransient(params, timefacfacpre, rhsfac, dphi_dp, dphi_dJ, dphi_dJdp,
@@ -861,8 +868,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransient(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
-    const LINALG::Matrix<nsd_, nen_>& dgradphi_dp, LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,
-    LINALG::Matrix<nen_, nen_>& ppmat, LINALG::Matrix<nen_, 1>& preforce)
+    const CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce)
 {
   double vel_grad_porosity = 0.0;
   for (int idim = 0; idim < nsd_; ++idim)
@@ -907,8 +915,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
     }
 
     // auxiliary variables
-    static LINALG::Matrix<1, nen_> dgradphi_dp_gridvel;
-    static LINALG::Matrix<1, nen_> dgradphi_dp_velint;
+    static CORE::LINALG::Matrix<1, nen_> dgradphi_dp_gridvel;
+    static CORE::LINALG::Matrix<1, nen_> dgradphi_dp_velint;
     dgradphi_dp_gridvel.MultiplyTN(gridvel_int_, dgradphi_dp);
     dgradphi_dp_velint.MultiplyTN(Base::velint_, dgradphi_dp);
 
@@ -1009,7 +1017,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
       }
     }
 
-    LINALG::Matrix<1, nen_> deriv_vel;
+    CORE::LINALG::Matrix<1, nen_> deriv_vel;
     deriv_vel.MultiplyTN(Base::velint_, Base::derxy_);
     // stationary right-hand side
     for (int vi = 0; vi < nen_; ++vi)
@@ -1060,7 +1068,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
       */
 
-      LINALG::Matrix<1, nen_> deriv_gridvel;
+      CORE::LINALG::Matrix<1, nen_> deriv_gridvel;
       deriv_gridvel.MultiplyTN(gridvel_int_, Base::derxy_);
 
       for (int vi = 0; vi < nen_; ++vi)
@@ -1089,27 +1097,31 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquationNonTransi
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& eveln,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nsd_, nen_>& emhist,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
-    const LINALG::Matrix<nen_, 1>* eporositydot, const LINALG::Matrix<nen_, 1>* eporositydotn,
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
-    LINALG::Matrix<nen_, 1>& preforce, LINALG::Matrix<nsd_, nen_>& velforce,
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+    const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispn, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridvn, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydotn,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
     Teuchos::RCP<const MAT::Material> material, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
-  static LINALG::Matrix<nsd_ * nsd_, nen_> lin_resM_Du(true);
-  static LINALG::Matrix<nsd_ * nsd_, nen_> lin_resMRea_Du(true);
-  static LINALG::Matrix<nsd_, 1> resM_Du(true);
-  static LINALG::Matrix<nsd_, nen_> lin_resM_Dp(true);
+  static CORE::LINALG::Matrix<nsd_ * nsd_, nen_> lin_resM_Du(true);
+  static CORE::LINALG::Matrix<nsd_ * nsd_, nen_> lin_resMRea_Du(true);
+  static CORE::LINALG::Matrix<nsd_, 1> resM_Du(true);
+  static CORE::LINALG::Matrix<nsd_, nen_> lin_resM_Dp(true);
 
   // set element area or volume
   const double vol = Base::fac_;
@@ -1124,11 +1136,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
     // N_XYZ_^T
-    static LINALG::Matrix<nsd_, nsd_> defgrd(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
     ComputeDefGradient(defgrd, N_XYZ_, Base::xyze_);
 
     // inverse deformation gradient F^-1
-    static LINALG::Matrix<nsd_, nsd_> defgrd_inv(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
@@ -1161,26 +1173,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     // d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
-    static LINALG::Matrix<nsd_, nen_> dgradphi_dp(false);
+    static CORE::LINALG::Matrix<nsd_, nen_> dgradphi_dp(false);
 
     //--------------------------- dJ/dx
-    static LINALG::Matrix<nsd_, 1> gradJ(false);
+    static CORE::LINALG::Matrix<nsd_, 1> gradJ(false);
 
     // dF/dX
-    static LINALG::Matrix<nsd_ * nsd_, nsd_> F_X(false);
+    static CORE::LINALG::Matrix<nsd_ * nsd_, nsd_> F_X(false);
     {
       //------------------------------------ build F^-1 as vector 9x1
-      static LINALG::Matrix<nsd_ * nsd_, 1> defgrd_inv_vec;
+      static CORE::LINALG::Matrix<nsd_ * nsd_, 1> defgrd_inv_vec;
       for (int i = 0; i < nsd_; i++)
         for (int j = 0; j < nsd_; j++) defgrd_inv_vec(i * nsd_ + j) = defgrd_inv(i, j);
 
       //------------------------------------ build F^-T as vector 9x1
-      static LINALG::Matrix<nsd_ * nsd_, 1> defgrd_IT_vec;
+      static CORE::LINALG::Matrix<nsd_ * nsd_, 1> defgrd_IT_vec;
       for (int i = 0; i < nsd_; i++)
         for (int j = 0; j < nsd_; j++) defgrd_IT_vec(i * nsd_ + j) = defgrd_inv(j, i);
 
       // dF/dx
-      static LINALG::Matrix<nsd_ * nsd_, nsd_> F_x(false);
+      static CORE::LINALG::Matrix<nsd_ * nsd_, nsd_> F_x(false);
 
       ComputeFDerivative(edispnp, defgrd_inv, F_x, F_X);
 
@@ -1374,7 +1386,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
         }
       }
 
-      static LINALG::Matrix<nsd_, nsd_> viscstress(false);
+      static CORE::LINALG::Matrix<nsd_, nsd_> viscstress(false);
       for (int jdim = 0; jdim < nsd_; ++jdim)
       {
         for (int idim = 0; idim < nsd_; ++idim)
@@ -1384,7 +1396,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
         }
       }
 
-      static LINALG::Matrix<nsd_, 1> viscstress_gradphi(false);
+      static CORE::LINALG::Matrix<nsd_, 1> viscstress_gradphi(false);
       viscstress_gradphi.Multiply(viscstress, grad_porosity_);
 
       // computation of right-hand-side viscosity term
@@ -1403,7 +1415,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
         }
       }
 
-      static LINALG::Matrix<nsd_, nen_> viscstress_dgradphidp(false);
+      static CORE::LINALG::Matrix<nsd_, nen_> viscstress_dgradphidp(false);
       viscstress_dgradphidp.Multiply(viscstress, dgradphi_dp);
       for (int idim = 0; idim < nsd_; ++idim)
       {
@@ -1587,23 +1599,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::ParameterList& params,
-    const LINALG::Matrix<nsd_, nen_>& ebofoaf, const LINALG::Matrix<nsd_, nen_>& evelaf,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& eveln,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& eprenp,
-    const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nsd_, nen_>& emhist,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp,
-    LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u, LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
-    Teuchos::RCP<const MAT::Material> material, const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+    const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispn, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridvn, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p, Teuchos::RCP<const MAT::Material> material,
+    const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
-  static LINALG::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus(true);
-  static LINALG::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus_gridvel(true);
+  static CORE::LINALG::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus(true);
+  static CORE::LINALG::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus_gridvel(true);
 
   // set element area or volume
   const double vol = Base::fac_;
@@ -1623,11 +1638,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
 
     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
     // N_XYZ_^T
-    static LINALG::Matrix<nsd_, nsd_> defgrd(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> defgrd(false);
     ComputeDefGradient(defgrd, N_XYZ_, Base::xyze_);
 
     // inverse deformation gradient F^-1
-    static LINALG::Matrix<nsd_, nsd_> defgrd_inv(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> defgrd_inv(false);
     defgrd_inv.Invert(defgrd);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
@@ -1662,29 +1677,29 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
     double refporositydot = struct_mat_->RefPorosityTimeDeriv();
 
     //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
-    static LINALG::Matrix<nsd_, 1> gradJ(false);
+    static CORE::LINALG::Matrix<nsd_, 1> gradJ(false);
     // spatial porosity gradient
-    // LINALG::Matrix<nsd_,1>             grad_porosity(true);
+    // CORE::LINALG::Matrix<nsd_,1>             grad_porosity(true);
     //--------------------- linearization of porosity w.r.t. structure displacements
-    static LINALG::Matrix<1, nsd_ * nen_> dphi_dus(false);
+    static CORE::LINALG::Matrix<1, nsd_ * nen_> dphi_dus(false);
 
     //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
     // N_x
-    static LINALG::Matrix<1, nsd_ * nen_> dJ_dus(false);
+    static CORE::LINALG::Matrix<1, nsd_ * nen_> dJ_dus(false);
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) +
     // d\phi/(dp*du_s) * dp/dx
-    static LINALG::Matrix<nsd_, nen_ * nsd_> dgradphi_dus(false);
+    static CORE::LINALG::Matrix<nsd_, nen_ * nsd_> dgradphi_dus(false);
 
     //------------------------------------ build F^-T as vector 9x1
-    static LINALG::Matrix<nsd_ * nsd_, 1> defgrd_IT_vec;
+    static CORE::LINALG::Matrix<nsd_ * nsd_, 1> defgrd_IT_vec;
     for (int i = 0; i < nsd_; i++)
       for (int j = 0; j < nsd_; j++) defgrd_IT_vec(i * nsd_ + j) = defgrd_inv(j, i);
 
     // dF/dx
-    static LINALG::Matrix<nsd_ * nsd_, nsd_> F_x(false);
+    static CORE::LINALG::Matrix<nsd_ * nsd_, nsd_> F_x(false);
 
     // dF/dX
-    static LINALG::Matrix<nsd_ * nsd_, nsd_> F_X(false);
+    static CORE::LINALG::Matrix<nsd_ * nsd_, nsd_> F_X(false);
 
     ComputeFDerivative(edispnp, defgrd_inv, F_x, F_X);
 
@@ -1751,12 +1766,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(Teuchos::Paramet
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double& timefacfac,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& egridv,
-    const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus,
-    const double& dphi_dp, const double& dphi_dJ, const LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
-    const double& refporositydot, LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus,
-    LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus_gridvel,
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u)
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus, const double& dphi_dp,
+    const double& dphi_dJ, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
+    const double& refporositydot, CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus,
+    CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus_gridvel,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u)
 {
   // stationary
   /*  reaction */
@@ -1822,7 +1838,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
   // viscous terms (brinkman terms)
   if (Base::visceff_)
   {
-    static LINALG::Matrix<nsd_, nsd_> viscstress(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> viscstress(false);
     for (int jdim = 0; jdim < nsd_; ++jdim)
     {
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1832,10 +1848,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
       }
     }
 
-    static LINALG::Matrix<nsd_, 1> viscstress_gradphi(false);
+    static CORE::LINALG::Matrix<nsd_, 1> viscstress_gradphi(false);
     viscstress_gradphi.Multiply(viscstress, grad_porosity_);
 
-    static LINALG::Matrix<nsd_, nen_ * nsd_> viscstress_dgradphidus(false);
+    static CORE::LINALG::Matrix<nsd_, nen_ * nsd_> viscstress_dgradphidus(false);
     viscstress_dgradphidus.Multiply(viscstress, dgradphi_dus);
 
     const double porosity_inv = 1.0 / porosity_;
@@ -1953,11 +1969,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixMomentumOD(const double
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& timefacfacpre,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJJ, const double& dphi_dJdp,
-    const double& refporositydot, const LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus,
-    const LINALG::Matrix<1, nsd_ * nen_>& dphi_dus, const LINALG::Matrix<1, nsd_ * nen_>& dJ_dus,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus,
-    const LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus_gridvel,
-    LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p)
+    const double& refporositydot, const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dus,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus,
+    const CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& lin_resM_Dus_gridvel,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& ecoupl_p)
 {
   if (!porofldpara_->IsStationaryConti())
   {
@@ -1978,7 +1996,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
   if (!porofldpara_->PoroContiPartInt())
   {
     // auxiliary variables
-    static LINALG::Matrix<1, nen_ * nsd_> grad_porosity_us_velint;
+    static CORE::LINALG::Matrix<1, nen_ * nsd_> grad_porosity_us_velint;
     grad_porosity_us_velint.MultiplyTN(Base::velint_, dgradphi_dus);
 
     // structure coupling terms on left-hand side
@@ -2008,7 +2026,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
     // transient coupling terms
     if (!Base::fldparatimint_->IsStationary())
     {
-      static LINALG::Matrix<1, nen_ * nsd_> grad_porosity_us_gridvelint;
+      static CORE::LINALG::Matrix<1, nen_ * nsd_> grad_porosity_us_gridvelint;
       grad_porosity_us_gridvelint.MultiplyTN(gridvel_int_, dgradphi_dus);
 
       /*
@@ -2058,7 +2076,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
   }
   else
   {
-    static LINALG::Matrix<1, nen_> deriv_vel;
+    static CORE::LINALG::Matrix<1, nen_> deriv_vel;
     deriv_vel.MultiplyTN(Base::velint_, Base::derxy_);
 
     // structure coupling terms on left-hand side
@@ -2111,7 +2129,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
          \                                           /
        */
 
-      static LINALG::Matrix<1, nen_> deriv_gridvel;
+      static CORE::LINALG::Matrix<1, nen_> deriv_gridvel;
       deriv_gridvel.MultiplyTN(gridvel_int_, Base::derxy_);
 
       for (int vi = 0; vi < nen_; ++vi)
@@ -2157,7 +2175,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
     {
       // linearization of stabilization parameter w.r.t. structure displacement
       const double v1 = -1.0 * timefacfacpre * dtau_dphi_(1) / scal_grad_q;
-      static LINALG::Matrix<1, nen_> temp(false);
+      static CORE::LINALG::Matrix<1, nen_> temp(false);
       temp.MultiplyTN(Base::sgvelint_, Base::derxy_);
 
       for (int jdim = 0; jdim < nsd_; ++jdim)
@@ -2270,7 +2288,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(const double& t
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
-    LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
+    CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
 {
@@ -3142,7 +3160,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
-    LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
+    CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
   const double xjm_0_0 = Base::xjm_(0, 0);
@@ -3487,7 +3505,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -3583,7 +3601,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::conv_old_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -3697,7 +3715,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -3749,7 +3767,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(N_XYZ_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -3767,7 +3785,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
-    LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
+    CORE::LINALG::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
 {
@@ -4059,7 +4077,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
-    LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
+    CORE::LINALG::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
   const double vderiv_0_0 = Base::vderiv_(0, 0);
@@ -4255,7 +4273,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -4295,7 +4313,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::conv_old_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -4369,7 +4387,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
       }
 
       // shape derivative of Jacobian
-      static LINALG::Matrix<nen_, 1> temp;
+      static CORE::LINALG::Matrix<nen_, 1> temp;
       temp.MultiplyTN(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -4421,11 +4439,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PSPG(LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,
-    LINALG::Matrix<nen_, nen_>& ppmat, LINALG::Matrix<nen_, 1>& preforce,
-    const LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
-    const LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du,
-    const LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp, const double& fac3,
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PSPG(
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du,
+    const CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp, const double& fac3,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
   // conservative, stabilization terms are neglected (Hughes)
@@ -4567,10 +4586,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PSPG(LINALG::Matrix<nen_, nen_ * 
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::StabBiot(
-    LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, LINALG::Matrix<nen_, nen_>& ppmat,
-    LINALG::Matrix<nen_, 1>& preforce, const LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
-    const LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du,
-    const LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp, const double& fac3,
+    CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u, CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+    CORE::LINALG::Matrix<nen_, 1>& preforce,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du,
+    const CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp, const double& fac3,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
   for (int idim = 0; idim < nsd_; ++idim)
@@ -4635,8 +4655,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::StabBiot(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
-    LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x, LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X)
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
+    CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x, CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X)
 {
   F_X.Clear();
 
@@ -4658,10 +4679,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeGradients(const double& J,
-    const double& dphidp, const double& dphidJ, const LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
-    const LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x, const LINALG::Matrix<nsd_, 1>& gradp,
-    const LINALG::Matrix<nen_, 1>* eporositynp, LINALG::Matrix<nsd_, 1>& gradJ,
-    LINALG::Matrix<nsd_, 1>& grad_porosity, LINALG::Matrix<nsd_, 1>& refgrad_porosity)
+    const double& dphidp, const double& dphidJ,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x, const CORE::LINALG::Matrix<nsd_, 1>& gradp,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp, CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+    CORE::LINALG::Matrix<nsd_, 1>& grad_porosity, CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity)
 {
   //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx
   gradJ.MultiplyTN(J, F_x, defgrd_IT_vec);
@@ -4673,9 +4695,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeGradients(const double& J,
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(const double& dphidp,
-    const double& dphidJ, const LINALG::Matrix<nsd_, 1>& gradJ,
-    const LINALG::Matrix<nsd_, 1>& gradp, const LINALG::Matrix<nen_, 1>* eporositynp,
-    LINALG::Matrix<nsd_, 1>& grad_porosity, LINALG::Matrix<nsd_, 1>& refgrad_porosity)
+    const double& dphidJ, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradp, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    CORE::LINALG::Matrix<nsd_, 1>& grad_porosity, CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity)
 {
   // if( (Base::fldpara_->PoroContiPartInt() == false) or Base::visceff_)
   {
@@ -4689,8 +4711,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosityGradient(const dou
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(const double& dphi_dp,
-    const double& dphi_dpp, const double& dphi_dJdp, const LINALG::Matrix<nsd_, 1>& gradJ,
-    LINALG::Matrix<nsd_, nen_>& dgradphi_dp)
+    const double& dphi_dpp, const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+    CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp)
 {
   if (!porofldpara_->PoroContiPartInt() or Base::visceff_)
   {
@@ -4706,11 +4728,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearization(const double
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const double& dphi_dJ,
-    const double& dphi_dJJ, const double& dphi_dJp, const LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
-    const LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
-    const LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x, const LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X,
-    const LINALG::Matrix<nsd_, 1>& gradJ, LINALG::Matrix<1, nsd_ * nen_>& dJ_dus,
-    LINALG::Matrix<1, nsd_ * nen_>& dphi_dus, LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus)
+    const double& dphi_dJJ, const double& dphi_dJp,
+    const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_x,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+    CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dus, CORE::LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
+    CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus)
 {
   //------------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J *
   // N_x
@@ -4726,7 +4750,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
     // F^-T : N_X_x
 
     // dF^-T/dus : dF/dx = - (F^-1. dN/dx . u_s)^T  : dF/dx
-    static LINALG::Matrix<nsd_, nsd_ * nen_> dFinvdus_dFdx(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_ * nen_> dFinvdus_dFdx(false);
     dFinvdus_dFdx.Clear();
     for (int i = 0; i < nsd_; i++)
     {
@@ -4747,7 +4771,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
     }
 
     // F^-T : d(dF/dx)/dus =  F^-T : (N,XX * F^ -1 + dF/dX * F^-1 * N,x)
-    static LINALG::Matrix<nsd_, nsd_ * nen_> FinvT_dFx_dus(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_ * nen_> FinvT_dFx_dus(false);
     FinvT_dFx_dus.Clear();
 
     if (Base::is_higher_order_ele_)
@@ -4779,11 +4803,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
     }
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
-    static LINALG::Matrix<1, nsd_> temp;
+    static CORE::LINALG::Matrix<1, nsd_> temp;
     temp.MultiplyTN(defgrd_IT_vec, F_x);
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
-    static LINALG::Matrix<nsd_, nen_ * nsd_> dgradJ_dus;
+    static CORE::LINALG::Matrix<nsd_, nen_ * nsd_> dgradJ_dus;
 
     dgradJ_dus.MultiplyTN(temp, dJ_dus);
 
@@ -4801,9 +4825,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinearizationOD(const doub
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputePorosity(Teuchos::ParameterList& params,
-    const double& press, const double& J, const int& gp, const LINALG::Matrix<nen_, 1>& shapfct,
-    const LINALG::Matrix<nen_, 1>* myporosity, double& porosity, double* dphi_dp, double* dphi_dJ,
-    double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save)
+    const double& press, const double& J, const int& gp,
+    const CORE::LINALG::Matrix<nen_, 1>& shapfct, const CORE::LINALG::Matrix<nen_, 1>* myporosity,
+    double& porosity, double* dphi_dp, double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ,
+    double* dphi_dpp, bool save)
 {
   struct_mat_->ComputePorosity(
       params, press, J, gp, porosity, dphi_dp, dphi_dJ, dphi_dJdp, dphi_dJJ, dphi_dpp, save);
@@ -4814,11 +4839,11 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::SetupMaterialDerivatives()
 {
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
-  LINALG::Matrix<nsd_, nsd_> xjm0;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(Base::deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  LINALG::Matrix<nsd_, nsd_> xji0(true);
+  CORE::LINALG::Matrix<nsd_, nsd_> xji0(true);
   double det0 = xji0.Invert(xjm0);
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
@@ -4888,10 +4913,11 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial(DRT::ELEMENTS::
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ReacStab(
-    LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u, LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v,
-    LINALG::Matrix<nsd_, nen_>& velforce, LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
-    const LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp, const double& timefacfac,
-    const double& timefacfacpre, const double& rhsfac, const double& fac3)
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
+    CORE::LINALG::Matrix<nen_ * nsd_, nen_>& estif_p_v, CORE::LINALG::Matrix<nsd_, nen_>& velforce,
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    const CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp, const double& dphi_dp,
+    const double& timefacfac, const double& timefacfacpre, const double& rhsfac, const double& fac3)
 {
   //  Base::ReacStab(estif_u,
   //           estif_p_v,
@@ -5078,7 +5104,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetMaterialParamters(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
-    Teuchos::RCP<const MAT::Material> material, const LINALG::Matrix<nsd_, nsd_>& invdefgrd)
+    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nsd_>& invdefgrd)
 {
   Teuchos::RCP<const MAT::FluidPoro> actmat =
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
@@ -5102,7 +5128,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
       anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
 
   // spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
-  static LINALG::Matrix<nsd_, nsd_> temp(false);
+  static CORE::LINALG::Matrix<nsd_, nsd_> temp(false);
   temp.Multiply(J_ * porosity_, mat_reac_tensor_, invdefgrd);
   reac_tensor_.MultiplyTN(invdefgrd, temp);
 
@@ -5114,8 +5140,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
   actmat->ComputeLinMatReactionTensor(
       mat_reac_tensor_linporosity_, mat_reac_tensor_linJ_, J_, porosity_);
 
-  static LINALG::Matrix<nsd_, nsd_> lin_p_tmp_1(false);
-  static LINALG::Matrix<nsd_, nsd_> lin_p_tmp_2(false);
+  static CORE::LINALG::Matrix<nsd_, nsd_> lin_p_tmp_1(false);
+  static CORE::LINALG::Matrix<nsd_, nsd_> lin_p_tmp_2(false);
 
   lin_p_tmp_1.MultiplyTN(J_, invdefgrd, mat_reac_tensor_linporosity_);
   lin_p_tmp_2.Multiply(lin_p_tmp_1, invdefgrd);
@@ -5126,8 +5152,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeSpatialReactionTerms(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinSpatialReactionTerms(
-    Teuchos::RCP<const MAT::Material> material, const LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
-    const LINALG::Matrix<1, nsd_ * nen_>* dJ_dus, const LINALG::Matrix<1, nsd_ * nen_>* dphi_dus)
+    Teuchos::RCP<const MAT::Material> material, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd_inv,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>* dJ_dus,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>* dphi_dus)
 {
   Teuchos::RCP<const MAT::FluidPoro> actmat =
       Teuchos::rcp_static_cast<const MAT::FluidPoro>(material);
@@ -5476,8 +5503,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSConti(double dphi_dp
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& timefacfac,
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
-    LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du)
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
+    CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du)
 {
   std::array<int, nsd_> idim_nsd_p_idim;
   for (int idim = 0; idim < nsd_; ++idim)
@@ -5532,7 +5559,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& ti
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDuStabilization(
-    const double& timefacfac, LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du)
+    const double& timefacfac, CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du)
 {
   if (Base::is_higher_order_ele_ and Base::visceff_)
   {
@@ -5555,7 +5582,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDuStabilization(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(const LINALG::Matrix<nsd_, nen_>& evelaf)
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
   /*   /                                                \
@@ -5677,8 +5705,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::CalcDivEps(const LINALG::Matrix<n
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
-    const double& timefacfacpre, const double& dphi_dp, LINALG::Matrix<nsd_, nen_>& lin_resM_Dp)
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(const double& timefacfacpre,
+    const double& dphi_dp, CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp)
 {
   /* poroelasticity pressure term */
   /*
@@ -5736,18 +5764,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDp(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
-    Teuchos::ParameterList& params, const LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& evelnp,
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& epreaf,
-    const LINALG::Matrix<nen_, 1>& eprenp, const LINALG::Matrix<nen_, 1>& epren,
-    const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& egridv,
-    const LINALG::Matrix<nsd_, nen_>& egridvn, const LINALG::Matrix<nen_, 1>& escaaf,
-    const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nen_, 1>& echist,
-    const LINALG::Matrix<nen_, 1>* eporositynp, const LINALG::Matrix<nen_, 1>* eporositydot,
-    const LINALG::Matrix<nen_, 1>* eporositydotn)
+    Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nen_, 1>& eprenp, const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridv, const CORE::LINALG::Matrix<nsd_, nen_>& egridvn,
+    const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
+    const CORE::LINALG::Matrix<nen_, 1>& echist, const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositydotn)
 {
   //----------------------------------------------------------------------
   //  evaluation of various values at integration point:
@@ -5828,7 +5857,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
 
   // get structure velocity derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  LINALG::Matrix<nsd_, nsd_> gridvelderxy;
+  CORE::LINALG::Matrix<nsd_, nsd_> gridvelderxy;
   gridvelderxy.MultiplyNT(egridv, Base::derxy_);
 
   // structure velocity derivatives w.r.t. reference coordinates at integration point
@@ -5866,7 +5895,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
     for (int idim = 0; idim < nsd_; ++idim)
     {
       // get vdiv at time n+1 for np_genalpha,
-      LINALG::Matrix<nsd_, nsd_> vderxy;
+      CORE::LINALG::Matrix<nsd_, nsd_> vderxy;
       vderxy.MultiplyNT(evelnp, Base::derxy_);
       Base::vdiv_ += vderxy(idim, idim);
 
@@ -5877,17 +5906,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
-    Teuchos::ParameterList& params, const LINALG::Matrix<nsd_, nen_>& ebofoaf,
-    const LINALG::Matrix<nsd_, nen_>& evelaf, const LINALG::Matrix<nsd_, nen_>& evelnp,
-    const LINALG::Matrix<nsd_, nen_>& eveln, const LINALG::Matrix<nen_, 1>& epreaf,
-    const LINALG::Matrix<nen_, 1>& eprenp, const LINALG::Matrix<nen_, 1>& epren,
-    const LINALG::Matrix<nen_, 1>& epressnp_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressam_timederiv,
-    const LINALG::Matrix<nen_, 1>& epressn_timederiv, const LINALG::Matrix<nsd_, nen_>& eaccam,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_, nen_>& egridv, const LINALG::Matrix<nsd_, nen_>& egridvn,
-    const LINALG::Matrix<nen_, 1>& escaaf, const LINALG::Matrix<nsd_, nen_>& emhist,
-    const LINALG::Matrix<nen_, 1>& echist, const LINALG::Matrix<nen_, 1>* eporositynp)
+    Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelaf, const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eveln, const CORE::LINALG::Matrix<nen_, 1>& epreaf,
+    const CORE::LINALG::Matrix<nen_, 1>& eprenp, const CORE::LINALG::Matrix<nen_, 1>& epren,
+    const CORE::LINALG::Matrix<nen_, 1>& epressnp_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressam_timederiv,
+    const CORE::LINALG::Matrix<nen_, 1>& epressn_timederiv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& eaccam, const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispn, const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+    const CORE::LINALG::Matrix<nsd_, nen_>& egridvn, const CORE::LINALG::Matrix<nen_, 1>& escaaf,
+    const CORE::LINALG::Matrix<nsd_, nen_>& emhist, const CORE::LINALG::Matrix<nen_, 1>& echist,
+    const CORE::LINALG::Matrix<nen_, 1>* eporositynp)
 {
   //----------------------------------------------------------------------
   //  evaluation of various values at integration point:
@@ -5954,7 +5984,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
 
   // get displacement Base::derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  LINALG::Matrix<nsd_, nsd_> gridvelderxy;
+  CORE::LINALG::Matrix<nsd_, nsd_> gridvelderxy;
   gridvelderxy.MultiplyNT(egridv, Base::derxy_);
 
   gridvel_deriv_.MultiplyNT(egridv, Base::deriv_);
@@ -6005,7 +6035,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
     for (int idim = 0; idim < nsd_; ++idim)
     {
       // get vdiv at time n+1 for np_genalpha,
-      LINALG::Matrix<nsd_, nsd_> vderxy;
+      CORE::LINALG::Matrix<nsd_, nsd_> vderxy;
       vderxy.MultiplyNT(evelnp, Base::derxy_);
       Base::vdiv_ += vderxy(idim, idim);
 
@@ -6033,16 +6063,17 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
   }  // Nurbs specific stuff
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, Base::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, Base::xyze_);
   // set element id
   Base::eid_ = ele->Id();
 
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
-  LINALG::Matrix<nen_, 1> epressnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nen_, 1> epressnp(true);
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &evelnp, &epressnp, "velnp");
 
@@ -6059,7 +6090,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
-    LINALG::Matrix<nsd_, nsd_> xjm0;
+    CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
     xjm0.MultiplyNT(Base::deriv_, xyze0_);
 
     // inverse of transposed jacobian "ds/dX"
@@ -6090,8 +6121,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeVolume(Teuchos::ParameterLi
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeDefGradient(
-    LINALG::Matrix<nsd_, nsd_>& defgrd, const LINALG::Matrix<nsd_, nen_>& N_XYZ,
-    const LINALG::Matrix<nsd_, nen_>& xcurr)
+    CORE::LINALG::Matrix<nsd_, nsd_>& defgrd, const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
+    const CORE::LINALG::Matrix<nsd_, nen_>& xcurr)
 {
   if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)  // total lagrange (nonlinear)
   {
@@ -6126,11 +6157,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
     const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
-  LINALG::Matrix<nsd_, 1> u(true);
+  CORE::LINALG::Matrix<nsd_, 1> u(true);
   double p = 0.0;
 
   // error
-  LINALG::Matrix<nsd_, 1> deltavel(true);
+  CORE::LINALG::Matrix<nsd_, 1> deltavel(true);
   double deltap = 0.0;
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params, "calculate error");
@@ -6143,14 +6174,14 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
-  LINALG::Matrix<nsd_, nen_> evelaf(true);
-  LINALG::Matrix<nen_, 1> epreaf(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
+  CORE::LINALG::Matrix<nen_, 1> epreaf(true);
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
-  LINALG::Matrix<nsd_, nen_> evelnp(true);
-  LINALG::Matrix<nen_, 1> eprenp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
+  CORE::LINALG::Matrix<nen_, 1> eprenp(true);
   if (Base::fldparatimint_->IsGenalphaNP())
     Base::ExtractValuesFromGlobalVector(
         discretization, lm, *Base::rotsymmpbc_, &evelnp, &eprenp, "velnp");
@@ -6160,11 +6191,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
   //----------------------------------------------------------------------------
 
   // get node coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, Base::xyze_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      ele, Base::xyze_);
   // set element id
   Base::eid_ = ele->Id();
 
-  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   Base::ExtractValuesFromGlobalVector(
       discretization, lm, *Base::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
@@ -6196,12 +6228,12 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
 
     /* H1 -error norm
     // compute first derivative of the velocity
-    LINALG::Matrix<nsd_,nsd_> dervelint;
+    CORE::LINALG::Matrix<nsd_,nsd_> dervelint;
     dervelint.MultiplyNT(evelaf,derxy_);
     */
 
     // get coordinates at integration point
-    LINALG::Matrix<nsd_, 1> xyzint(true);
+    CORE::LINALG::Matrix<nsd_, 1> xyzint(true);
     xyzint.Multiply(Base::xyze_, Base::funct_);
 
     //  the error is evaluated at the specific time of the used time integration scheme
@@ -6322,9 +6354,9 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeError(DRT::ELEMENTS::Fluid*
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
-    Teuchos::ParameterList& params, const LINALG::Matrix<nsd_, nsd_>& defgrd,
-    const LINALG::Matrix<nsd_, nen_>& edispnp, const LINALG::Matrix<nsd_, nen_>& edispn,
-    const LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X, const int gp, const bool computeLinOD)
+    Teuchos::ParameterList& params, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
+    const CORE::LINALG::Matrix<nsd_, nen_>& edispnp, const CORE::LINALG::Matrix<nsd_, nen_>& edispn,
+    const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X, const int gp, const bool computeLinOD)
 {
   const double dens_struct = struct_mat_->Density();
   mixres_.Clear();
@@ -6346,12 +6378,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
   if (Base::is_higher_order_ele_)
   {
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    static LINALG::Matrix<6, 1> glstrain(true);
+    static CORE::LINALG::Matrix<6, 1> glstrain(true);
     glstrain.Clear();
     if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
       // Right Cauchy-Green tensor = F^T * F
-      LINALG::Matrix<nsd_, nsd_> cauchygreen;
+      CORE::LINALG::Matrix<nsd_, nsd_> cauchygreen;
       cauchygreen.MultiplyTN(defgrd, defgrd);
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -6376,7 +6408,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
     }
     else
     {
-      LINALG::Matrix<6, nsd_ * nen_> bop(true);
+      CORE::LINALG::Matrix<6, nsd_ * nen_> bop(true);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; ++j)
@@ -6417,13 +6449,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
       }
     }
 
-    static LINALG::Matrix<6, 1> stress_vec(true);
-    static LINALG::Matrix<6, 6> cmat(true);
+    static CORE::LINALG::Matrix<6, 1> stress_vec(true);
+    static CORE::LINALG::Matrix<6, 6> cmat(true);
     stress_vec.Clear();
     cmat.Clear();
     struct_mat_->Evaluate(nullptr, &glstrain, params, &stress_vec, &cmat, gp, Base::eid_);
 
-    static LINALG::Matrix<6, nsd_> E_X(true);
+    static CORE::LINALG::Matrix<6, nsd_> E_X(true);
     E_X.Clear();
 
     if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
@@ -6487,9 +6519,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
       }
     }
 
-    static LINALG::Matrix<6, nsd_> cmat_E_X(true);
+    static CORE::LINALG::Matrix<6, nsd_> cmat_E_X(true);
     cmat_E_X.Multiply(cmat, E_X);
-    static LINALG::Matrix<nsd_, 1> cmat_E_X_vec(true);
+    static CORE::LINALG::Matrix<nsd_, 1> cmat_E_X_vec(true);
     if (nsd_ == 3)
     {
       cmat_E_X_vec(0) = cmat_E_X(0, 0) + cmat_E_X(3, 1) + cmat_E_X(4, 2);
@@ -6502,7 +6534,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
       cmat_E_X_vec(1) = cmat_E_X(3, 0) + cmat_E_X(1, 1);
     }
 
-    static LINALG::Matrix<nsd_, nsd_> stress(false);
+    static CORE::LINALG::Matrix<nsd_, nsd_> stress(false);
     if (nsd_ == 3)
     {
       stress(0, 0) = stress_vec(0);
@@ -6538,7 +6570,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
             mixresLinOD_(i, j * nsd_ + k) -= N_XYZ_(i, j) * cmat_E_X_vec(k);
       }
 
-      static LINALG::Matrix<6 * nsd_, nsd_ * nen_> E_X_Lin(true);
+      static CORE::LINALG::Matrix<6 * nsd_, nsd_ * nen_> E_X_Lin(true);
       E_X_Lin.Clear();
       if (nsd_ == 3)
       {
@@ -6602,7 +6634,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
         }
       }
 
-      static LINALG::Matrix<6 * nsd_, nsd_ * nen_> cmat_E_X_Lin(true);
+      static CORE::LINALG::Matrix<6 * nsd_, nsd_ * nen_> cmat_E_X_Lin(true);
       cmat_E_X_Lin.Clear();
       for (int i = 0; i < nsd_; ++i)
       {
@@ -6618,7 +6650,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeMixtureStrongResidual(
         }
       }
 
-      static LINALG::Matrix<nsd_, nsd_ * nen_> cmat_E_X_vec_Lin(true);
+      static CORE::LINALG::Matrix<nsd_, nsd_ * nen_> cmat_E_X_vec_Lin(true);
       if (nsd_ == 3)
       {
         for (int j = 0; j < nsd_; ++j)
@@ -6694,8 +6726,9 @@ double DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeEffectiveStiffness()
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeChange(double& J,
-    double& volchange, const LINALG::Matrix<nsd_, nsd_>& defgrd,
-    const LINALG::Matrix<nsd_, nen_>& N_XYZ, const LINALG::Matrix<nsd_, nen_>& nodaldisp)
+    double& volchange, const CORE::LINALG::Matrix<nsd_, nsd_>& defgrd,
+    const CORE::LINALG::Matrix<nsd_, nen_>& N_XYZ,
+    const CORE::LINALG::Matrix<nsd_, nen_>& nodaldisp)
 {
   // compute J
   J = defgrd.Determinant();
@@ -6710,7 +6743,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeJacobianDeterminantVolumeC
     // for linear kinematics the volume change is the trace of the linearized strains
 
     // gradient of displacements
-    static LINALG::Matrix<nsd_, nsd_> dispgrad;
+    static CORE::LINALG::Matrix<nsd_, nsd_> dispgrad;
     dispgrad.Clear();
     // gradient of displacements
     dispgrad.MultiplyNT(nodaldisp, N_XYZ);

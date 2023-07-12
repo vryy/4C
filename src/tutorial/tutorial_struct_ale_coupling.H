@@ -33,8 +33,9 @@ namespace TUTORIAL
 
     /// post evaluate operator ( e.g. for manipulation of rhs and stiffness matrix after usual
     /// evaluate)
-    virtual void PostEvaluate(LINALG::Matrix<numele + 1, 1> rhs,
-        LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs = true, bool eval_stiff = true);
+    virtual void PostEvaluate(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+        CORE::LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs = true,
+        bool eval_stiff = true);
 
   };  // class StructAleCoupling
 }  // namespace TUTORIAL

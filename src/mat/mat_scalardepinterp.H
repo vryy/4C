@@ -191,13 +191,13 @@ namespace MAT
 
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        int gp,                          ///< Gauss point
-        int eleGID                       ///< Element GID
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,      ///< Container for additional information
+        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
+        int gp,                              ///< Gauss point
+        int eleGID                           ///< Element GID
     );
 
     /// setup
@@ -217,7 +217,7 @@ namespace MAT
 
     /// evaluate strain energy function
     virtual void StrainEnergy(
-        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID);
+        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID);
 
    private:
     /// my material parameters

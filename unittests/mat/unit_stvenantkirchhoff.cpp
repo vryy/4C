@@ -84,22 +84,22 @@ namespace
   TEST_F(StVenantKirchhoffTest, TestEvaluateLinalgMatrix)
   {
     // Resulting stress
-    LINALG::Matrix<6, 1> result_stress(true);
+    CORE::LINALG::Matrix<6, 1> result_stress(true);
 
     // Resulting material stiffness matrix
-    LINALG::Matrix<6, 6> result_cmat(true);
+    CORE::LINALG::Matrix<6, 6> result_cmat(true);
 
     // Input deformation gradient, which is not used here
-    LINALG::Matrix<3, 3> defgrad(true);
+    CORE::LINALG::Matrix<3, 3> defgrad(true);
 
     // ParameterList, also not used here
     Teuchos::ParameterList paras;
 
     // Input strain
-    const LINALG::Matrix<6, 1> input_strain(input_glstrain_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> input_strain(input_glstrain_.data(), false);
 
     // Reference stress
-    const LINALG::Matrix<6, 1> ref_stress(ref_stress_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> ref_stress(ref_stress_.data(), false);
 
     // Call evaluate function with test strain
     stvenantkirchhoff_->Evaluate(
@@ -115,7 +115,7 @@ namespace
     const double ref_strain_energy = 908.6538;
 
     // Input strain
-    const LINALG::Matrix<6, 1> test_glstrain(input_glstrain_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> test_glstrain(input_glstrain_.data(), false);
 
     // result strain energy
     double result_psi;

@@ -345,9 +345,10 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const ::DRT::Discretization& masterd
 
   // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
   // master map)
-  auto masternodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(masternodemap_cond);
-  auto slavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(slavenodemap_cond);
-  auto permslavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
+  auto masternodemap = CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(masternodemap_cond);
+  auto slavenodemap = CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(slavenodemap_cond);
+  auto permslavenodemap =
+      CORE::LINALG::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
 
   FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
       BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
@@ -749,7 +750,7 @@ Teuchos::RCP<Epetra_Map> CORE::ADAPTER::Coupling::SlaveToMasterMap(Teuchos::RCP<
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const Teuchos::RCP<Epetra_Map> slavemap = LINALG::AllreduceEMap(*slave);
+  const Teuchos::RCP<Epetra_Map> slavemap = CORE::LINALG::AllreduceEMap(*slave);
   for (int i = 0; i < slavemap->NumMyElements(); ++i)
   {
     int lid = permslavedofmap_->LID(slavemap->GID(i));
@@ -770,7 +771,7 @@ Teuchos::RCP<Epetra_Map> CORE::ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<
 {
   int nummyele = 0;
   std::vector<int> globalelements;
-  const Teuchos::RCP<Epetra_Map> mastermap = LINALG::AllreduceEMap(*master);
+  const Teuchos::RCP<Epetra_Map> mastermap = CORE::LINALG::AllreduceEMap(*master);
   for (int i = 0; i < mastermap->NumMyElements(); ++i)
   {
     int lid = permmasterdofmap_->LID(mastermap->GID(i));
@@ -788,8 +789,8 @@ Teuchos::RCP<Epetra_Map> CORE::ADAPTER::Coupling::MasterToSlaveMap(Teuchos::RCP<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMaster(
-    const LINALG::SparseMatrix& sm) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMaster(
+    const CORE::LINALG::SparseMatrix& sm) const
 {
   Teuchos::RCP<Epetra_CrsMatrix> permsm =
       Teuchos::rcp(new Epetra_CrsMatrix(Copy, *permmasterdofmap_, sm.MaxNumEntries()));
@@ -805,15 +806,15 @@ Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::MasterToPermMaster(
   permsm->FillComplete(sm.DomainMap(), *permmasterdofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
-  return Teuchos::rcp(
-      new LINALG::SparseMatrix(permsm, LINALG::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
+  return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      permsm, CORE::LINALG::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
-    const LINALG::SparseMatrix& sm) const
+Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
+    const CORE::LINALG::SparseMatrix& sm) const
 {
 #ifdef DEBUG
   if (not sm.RowMap().PointSameAs(*slavedofmap_)) dserror("slave dof map vector expected");
@@ -835,8 +836,8 @@ Teuchos::RCP<LINALG::SparseMatrix> CORE::ADAPTER::Coupling::SlaveToPermSlave(
   permsm->FillComplete(sm.DomainMap(), *permslavedofmap_);
 
   // create a SparseMatrix that wraps the new CrsMatrix.
-  return Teuchos::rcp(
-      new LINALG::SparseMatrix(permsm, LINALG::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
+  return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      permsm, CORE::LINALG::View, sm.ExplicitDirichlet(), sm.SaveGraph()));
 }
 
 

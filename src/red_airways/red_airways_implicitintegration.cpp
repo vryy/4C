@@ -34,7 +34,7 @@
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
 AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
-    LINALG::Solver& solver, Teuchos::ParameterList& params, IO::DiscretizationWriter& output)
+    CORE::LINALG::Solver& solver, Teuchos::ParameterList& params, IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
       discret_(actdis),
       solver_(solver),
@@ -80,7 +80,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled() || !actdis->HaveDofs()) discret_->FillComplete();
 
-  airway_acinus_dep_ = LINALG::CreateVector(*discret_->ElementColMap(), true);
+  airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
 
   // extend ghosting of discretization to ensure correct neighbor search
   if (compAwAcInter_)
@@ -131,7 +131,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
     REBALANCE::UTILS::PrintParallelDistribution(*discret_);
 
     // Neighbouring acinus
-    airway_acinus_dep_ = LINALG::CreateVector(*discret_->ElementColMap(), true);
+    airway_acinus_dep_ = CORE::LINALG::CreateVector(*discret_->ElementColMap(), true);
     ComputeNearestAcinus(discret_, nullptr, nullptr, airway_acinus_dep_);
   }
 
@@ -159,120 +159,120 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap, 3, false, true));
+  sysmat_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofrowmap, 3, false, true));
 
   // Vectors passed to the element
   // Pressures at time n+1, n and n-1
-  pnp_ = LINALG::CreateVector(*dofrowmap, true);
-  pn_ = LINALG::CreateVector(*dofrowmap, true);
-  pnm_ = LINALG::CreateVector(*dofrowmap, true);
+  pnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  pn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  pnm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  p_nonlin_ = LINALG::CreateVector(*dofrowmap, true);
-  n_intr_ac_ln_ = LINALG::CreateVector(*dofrowmap, true);
+  p_nonlin_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  n_intr_ac_ln_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // Inlet volumetric flow rates at time n+1, n and n-1
-  qin_np_ = LINALG::CreateVector(*elementcolmap, true);
-  qin_n_ = LINALG::CreateVector(*elementcolmap, true);
-  qin_nm_ = LINALG::CreateVector(*elementcolmap, true);
+  qin_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qin_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qin_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // Trajectory vector x at time n+1 and n
-  x_np_ = LINALG::CreateVector(*elementcolmap, true);
-  x_n_ = LINALG::CreateVector(*elementcolmap, true);
+  x_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  x_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // State of airway
-  open_ = LINALG::CreateVector(*elementcolmap, true);
+  open_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // External pressure
-  p_extnp_ = LINALG::CreateVector(*elementcolmap, true);
-  p_extn_ = LINALG::CreateVector(*elementcolmap, true);
+  p_extnp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  p_extn_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
-  pnp_colmap_ = LINALG::CreateVector(*elementcolmap, true);
-  pn_colmap_ = LINALG::CreateVector(*elementcolmap, true);
+  pnp_colmap_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  pn_colmap_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // Outlet volumetric flow rates at time n+1, n and n-1
-  qout_np_ = LINALG::CreateVector(*elementcolmap, true);
-  qout_n_ = LINALG::CreateVector(*elementcolmap, true);
-  qout_nm_ = LINALG::CreateVector(*elementcolmap, true);
+  qout_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qout_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  qout_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // This vector will be used for exportation and restart reasons
-  qexp_ = LINALG::CreateVector(*elementrowmap, true);
-  qexp2_ = LINALG::CreateVector(*elementrowmap, true);
-  pexp_ = LINALG::CreateVector(*dofrowmap, true);
+  qexp_ = CORE::LINALG::CreateVector(*elementrowmap, true);
+  qexp2_ = CORE::LINALG::CreateVector(*elementrowmap, true);
+  pexp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // Element volume at time n+1, n and n-1
-  elemVolumenp_ = LINALG::CreateVector(*elementcolmap, true);
-  elemVolumen_ = LINALG::CreateVector(*elementcolmap, true);
-  elemVolumenm_ = LINALG::CreateVector(*elementcolmap, true);
-  elemVolume0_ = LINALG::CreateVector(*elementcolmap, true);
-  elemArea0_ = LINALG::CreateVector(*elementcolmap, true);
+  elemVolumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemVolumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemVolumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemVolume0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  elemArea0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // Element radius at time n+1
-  elemRadiusnp_ = LINALG::CreateVector(*elementcolmap, true);
+  elemRadiusnp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // This vector will be used to test convergence
-  residual_ = LINALG::CreateVector(*dofrowmap, true);
-  bc_residual_ = LINALG::CreateVector(*dofcolmap, true);
+  residual_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  bc_residual_ = CORE::LINALG::CreateVector(*dofcolmap, true);
 
   // Volumetric flow rates at time n+1, n and n-1
-  //  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
-  //  qcn_           = LINALG::CreateVector(*elementrowmap,true);
-  //  qcnm_          = LINALG::CreateVector(*elementrowmap,true);
+  //  qcnp_          = CORE::LINALG::CreateVector(*elementrowmap,true);
+  //  qcn_           = CORE::LINALG::CreateVector(*elementrowmap,true);
+  //  qcnm_          = CORE::LINALG::CreateVector(*elementrowmap,true);
 
   // Vectors for postprocessing, Element Node Ids, radii, generations, etc ...
-  nodeIds_ = LINALG::CreateVector(*dofrowmap, true);
-  radii_ = LINALG::CreateVector(*dofrowmap, true);
-  generations_ = LINALG::CreateVector(*elementcolmap, true);
+  nodeIds_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  radii_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  generations_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // A vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
-  bcval_ = LINALG::CreateVector(*dofrowmap, true);
-  dbctog_ = LINALG::CreateVector(*dofrowmap, true);
+  bcval_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  dbctog_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
-  acini_bc_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volume0_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumenm_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumen_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volumenp_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_e_volume_strain_ = LINALG::CreateVector(*elementcolmap, true);
-  acini_max_strain_location_ = LINALG::CreateVector(*elementcolmap, true);
+  acini_bc_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_e_volume0_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_e_volumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_e_volumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_e_volumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_e_volume_strain_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  acini_max_strain_location_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // Initialize "scalar transpor" variables
   if (solveScatra_)
   {
     // Nodal values of the scalar transport
-    scatraO2nm_ = LINALG::CreateVector(*dofrowmap, true);
-    scatraO2n_ = LINALG::CreateVector(*dofrowmap, true);
-    scatraO2np_ = LINALG::CreateVector(*dofrowmap, true);
-    dscatraO2_ = LINALG::CreateVector(*dofrowmap, true);
-    dVolumeO2_ = LINALG::CreateVector(*dofrowmap, true);
-    acinarDO2_ = LINALG::CreateVector(*dofrowmap, true);
+    scatraO2nm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    scatraO2n_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    scatraO2np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    dscatraO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    dVolumeO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    acinarDO2_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
     // Element values of the scalar transport (Needed to resolve the
     // the transport at the branching parts
-    e1scatraO2nm_ = LINALG::CreateVector(*elementcolmap, true);
-    e1scatraO2n_ = LINALG::CreateVector(*elementcolmap, true);
-    e1scatraO2np_ = LINALG::CreateVector(*elementcolmap, true);
+    e1scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e1scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e1scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
-    e2scatraO2nm_ = LINALG::CreateVector(*elementcolmap, true);
-    e2scatraO2n_ = LINALG::CreateVector(*elementcolmap, true);
-    e2scatraO2np_ = LINALG::CreateVector(*elementcolmap, true);
+    e2scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e2scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+    e2scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
-    cfls_ = LINALG::CreateVector(*elementrowmap, true);
+    cfls_ = CORE::LINALG::CreateVector(*elementrowmap, true);
 
-    // junctionVolumeInMix_ = LINALG::CreateVector(*dofcolmap,true);
-    // junVolMix_Corrector_ = LINALG::CreateVector(*dofcolmap,true);
-    // jVDofRowMix_         = LINALG::CreateVector(*dofrowmap,true);
-    // diffusionArea_       = LINALG::CreateVector(*dofcolmap,true);
+    // junctionVolumeInMix_ = CORE::LINALG::CreateVector(*dofcolmap,true);
+    // junVolMix_Corrector_ = CORE::LINALG::CreateVector(*dofcolmap,true);
+    // jVDofRowMix_         = CORE::LINALG::CreateVector(*dofrowmap,true);
+    // diffusionArea_       = CORE::LINALG::CreateVector(*dofcolmap,true);
 
-    junctionVolumeInMix_ = LINALG::CreateVector(*dofrowmap, true);
-    junVolMix_Corrector_ = LINALG::CreateVector(*dofrowmap, true);
-    jVDofRowMix_ = LINALG::CreateVector(*dofrowmap, true);
-    diffusionArea_ = LINALG::CreateVector(*dofrowmap, true);
+    junctionVolumeInMix_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    junVolMix_Corrector_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    jVDofRowMix_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+    diffusionArea_ = CORE::LINALG::CreateVector(*dofrowmap, true);
   }
 
   // Vectors used for solution process
   // right hand side vector and right hand side corrector
-  rhs_ = LINALG::CreateVector(*dofrowmap, true);
+  rhs_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -303,8 +303,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Dis
   evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
-  Teuchos::RCP<Epetra_Vector> radii_in = LINALG::CreateVector(*dofrowmap, true);
-  Teuchos::RCP<Epetra_Vector> radii_out = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> radii_in = CORE::LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> radii_out = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   discret_->Evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
 
@@ -1054,8 +1054,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
   }  // end of solving terminal BCs
 
   /*std::cout<<"----------------------- My SYSMAT IS
-  ("<<myrank_<<"-----------------------"<<std::endl; Teuchos::RCP<LINALG::SparseMatrix> A_debug =
-  Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); if (A_debug != Teuchos::null)
+  ("<<myrank_<<"-----------------------"<<std::endl; Teuchos::RCP<CORE::LINALG::SparseMatrix>
+  A_debug = Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_); if (A_debug !=
+  Teuchos::null)
   {
      (A_debug->EpetraMatrix())->Print(std::cout);
   }
@@ -1079,7 +1080,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
 
-    LINALG::ApplyDirichlettoSystem(sysmat_, pnp_, rhs_, bcval_, dbctog_);
+    CORE::LINALG::ApplyDirichlettoSystem(sysmat_, pnp_, rhs_, bcval_, dbctog_);
   }
 
   /***
@@ -1353,7 +1354,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
     evaluation_data.time = time_;
 
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
-    Teuchos::RCP<Epetra_Vector> dummy = LINALG::CreateVector(*dofrowmap, true);
+    Teuchos::RCP<Epetra_Vector> dummy = CORE::LINALG::CreateVector(*dofrowmap, true);
     discret_->Evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
     discret_->ClearState();
   }
@@ -1416,11 +1417,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::SolveScatra(
   // define an empty capillary flowrate vector
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   // Diffusion surface (from the acinar side)
-  Teuchos::RCP<Epetra_Vector> nodal_surfaces = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_surfaces = CORE::LINALG::CreateVector(*dofrowmap, true);
   // Fluid volume
-  Teuchos::RCP<Epetra_Vector> nodal_volumes = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_volumes = CORE::LINALG::CreateVector(*dofrowmap, true);
   // Average concentration in Acini and in Capillar
-  Teuchos::RCP<Epetra_Vector> nodal_avg_conc = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> nodal_avg_conc = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   {
     // get the diffusion surfaces at the acini
@@ -1617,48 +1618,48 @@ void AIRWAY::RedAirwayImplicitTimeInt::InitSaveState()
   const Epetra_Map* elementcolmap = discret_->ElementColMap();
 
   // saving vector for pressure
-  saved_pnm_ = LINALG::CreateVector(*dofrowmap, true);
-  saved_pn_ = LINALG::CreateVector(*dofrowmap, true);
-  saved_pnp_ = LINALG::CreateVector(*dofrowmap, true);
+  saved_pnm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_pn_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_pnp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // saving vector for inflow rate
-  saved_qin_nm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_qin_n_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_qin_np_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_qin_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qin_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qin_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for outflow rate
-  saved_qout_nm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_qout_n_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_qout_np_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_qout_nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qout_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_qout_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for trajectory
-  saved_x_n_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_x_np_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_x_n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_x_np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for acinar volume
-  saved_acini_e_volumenm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_acini_e_volumen_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_acini_e_volumenp_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_acini_e_volumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for element volume
-  saved_elemVolumenm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_elemVolumen_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_elemVolumenp_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_elemVolumenm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_elemVolumen_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_elemVolumenp_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for nodal O2 concentration
-  saved_scatraO2nm_ = LINALG::CreateVector(*dofrowmap, true);
-  saved_scatraO2n_ = LINALG::CreateVector(*dofrowmap, true);
-  saved_scatraO2np_ = LINALG::CreateVector(*dofrowmap, true);
+  saved_scatraO2nm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_scatraO2n_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  saved_scatraO2np_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // saving vector for element inlet O2 concentration
-  saved_e1scatraO2nm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_e1scatraO2n_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_e1scatraO2np_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e1scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 
   // saving vector for element outlet O2 concentration
-  saved_e2scatraO2nm_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_e2scatraO2n_ = LINALG::CreateVector(*elementcolmap, true);
-  saved_e2scatraO2np_ = LINALG::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2nm_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2n_ = CORE::LINALG::CreateVector(*elementcolmap, true);
+  saved_e2scatraO2np_ = CORE::LINALG::CreateVector(*elementcolmap, true);
 }  // RedAirwayImplicitTimeInt::InitSaveState()
 
 
@@ -1838,7 +1839,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->DofRowMap();
-        Teuchos::RCP<Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap, true);
+        Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
@@ -1861,7 +1862,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->DofRowMap();
-        Teuchos::RCP<Epetra_Vector> po2 = LINALG::CreateVector(*dofrowmap, true);
+        Teuchos::RCP<Epetra_Vector> po2 = CORE::LINALG::CreateVector(*dofrowmap, true);
         discret_->ClearState();
 
         evaluation_data.po2 = po2;
@@ -1919,41 +1920,41 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     }
 
     // write the flow values
-    LINALG::Export(*qin_nm_, *qexp_);
+    CORE::LINALG::Export(*qin_nm_, *qexp_);
     output_.WriteVector("qin_nm", qexp_);
-    LINALG::Export(*qin_n_, *qexp_);
+    CORE::LINALG::Export(*qin_n_, *qexp_);
     output_.WriteVector("qin_n", qexp_);
-    LINALG::Export(*qin_np_, *qexp_);
+    CORE::LINALG::Export(*qin_np_, *qexp_);
     output_.WriteVector("qin_np", qexp_);
 
-    LINALG::Export(*qout_nm_, *qexp_);
+    CORE::LINALG::Export(*qout_nm_, *qexp_);
     output_.WriteVector("qout_nm", qexp_);
-    LINALG::Export(*qout_n_, *qexp_);
+    CORE::LINALG::Export(*qout_n_, *qexp_);
     output_.WriteVector("qout_n", qexp_);
-    LINALG::Export(*qout_np_, *qexp_);
+    CORE::LINALG::Export(*qout_np_, *qexp_);
     output_.WriteVector("qout_np", qexp_);
 
-    LINALG::Export(*x_n_, *qexp_);
+    CORE::LINALG::Export(*x_n_, *qexp_);
     output_.WriteVector("x_n", qexp_);
-    LINALG::Export(*x_np_, *qexp_);
+    CORE::LINALG::Export(*x_np_, *qexp_);
     output_.WriteVector("x_np", qexp_);
-    LINALG::Export(*open_, *qexp_);
+    CORE::LINALG::Export(*open_, *qexp_);
     output_.WriteVector("open", qexp_);
-    LINALG::Export(*p_extnp_, *qexp_);
+    CORE::LINALG::Export(*p_extnp_, *qexp_);
     output_.WriteVector("p_extnp", qexp_);
-    LINALG::Export(*p_extn_, *qexp_);
+    CORE::LINALG::Export(*p_extn_, *qexp_);
     output_.WriteVector("p_extn", qexp_);
-    LINALG::Export(*airway_acinus_dep_, *qexp_);
+    CORE::LINALG::Export(*airway_acinus_dep_, *qexp_);
     output_.WriteVector("airway_acinus_dep", qexp_);
 
-    LINALG::Export(*elemVolumenm_, *qexp_);
+    CORE::LINALG::Export(*elemVolumenm_, *qexp_);
     output_.WriteVector("elemVolumenm", qexp_);
-    LINALG::Export(*elemVolumen_, *qexp_);
+    CORE::LINALG::Export(*elemVolumen_, *qexp_);
     output_.WriteVector("elemVolumen", qexp_);
-    LINALG::Export(*elemVolumenp_, *qexp_);
+    CORE::LINALG::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
-    LINALG::Export(*elemRadiusnp_, *qexp_);
+    CORE::LINALG::Export(*elemRadiusnp_, *qexp_);
     output_.WriteVector("elemRadius_current", qexp_);
 
     {
@@ -1989,16 +1990,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
 
     if (step_ == upres_)
     {
-      LINALG::Export(*elemVolume0_, *qexp_);
+      CORE::LINALG::Export(*elemVolume0_, *qexp_);
       output_.WriteVector("elemVolume0", qexp_);
       output_.WriteVector("NodeIDs", nodeIds_);
       output_.WriteVector("radii", radii_);
-      LINALG::Export(*generations_, *qexp_);
+      CORE::LINALG::Export(*generations_, *qexp_);
       output_.WriteVector("generations", qexp_);
-      LINALG::Export(*acini_bc_, *qexp_);
+      CORE::LINALG::Export(*acini_bc_, *qexp_);
       output_.WriteVector("acin_bc", qexp_);
       output_.WriteElementData(true);
-      LINALG::Export(*elemArea0_, *qexp_);
+      CORE::LINALG::Export(*elemArea0_, *qexp_);
       output_.WriteVector("elemArea0", qexp_);
     }
 
@@ -2074,50 +2075,50 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       output_.WriteVector("juncVolMix", jVDofRowMix_);
     }
     // write the flow values
-    LINALG::Export(*qin_nm_, *qexp_);
+    CORE::LINALG::Export(*qin_nm_, *qexp_);
     output_.WriteVector("qin_nm", qexp_);
-    LINALG::Export(*qin_n_, *qexp_);
+    CORE::LINALG::Export(*qin_n_, *qexp_);
     output_.WriteVector("qin_n", qexp_);
-    LINALG::Export(*qin_np_, *qexp_);
+    CORE::LINALG::Export(*qin_np_, *qexp_);
     output_.WriteVector("qin_np", qexp_);
     //
-    LINALG::Export(*qout_nm_, *qexp_);
+    CORE::LINALG::Export(*qout_nm_, *qexp_);
     output_.WriteVector("qout_nm", qexp_);
-    LINALG::Export(*qout_n_, *qexp_);
+    CORE::LINALG::Export(*qout_n_, *qexp_);
     output_.WriteVector("qout_n", qexp_);
-    LINALG::Export(*qout_np_, *qexp_);
+    CORE::LINALG::Export(*qout_np_, *qexp_);
     output_.WriteVector("qout_np", qexp_);
 
-    LINALG::Export(*x_n_, *qexp_);
+    CORE::LINALG::Export(*x_n_, *qexp_);
     output_.WriteVector("x_n", qexp_);
-    LINALG::Export(*x_np_, *qexp_);
+    CORE::LINALG::Export(*x_np_, *qexp_);
     output_.WriteVector("x_np", qexp_);
-    LINALG::Export(*open_, *qexp_);
+    CORE::LINALG::Export(*open_, *qexp_);
     output_.WriteVector("open", qexp_);
-    LINALG::Export(*p_extnp_, *qexp_);
+    CORE::LINALG::Export(*p_extnp_, *qexp_);
     output_.WriteVector("p_extnp", qexp_);
-    LINALG::Export(*p_extn_, *qexp_);
+    CORE::LINALG::Export(*p_extn_, *qexp_);
     output_.WriteVector("p_extn", qexp_);
-    LINALG::Export(*airway_acinus_dep_, *qexp_);
+    CORE::LINALG::Export(*airway_acinus_dep_, *qexp_);
     output_.WriteVector("airway_acinus_dep", qexp_);
 
-    LINALG::Export(*elemVolumenm_, *qexp_);
+    CORE::LINALG::Export(*elemVolumenm_, *qexp_);
     output_.WriteVector("elemVolumenm", qexp_);
-    LINALG::Export(*elemVolumen_, *qexp_);
+    CORE::LINALG::Export(*elemVolumen_, *qexp_);
     output_.WriteVector("elemVolumen", qexp_);
-    LINALG::Export(*elemVolumenp_, *qexp_);
+    CORE::LINALG::Export(*elemVolumenp_, *qexp_);
     output_.WriteVector("elemVolumenp", qexp_);
 
     //
-    LINALG::Export(*acini_e_volumenm_, *qexp_);
+    CORE::LINALG::Export(*acini_e_volumenm_, *qexp_);
     output_.WriteVector("acini_vnm", qexp_);
-    LINALG::Export(*acini_e_volumen_, *qexp_);
+    CORE::LINALG::Export(*acini_e_volumen_, *qexp_);
     output_.WriteVector("acini_vn", qexp_);
-    LINALG::Export(*acini_e_volumenp_, *qexp_);
+    CORE::LINALG::Export(*acini_e_volumenp_, *qexp_);
     output_.WriteVector("acini_vnp", qexp_);
-    LINALG::Export(*acini_e_volume_strain_, *qexp_);
+    CORE::LINALG::Export(*acini_e_volume_strain_, *qexp_);
     output_.WriteVector("acini_volumetric_strain", qexp_);
-    LINALG::Export(*acini_e_volume0_, *qexp_);
+    CORE::LINALG::Export(*acini_e_volume0_, *qexp_);
     output_.WriteVector("acini_v0", qexp_);
 
     // write mesh in each restart step --- the elements are required since
@@ -2166,49 +2167,49 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   reader.ReadVector(p_nonlin_, "p_nonlin");
 
   reader.ReadVector(qexp_, "acini_vnm");
-  LINALG::Export(*qexp_, *acini_e_volumenm_);
+  CORE::LINALG::Export(*qexp_, *acini_e_volumenm_);
   reader.ReadVector(qexp_, "acini_vn");
-  LINALG::Export(*qexp_, *acini_e_volumen_);
+  CORE::LINALG::Export(*qexp_, *acini_e_volumen_);
   reader.ReadVector(qexp_, "acini_vnp");
-  LINALG::Export(*qexp_, *acini_e_volumenp_);
+  CORE::LINALG::Export(*qexp_, *acini_e_volumenp_);
   reader.ReadVector(qexp_, "acini_volumetric_strain");
-  LINALG::Export(*qexp_, *acini_e_volume_strain_);
+  CORE::LINALG::Export(*qexp_, *acini_e_volume_strain_);
   reader.ReadVector(qexp_, "acini_v0");
-  LINALG::Export(*qexp_, *acini_e_volume0_);
+  CORE::LINALG::Export(*qexp_, *acini_e_volume0_);
 
   reader.ReadVector(qexp_, "qin_nm");
-  LINALG::Export(*qexp_, *qin_nm_);
+  CORE::LINALG::Export(*qexp_, *qin_nm_);
   reader.ReadVector(qexp_, "qin_n");
-  LINALG::Export(*qexp_, *qin_n_);
+  CORE::LINALG::Export(*qexp_, *qin_n_);
   reader.ReadVector(qexp_, "qin_np");
-  LINALG::Export(*qexp_, *qin_np_);
+  CORE::LINALG::Export(*qexp_, *qin_np_);
 
   reader.ReadVector(qexp_, "qout_nm");
-  LINALG::Export(*qexp_, *qout_nm_);
+  CORE::LINALG::Export(*qexp_, *qout_nm_);
   reader.ReadVector(qexp_, "qout_n");
-  LINALG::Export(*qexp_, *qout_n_);
+  CORE::LINALG::Export(*qexp_, *qout_n_);
   reader.ReadVector(qexp_, "qout_np");
-  LINALG::Export(*qexp_, *qout_np_);
+  CORE::LINALG::Export(*qexp_, *qout_np_);
 
   reader.ReadVector(qexp_, "elemVolumenm");
-  LINALG::Export(*qexp_, *elemVolumenm_);
+  CORE::LINALG::Export(*qexp_, *elemVolumenm_);
   reader.ReadVector(qexp_, "elemVolumen");
-  LINALG::Export(*qexp_, *elemVolumen_);
+  CORE::LINALG::Export(*qexp_, *elemVolumen_);
   reader.ReadVector(qexp_, "elemVolumenp");
-  LINALG::Export(*qexp_, *elemVolumenp_);
+  CORE::LINALG::Export(*qexp_, *elemVolumenp_);
 
   reader.ReadVector(qexp_, "x_n");
-  LINALG::Export(*qexp_, *x_n_);
+  CORE::LINALG::Export(*qexp_, *x_n_);
   reader.ReadVector(qexp_, "x_np");
-  LINALG::Export(*qexp_, *x_np_);
+  CORE::LINALG::Export(*qexp_, *x_np_);
   reader.ReadVector(qexp_, "open");
-  LINALG::Export(*qexp_, *open_);
+  CORE::LINALG::Export(*qexp_, *open_);
   reader.ReadVector(qexp_, "p_extn");
-  LINALG::Export(*qexp_, *p_extn_);
+  CORE::LINALG::Export(*qexp_, *p_extn_);
   reader.ReadVector(qexp_, "p_extnp");
-  LINALG::Export(*qexp_, *p_extnp_);
+  CORE::LINALG::Export(*qexp_, *p_extnp_);
   reader.ReadVector(qexp_, "airway_acinus_dep");
-  LINALG::Export(*qexp_, *airway_acinus_dep_);
+  CORE::LINALG::Export(*qexp_, *airway_acinus_dep_);
 
 
   // read the previously written elements including the history data
@@ -2220,21 +2221,21 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
     reader.ReadVector(scatraO2nm_, "scatraO2nm");
 
     reader.ReadVector(qexp_, "e1scatraO2np");
-    LINALG::Export(*qexp_, *e1scatraO2np_);
+    CORE::LINALG::Export(*qexp_, *e1scatraO2np_);
     reader.ReadVector(qexp_, "e1scatraO2n");
-    LINALG::Export(*qexp_, *e1scatraO2n_);
+    CORE::LINALG::Export(*qexp_, *e1scatraO2n_);
     reader.ReadVector(qexp_, "e1scatraO2nm");
-    LINALG::Export(*qexp_, *e1scatraO2nm_);
+    CORE::LINALG::Export(*qexp_, *e1scatraO2nm_);
 
     reader.ReadVector(qexp_, "e2scatraO2np");
-    LINALG::Export(*qexp_, *e2scatraO2np_);
+    CORE::LINALG::Export(*qexp_, *e2scatraO2np_);
     reader.ReadVector(qexp_, "e2scatraO2n");
-    LINALG::Export(*qexp_, *e2scatraO2n_);
+    CORE::LINALG::Export(*qexp_, *e2scatraO2n_);
     reader.ReadVector(qexp_, "e2scatraO2nm");
-    LINALG::Export(*qexp_, *e2scatraO2nm_);
+    CORE::LINALG::Export(*qexp_, *e2scatraO2nm_);
 
     reader.ReadVector(jVDofRowMix_, "juncVolMix");
-    LINALG::Export(*jVDofRowMix_, *junctionVolumeInMix_);
+    CORE::LINALG::Export(*jVDofRowMix_, *junctionVolumeInMix_);
   }
 
 }  // RedAirwayImplicitTimeInt::ReadRestart
@@ -2402,7 +2403,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual(
 
   // Apply the BCs to the system matrix and rhs
   {
-    LINALG::ApplyDirichlettoSystem(sysmat_, pnp_, rhs_, bcval_, dbctog_);
+    CORE::LINALG::ApplyDirichlettoSystem(sysmat_, pnp_, rhs_, bcval_, dbctog_);
   }
 
   // Evaluate Residual

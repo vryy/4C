@@ -449,7 +449,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::SetupCalc(DRT::Element* 
     DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
   // get element coordinates
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, xyze0_);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze0_);
 
   // set current coordinates to initial coordinates
   // the displacements will be added later in ExtractElementAndNodeValues() for the moving mesh case
@@ -537,7 +537,7 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::EvalShapeFuncAndDeriv
 
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
-  LINALG::Matrix<nsd_, nsd_> xjm0;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
@@ -603,7 +603,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(const int inode)
 {
   // get parameter space coordinates of current node
-  LINALG::Matrix<3, 1> myXi = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
+  CORE::LINALG::Matrix<3, 1> myXi = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
   for (int idim = 0; idim < nsd_; idim++) xsi_(idim) = myXi(idim);
 
   det_ = EvalShapeFuncAndDerivsInParameterSpace();
@@ -616,7 +616,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::ComputeJacobianAtNode(c
 
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
-  LINALG::Matrix<nsd_, nsd_> xjm0;
+  CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
   xjm0.MultiplyNT(deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"

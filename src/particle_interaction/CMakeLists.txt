@@ -6,7 +6,6 @@ set(_particle_interaction_dependencies
     inpar
     io
     lib
-    linalg
     mat
     particle_algorithm
     particle_engine

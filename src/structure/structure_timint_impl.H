@@ -26,11 +26,11 @@ namespace DRT
   class Condition;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MultiMapExtractor;
   class KrylovProjector;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
@@ -71,13 +71,13 @@ namespace STR
 
     //! Constructor
     TimIntImpl(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& ioparams,        //!< ioflags
-        const Teuchos::ParameterList& sdynparams,      //!< input parameters
-        const Teuchos::ParameterList& xparams,         //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,      //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,           //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+        const Teuchos::ParameterList& ioparams,            //!< ioflags
+        const Teuchos::ParameterList& sdynparams,          //!< input parameters
+        const Teuchos::ParameterList& xparams,             //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
     //! Destructor
@@ -106,7 +106,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -255,40 +255,41 @@ namespace STR
     virtual void EvaluateForceResidual() = 0;
 
     //! Apply external force, its stiffness at state
-    void ApplyForceStiffExternal(const double time,    //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,         //!< old displacement state
-        const Teuchos::RCP<Epetra_Vector> disn,        //!< new displacement state
-        const Teuchos::RCP<Epetra_Vector> vel,         // velocity state
-        Teuchos::RCP<Epetra_Vector>& fext,             //!< external force
-        Teuchos::RCP<LINALG::SparseOperator>& fextlin  //!< linearization of external force
+    void ApplyForceStiffExternal(const double time,          //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,               //!< old displacement state
+        const Teuchos::RCP<Epetra_Vector> disn,              //!< new displacement state
+        const Teuchos::RCP<Epetra_Vector> vel,               // velocity state
+        Teuchos::RCP<Epetra_Vector>& fext,                   //!< external force
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& fextlin  //!< linearization of external force
     );
 
     //! Evaluate ordinary internal force, its stiffness at state
-    void ApplyForceStiffInternal(const double time,  //!< evaluation time
-        const double dt,                             //!< step size
-        const Teuchos::RCP<Epetra_Vector> dis,       //!< displacement state
-        const Teuchos::RCP<Epetra_Vector> disi,      //!< residual displacements
-        const Teuchos::RCP<Epetra_Vector> vel,       // velocity state
-        Teuchos::RCP<Epetra_Vector> fint,            //!< internal force
-        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-        Teuchos::ParameterList& params,              //!< parameters from nonlinear solver
-        Teuchos::RCP<LINALG::SparseOperator> damp = Teuchos::null  //!< material damping matrix
+    void ApplyForceStiffInternal(const double time,        //!< evaluation time
+        const double dt,                                   //!< step size
+        const Teuchos::RCP<Epetra_Vector> dis,             //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> disi,            //!< residual displacements
+        const Teuchos::RCP<Epetra_Vector> vel,             // velocity state
+        Teuchos::RCP<Epetra_Vector> fint,                  //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::ParameterList& params,                    //!< parameters from nonlinear solver
+        Teuchos::RCP<CORE::LINALG::SparseOperator> damp =
+            Teuchos::null  //!< material damping matrix
     );
 
     //! Evaluate internal and inertia forces and their linearizations
     void ApplyForceStiffInternalAndInertial(const double time,  //!< evaluation time
         const double dt,                                        //!< step size
-        const double timintfac_dis,                  //!< time integration factor for d(Res) / d dis
-        const double timintfac_vel,                  //!< time integration factor for d(Res) / d vel
-        const Teuchos::RCP<Epetra_Vector> dis,       //!< displacement state
-        const Teuchos::RCP<Epetra_Vector> disi,      //!< residual displacements
-        const Teuchos::RCP<Epetra_Vector> vel,       //! velocity state
-        const Teuchos::RCP<Epetra_Vector> acc,       //! acceleration state
-        Teuchos::RCP<Epetra_Vector> fint,            //!< internal force
-        Teuchos::RCP<Epetra_Vector> finert,          //!< inertia force
-        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness matrix
-        Teuchos::RCP<LINALG::SparseOperator> mass,   //!< mass matrix
-        Teuchos::ParameterList& params,              //!< parameters from nonlinear solver
+        const double timintfac_dis,              //!< time integration factor for d(Res) / d dis
+        const double timintfac_vel,              //!< time integration factor for d(Res) / d vel
+        const Teuchos::RCP<Epetra_Vector> dis,   //!< displacement state
+        const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+        const Teuchos::RCP<Epetra_Vector> vel,   //! velocity state
+        const Teuchos::RCP<Epetra_Vector> acc,   //! acceleration state
+        Teuchos::RCP<Epetra_Vector> fint,        //!< internal force
+        Teuchos::RCP<Epetra_Vector> finert,      //!< inertia force
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness matrix
+        Teuchos::RCP<CORE::LINALG::SparseOperator> mass,   //!< mass matrix
+        Teuchos::ParameterList& params,                    //!< parameters from nonlinear solver
         const double beta = 1000.0,   //!< time integration parameters for element-wise time
                                       //!< integration (necessary for time integration of rotations)
         const double gamma = 1000.0,  //!< time integration parameters for element-wise time
@@ -301,11 +302,11 @@ namespace STR
     );
 
     //! Evaluate forces due to constraints
-    void ApplyForceStiffConstraint(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> dis,         //!< last evaluated displacements
-        const Teuchos::RCP<Epetra_Vector> disn,        //!< evaluation displacements
-        Teuchos::RCP<Epetra_Vector>& fint,             //!< forces are added onto
-        Teuchos::RCP<LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
+    void ApplyForceStiffConstraint(const double time,       //!< evaluation time
+        const Teuchos::RCP<Epetra_Vector> dis,              //!< last evaluated displacements
+        const Teuchos::RCP<Epetra_Vector> disn,             //!< evaluation displacements
+        Teuchos::RCP<Epetra_Vector>& fint,                  //!< forces are added onto
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is added onto
         Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
@@ -313,34 +314,34 @@ namespace STR
     void ApplyForceStiffCardiovascular0D(const double time,  //!< evaluation time
         const Teuchos::RCP<Epetra_Vector> disn,              //!< evaluation displacements
         Teuchos::RCP<Epetra_Vector>& fint,                   //!< forces are added onto
-        Teuchos::RCP<LINALG::SparseOperator>& stiff,         //!< stiffness is added onto
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,   //!< stiffness is added onto
         Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate _certain_ surface stresses and stiffness
     //!
     //! The Evaluation happens internal-force-like.
-    void ApplyForceStiffSurfstress(const double time,  //!< evaluation time
-        const double dt,                               //!< time step size
-        const Teuchos::RCP<Epetra_Vector> disn,        //!< displacement state at n+1
-        Teuchos::RCP<Epetra_Vector>& fint,             //!< internal force
-        Teuchos::RCP<LINALG::SparseOperator>& stiff    //! stiffness
+    void ApplyForceStiffSurfstress(const double time,      //!< evaluation time
+        const double dt,                                   //!< time step size
+        const Teuchos::RCP<Epetra_Vector> disn,            //!< displacement state at n+1
+        Teuchos::RCP<Epetra_Vector>& fint,                 //!< internal force
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff  //! stiffness
     );
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void ApplyForceStiffContactMeshtying(
-        Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-        Teuchos::RCP<Epetra_Vector>& fres,            //!< residual forces are modified
-        Teuchos::RCP<Epetra_Vector>& dis,             //!< current displacement state
-        bool predict                                  //!< flag indicating predictor step
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
+        Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
+        bool predict                                        //!< flag indicating predictor step
     );
 
     //! Evaluate forces and stiffness due to beam contact
     void ApplyForceStiffBeamContact(
-        Teuchos::RCP<LINALG::SparseOperator>& stiff,  //!< stiffness is modified
-        Teuchos::RCP<Epetra_Vector>& fres,            //!< residual forces are modified
-        Teuchos::RCP<Epetra_Vector>& dis,             //!< current displacement state
-        bool predict                                  //!< flag indicating predictor step
+        Teuchos::RCP<CORE::LINALG::SparseOperator>& stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector>& fres,                  //!< residual forces are modified
+        Teuchos::RCP<Epetra_Vector>& dis,                   //!< current displacement state
+        bool predict                                        //!< flag indicating predictor step
     );
 
     //! Check residual displacement and scale it if necessary
@@ -350,11 +351,11 @@ namespace STR
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void ApplyForceStiffSpringDashpot(
-        Teuchos::RCP<LINALG::SparseOperator> stiff,  //!< stiffness is modified
-        Teuchos::RCP<Epetra_Vector> fint,            //!< internal forces are modified
-        Teuchos::RCP<Epetra_Vector> dis,             //!< current displacement state
-        Teuchos::RCP<Epetra_Vector> vel,             //!< current velocity state
-        bool predict,                                //!< flag indicating predictor step
+        Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,  //!< stiffness is modified
+        Teuchos::RCP<Epetra_Vector> fint,                  //!< internal forces are modified
+        Teuchos::RCP<Epetra_Vector> dis,                   //!< current displacement state
+        Teuchos::RCP<Epetra_Vector> vel,                   //!< current velocity state
+        bool predict,                                      //!< flag indicating predictor step
         Teuchos::ParameterList
             psprdash  //!< parameter list containing scale factors for matrix entries
     );
@@ -748,7 +749,7 @@ namespace STR
     INPAR::STR::STC_Scale GetSTCAlgo() { return stcscale_; }
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
     {
       if (!stccompl_) ComputeSTCMatrix();
       stccompl_ = true;
@@ -773,8 +774,8 @@ namespace STR
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps);
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with SolveRelaxationLinear
@@ -1043,16 +1044,16 @@ namespace STR
 
     //! @name Krylov projection variables
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
+    Teuchos::RCP<CORE::LINALG::KrylovProjector> projector_;  //!< Krylov projector himself
     //@}
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum INPAR::STR::STC_Scale stcscale_;        //!< scale thickness of shells?
-    double stcfact_;                             //!< scaling factor for STC
-    int stclayer_;                               //! number of layers for multilayered case
-    Teuchos::RCP<LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
-    bool stccompl_;                              //!< keep track if stc matrix has been evaluated
+    enum INPAR::STR::STC_Scale stcscale_;              //!< scale thickness of shells?
+    double stcfact_;                                   //!< scaling factor for STC
+    int stclayer_;                                     //! number of layers for multilayered case
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> stcmat_;  //!< scaling matrix for STC
+    bool stccompl_;  //!< keep track if stc matrix has been evaluated
     //@}
 
     //! @name Pseudo Transient Continuation Parameters

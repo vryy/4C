@@ -71,7 +71,8 @@ UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
   structmapr_ = Teuchos::rcp(new Epetra_Map(projmatrix_->NumVectors(), 0, actdisc_->Comm()));
   redstructmapr_ = Teuchos::rcp(
       new Epetra_Map(projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, actdisc_->Comm()));
-  // LINALG::AllreduceEMap cant't be used here, because NumGlobalElements will be choosen wrong
+  // CORE::LINALG::AllreduceEMap cant't be used here, because NumGlobalElements will be choosen
+  // wrong
 
   // importers for reduced system
   structrimpo_ = Teuchos::rcp(new Epetra_Import(*structmapr_, *redstructmapr_));
@@ -83,7 +84,8 @@ UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
 /*----------------------------------------------------------------------*
  | M_red = V^T * M * V                                    pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINALG::SparseMatrix> M)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M)
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
@@ -97,9 +99,9 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINAL
   MultiplyEpetraMultiVectors(
       projmatrix_, 'T', M_tmp, 'N', redstructmapr_, structrimpo_, M_red_mvec);
 
-  // convert Epetra_MultiVector to LINALG::SparseMatrix
-  Teuchos::RCP<LINALG::SparseMatrix> M_red =
-      Teuchos::rcp(new LINALG::SparseMatrix(*structmapr_, 0, false, true));
+  // convert Epetra_MultiVector to CORE::LINALG::SparseMatrix
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> M_red =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*structmapr_, 0, false, true));
   EpetraMultiVectorToLINALGSparseMatrix(M_red_mvec, structmapr_, Teuchos::null, M_red);
 
   return M_red;
@@ -108,8 +110,8 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceDiagnoal(Teuchos::RCP<LINAL
 /*----------------------------------------------------------------------*
  | M_red = V^T * M                                        pfaller Oct17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
-    Teuchos::RCP<LINALG::SparseMatrix> M)
+Teuchos::RCP<CORE::LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M)
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
@@ -117,10 +119,10 @@ Teuchos::RCP<LINALG::SparseMatrix> UTILS::MOR::ReduceOffDiagonal(
   int err = M->Multiply(true, *projmatrix_, *M_tmp);
   if (err) dserror("Multiplication V^T * M failed.");
 
-  // convert Epetra_MultiVector to LINALG::SparseMatrix
+  // convert Epetra_MultiVector to CORE::LINALG::SparseMatrix
   Teuchos::RCP<Epetra_Map> rangemap = Teuchos::rcp(new Epetra_Map(M->DomainMap()));
-  Teuchos::RCP<LINALG::SparseMatrix> M_red =
-      Teuchos::rcp(new LINALG::SparseMatrix(*rangemap, 0, false, true));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> M_red =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*rangemap, 0, false, true));
   EpetraMultiVectorToLINALGSparseMatrix(M_tmp, rangemap, structmapr_, M_red);
 
   return M_red;
@@ -190,11 +192,11 @@ void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> mul
 }
 
 /*----------------------------------------------------------------------*
- | Epetra_MultiVector to LINALG::SparseMatrix             pfaller Oct17 |
+ | Epetra_MultiVector to CORE::LINALG::SparseMatrix             pfaller Oct17 |
  *----------------------------------------------------------------------*/
 void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_MultiVector> multivect,
     Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
-    Teuchos::RCP<LINALG::SparseMatrix> sparsemat)
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparsemat)
 {
   // pointer to values of the Epetra_MultiVector
   double *Values;
@@ -206,12 +208,12 @@ void UTILS::MOR::EpetraMultiVectorToLINALGSparseMatrix(Teuchos::RCP<Epetra_Multi
     // loop over rows of the Epetra_MultiVector
     for (int j = 0; j < multivect->MyLength(); j++)
     {
-      // assemble the values into the LINALG::SparseMatrix (value by value)
+      // assemble the values into the CORE::LINALG::SparseMatrix (value by value)
       sparsemat->Assemble(Values[i * multivect->MyLength() + j], rangemap->GID(j), i);
     }
   }
 
-  // Complete the LINALG::SparseMatrix
+  // Complete the CORE::LINALG::SparseMatrix
   if (domainmap == Teuchos::null)
     sparsemat->Complete();
   else

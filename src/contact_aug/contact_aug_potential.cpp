@@ -64,7 +64,7 @@ void CONTACT::AUG::Potential::Setup()
   zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.GActiveNDofRowMapPtr()));
 
   Teuchos::RCP<Epetra_Map> ginactivendofs =
-      LINALG::SplitMap(*data_.GSlNormalDofRowMapPtr(), *data_.GActiveNDofRowMapPtr());
+      CORE::LINALG::SplitMap(*data_.GSlNormalDofRowMapPtr(), *data_.GActiveNDofRowMapPtr());
   zn_inactive_ = Teuchos::rcp(new Epetra_Vector(*ginactivendofs));
 
   isvalid_.state_ = false;
@@ -77,8 +77,8 @@ void CONTACT::AUG::Potential::SetActiveInactiveState()
 {
   ResetIsValid();
 
-  LINALG::ExtractMyVector(*data_.LmPtr(), *zn_active_);
-  LINALG::ExtractMyVector(*data_.LmPtr(), *zn_inactive_);
+  CORE::LINALG::ExtractMyVector(*data_.LmPtr(), *zn_active_);
+  CORE::LINALG::ExtractMyVector(*data_.LmPtr(), *zn_inactive_);
 
   isvalid_.state_ = true;
 }
@@ -215,7 +215,7 @@ void CONTACT::AUG::Potential::ComputeLinInactive(const Epetra_Vector& znincr_ina
   // Potential: Inactive contributions
   // --------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Map> ginactiveslnodes =
-      LINALG::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.GActiveNodeRowMapPtr());
+      CORE::LINALG::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.GActiveNodeRowMapPtr());
   Epetra_Vector scZnincr_inactive(znincr_inactive);
 
   {

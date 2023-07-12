@@ -48,7 +48,7 @@
 
 
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : AlgorithmBase(comm, timeparams),
       is_part_of_multifield_problem_(false),
       porosity_splitter_(porosity_splitter),
@@ -132,8 +132,8 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // known to the discretization (without lagrange multipliers)
   // while StructureField()->DofRowMap() returns the DofRowMap known to
   // the constraint manager (with lagrange multipliers)
-  cond_splitter_ = Teuchos::rcp(
-      new LINALG::MapExtractor(*StructureField()->DofRowMap(), StructureField()->DofRowMap(0)));
+  cond_splitter_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
+      *StructureField()->DofRowMap(), StructureField()->DofRowMap(0)));
 
   // look for special poro conditions and set flags
   CheckForPoroConditions();
@@ -354,7 +354,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::StructureToFluidField(
     Teuchos::RCP<const Epetra_Vector> mv = volcoupl_->ApplyVectorMapping21(iv);
 
     Teuchos::RCP<Epetra_Vector> sv =
-        LINALG::CreateVector(*(FluidField()->VelPresSplitter()->OtherMap()));
+        CORE::LINALG::CreateVector(*(FluidField()->VelPresSplitter()->OtherMap()));
 
     std::copy(mv->Values(),
         mv->Values() + (static_cast<ptrdiff_t>(mv->MyLength() * mv->NumVectors())), sv->Values());
@@ -482,7 +482,7 @@ void POROELAST::PoroBase::SetupCoupling()
     FluidField()->SetMeshMap(coupling_fluid_structure_->SlaveDofMap());
 
     if (submeshes_)
-      psi_extractor_ = Teuchos::rcp(new LINALG::MapExtractor(
+      psi_extractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(
           *StructureField()->DofRowMap(), coupling_fluid_structure_->MasterDofMap()));
   }
   else
@@ -556,7 +556,7 @@ void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(
   Teuchos::RCP<Epetra_Map> nopendofmap =
       Teuchos::rcp(new Epetra_Map(-1, int(condIDs.size()), condIDs.data(), 0, comm));
 
-  nopenetration_ = Teuchos::rcp(new LINALG::MapExtractor(*dofRowMap, nopendofmap));
+  nopenetration_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dofRowMap, nopendofmap));
 }
 
 void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
@@ -565,7 +565,7 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS(
   if (has_cond_)
   {
     const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopenetration_->Map(1);
-    LINALG::ApplyDirichlettoSystem(iterinc, rhs, cond_rhs_, *nopenetrationmap);
+    CORE::LINALG::ApplyDirichlettoSystem(iterinc, rhs, cond_rhs_, *nopenetrationmap);
   }
 }
 
@@ -605,17 +605,17 @@ void POROELAST::NoPenetrationConditionHandle::Setup(
     cond_dofs_ = Teuchos::rcp(new Epetra_Vector(*dofRowMapFluid, true));
 
     fluid_fluid_constraint_matrix_ =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
 
     fluid_structure_constraint_matrix_ =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
 
     structure_vel_constraint_matrix_ =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::rcp(new CORE::LINALG::SparseMatrix(*dofRowMapFluid, 81, true, true));
   }
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(
     POROELAST::coupltype coupltype)
 {
   if (has_cond_)
@@ -628,7 +628,7 @@ Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::Cons
   return Teuchos::null;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix>
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
 POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::coupltype coupltype)
 {
   if (has_cond_)

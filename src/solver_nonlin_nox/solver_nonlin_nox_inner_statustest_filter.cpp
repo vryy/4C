@@ -43,9 +43,10 @@ unsigned NOX::NLN::INNER::StatusTest::Filter::Point::num_obj_coords_(0);
 double NOX::NLN::INNER::StatusTest::Filter::Point::gamma_obj_(0.0);
 double NOX::NLN::INNER::StatusTest::Filter::Point::gamma_theta_(0.0);
 std::vector<bool> NOX::NLN::INNER::StatusTest::Filter::Point::isvalid_scaling_;
-LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::scale_;
-LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::weights_;
-LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::global_scaled_max_thetas_;
+CORE::LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::scale_;
+CORE::LINALG::SerialDenseVector NOX::NLN::INNER::StatusTest::Filter::Point::weights_;
+CORE::LINALG::SerialDenseVector
+    NOX::NLN::INNER::StatusTest::Filter::Point::global_scaled_max_thetas_;
 double NOX::NLN::INNER::StatusTest::Filter::Point::global_init_max_theta_scale_;
 std::set<Teuchos::RCP<NOX::NLN::INNER::StatusTest::Filter::Point>,
     NOX::NLN::INNER::StatusTest::rcp_comp<NOX::NLN::INNER::StatusTest::Filter::Point>>

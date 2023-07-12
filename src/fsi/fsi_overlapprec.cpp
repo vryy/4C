@@ -24,11 +24,12 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
-    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const LINALG::MultiMapExtractor& maps,
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const CORE::LINALG::MultiMapExtractor& maps,
     ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
     int symmetric, double omega, int iterations, double somega, int siterations, double fomega,
     int fiterations, double aomega, int aiterations, FILE* err)
-    : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps, maps, 81, false, true),
+    : CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          maps, maps, 81, false, true),
       symmetric_(symmetric),
       omega_(omega),
       iterations_(iterations),
@@ -41,33 +42,33 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(
       err_(err),
       pcdbg_(pcdbg)
 {
-  fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluid.LinearSolver()));
+  fluidsolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(fluid.LinearSolver()));
 
 #ifndef BLOCKMATRIXMERGE
-  structuresolver_ = Teuchos::rcp(new LINALG::Preconditioner(structure.LinearSolver()));
+  structuresolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(structure.LinearSolver()));
 
   constalesolver_ = ale.ConstPreconditioner();
   if (constalesolver_ == Teuchos::null)
-    alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(ale.LinearSolver()));
+    alesolver_ = Teuchos::rcp(new CORE::LINALG::Preconditioner(ale.LinearSolver()));
   else
     alesolver_ = constalesolver_;
 #endif
 
   // check and fix ml nullspace if neccessary
   {
-    LINALG::Solver& solver = *(structure.LinearSolver());
+    CORE::LINALG::Solver& solver = *(structure.LinearSolver());
     const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(0, 0).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Structure", oldmap, newmap, solver.Params());
   }
   {
-    LINALG::Solver& solver = *(fluid.LinearSolver());
+    CORE::LINALG::Solver& solver = *(fluid.LinearSolver());
     const Epetra_Map& oldmap = *(fluid.DofRowMap());
     const Epetra_Map& newmap = Matrix(1, 1).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Fluid", oldmap, newmap, solver.Params());
   }
   {
-    LINALG::Solver& solver = *(ale.LinearSolver());
+    CORE::LINALG::Solver& solver = *(ale.LinearSolver());
     const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(2, 2).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace("Ale", oldmap, newmap, solver.Params());
@@ -140,9 +141,9 @@ void FSI::BlockPreconditioningMatrix::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
-  const LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
-  const LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
+  const CORE::LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
+  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
+  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix());
@@ -154,7 +155,7 @@ void FSI::BlockPreconditioningMatrix::SetupPreconditioner()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::BlockPreconditioningMatrix::LocalBlockRichardson(
-    Teuchos::RCP<LINALG::Preconditioner> solver, const LINALG::SparseMatrix& innerOp,
+    Teuchos::RCP<CORE::LINALG::Preconditioner> solver, const CORE::LINALG::SparseMatrix& innerOp,
     Teuchos::RCP<Epetra_Vector> x, Teuchos::RCP<Epetra_Vector> y, Teuchos::RCP<Epetra_Vector> tmpx,
     int iterations, double omega, FILE* err, const Epetra_Comm& comm)
 {
@@ -188,7 +189,7 @@ void FSI::BlockPreconditioningMatrix::LocalBlockRichardson(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(
-    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const LINALG::MultiMapExtractor& maps,
+    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg, const CORE::LINALG::MultiMapExtractor& maps,
     ADAPTER::FSIStructureWrapper& structure, ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale,
     bool structuresplit, int symmetric, double omega, int iterations, double somega,
     int siterations, double fomega, int fiterations, double aomega, int aiterations, FILE* err)
@@ -212,11 +213,11 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
   fluidsolver_->Setup(sparse_->EpetraMatrix());
 
 #else
-  const LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
-  const LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
-  const LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
+  const CORE::LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
+  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
+  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
 
-  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
@@ -231,11 +232,11 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  const LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
-  const LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
-  const LINALG::SparseMatrix& fluidMeshOp = Matrix(1, 2);
-  const LINALG::SparseMatrix& fluidBoundOp = Matrix(1, 0);
-  const LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
+  const CORE::LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
+  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
+  const CORE::LINALG::SparseMatrix& fluidMeshOp = Matrix(1, 2);
+  const CORE::LINALG::SparseMatrix& fluidBoundOp = Matrix(1, 0);
+  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
 
   // Extract vector blocks
   // RHS
@@ -271,7 +272,7 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiV
     {
       if (run > 0)
       {
-        const LINALG::SparseMatrix& structBoundOp = Matrix(0, 1);
+        const CORE::LINALG::SparseMatrix& structBoundOp = Matrix(0, 1);
 
         structInnerOp.Multiply(false, *sy, *tmpsx);
         sx->Update(-1.0, *tmpsx, 1.0);
@@ -308,14 +309,14 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiV
       {
         if (run > 0)
         {
-          const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
+          const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
           aleBoundOp.Multiply(false, *fy, *tmpax);
           ax->Update(-1.0, *tmpax, 1.0);
         }
       }
       else
       {
-        const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
+        const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
         aleBoundOp.Multiply(false, *sy, *tmpax);
         ax->Update(-1.0, *tmpax, 1.0);
       }
@@ -395,13 +396,13 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiV
         ax->Update(-1.0, *tmpax, 1.0);
         if (structuresplit_)
         {
-          const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
+          const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
           aleBoundOp.Multiply(false, *fy, *tmpax);
           ax->Update(-1.0, *tmpax, 1.0);
         }
         else
         {
-          const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
+          const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
           aleBoundOp.Multiply(false, *sy, *tmpax);
           ax->Update(-1.0, *tmpax, 1.0);
         }
@@ -413,7 +414,7 @@ void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector& X, Epetra_MultiV
       }
 
       {
-        const LINALG::SparseMatrix& structBoundOp = Matrix(0, 1);
+        const CORE::LINALG::SparseMatrix& structBoundOp = Matrix(0, 1);
 
         structInnerOp.Multiply(false, *sy, *tmpsx);
         sx->Update(-1.0, *tmpsx, 1.0);

@@ -114,7 +114,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Reference to the vector of the fiber
      */
-    const LINALG::Matrix<3, 1>& GetFiber(int gp, int i) const override;
+    const CORE::LINALG::Matrix<3, 1>& GetFiber(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in stress-like Voigt
@@ -126,7 +126,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Martix of the structural tensor in stress-like Voigt notation
      */
-    const LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp, int i) const override;
+    const CORE::LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp, int i) const override;
 
     /**
      * \brief Returns the i-th structural tensor at the Integration point in tensor notation
@@ -137,7 +137,7 @@ namespace MAT
      * @param i (in) : Id of the fiber
      * @return Reference to Matrix of the structural tensor in tensor notation
      */
-    const LINALG::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const override;
+    const CORE::LINALG::Matrix<3, 3>& GetStructuralTensor(int gp, int i) const override;
     //@}
 
     /*!
@@ -180,7 +180,7 @@ namespace MAT
      * \param gp Gauss point. Use FiberAnisotropyExtension::GPDEFAULT in case of element fibers
      * \param fibers Vector of all fibers
      */
-    void SetFibers(int gp, const std::array<LINALG::Matrix<3, 1>, numfib>& fibers);
+    void SetFibers(int gp, const std::array<CORE::LINALG::Matrix<3, 1>, numfib>& fibers);
 
     /*!
      * \brief Set all fibers of the element
@@ -188,7 +188,7 @@ namespace MAT
      * \param fibers The first index are the Gauss points, the second index the fibers. In case of
      * element fiebers, the first vector should only contain one element.
      */
-    void SetFibers(const std::vector<std::array<LINALG::Matrix<3, 1>, numfib>>& fibers);
+    void SetFibers(const std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>>& fibers);
 
     /*!
      * \brief Method that compute all structural tensors. Should be executed after a change of the
@@ -287,18 +287,18 @@ namespace MAT
      * Fibers of the element. The first index is for the Gauss points, the second index is for
      * the fiber id
      */
-    std::vector<std::array<LINALG::Matrix<3, 1>, numfib>> fibers_;
+    std::vector<std::array<CORE::LINALG::Matrix<3, 1>, numfib>> fibers_;
 
     /**
      * Structural tensors of the fibers in stress like Voigt notation. The ordering is the same as
      * in #fibers_
      */
-    std::vector<std::array<LINALG::Matrix<6, 1>, numfib>> fiberStructuralTensors_stress_;
+    std::vector<std::array<CORE::LINALG::Matrix<6, 1>, numfib>> fiberStructuralTensors_stress_;
 
     /**
      * Structural tensors of the fibers. The ordering is the same as in #fibers_
      */
-    std::vector<std::array<LINALG::Matrix<3, 3>, numfib>> fiberStructuralTensors_;
+    std::vector<std::array<CORE::LINALG::Matrix<3, 3>, numfib>> fiberStructuralTensors_;
 
     /// Structural tensor strategy
     const Teuchos::RCP<ELASTIC::StructuralTensorStrategyBase> structuralTensorStrategy_ =

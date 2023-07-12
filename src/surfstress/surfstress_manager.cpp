@@ -107,13 +107,13 @@ void UTILS::SurfStressManager::WriteResults(const int istep, const double timen)
   // The column map based vectors used for calculations are exported
   // to row map based ones needed for writing
 
-  Teuchos::RCP<Epetra_Vector> A_row = LINALG::CreateVector(*surfrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> con_row = LINALG::CreateVector(*surfrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> gamma_row = LINALG::CreateVector(*surfrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> A_row = CORE::LINALG::CreateVector(*surfrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> con_row = CORE::LINALG::CreateVector(*surfrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> gamma_row = CORE::LINALG::CreateVector(*surfrowmap_, true);
 
-  LINALG::Export(*A_current_, *A_row);
-  LINALG::Export(*con_current_, *con_row);
-  LINALG::Export(*gamma_current_, *gamma_row);
+  CORE::LINALG::Export(*A_current_, *A_row);
+  CORE::LINALG::Export(*con_current_, *con_row);
+  CORE::LINALG::Export(*gamma_current_, *gamma_row);
 
   surfoutput_->WriteVector("gamma", gamma_row, IO::elementvector);
   surfoutput_->WriteVector("Gamma", con_row, IO::elementvector);
@@ -141,14 +141,14 @@ void UTILS::SurfStressManager::ReadRestart(
   // The row map based vectors written in case of restart are exported
   // to column based ones needed for calculations again
 
-  Teuchos::RCP<Epetra_Vector> A = LINALG::CreateVector(*surfrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> con = LINALG::CreateVector(*surfrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> A = CORE::LINALG::CreateVector(*surfrowmap_, true);
+  Teuchos::RCP<Epetra_Vector> con = CORE::LINALG::CreateVector(*surfrowmap_, true);
 
   reader.ReadVector(A, "Area");
   reader.ReadVector(con, "Gamma");
 
-  LINALG::Export(*A, *A_last_);
-  LINALG::Export(*con, *con_last_);
+  CORE::LINALG::Export(*A, *A_last_);
+  CORE::LINALG::Export(*con, *con_last_);
 }
 
 
@@ -161,7 +161,7 @@ void UTILS::SurfStressManager::ReadRestart(
 
 void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
     const Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<LINALG::SparseOperator> stiff)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiff)
 {
   // action for elements
   p.set("action", "calc_surfstress_stiff");

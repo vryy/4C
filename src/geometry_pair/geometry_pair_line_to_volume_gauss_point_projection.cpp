@@ -48,8 +48,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
-    volume>::PreEvaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::PreEvaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.
@@ -67,8 +67,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, lin
  */
 template <typename scalar_type, typename line, typename volume>
 void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<scalar_type, line,
-    volume>::Evaluate(const LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
-    const LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
+    volume>::Evaluate(const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type>& q_line,
+    const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type>& q_volume,
     std::vector<LineSegment<scalar_type>>& segments) const
 {
   // Check if the element is initialized.

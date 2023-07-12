@@ -472,7 +472,8 @@ void STR::TIMINT::Implicit::CheckForTimeStepIncrease(INPAR::STR::ConvergenceStat
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& curr_grp) const
 {
-  typedef LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> LinalgBlockSparseMatrix;
+  typedef CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>
+      LinalgBlockSparseMatrix;
 
   if (not GetDataIO().IsWriteJacobianToMatlab()) return;
 
@@ -502,9 +503,10 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
   {
     case NOX::NLN::LinSystem::LinalgSparseMatrix:
     {
-      Teuchos::RCP<const LINALG::SparseMatrix> sparse_matrix =
-          Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(jac_ptr, true);
-      LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(), *sparse_matrix->EpetraMatrix());
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> sparse_matrix =
+          Teuchos::rcp_dynamic_cast<const CORE::LINALG::SparseMatrix>(jac_ptr, true);
+      CORE::LINALG::PrintMatrixInMatlabFormat(
+          filename.str().c_str(), *sparse_matrix->EpetraMatrix());
 
       break;
     }
@@ -512,7 +514,7 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
     {
       Teuchos::RCP<const LinalgBlockSparseMatrix> block_matrix =
           Teuchos::rcp_dynamic_cast<const LinalgBlockSparseMatrix>(jac_ptr, true);
-      LINALG::PrintBlockMatrixInMatlabFormat(filename.str(), *block_matrix);
+      CORE::LINALG::PrintBlockMatrixInMatlabFormat(filename.str(), *block_matrix);
 
       break;
     }
@@ -525,7 +527,7 @@ void STR::TIMINT::Implicit::PrintJacobianInMatlabFormat(const NOX::NLN::Group& c
   }
 
   // print sparsity pattern to file
-  //  LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+  //  CORE::LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 }
 
 /*----------------------------------------------------------------------------*

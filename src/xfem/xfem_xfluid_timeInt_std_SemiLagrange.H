@@ -75,21 +75,23 @@ namespace XFEM
 
     //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed
     //! interface side
-    void NewtonLoop(DRT::Element*& ele,  ///< pointer to element
-        TimeIntData* data,               ///< current data
-        LINALG::Matrix<3, 1>& xi,        ///< local coordinates of point
-        LINALG::Matrix<3, 1>& vel,       ///< velocity at current point
-        bool& elefound                   ///< is element found ?
+    void NewtonLoop(DRT::Element*& ele,   ///< pointer to element
+        TimeIntData* data,                ///< current data
+        CORE::LINALG::Matrix<3, 1>& xi,   ///< local coordinates of point
+        CORE::LINALG::Matrix<3, 1>& vel,  ///< velocity at current point
+        bool& elefound                    ///< is element found ?
     );
 
     //! perform one Newton iteration in order to compute the exact Lagrangian origin for a node
     //! which changed its interface side
     void NewtonIter(DRT::Element*& ele,  ///< pointer to element to be updated
         TimeIntData* data,               ///< current data to be updated
-        LINALG::Matrix<3, 1>& xi,        ///< local coordinates w.r.t ele to be updated
-        LINALG::Matrix<3, 1>& residuum,  ///< residual for semilagrangean backtracking to be updated
-        LINALG::Matrix<3, 1>& incr,      ///< computed increment for lagrangean origin to be updated
-        bool& elefound                   ///< element found ?
+        CORE::LINALG::Matrix<3, 1>& xi,  ///< local coordinates w.r.t ele to be updated
+        CORE::LINALG::Matrix<3, 1>&
+            residuum,  ///< residual for semilagrangean backtracking to be updated
+        CORE::LINALG::Matrix<3, 1>&
+            incr,       ///< computed increment for lagrangean origin to be updated
+        bool& elefound  ///< element found ?
     );
 
     //! check if newton iteration has finished
@@ -123,7 +125,7 @@ namespace XFEM
     //! call the back tracking which computes the final values
     void callBackTracking(DRT::Element*& ele,  ///< pointer to element
         TimeIntData* data,                     ///< data
-        LINALG::Matrix<3, 1>& xi,              ///< local coordinates
+        CORE::LINALG::Matrix<3, 1>& xi,        ///< local coordinates
         const char* backTrackingType           ///< type of backTracking
     );
 
@@ -131,7 +133,7 @@ namespace XFEM
     template <const int numnode, DRT::Element::DiscretizationType DISTYPE>
     void backTracking(DRT::Element*& fittingele,  ///< pointer to element
         TimeIntData* data,                        ///< data
-        LINALG::Matrix<3, 1>& xi,                 ///< local coordinates
+        CORE::LINALG::Matrix<3, 1>& xi,           ///< local coordinates
         const char* backTrackingType              ///< type of backTrackingwVectors
     );
 
@@ -141,7 +143,7 @@ namespace XFEM
 
     //! determine point's dofset in element ele w.r.t old or new interface position
     void getNodalDofSet(DRT::Element* ele,  ///< pointer to element
-        LINALG::Matrix<3, 1>& x,            ///< global coordinates of point
+        CORE::LINALG::Matrix<3, 1>& x,      ///< global coordinates of point
         std::vector<int>& nds,  ///< determine the points dofset w.r.t old/new interface position
         CORE::GEO::CUT::VolumeCell*& vc,  ///< valid fluid volumecell the point x lies in
         bool step_np                      ///< computation w.r.t old or new interface position?
@@ -155,9 +157,9 @@ namespace XFEM
         std::vector<DRT::Element*>& eles,  ///< elements around node used for the reconstruction
         std::vector<std::vector<int>>& ele_nds,  ///< corresonding elements nodal dofset information
         XFEM::XFEMDofSet& dofset,                ///< XFEM dofset
-        std::vector<LINALG::Matrix<3, 3>>&
+        std::vector<CORE::LINALG::Matrix<3, 3>>&
             velDeriv_avg,  ///< velocity/acc component derivatives for several vectors
-        std::vector<LINALG::Matrix<1, 3>>&
+        std::vector<CORE::LINALG::Matrix<1, 3>>&
             preDeriv_avg  ///< pressure-component derivatives for several vectors
     ) const;
 

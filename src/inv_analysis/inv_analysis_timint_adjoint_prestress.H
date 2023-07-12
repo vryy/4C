@@ -63,7 +63,7 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> rhsnp_;
 
     //! stiffness matrix with neumann terms
-    Teuchos::RCP<LINALG::SparseOperator> stiffp_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> stiffp_;
 
     //! prestress time
     double pstime_;

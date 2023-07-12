@@ -148,18 +148,20 @@ namespace DRT
       );
 
       //! Compute a constant normal vector for a boundary element
-      void GetConstNormal(LINALG::Matrix<nsd_ + 1, 1>& normal,  //!< the constant normal vector
-          const LINALG::Matrix<nsd_ + 1, nen_>& xyze            //!< element node coordinates
+      void GetConstNormal(
+          CORE::LINALG::Matrix<nsd_ + 1, 1>& normal,        //!< the constant normal vector
+          const CORE::LINALG::Matrix<nsd_ + 1, nen_>& xyze  //!< element node coordinates
       );
 
       // evaluate a Neumann boundary condition
       // this method evaluates normal and detA at gaussian point
       // deriv (in)  : derivatives of shape functions
-      void SurfaceIntegration(double& detA,     //!< area at GP
-          LINALG::Matrix<nsd_ + 1, 1>& normal,  //!< (o) normal at gaussian point, length is detA!
-          const LINALG::Matrix<nen_, nsd_ + 1>& xcurr  //!< (i)current coordinates of nodes
-                                                       //!< nodal coords in either material
-                                                       //!< or spatial frame
+      void SurfaceIntegration(double& detA,  //!< area at GP
+          CORE::LINALG::Matrix<nsd_ + 1, 1>&
+              normal,  //!< (o) normal at gaussian point, length is detA!
+          const CORE::LINALG::Matrix<nen_, nsd_ + 1>& xcurr  //!< (i)current coordinates of nodes
+                                                             //!< nodal coords in either material
+                                                             //!< or spatial frame
       );
 
       //! evaluate a heat convection boundary condition
@@ -168,9 +170,9 @@ namespace DRT
       //! current heat state (follower load-like).
       //! Using the current temperature solution requires the linearisation.
       void CalculateConvectionFintCond(const DRT::Element* ele,  //!< the actual boundary element
-          LINALG::Matrix<nen_, nen_>* econd,                     // view only!
+          CORE::LINALG::Matrix<nen_, nen_>* econd,               // view only!
                                                                  //!< tangent of the thermal problem
-          LINALG::Matrix<nen_, 1>* efext,                        // view only!
+          CORE::LINALG::Matrix<nen_, 1>* efext,                  // view only!
                                                                  //!< heat flux to be applied
           const double coeff,                                    //!< heat transfer coefficient
           const double surtemp,                                  //!< surrounding temperature
@@ -186,43 +188,43 @@ namespace DRT
       //! In addition: using the current displacements u_{n+1} requires linearisation
       void CalculateNlnConvectionFintCond(DRT::Element* ele,  //!< the actual boundary element
           std::vector<double>& disp,                          //!< current displacements d_{n+1}
-          LINALG::Matrix<nen_, nen_>* econd,                  // view only!
-                                              //!< tangent of the thermal problem k_TT
-          LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl,  // view only!
-                                                                //!< coupling tangent k_Td
-          LINALG::Matrix<nen_, 1>* efext,                       // view only!
-                                                                //!< heat flux to be applied
-          const double coeff,                                   //!< heat transfer coefficient
-          const double surtemp,                                 //!< surrounding temperature
-          const std::string tempstate                           //!< desired temperature state
+          CORE::LINALG::Matrix<nen_, nen_>* econd,            // view only!
+                                                    //!< tangent of the thermal problem k_TT
+          CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_>* etangcoupl,  // view only!
+                                                                      //!< coupling tangent k_Td
+          CORE::LINALG::Matrix<nen_, 1>* efext,                       // view only!
+                                                                      //!< heat flux to be applied
+          const double coeff,                                         //!< heat transfer coefficient
+          const double surtemp,                                       //!< surrounding temperature
+          const std::string tempstate                                 //!< desired temperature state
       );
 
       //! actual values of temperatures
-      LINALG::Matrix<nen_, 1> etemp_;
+      CORE::LINALG::Matrix<nen_, 1> etemp_;
 
       //! number of dof per node
       const int numdofpernode_;
       //! node coordinates
-      LINALG::Matrix<nsd_ + 1, nen_> xyze_;
+      CORE::LINALG::Matrix<nsd_ + 1, nen_> xyze_;
       //! coordinates of current integration point in reference coordinates
-      LINALG::Matrix<nsd_, 1> xsi_;
+      CORE::LINALG::Matrix<nsd_, 1> xsi_;
       //! array for shape functions
-      LINALG::Matrix<nen_, 1> funct_;
+      CORE::LINALG::Matrix<nen_, 1> funct_;
       //! array for shape function derivatives w.r.t. r,s,t
-      LINALG::Matrix<nsd_, nen_> deriv_;
+      CORE::LINALG::Matrix<nsd_, nen_> deriv_;
       //! global derivatives of shape functions w.r.t. x,y,z
-      LINALG::Matrix<nsd_, nen_> derxy_;
+      CORE::LINALG::Matrix<nsd_, nen_> derxy_;
       //! unit normal vector at integration point
-      LINALG::Matrix<nsd_ + 1, 1> normal_;
+      CORE::LINALG::Matrix<nsd_ + 1, 1> normal_;
       //! metric tensor at integration point
-      LINALG::Matrix<nsd_, nsd_> metrictensor_;
+      CORE::LINALG::Matrix<nsd_, nsd_> metrictensor_;
       //! integration factor for current GP: fac = GaussWeight * drs
       double fac_;
 
       //! nurbs specific: element knots
       std::vector<Epetra_SerialDenseVector> myknots_;
       //! nurbs specific: control point weights
-      LINALG::Matrix<nen_, 1> weights_;
+      CORE::LINALG::Matrix<nen_, 1> weights_;
       // normal fac
       double normalfac_;
 

@@ -99,12 +99,12 @@ namespace MIXTURE
 
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
-    void Update(
-        LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void Update(CORE::LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
-    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;
 
     /*!
      * \brief Returns the initial reference mass denstity of the constituent

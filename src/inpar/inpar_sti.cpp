@@ -80,10 +80,11 @@ void INPAR::STI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &stidyn_monolithic);
 
   // type of global system matrix in global system of equations
-  setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "block",
+  setStringToIntegralParameter<CORE::LINALG::MatrixType>("MATRIXTYPE", "block",
       "type of global system matrix in global system of equations",
       tuple<std::string>("block", "sparse"),
-      tuple<LINALG::MatrixType>(LINALG::MatrixType::block_condition, LINALG::MatrixType::sparse),
+      tuple<CORE::LINALG::MatrixType>(
+          CORE::LINALG::MatrixType::block_condition, CORE::LINALG::MatrixType::sparse),
       &stidyn_monolithic);
 
   /*----------------------------------------------------------------------*/

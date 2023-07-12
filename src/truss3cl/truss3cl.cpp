@@ -483,7 +483,7 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
     if (!currele) dserror("cast to Truss3CL* failed");
 
     // reference node position of real nodes
-    LINALG::Matrix<12, 1> xrefe;
+    CORE::LINALG::Matrix<12, 1> xrefe;
     xrefe.Clear();
     currele->xrefe_.resize(3 * fnnode);
     currele->xrefe_.clear();
@@ -498,7 +498,7 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
 
       // since filaments are straight at initial configuration, only lagrange polynomials are enough
 
-      std::vector<LINALG::Matrix<1, 2>> Ibp(2);
+      std::vector<CORE::LINALG::Matrix<1, 2>> Ibp(2);
       for (int filament = 0; filament < 2; filament++)
       {
         CORE::DRT::UTILS::shape_function_1D(

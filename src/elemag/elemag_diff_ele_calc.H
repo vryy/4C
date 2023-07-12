@@ -191,16 +191,16 @@ namespace DRT
             Epetra_SerialDenseVector& elevec1);
 
         /// Function evaluation routine
-        void EvaluateAll(const int start_func, const double t, const LINALG::Matrix<nsd_, 1>& xyz,
-            Epetra_SerialDenseVector& v) const;
+        void EvaluateAll(const int start_func, const double t,
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
 
         /// Function gradient evaluation routine
-        void ComputeFunctionGradient(int start_func, double t, const LINALG::Matrix<nsd_, 1>& xyz,
-            Epetra_SerialDenseMatrix& v) const;
+        void ComputeFunctionGradient(int start_func, double t,
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& v) const;
 
         /// Function time derivative evaluation routine
         void ComputeFunctionTimeDerivative(int start_func, double t, double dt,
-            const LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
 
         // convention: we sort the entries in the matrices the following way:
         // first comes the electric field then the magnetic one.

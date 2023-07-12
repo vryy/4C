@@ -119,7 +119,7 @@ void INVANA::ObjectiveFunctDisp::ReadMonitor(std::string monitorfilename)
 
   // setup map of measured dofs
   mdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, mdofs.size(), mdofs.data(), 0, discret_->Comm()));
-  mextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*dofrowmap_, mdofrowmap_));
+  mextractor_ = Teuchos::rcp(new CORE::LINALG::MapExtractor(*dofrowmap_, mdofrowmap_));
 
   // initialize vector of measured values
   mstate_ = Teuchos::rcp(new Epetra_MultiVector(*mdofrowmap_, nsteps, true));

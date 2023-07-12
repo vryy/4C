@@ -5,7 +5,6 @@ set(_porofluidmultiphase_ele_dependencies
     core
     inpar
     lib
-    linalg
     mat
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_porofluidmultiphase_ele_dependencies})

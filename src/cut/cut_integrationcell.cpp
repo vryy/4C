@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<3, 1>& x)
+bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 {
   switch (this->Shape())
   {
@@ -46,11 +46,11 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<3, 1>& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned probdim, ::DRT::Element::DiscretizationType celltype>
-bool CORE::GEO::CUT::IntegrationCell::Contains(LINALG::Matrix<probdim, 1>& x)
+bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<probdim, 1>& x)
 {
   const int ncn = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celltype>::numNodePerElement;
 
-  LINALG::Matrix<probdim, ncn> coords(xyz_);
+  CORE::LINALG::Matrix<probdim, ncn> coords(xyz_);
 
   Teuchos::RCP<CORE::GEO::CUT::Position> pos =
       CORE::GEO::CUT::Position::Create(coords, x, celltype);

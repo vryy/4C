@@ -224,7 +224,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   int mnodes = LineElement()->NumNode();
 
   // Dual shape functions coefficient matrix and linearization
-  LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
   SurfaceElement().MoData().DerivDualShape() =
       Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
           (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
@@ -236,10 +236,10 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // initialize matrices de and me
-  LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
-  LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix me(nnodes, nnodes, true);
+  CORE::LINALG::SerialDenseMatrix de(nnodes, nnodes, true);
 
-  CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
+  CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>> derivde_new(
       (nnodes + mnodes) * ndof);
 
   // two-dim arrays of maps for linearization of me/de
@@ -293,8 +293,8 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     for (int i = 0; i < 2; ++i) psxi[i] = sxi[i];
 
     // create vector for shape function evaluation
-    LINALG::SerialDenseVector sval(nnodes);
-    LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
+    CORE::LINALG::SerialDenseVector sval(nnodes);
+    CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 2, true);
 
     // evaluate trace space shape functions at Gauss point
     SurfaceElement().EvaluateShape(psxi, sval, sderiv, nnodes);
@@ -305,11 +305,11 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     // GP slave coordinate derivatives
     std::vector<CORE::GEN::pairedvector<int, double>> dpsxigp(2, (nnodes + ncol) * ndof);
     // global GP coordinate derivative on integration element
-    CORE::GEN::pairedvector<int, LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
+    CORE::GEN::pairedvector<int, CORE::LINALG::Matrix<3, 1>> lingp((nnodes + ncol) * ndof);
 
     // compute global GP coordinate derivative
-    static LINALG::Matrix<3, 1> svalcell;
-    static LINALG::Matrix<3, 2> sderivcell;
+    static CORE::LINALG::Matrix<3, 1> svalcell;
+    static CORE::LINALG::Matrix<3, 2> sderivcell;
     currcell->EvaluateShape(eta, svalcell, sderivcell);
 
     for (int v = 0; v < 2; ++v)
@@ -328,7 +328,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     double fac = 0.;
     for (_CI p = derivjaccell.begin(); p != derivjaccell.end(); ++p)
     {
-      LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+      CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
       const double& ps = p->second;
       for (int j = 0; j < nnodes; ++j)
       {
@@ -341,7 +341,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
     for (int i = 0; i < 2; ++i)
       for (_CI p = dpsxigp[i].begin(); p != dpsxigp[i].end(); ++p)
       {
-        LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+        CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
         const double& ps = p->second;
         for (int j = 0; j < nnodes; ++j)
         {
@@ -378,21 +378,21 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   if (A_tot < 1.e-12) return;
 
   // invert bi-ortho matrix me
-  //  LINALG::SerialDenseMatrix meinv = LINALG::InvertAndMultiplyByCholesky(me,de,ae);
+  //  CORE::LINALG::SerialDenseMatrix meinv = CORE::LINALG::InvertAndMultiplyByCholesky(me,de,ae);
 
-  LINALG::Matrix<4, 4, double> me_tmatrix(me, true);
-  LINALG::Inverse(me_tmatrix);
-  LINALG::SerialDenseMatrix meinv = me;
+  CORE::LINALG::Matrix<4, 4, double> me_tmatrix(me, true);
+  CORE::LINALG::Inverse(me_tmatrix);
+  CORE::LINALG::SerialDenseMatrix meinv = me;
 
   // build linearization of ae and store in derivdual
   // (this is done according to a quite complex formula, which
   // we get from the linearization of the biorthogonality condition:
   // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-  typedef CORE::GEN::pairedvector<int, LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator
-      _CIM;
+  typedef CORE::GEN::pairedvector<int,
+      CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>>::const_iterator _CIM;
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
-    LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
+    CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
     Epetra_SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
@@ -405,7 +405,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   }
 
   // store ae matrix in slave element data container
-  SurfaceElement().MoData().DualShape() = Teuchos::rcp(new LINALG::SerialDenseMatrix(ae));
+  SurfaceElement().MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
 
   return;
 }
@@ -1312,7 +1312,7 @@ void CONTACT::LineToSurfaceCoupling3d::CreateIntegrationLines(
     std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex)
 {
   // get coordinates
-  LINALG::Matrix<3, 3> coords;
+  CORE::LINALG::Matrix<3, 3> coords;
 
   for (int i = 0; i < 3; ++i)
   {
@@ -2007,8 +2007,8 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SurfaceElement().NumNode();
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SurfaceElement().EvaluateShape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
@@ -2202,8 +2202,8 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SurfaceElement().NumNode();
-  LINALG::SerialDenseVector sval(nrow);
-  LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
+  CORE::LINALG::SerialDenseVector sval(nrow);
+  CORE::LINALG::SerialDenseMatrix sderiv(nrow, 2, true);
   SurfaceElement().EvaluateShape(scxi, sval, sderiv, nrow);
 
   // we need all participating slave nodes
@@ -2392,13 +2392,13 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
   int ncol = LineMasterElement()->NumNode();
 
   // slave values
-  LINALG::SerialDenseVector sval(nnodes);
-  LINALG::SerialDenseMatrix sderiv(nnodes, 1);
+  CORE::LINALG::SerialDenseVector sval(nnodes);
+  CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 1);
   LineSlaveElement()->EvaluateShape(sxi, sval, sderiv, nnodes);
 
   // master values
-  LINALG::SerialDenseVector mval(nnodes);
-  LINALG::SerialDenseMatrix mderiv(nnodes, 1);
+  CORE::LINALG::SerialDenseVector mval(nnodes);
+  CORE::LINALG::SerialDenseMatrix mderiv(nnodes, 1);
   LineMasterElement()->EvaluateShape(mxi, mval, mderiv, nnodes);
 
   // map iterator
@@ -3085,7 +3085,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   std::array<double, 2> f = {0.0, 0.0};
 
   // gradient of f (df/deta[0], df/deta[1])
-  LINALG::Matrix<2, 2> df;
+  CORE::LINALG::Matrix<2, 2> df;
 
   // Newton
   for (int k = 0; k < MORTARMAXITER; ++k)
@@ -3094,13 +3094,13 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     //  F CALCULATION                             //
     //**********************************************
     // slave values
-    LINALG::SerialDenseVector sval(nnodes);
-    LINALG::SerialDenseMatrix sderiv(nnodes, 1);
+    CORE::LINALG::SerialDenseVector sval(nnodes);
+    CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 1);
     LineSlaveElement()->EvaluateShape(&xiS, sval, sderiv, nnodes);
 
     // master values
-    LINALG::SerialDenseVector mval(nnodes);
-    LINALG::SerialDenseMatrix mderiv(nnodes, 1);
+    CORE::LINALG::SerialDenseVector mval(nnodes);
+    CORE::LINALG::SerialDenseMatrix mderiv(nnodes, 1);
     LineMasterElement()->EvaluateShape(&xiM, mval, mderiv, nnodes);
 
     std::array<double, 3> xs = {0.0, 0.0, 0.0};
@@ -3178,13 +3178,13 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   //  Linearization                             //
   //**********************************************
   // slave values
-  LINALG::SerialDenseVector sval(nnodes);
-  LINALG::SerialDenseMatrix sderiv(nnodes, 1);
+  CORE::LINALG::SerialDenseVector sval(nnodes);
+  CORE::LINALG::SerialDenseMatrix sderiv(nnodes, 1);
   LineSlaveElement()->EvaluateShape(&xiS, sval, sderiv, nnodes);
 
   // master values
-  LINALG::SerialDenseVector mval(nnodes);
-  LINALG::SerialDenseMatrix mderiv(nnodes, 1);
+  CORE::LINALG::SerialDenseVector mval(nnodes);
+  CORE::LINALG::SerialDenseMatrix mderiv(nnodes, 1);
   LineMasterElement()->EvaluateShape(&xiM, mval, mderiv, nnodes);
 
   std::array<double, 3> xs = {0.0, 0.0, 0.0};

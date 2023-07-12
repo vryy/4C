@@ -46,7 +46,7 @@ namespace CORE::DRT::UTILS
   class IntPointsAndWeights;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixColTransform;
   class MatrixRowTransform;
@@ -57,7 +57,7 @@ namespace LINALG
   class SparseMatrix;
   class Equilibration;
   enum class MatrixType;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace MORTAR
 {
@@ -102,15 +102,15 @@ namespace SCATRA
     void ComputeTimeStepSize(double& dt) override;
 
     //! return map extractor associated with blocks of auxiliary system matrix for master side
-    const LINALG::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
+    const CORE::LINALG::MultiMapExtractor& BlockMapsMaster() const { return *blockmaps_master_; };
 
     //! return map extractor associated with blocks of auxiliary system matrix for slave side
-    const LINALG::MultiMapExtractor& BlockMapsSlave() const { return *blockmaps_slave_; };
+    const CORE::LINALG::MultiMapExtractor& BlockMapsSlave() const { return *blockmaps_slave_; };
 
     //! compute time derivatives of discrete state variables
     void ComputeTimeDerivative() const override;
 
-    void CondenseMatAndRHS(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    void CondenseMatAndRHS(const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& residual,
         const bool calcinittimederiv = false) const override;
 
@@ -140,8 +140,8 @@ namespace SCATRA
     void ExplicitPredictor() const override;
 
     //! extract selected rows from a sparse matrix
-    static void ExtractMatrixRows(const LINALG::SparseMatrix& matrix,  //!< source matrix
-        LINALG::SparseMatrix& rows,                                    //!< destination matrix
+    static void ExtractMatrixRows(const CORE::LINALG::SparseMatrix& matrix,  //!< source matrix
+        CORE::LINALG::SparseMatrix& rows,                                    //!< destination matrix
         const Epetra_Map& rowmap  //!< map of matrix rows to be extracted
     );
 
@@ -152,7 +152,7 @@ namespace SCATRA
      * @param extendedsystemmatrix  global system matrix
      * @param extendedresidual      global residual vector
      */
-    void FDCheck(const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,
+    void FDCheck(const CORE::LINALG::BlockSparseMatrixBase& extendedsystemmatrix,
         const Teuchos::RCP<Epetra_Vector>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
@@ -166,7 +166,7 @@ namespace SCATRA
 
     bool SystemMatrixInitializationNeeded() const override { return false; }
 
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       dserror(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -177,7 +177,7 @@ namespace SCATRA
     }
 
     //! return interface map extractor
-    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       return interfacemaps_;
     }
@@ -209,10 +209,10 @@ namespace SCATRA
     const Teuchos::RCP<const Epetra_Vector> LMIncrement() const { return lmincrement_; };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
-    const Teuchos::RCP<LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
 
     //! return type of global system matrix in global system of equations
-    const LINALG::MatrixType& MatrixType() const { return matrixtype_; };
+    const CORE::LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
     //! return mortar interface discretization associated with particular condition ID
     DRT::Discretization& MortarDiscretization(const int& condid) const;
@@ -224,7 +224,7 @@ namespace SCATRA
     void OutputRestart() const override;
 
     //! return mortar projector P
-    const Teuchos::RCP<LINALG::SparseMatrix>& P() const { return P_; };
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& P() const { return P_; };
 
     void ReadRestart(
         const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const override;
@@ -264,16 +264,16 @@ namespace SCATRA
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     //! (non-mortar case) or slave and master dofs (mortar case)
-    const Teuchos::RCP<LINALG::SparseMatrix>& SlaveMatrix() const { return islavematrix_; };
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& SlaveMatrix() const { return islavematrix_; };
 
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const override;
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const override;
 
     //! return linear solver for global system of linear equations
-    const LINALG::Solver& Solver() const override;
+    const CORE::LINALG::Solver& Solver() const override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     void Update() const override;
@@ -285,14 +285,14 @@ namespace SCATRA
     void InitConvCheckStrategy() override;
 
     //! interface map extractor (0: other, 1: slave, 2: master)
-    Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> interfacemaps_;
 
     //! map extractor associated with scatra-scatra interface slave-side blocks of global system
     //! matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_slave_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_slave_;
     //! map extractor associated with scatra-scatra interface master-side blocks of global system
     //! matrix
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
     Teuchos::RCP<CORE::ADAPTER::Coupling> icoup_;
@@ -325,39 +325,39 @@ namespace SCATRA
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs (non-mortar
     //! case) or for linearizations of slave fluxes w.r.t. slave and master dofs (mortar case)
-    Teuchos::RCP<LINALG::SparseMatrix> islavematrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> islavematrix_;
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs (non-mortar
     //! case) or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
-    Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> imastermatrix_;
 
     //! auxiliary system matrix for linearizations of master fluxes w.r.t. slave dofs
-    Teuchos::RCP<LINALG::SparseMatrix> imasterslavematrix_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> imasterslavematrix_;
 
     //! flag for meshtying method
     const INPAR::S2I::CouplingType couplingtype_;
 
     //! mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> D_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> D_;
 
     //! mortar matrix M
-    Teuchos::RCP<LINALG::SparseMatrix> M_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M_;
 
     //! mortar matrix E
-    Teuchos::RCP<LINALG::SparseMatrix> E_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> E_;
 
     //! mortar projector P
-    Teuchos::RCP<LINALG::SparseMatrix> P_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> P_;
 
     //! mortar projector Q
-    Teuchos::RCP<LINALG::SparseMatrix> Q_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> Q_;
 
     //! vector of Lagrange multiplier dofs
     Teuchos::RCP<Epetra_Vector> lm_;
 
     //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs or scatra-scatra
     //! interface layer thickness variables)
-    Teuchos::RCP<LINALG::MapExtractor> extendedmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> extendedmaps_;
 
     //! constraint residual vector associated with Lagrange multiplier dofs
     Teuchos::RCP<Epetra_Vector> lmresidual_;
@@ -366,9 +366,9 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
-    Teuchos::RCP<LINALG::MatrixColTransform> islavetomastercoltransform_;
-    Teuchos::RCP<LINALG::MatrixRowTransform> islavetomasterrowtransform_;
-    Teuchos::RCP<LINALG::MatrixRowColTransform> islavetomasterrowcoltransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixColTransform> islavetomastercoltransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> islavetomasterrowtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
     //! auxiliary residual vector for slave residuals
     Teuchos::RCP<Epetra_Vector> islaveresidual_;
@@ -389,7 +389,7 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
-    const LINALG::MatrixType matrixtype_;
+    const CORE::LINALG::MatrixType matrixtype_;
 
     //! node-to-segment projection tolerance
     const double ntsprojtol_;
@@ -411,19 +411,19 @@ namespace SCATRA
 
     //! map extractor associated with all degrees of freedom for scatra-scatra interface layer
     //! growth
-    Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapgrowth_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> blockmapgrowth_;
 
     //! extended map extractor associated with blocks of global system matrix for scatra-scatra
     //! interface coupling involving interface layer growth
-    Teuchos::RCP<const LINALG::MultiMapExtractor> extendedblockmaps_;
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> extendedblockmaps_;
 
     //! extended system matrix including rows and columns associated with scatra-scatra interface
     //! layer thickness variables
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> extendedsystemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> extendedsystemmatrix_;
 
     //! linear solver for monolithic scatra-scatra interface coupling involving interface layer
     //! growth
-    Teuchos::RCP<LINALG::Solver> extendedsolver_;
+    Teuchos::RCP<CORE::LINALG::Solver> extendedsolver_;
 
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n
     Teuchos::RCP<Epetra_Vector> growthn_;
@@ -453,18 +453,18 @@ namespace SCATRA
 
     //! scatra-growth block of extended global system matrix (derivatives of discrete scatra
     //! residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
-    Teuchos::RCP<LINALG::SparseOperator> scatragrowthblock_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> scatragrowthblock_;
 
     //! growth-scatra block of extended global system matrix (derivatives of discrete scatra-scatra
     //! interface layer growth residuals w.r.t. discrete scatra degrees of freedom)
-    Teuchos::RCP<LINALG::SparseOperator> growthscatrablock_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> growthscatrablock_;
 
     //! growth-growth block of extended global system matrix (derivatives of discrete scatra-scatra
     //! interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
-    Teuchos::RCP<LINALG::SparseMatrix> growthgrowthblock_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> growthgrowthblock_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> equilibration_;
 
    private:
     //! copy constructor
@@ -577,16 +577,16 @@ namespace SCATRA
      */
     void EvaluateMortarCells(const DRT::Discretization& idiscret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix1,
         const INPAR::S2I::InterfaceSides matrix1_side_rows,
         const INPAR::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix2,
         const INPAR::S2I::InterfaceSides matrix2_side_rows,
         const INPAR::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix3,
         const INPAR::S2I::InterfaceSides matrix3_side_rows,
         const INPAR::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix4,
         const INPAR::S2I::InterfaceSides matrix4_side_rows,
         const INPAR::S2I::InterfaceSides matrix4_side_cols,
         const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
@@ -624,16 +624,16 @@ namespace SCATRA
     void EvaluateNTS(const Epetra_IntVector& islavenodestomasterelements,
         const Epetra_Vector& islavenodeslumpedareas, const Epetra_IntVector& islavenodesimpltypes,
         const DRT::Discretization& idiscret, const Teuchos::ParameterList& params,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix1,
         const INPAR::S2I::InterfaceSides matrix1_side_rows,
         const INPAR::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix2,
         const INPAR::S2I::InterfaceSides matrix2_side_rows,
         const INPAR::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix3,
         const INPAR::S2I::InterfaceSides matrix3_side_rows,
         const INPAR::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix4,
         const INPAR::S2I::InterfaceSides matrix4_side_rows,
         const INPAR::S2I::InterfaceSides matrix4_side_cols,
         const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
@@ -667,16 +667,16 @@ namespace SCATRA
      */
     void EvaluateMortarElements(const Epetra_Map& ielecolmap, const Epetra_IntVector& ieleimpltypes,
         const DRT::Discretization& idiscret, const Teuchos::ParameterList& params,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix1,
         const INPAR::S2I::InterfaceSides matrix1_side_rows,
         const INPAR::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix2,
         const INPAR::S2I::InterfaceSides matrix2_side_rows,
         const INPAR::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix3,
         const INPAR::S2I::InterfaceSides matrix3_side_rows,
         const INPAR::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix4,
         const INPAR::S2I::InterfaceSides matrix4_side_rows,
         const INPAR::S2I::InterfaceSides matrix4_side_cols,
         const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
@@ -904,9 +904,9 @@ namespace SCATRA
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
         MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-        const std::vector<LINALG::Matrix<nen_slave_, 1>>&
+        const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>&
             ephinp_slave,  //!< state variables at slave-side nodes
-        const std::vector<LINALG::Matrix<nen_master_, 1>>&
+        const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>&
             ephinp_master,  //!< state variables at master-side nodes
         Epetra_SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -944,7 +944,7 @@ namespace SCATRA
      * @param statename     name of relevant state
      * @param nds          number of relevant dofset
      */
-    void ExtractNodeValues(LINALG::Matrix<nen_slave_, 1>& estate_slave,
+    void ExtractNodeValues(CORE::LINALG::Matrix<nen_slave_, 1>& estate_slave,
         const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
         const std::string& statename = "iphinp", const int& nds = 0) const;
 
@@ -959,8 +959,8 @@ namespace SCATRA
      * @param statename      name of relevant state
      * @param nds            number of relevant dofset
      */
-    void ExtractNodeValues(std::vector<LINALG::Matrix<nen_slave_, 1>>& estate_slave,
-        std::vector<LINALG::Matrix<nen_master_, 1>>& estate_master,
+    void ExtractNodeValues(std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& estate_slave,
+        std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& estate_master,
         const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
         DRT::Element::LocationArray& la_master, const std::string& statename = "iphinp",
         const int& nds = 0) const;
@@ -992,28 +992,28 @@ namespace SCATRA
     DRT::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
 
     //! nodal, slave-side state variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<nen_slave_, 1>> ephinp_slave_;
+    std::vector<CORE::LINALG::Matrix<nen_slave_, 1>> ephinp_slave_;
 
     //! nodal, master-side state variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<nen_master_, 1>> ephinp_master_;
+    std::vector<CORE::LINALG::Matrix<nen_master_, 1>> ephinp_master_;
 
     //! shape and test function values associated with slave-side dofs at integration point
-    LINALG::Matrix<nen_slave_, 1> funct_slave_;
+    CORE::LINALG::Matrix<nen_slave_, 1> funct_slave_;
 
     //! shape and test function values associated with master-side dofs at integration point
-    LINALG::Matrix<nen_master_, 1> funct_master_;
+    CORE::LINALG::Matrix<nen_master_, 1> funct_master_;
 
     //! shape function values associated with slave-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_slave_, 1> shape_lm_slave_;
+    CORE::LINALG::Matrix<nen_slave_, 1> shape_lm_slave_;
 
     //! shape function values associated with master-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_master_, 1> shape_lm_master_;
+    CORE::LINALG::Matrix<nen_master_, 1> shape_lm_master_;
 
     //! test function values associated with slave-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_slave_, 1> test_lm_slave_;
+    CORE::LINALG::Matrix<nen_slave_, 1> test_lm_slave_;
 
     //! test function values associated with master-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_master_, 1> test_lm_master_;
+    CORE::LINALG::Matrix<nen_master_, 1> test_lm_master_;
   };  // class MortarCellCalc
 
 
@@ -1068,22 +1068,22 @@ namespace SCATRA
    public:
     //! constructor
     MortarCellAssemblyStrategy(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,  //!< system matrix 1
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,  //!< system matrix 1
         const INPAR::S2I::InterfaceSides
             matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
         const INPAR::S2I::InterfaceSides
             matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,  //!< system matrix 2
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,  //!< system matrix 2
         const INPAR::S2I::InterfaceSides
             matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
         const INPAR::S2I::InterfaceSides
             matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix3,  //!< system matrix 3
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix3,  //!< system matrix 3
         const INPAR::S2I::InterfaceSides
             matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
         const INPAR::S2I::InterfaceSides
             matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix4,  //!< system matrix 4
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix4,  //!< system matrix 4
         const INPAR::S2I::InterfaceSides
             matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
         const INPAR::S2I::InterfaceSides
@@ -1163,7 +1163,7 @@ namespace SCATRA
      * @param la_master      master-side location array
      * @param assembler_pid_master   ID of processor performing master-side matrix assembly
      */
-    void AssembleCellMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    void AssembleCellMatrix(const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Epetra_SerialDenseMatrix& cellmatrix, const INPAR::S2I::InterfaceSides side_rows,
         const INPAR::S2I::InterfaceSides side_cols, DRT::Element::LocationArray& la_slave,
         DRT::Element::LocationArray& la_master, const int assembler_pid_master) const;
@@ -1250,16 +1250,16 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides matrix4_side_cols_;
 
     //! system matrix 1
-    const Teuchos::RCP<LINALG::SparseOperator> systemmatrix1_;
+    const Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1_;
 
     //! system matrix 2
-    const Teuchos::RCP<LINALG::SparseOperator> systemmatrix2_;
+    const Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2_;
 
     //! system matrix 3
-    const Teuchos::RCP<LINALG::SparseOperator> systemmatrix3_;
+    const Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix3_;
 
     //! system matrix 4
-    const Teuchos::RCP<LINALG::SparseOperator> systemmatrix4_;
+    const Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix4_;
 
     //! system vector 1
     const Teuchos::RCP<Epetra_MultiVector> systemvector1_;

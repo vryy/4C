@@ -41,7 +41,7 @@ namespace SCATRA
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override;
     //@}
 
    private:

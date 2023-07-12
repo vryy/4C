@@ -114,7 +114,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
   double y = xp[1];
 
   // initialize variables
-  LINALG::Matrix<2, 1> u_ex;
+  CORE::LINALG::Matrix<2, 1> u_ex;
 
   // evaluate variables
   u_ex(0) = -((cos(2. * M_PI * t) * cos(2. * M_PI * x)) / 6. + 1.) * (y - 1.);
@@ -152,7 +152,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
     double y = xp[1];
 
     // initialize variables
-    LINALG::Matrix<2, 1> dudt_ex;
+    CORE::LINALG::Matrix<2, 1> dudt_ex;
 
     // evaluate variables
     dudt_ex(0) = (M_PI * cos(2. * M_PI * x) * sin(2. * M_PI * t) * (y - 1.)) / 3.;
@@ -213,7 +213,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
   double r = strucdensity_;
 
   // initialize variables
-  LINALG::Matrix<2, 1> f_u_ex;
+  CORE::LINALG::Matrix<2, 1> f_u_ex;
 
   // evaluate variables
   f_u_ex(0) = (2. * (std::pow(M_PI, 2.)) * cos(2. * M_PI * t) * cos(2. * M_PI * x) * (y - 1.) *

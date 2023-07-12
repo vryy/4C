@@ -153,9 +153,10 @@ void MAT::AAAneohooke_stopro::Init(double value_stopro, std::string stochpar)
 }
 
 
-void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::AAAneohooke_stopro::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   double beta = params_->beta_mean_;
   double youngs = params_->youngs_mean_;
@@ -188,11 +189,11 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
-  LINALG::Matrix<6, 1> identity(true);
+  CORE::LINALG::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6, 1> rcg(*glstrain);
+  CORE::LINALG::Matrix<6, 1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -210,7 +211,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  LINALG::Matrix<6, 1> invc(false);
+  CORE::LINALG::Matrix<6, 1> invc(false);
 
   double invdet = 1. / iiinv;
 
@@ -267,7 +268,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     dserror("give valid parameter for differentiation");
 
   // contribution: Cinv
-  LINALG::Matrix<6, 1> pktwoiso(invc);
+  CORE::LINALG::Matrix<6, 1> pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -279,7 +280,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   double scalar = komp / beta2 * (1.0 - pow(detf, -beta2));
 
   // initialise PKtwo with volumetric part
-  LINALG::Matrix<6, 1> pktwovol(invc);
+  CORE::LINALG::Matrix<6, 1> pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
@@ -344,7 +345,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  |  Calculate strain energy                                biehler 12/13|
  *----------------------------------------------------------------------*/
 void MAT::AAAneohooke_stopro::StrainEnergy(
-    const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID)
 {
   /*
   plain strain energy function
@@ -409,11 +410,11 @@ void MAT::AAAneohooke_stopro::StrainEnergy(
 
   // compute  invariants
   // build identity tensor I
-  LINALG::Matrix<6, 1> identity(true);
+  CORE::LINALG::Matrix<6, 1> identity(true);
   for (int i = 0; i < 3; i++) identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6, 1> rcg(glstrain);
+  CORE::LINALG::Matrix<6, 1> rcg(glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 

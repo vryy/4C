@@ -15,7 +15,7 @@
 #include <functional>
 #include <list>
 
-//#define DEBUG_SO_HEX8_DET_ANALYSIS
+// #define DEBUG_SO_HEX8_DET_ANALYSIS
 namespace DRT
 {
   namespace ELEMENTS
@@ -49,8 +49,8 @@ namespace DRT
        *  \param rc      recursion counter pointer (optional)
        *
        *  \return TRUE if the element is valid, otherwise return FALSE. */
-      bool isValid(
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc = nullptr) const;
+      bool isValid(const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+          unsigned* rc = nullptr) const;
 
      private:
       /** \brief constructor (private)
@@ -88,7 +88,7 @@ namespace DRT
        *  2nd order Bezier basis functions at the different points is necessary.
        *
        *  \author hiermeier \date 09/18 */
-      static void buildMapBezierToLagrange(LINALG::Matrix<27, 27>& map_b2l);
+      static void buildMapBezierToLagrange(CORE::LINALG::Matrix<27, 27>& map_b2l);
 
       /** \brief Alternative call which allows an additional shift and scale of
        *  the parametric coordinates
@@ -103,7 +103,7 @@ namespace DRT
        *
        *  \author hiermeier \date 09/18 */
       static void buildMapBezierToLagrange(
-          LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift);
+          CORE::LINALG::Matrix<27, 27>& map_b2l, const double* scale, const double* shift);
 
       /** \brief Build Sub-map matrix from Bezier to Lagrange coefficients
        *
@@ -115,7 +115,7 @@ namespace DRT
        *
        *  \author hiermeier \date 09/18 */
       void buildSubMapBezierToLagrange(
-          const double* left, const double* right, LINALG::Matrix<27, 27>& sub_map_b2l) const;
+          const double* left, const double* right, CORE::LINALG::Matrix<27, 27>& sub_map_b2l) const;
 
       /** \brief Compute the Bezier coefficients of the sub-domain
        *
@@ -124,8 +124,8 @@ namespace DRT
        *  \param sub_bcoeffs  Bezier coefficients of the current sub-domain
        *
        *  \author hiermeier \date 09/18 */
-      void getBezierCoeffsOfSubdomain(const LINALG::Matrix<27, 1>& bcoeffs, BezierCube& subcube,
-          LINALG::Matrix<27, 1>& sub_bcoeffs) const;
+      void getBezierCoeffsOfSubdomain(const CORE::LINALG::Matrix<27, 1>& bcoeffs,
+          BezierCube& subcube, CORE::LINALG::Matrix<27, 1>& sub_bcoeffs) const;
 
 
       /** \brief Compute the sub-cube border points based on the parent cube
@@ -164,7 +164,7 @@ namespace DRT
        *                  of the parent (sub-)cube
        *
        *  \author hiermeier \date 09/18 */
-      bool recursiveSubdivision(const LINALG::Matrix<27, 1>& bcoeffs, const double* left,
+      bool recursiveSubdivision(const CORE::LINALG::Matrix<27, 1>& bcoeffs, const double* left,
           const double* right, unsigned& rcount) const;
 
 
@@ -181,8 +181,8 @@ namespace DRT
        *                       HEX8 corners
        *
        *  \author hiermeier \date 09/18 */
-      void compute20Tet4Volumes(LINALG::Matrix<20, 1>& tet4_volumes,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const;
+      void compute20Tet4Volumes(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr) const;
 
       /** \brief Compute scaled TET4 volume at the corners of the HEX8
        *
@@ -201,8 +201,8 @@ namespace DRT
        *  \return new offset value (increased by the four computed TET4 volumes)
        *
        *  \author hiermeier \date 09/18 */
-      unsigned computeTet4VolAtCorners(LINALG::Matrix<20, 1>& tet4_volumes,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+      unsigned computeTet4VolAtCorners(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
           const std::function<unsigned(unsigned i)>& f_index0,
           const std::function<unsigned(unsigned i)>& f_index1,
           const std::function<unsigned(unsigned i)>& f_index2,
@@ -229,8 +229,8 @@ namespace DRT
        *  \return new offset value (increased by the four computed TET4 volumes)
        *
        *  \author hiermeier \date 09/18 */
-      unsigned computeTet4VolAtEdges(LINALG::Matrix<20, 1>& tet4_volumes,
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
+      unsigned computeTet4VolAtEdges(CORE::LINALG::Matrix<20, 1>& tet4_volumes,
+          const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
           const std::function<unsigned(unsigned i)>& f_index0,
           const std::function<unsigned(unsigned i)>& f_index1,
           const std::function<unsigned(unsigned i)>& f_index20,
@@ -238,7 +238,7 @@ namespace DRT
           const std::function<unsigned(unsigned i)>& f_index30,
           const std::function<unsigned(unsigned i)>& f_index31, unsigned offset) const;
 
-      double computeTet4Volume(const LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const;
+      double computeTet4Volume(const CORE::LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const;
 
       /** \brief Evaluate the second order bezier function
        *
@@ -306,10 +306,10 @@ namespace DRT
       static bool issetup_;
 
       /// mapping from 20 Jacobian entries to 27 Bezier coefficients
-      static LINALG::Matrix<27, 20> map_q_;
+      static CORE::LINALG::Matrix<27, 20> map_q_;
 
       // mapping from the Lagrange to the Bezier space
-      static LINALG::Matrix<27, 27> map_l2b_;
+      static CORE::LINALG::Matrix<27, 27> map_l2b_;
     };
 
     /** \brief Fast modulus routine

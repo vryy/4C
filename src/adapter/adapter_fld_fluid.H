@@ -23,13 +23,13 @@
 #include "linalg_fixedsizematrix.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -182,16 +182,16 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to merged system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemSparseMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
     /// linearization of Navier-Stokes with respect to mesh movement
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() = 0;
 
     /// direct access to discretization
     virtual const Teuchos::RCP<DRT::Discretization>& Discretization() = 0;
@@ -200,7 +200,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
     /// set initial flow field
     virtual void SetInitialFlowField(
@@ -311,7 +311,7 @@ namespace ADAPTER
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
 
     /// access to map extractor for velocity and pressure
-    virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter() = 0;
+    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
@@ -417,7 +417,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() = 0;
 
     /// do an intermediate solution step
     virtual void CalcIntermediateSolution() = 0;

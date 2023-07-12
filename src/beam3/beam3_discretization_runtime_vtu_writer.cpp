@@ -177,8 +177,8 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine their interpolated (initial) positions r */
-    LINALG::Matrix<3, 1> interpolated_position(true);
-    LINALG::Matrix<3, 1> interpolated_position_priorpoint(true);
+    CORE::LINALG::Matrix<3, 1> interpolated_position(true);
+    CORE::LINALG::Matrix<3, 1> interpolated_position_priorpoint(true);
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -194,7 +194,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
       if (periodic_boundingbox_ != Teuchos::null)
         periodic_boundingbox_->Shift3D(interpolated_position);
 
-      LINALG::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
+      CORE::LINALG::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
 
       // check if an element is cut by a periodic boundary
       bool shift = false;
@@ -311,8 +311,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine its disp state */
-    LINALG::Matrix<3, 1> pos_visualization_point;
-    LINALG::Matrix<3, 1> refpos_visualization_point;
+    CORE::LINALG::Matrix<3, 1> pos_visualization_point;
+    CORE::LINALG::Matrix<3, 1> refpos_visualization_point;
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -404,7 +404,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine the triad */
-    LINALG::Matrix<3, 3> triad_visualization_point;
+    CORE::LINALG::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
 
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
@@ -735,7 +735,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine the triad */
-    LINALG::Matrix<3, 3> triad_visualization_point;
+    CORE::LINALG::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
     for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
@@ -1345,7 +1345,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
 
     // length of element is approximated linearly, as also the direction of a element is calculated
     // linearly independent of centerline interpolation
-    LINALG::Matrix<3, 1> dirvec(true);
+    CORE::LINALG::Matrix<3, 1> dirvec(true);
 
     std::vector<double> pos(2, 0.0);
     for (int dim = 0; dim < 3; ++dim)
@@ -1363,7 +1363,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
     double curr_lin_ele_length = dirvec.Norm2();
 
     // loop over all base vectors for orientation index x,y and z
-    LINALG::Matrix<3, 1> unit_base_vec(true);
+    CORE::LINALG::Matrix<3, 1> unit_base_vec(true);
     std::vector<double> curr_ele_orientation_parameter(3, 0.0);
     for (int unsigned ibase = 0; ibase < 3; ++ibase)
     {
@@ -1439,12 +1439,12 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
   std::vector<std::vector<double>> fint_sum(3, std::vector<double>(3, 0.0));
   std::vector<double> beamelement_displacement_vector;
   std::vector<double> beamelement_shift_displacement_vector;
-  LINALG::Matrix<3, 1> pos_node_1(true);
-  LINALG::Matrix<3, 1> pos_node_2(true);
+  CORE::LINALG::Matrix<3, 1> pos_node_1(true);
+  CORE::LINALG::Matrix<3, 1> pos_node_2(true);
 
   // create pseudo planes through center of RVE (like this it also works if
   // your box is not periodic, i.e. you do not have cut element on the box edges)
-  LINALG::Matrix<3, 2> box(true);
+  CORE::LINALG::Matrix<3, 2> box(true);
   if (periodic_boundingbox_ != Teuchos::null)
   {
     for (unsigned dim = 0; dim < 3; ++dim)
@@ -1455,7 +1455,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
     }
   }
 
-  LINALG::Matrix<3, 1> xi_intersect(true);
+  CORE::LINALG::Matrix<3, 1> xi_intersect(true);
 
   // loop over all my elements and build force sum of myrank's cut element
   for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)

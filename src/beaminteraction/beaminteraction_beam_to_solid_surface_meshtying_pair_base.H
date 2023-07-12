@@ -21,11 +21,11 @@
 
 
 // Forward declarations.
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace GEOMETRYPAIR
 {
   template <typename scalar_type, typename line, typename surface>
@@ -130,7 +130,7 @@ namespace BEAMINTERACTION
      * @return 3D vector with the difference in the positions / displacements at the projection
      * point.
      */
-    LINALG::Matrix<3, 1, scalar_type> EvaluateCoupling(
+    CORE::LINALG::Matrix<3, 1, scalar_type> EvaluateCoupling(
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const;
 
     /**

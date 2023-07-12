@@ -106,7 +106,7 @@ namespace FBI
      * \param[in] disp current displacements
      */
     void ComputeCurrentPositions(DRT::Discretization& dis,
-        Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,
+        Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const override;
 
     /** \brief Setup the Binning object

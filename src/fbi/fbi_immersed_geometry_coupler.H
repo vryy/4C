@@ -135,7 +135,7 @@ namespace FBI
      *
      */
     virtual void ComputeFixedPositions(DRT::Discretization& dis,
-        Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions) const;
+        Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions) const;
 
     /**
      * \brief Computes the reference current positions needed for the search
@@ -145,16 +145,18 @@ namespace FBI
      * \param[in] disp current displacements
      */
     virtual void ComputeCurrentPositions(DRT::Discretization& dis,
-        Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> positions,
+        Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> positions,
         Teuchos::RCP<const Epetra_Vector> disp) const;
 
     /// Get function for the fludi positions
-    virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetFluidPositions() const final
+    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> GetFluidPositions()
+        const final
     {
       return fluidpositions_;
     };
     /// Get function for the beam positions
-    virtual Teuchos::RCP<const std::map<int, LINALG::Matrix<3, 1>>> GetBeamPositions() const final
+    virtual Teuchos::RCP<const std::map<int, CORE::LINALG::Matrix<3, 1>>> GetBeamPositions()
+        const final
     {
       return beampositions_;
     };
@@ -162,10 +164,10 @@ namespace FBI
 
    private:
     /// Map storing the nodal positions of the fluid for the search
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> fluidpositions_;
+    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> fluidpositions_;
 
     /// Map storing the centerline positions of the beam for the search
-    Teuchos::RCP<std::map<int, LINALG::Matrix<3, 1>>> beampositions_;
+    Teuchos::RCP<std::map<int, CORE::LINALG::Matrix<3, 1>>> beampositions_;
 
     /// 3D search tree for embedded discretization
     Teuchos::RCP<CORE::GEO::SearchTree> searchtree_;

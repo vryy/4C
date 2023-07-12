@@ -38,9 +38,10 @@
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p, "action");
 
@@ -757,9 +758,10 @@ int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList& params,
  | pre-evaluation of FluidIntFaceType class (public)        schott Jun14|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidIntFaceType::PreEvaluate(DRT::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::ParameterList& p, Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   const FLD::Action action = DRT::INPUT::get<FLD::Action>(p, "action");
 

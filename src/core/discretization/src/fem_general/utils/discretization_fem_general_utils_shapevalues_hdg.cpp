@@ -56,7 +56,7 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
       for (unsigned int d = 0; d < nsd_; ++d) shderiv(i * nsd_ + d, q) = derivs(d, i);
     }
 
-    LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
+    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
     CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
   }
 
@@ -77,7 +77,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     const ::DRT::Element& ele, const std::vector<double>& aleDis)
 {
   dsassert(ele.Shape() == distype, "Internal error");
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(&ele, xyze);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -97,8 +97,8 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     xjm.MultiplyNT(deriv, xyze);
     jfac(q) = xji.Invert(xjm) * quadrature_->Weight(q);
 
-    LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
-    LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
+    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
 
     // compute global first derivates
@@ -129,10 +129,10 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
   {
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = nodexyzunit(idim, i);
 
-    LINALG::Matrix<nen_, 1> myfunct;
+    CORE::LINALG::Matrix<nen_, 1> myfunct;
     // CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
     CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
-    LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 }
@@ -181,7 +181,7 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
     polySpace_->Evaluate(xsi, faceValues);
     for (unsigned int i = 0; i < nfdofs_; ++i) shfunctNoPermute(i, q) = faceValues(i);
 
-    LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
+    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
     CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
         xsi, myfunct);
   }
@@ -200,8 +200,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   // get face position array from element position array
   dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
 
-  LINALG::Matrix<nsd_, nen_> xyzeElement;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(&ele, xyzeElement);
+  CORE::LINALG::Matrix<nsd_, nen_> xyzeElement;
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
+      &ele, xyzeElement);
 
   // update nodal coordinates
   if (!(aleDis.empty()))
@@ -220,10 +221,10 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
   {
     for (unsigned int idim = 0; idim < nsd_ - 1; idim++) xsi(idim) = nodexyzunit(idim, i);
 
-    LINALG::Matrix<nfn_, 1> myfunct;
+    CORE::LINALG::Matrix<nfn_, 1> myfunct;
     CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
         xsi, myfunct);
-    LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
@@ -240,8 +241,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
     jfac(q) = jacdet * quadrature_->Weight(q);
 
-    LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
-    LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
+    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
@@ -490,9 +491,9 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
     dsassert(faceNodeOrder[face].size() == nfn_, "Internal error");
     const std::vector<int>& trafomap = ele.Faces()[face]->GetLocalTrafoMap();
 
-    // LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
-    LINALG::Matrix<nsd_, nen_> xyzeMasterElement;
-    CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(
+    // CORE::LINALG::SerialDenseMatrix nodexyzreal_master(nsd_, nfdofs_);
+    CORE::LINALG::Matrix<nsd_, nen_> xyzeMasterElement;
+    CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
         &ele, xyzeMasterElement);
 
     // Compute the reference system from the master side
@@ -597,7 +598,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   PolynomialSpaceParams polyparams(distype, params.degree_, params.completepoly_);
   Teuchos::RCP<PolynomialSpace<nsd>> polySpace =
       CORE::DRT::UTILS::PolynomialSpaceCache<nsd>::Instance().Create(polyparams);
-  LINALG::SerialDenseVector(polySpace->Size());
+  CORE::LINALG::SerialDenseVector(polySpace->Size());
   Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature =
       CORE::DRT::UTILS::GaussPointCache::Instance().Create(
           CORE::DRT::UTILS::getEleFaceShapeType(distype, params.face_), params.quadraturedegree_);
@@ -605,12 +606,12 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
   container->Shape(polySpace->Size(), quadrature->NumPoints());
 
-  LINALG::Matrix<nsd, nsd> trafo;
-  LINALG::Matrix<nsd, 1> xsi;
-  LINALG::SerialDenseMatrix faceQPoints;
+  CORE::LINALG::Matrix<nsd, nsd> trafo;
+  CORE::LINALG::Matrix<nsd, 1> xsi;
+  CORE::LINALG::SerialDenseMatrix faceQPoints;
   CORE::DRT::UTILS::BoundaryGPToParentGP<nsd>(faceQPoints, trafo, *quadrature, distype,
       CORE::DRT::UTILS::getEleFaceShapeType(distype, params.face_), params.face_);
-  LINALG::SerialDenseVector faceValues(polySpace->Size());
+  CORE::LINALG::SerialDenseVector faceValues(polySpace->Size());
   for (int q = 0; q < quadrature->NumPoints(); ++q)
   {
     for (int d = 0; d < nsd; ++d) xsi(d) = faceQPoints(q, d);

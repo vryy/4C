@@ -182,8 +182,8 @@ namespace BEAMINTERACTION
         int id;  // gid of crosslinker
         std::vector<std::pair<int, int>>
             eleids;  // elegid and local binding spot number of first element
-        std::vector<LINALG::Matrix<3, 1>> bspotposs;
-        std::vector<LINALG::Matrix<3, 3>> bspottriads;
+        std::vector<CORE::LINALG::Matrix<3, 1>> bspotposs;
+        std::vector<CORE::LINALG::Matrix<3, 3>> bspottriads;
       };
 
       //! @}
@@ -235,8 +235,9 @@ namespace BEAMINTERACTION
       /// get binding spot of crosslinker that is currently occupied
       int GetSingleOccupiedClBspot(std::vector<std::pair<int, int>> const& clbspots) const;
 
-      void SetPositionOfDoubleBondedCrosslinkerPBCconsistent(LINALG::Matrix<3, 1>& clpos,
-          LINALG::Matrix<3, 1> const& bspot1pos, LINALG::Matrix<3, 1> const& bspot2pos) const;
+      void SetPositionOfDoubleBondedCrosslinkerPBCconsistent(CORE::LINALG::Matrix<3, 1>& clpos,
+          CORE::LINALG::Matrix<3, 1> const& bspot1pos,
+          CORE::LINALG::Matrix<3, 1> const& bspot2pos) const;
 
       /// new position after transition from single to not bonded
       void SetPositionOfNewlyFreeCrosslinker(CROSSLINKING::CrosslinkerNode* crosslinker,
@@ -337,7 +338,7 @@ namespace BEAMINTERACTION
       /// criterion (enclosed angle) to be checked later on
       void GetOccupiedClBSpotBeamTangent(CROSSLINKING::CrosslinkerNode const* const crosslinker_i,
           BEAMINTERACTION::DATA::CrosslinkerData* cldata_i,
-          LINALG::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const;
+          CORE::LINALG::Matrix<3, 1>& occ_bindingspot_beam_tangent, int clgid) const;
 
       /// decide by asking other procs who is allowed to set specific crosslinker,
       /// this is necessary to avoid setting crosslinker more than once per time step

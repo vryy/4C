@@ -67,8 +67,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
@@ -154,8 +154,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
@@ -192,8 +192,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
-  LINALG::Matrix<nsd_, nen_> XYZe;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
+  CORE::LINALG::Matrix<nsd_, nen_> XYZe;
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -379,8 +379,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   // extract condition type
@@ -417,8 +417,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get the node coordinates in material configuration (we have a nsd_ dimensional domain!)
-  LINALG::Matrix<nsd_, nen_> XYZe;
-  CORE::GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
+  CORE::LINALG::Matrix<nsd_, nen_> XYZe;
+  CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, XYZe);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
@@ -526,8 +526,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
   if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
@@ -645,9 +645,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
-  std::vector<LINALG::Matrix<nen_, 1>> emasterphinp(
-      my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-  LINALG::Matrix<nen_, 1> eslavegrowthhist(true);
+  std::vector<CORE::LINALG::Matrix<nen_, 1>> emasterphinp(
+      my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+  CORE::LINALG::Matrix<nen_, 1> eslavegrowthhist(true);
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
   my::ExtractNodeValues(eslavegrowthhist, discretization, la, "growthhist", 2);
 

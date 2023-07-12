@@ -51,8 +51,8 @@ namespace SCATRA
     \author rauch
     */
     virtual void EvaluateCondition(Teuchos::ParameterList& params,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
     {
@@ -65,7 +65,7 @@ namespace SCATRA
     //! init meshtying objects
     void InitMeshtying();
 
-    const Teuchos::RCP<LINALG::MultiMapExtractor> InterfaceMaps() const override
+    const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
       dserror("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
       return Teuchos::null;
@@ -73,7 +73,7 @@ namespace SCATRA
 
     bool SystemMatrixInitializationNeeded() const override { return false; }
 
-    Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const override
+    Teuchos::RCP<CORE::LINALG::SparseOperator> InitSystemMatrix() const override
     {
       dserror(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
@@ -87,17 +87,17 @@ namespace SCATRA
     void SetupMeshtying();
 
     //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
-        const int& iteration,  //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
+        const int& iteration,                      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
     ) const;
 
     //! return linear solver for global system of linear equations
-    const LINALG::Solver& Solver() const;
+    const CORE::LINALG::Solver& Solver() const;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check

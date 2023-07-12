@@ -82,8 +82,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Setup(Teuchos::ParameterList& params, co
   MixtureRule::Setup(params, 0);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::Update(
-    LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, const int gp, const int eleGID)
+void MIXTURE::GrowthRemodelMixtureRule::Update(CORE::LINALG::Matrix<3, 3> const& F,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // Update base mixture rule, which also updates the constituents.
   MixtureRule::Update(F, params, gp, eleGID);
@@ -99,7 +99,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(
     }
 
     // Evaluate inverse growth deformation gradient
-    static LINALG::Matrix<3, 3> iFg;
+    static CORE::LINALG::Matrix<3, 3> iFg;
     growthStrategy_->EvaluateInverseGrowthDeformationGradient(
         iFg, *this, ComputeCurrentReferenceGrowthScalar(gp), gp);
 
@@ -110,11 +110,12 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(
   }
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
+void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
+    const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,
+    const int eleGID)
 {
-  LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
+  CORE::LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
 
   if (growthStrategy_->HasInelasticGrowthDeformationGradient())
   {
@@ -126,8 +127,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
   }
 
   // define temporary matrices
-  static LINALG::Matrix<6, 1> cstress;
-  static LINALG::Matrix<6, 6> ccmat;
+  static CORE::LINALG::Matrix<6, 1> cstress;
+  static CORE::LINALG::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
   for (std::size_t i = 0; i < Constituents().size(); ++i)
@@ -146,7 +147,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
                                                    params_->mass_fractions_[i] *
                                                    constituent.GetGrowthScalar(gp);
 
-    const LINALG::Matrix<1, 6> dGrowthScalarDC = constituent.GetDGrowthScalarDC(gp, eleGID);
+    const CORE::LINALG::Matrix<1, 6> dGrowthScalarDC = constituent.GetDGrowthScalarDC(gp, eleGID);
 
     S_stress.Update(current_ref_constituent_density, cstress, 1.0);
     cmat.Update(current_ref_constituent_density, ccmat, 1.0);
@@ -163,7 +164,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
       [&]()
       {
         double growthScalar = 0.0;
-        LINALG::Matrix<1, 6> dGrowthScalarDC(true);
+        CORE::LINALG::Matrix<1, 6> dGrowthScalarDC(true);
 
         for (std::size_t i = 0; i < Constituents().size(); ++i)
         {

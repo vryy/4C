@@ -81,11 +81,12 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename scalar_type, unsigned int n_dim>
   inline void EvaluateShapeFunctionMatrix(const T& xi,
-      LINALG::Matrix<n_dim, element_type::n_dof_, scalar_type>& N,
+      CORE::LINALG::Matrix<n_dim, element_type::n_dof_, scalar_type>& N,
       const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
-    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N_flat(true);
+    CORE::LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N_flat(
+        true);
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunction(
@@ -108,11 +109,11 @@ namespace GEOMETRYPAIR
    * @param element (in) Pointer to the element, needed for beam elements.
    */
   template <typename element_type, typename T, typename V, typename scalar_type, unsigned int n_dim>
-  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<n_dim, 1, scalar_type>& r,
-      const DRT::Element* element = nullptr)
+  inline void EvaluatePosition(const T& xi, const V& q,
+      CORE::LINALG::Matrix<n_dim, 1, scalar_type>& r, const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
-    LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
+    CORE::LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunction(
@@ -136,10 +137,12 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      LINALG::Matrix<3, element_type::dim_, scalar_type>& dr, const DRT::Element* element = nullptr)
+      CORE::LINALG::Matrix<3, element_type::dim_, scalar_type>& dr,
+      const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
-    LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_, scalar_type>
+    CORE::LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_,
+        scalar_type>
         dN(true);
 
     // Evaluate the shape function values.
@@ -168,9 +171,10 @@ namespace GEOMETRYPAIR
    */
   template <typename surface, typename T, typename scalar_type_dof, typename scalar_type_result>
   void EvaluateSurfaceNormal(const T& xi,
-      const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
-      LINALG::Matrix<3, 1, scalar_type_result>& normal, const DRT::Element* element,
-      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
+      const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
+      CORE::LINALG::Matrix<3, 1, scalar_type_result>& normal, const DRT::Element* element,
+      const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals =
+          nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
     static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
@@ -178,9 +182,9 @@ namespace GEOMETRYPAIR
     if (nodal_normals == nullptr)
     {
       // Calculate the normal as the geometrical normal on the element.
-      LINALG::Matrix<3, 2, scalar_type_result> dr;
-      LINALG::Matrix<3, 1, scalar_type_result> dr_0;
-      LINALG::Matrix<3, 1, scalar_type_result> dr_1;
+      CORE::LINALG::Matrix<3, 2, scalar_type_result> dr;
+      CORE::LINALG::Matrix<3, 1, scalar_type_result> dr_0;
+      CORE::LINALG::Matrix<3, 1, scalar_type_result> dr_1;
       GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_surface, dr, element);
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
       {
@@ -211,16 +215,17 @@ namespace GEOMETRYPAIR
    */
   template <typename surface, typename scalar_type_xi, typename scalar_type_dof,
       typename scalar_type_result>
-  void EvaluateSurfacePosition(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
-      const LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
-      LINALG::Matrix<3, 1, scalar_type_result>& r, const DRT::Element* element,
-      const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals = nullptr)
+  void EvaluateSurfacePosition(const CORE::LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+      const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type_dof>& q_surface,
+      CORE::LINALG::Matrix<3, 1, scalar_type_result>& r, const DRT::Element* element,
+      const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_dof>* nodal_normals =
+          nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
     static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
 
     // Evaluate the normal.
-    LINALG::Matrix<3, 1, scalar_type_result> normal;
+    CORE::LINALG::Matrix<3, 1, scalar_type_result> normal;
     EvaluateSurfaceNormal<surface>(xi, q_surface, normal, element, nodal_normals);
 
     // Evaluate the position on the surface.
@@ -246,10 +251,10 @@ namespace GEOMETRYPAIR
   template <typename line, typename scalar_type_xi, typename scalar_type_dof,
       typename scalar_type_result>
   void EvaluateTriadAtPlaneCurve(const scalar_type_xi xi,
-      const LINALG::Matrix<line::n_dof_, 1, scalar_type_dof>& q_line,
-      LINALG::Matrix<3, 3, scalar_type_result>& triad, const DRT::Element* element)
+      const CORE::LINALG::Matrix<line::n_dof_, 1, scalar_type_dof>& q_line,
+      CORE::LINALG::Matrix<3, 3, scalar_type_result>& triad, const DRT::Element* element)
   {
-    LINALG::Matrix<3, 1, scalar_type_result> tangent, cross_section_director_2,
+    CORE::LINALG::Matrix<3, 1, scalar_type_result> tangent, cross_section_director_2,
         cross_section_director_3;
     EvaluatePositionDerivative1<line>(xi, q_line, tangent, element);
 
@@ -287,16 +292,16 @@ namespace GEOMETRYPAIR
    * @param element (in) Pointer to the element, needed for beam elements.
    */
   template <typename volume, typename scalar_type>
-  void EvaluateJacobian(const LINALG::Matrix<3, 1, scalar_type>& xi,
-      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
-      LINALG::Matrix<3, 3, scalar_type>& J, const DRT::Element* element)
+  void EvaluateJacobian(const CORE::LINALG::Matrix<3, 1, scalar_type>& xi,
+      const CORE::LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      CORE::LINALG::Matrix<3, 3, scalar_type>& J, const DRT::Element* element)
   {
     // Check at compile time if a volume (3D) element is given.
     static_assert(volume::dim_ == 3, "EvaluateJacobian can only be called for 3D elements!");
 
     // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
     // transposed Jacobi matrix.
-    LINALG::Matrix<3, 3, scalar_type> dXdxi(true);
+    CORE::LINALG::Matrix<3, 3, scalar_type> dXdxi(true);
     EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi, element);
     J.Clear();
     J.UpdateT(dXdxi);
@@ -313,27 +318,29 @@ namespace GEOMETRYPAIR
    */
   template <typename volume, typename scalar_type_xi, typename scalar_type_dof,
       typename scalar_type_result>
-  void EvaluateDeformationGradient(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
-      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
-      const LINALG::Matrix<volume::n_dof_, 1, scalar_type_dof>& q_volume,
-      LINALG::Matrix<3, 3, scalar_type_result>& F, const DRT::Element* element)
+  void EvaluateDeformationGradient(const CORE::LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+      const CORE::LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      const CORE::LINALG::Matrix<volume::n_dof_, 1, scalar_type_dof>& q_volume,
+      CORE::LINALG::Matrix<3, 3, scalar_type_result>& F, const DRT::Element* element)
   {
     // Check at compile time if a volume (3D) element is given.
     static_assert(
         volume::dim_ == 3, "EvaluateDeformationGradient can only be called for 3D elements!");
 
     // Get the inverse of the Jacobian.
-    LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
+    CORE::LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
     EvaluateJacobian<volume>(xi, X_volume, inv_J, element);
-    LINALG::Inverse(inv_J);
+    CORE::LINALG::Inverse(inv_J);
 
     // Get the derivatives of the shape functions w.r.t to the parameter coordinates.
-    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdxi(true);
+    CORE::LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdxi(
+        true);
     volume::EvaluateShapeFunctionDeriv1(
         dNdxi, xi, std::integral_constant<unsigned int, volume::dim_>{}, element);
 
     // Transform to derivatives w.r.t physical coordinates.
-    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdX(true);
+    CORE::LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdX(
+        true);
     for (unsigned int i_row = 0; i_row < 3; i_row++)
       for (unsigned int i_col = 0; i_col < volume::n_nodes_ * volume::n_val_; i_col++)
         for (unsigned int i_sum = 0; i_sum < 3; i_sum++)

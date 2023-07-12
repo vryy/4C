@@ -21,12 +21,12 @@
 // forward declaration
 class Epetra_FEVector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
   class MultiMapExtractor;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -196,7 +196,7 @@ namespace STR
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const LINALG::SparseMatrix> GetStiff() const
+      Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetStiff() const
       {
         CheckInitSetup();
         return stiff_;
@@ -274,7 +274,7 @@ namespace STR
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<LINALG::SparseMatrix>& GetMutableStiff()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& GetMutableStiff()
       {
         CheckInitSetup();
         return stiff_;
@@ -325,7 +325,7 @@ namespace STR
       std::map<int, std::set<int>> roweletobinmap_;
 
       //! element
-      Teuchos::RCP<LINALG::MultiMapExtractor> rowelemapextractor_;
+      Teuchos::RCP<CORE::LINALG::MultiMapExtractor> rowelemapextractor_;
       ///@}
 
       /// @name Global state vectors
@@ -362,7 +362,7 @@ namespace STR
       /// @name System matrices
       ///@{
       /// supposed to hold the entire jacobian (saddle point system if desired)
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_;
 
       ///@}
     };

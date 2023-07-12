@@ -75,7 +75,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
   if (not constrRhs->Map().PointSameAs(Strategy().LMDoFRowMap(true)))
   {
     constrRhs_red = Teuchos::rcp(new Epetra_Vector(Strategy().LMDoFRowMap(true)));
-    LINALG::Export(*constrRhs, *constrRhs_red);
+    CORE::LINALG::Export(*constrRhs, *constrRhs_red);
   }
   else
     constrRhs_red = Teuchos::rcp(new Epetra_Vector(*constrRhs));
@@ -91,7 +91,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
     {
       // create vector with redistributed slave dof row map in normal direction
       Teuchos::RCP<Epetra_Vector> nConstrRhs =
-          LINALG::ExtractMyVector(*constrRhs_red, Strategy().SlNormalDoFRowMap(true));
+          CORE::LINALG::ExtractMyVector(*constrRhs_red, Strategy().SlNormalDoFRowMap(true));
 
 
       constrRhs_nox =
@@ -102,7 +102,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
     {
       // create vector with redistributed slave dof row map in tangential directions
       Teuchos::RCP<Epetra_Vector> tConstrRhs =
-          LINALG::ExtractMyVector(*constrRhs_red, Strategy().SlTangentialDoFRowMap(true));
+          CORE::LINALG::ExtractMyVector(*constrRhs_red, Strategy().SlTangentialDoFRowMap(true));
 
       constrRhs_nox =
           Teuchos::rcp(new NOX::Epetra::Vector(tConstrRhs, NOX::Epetra::Vector::CreateView));
@@ -138,9 +138,9 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
       // extract vectors with redistributed slave dof row map in normal direction
-      z_ptr = LINALG::ExtractMyVector(
+      z_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultNp(true), Strategy().SlNormalDoFRowMap(true));
-      zincr_ptr = LINALG::ExtractMyVector(
+      zincr_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultSolveIncr(), Strategy().SlNormalDoFRowMap(true));
 
       break;
@@ -148,9 +148,9 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
       // extract vectors with redistributed slave dof row map in tangential directions
-      z_ptr = LINALG::ExtractMyVector(
+      z_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultNp(true), Strategy().SlTangentialDoFRowMap(true));
-      zincr_ptr = LINALG::ExtractMyVector(
+      zincr_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultSolveIncr(), Strategy().SlTangentialDoFRowMap(true));
 
       break;
@@ -187,14 +187,14 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vect
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
       // extract vector with redistributed slave dof row map in normal direction
-      zincr_ptr = LINALG::ExtractMyVector(
+      zincr_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultSolveIncr(), Strategy().SlNormalDoFRowMap(true));
       break;
     }
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
       // extract vector with redistributed slave dof row map in tangential directions
-      zincr_ptr = LINALG::ExtractMyVector(
+      zincr_ptr = CORE::LINALG::ExtractMyVector(
           *Strategy().GetLagrMultSolveIncr(), Strategy().SlTangentialDoFRowMap(true));
 
       break;
@@ -241,7 +241,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
       Teuchos::RCP<Epetra_Vector> znold_ptr =
-          LINALG::ExtractMyVector(*zold_ptr, Strategy().SlNormalDoFRowMap(true));
+          CORE::LINALG::ExtractMyVector(*zold_ptr, Strategy().SlNormalDoFRowMap(true));
 
       zold_nox_ptr =
           Teuchos::rcp(new NOX::Epetra::Vector(znold_ptr, NOX::Epetra::Vector::CreateView));
@@ -250,7 +250,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
     case NOX::NLN::StatusTest::quantity_contact_friction:
     {
       Teuchos::RCP<Epetra_Vector> ztold_ptr =
-          LINALG::ExtractMyVector(*zold_ptr, Strategy().SlTangentialDoFRowMap(true));
+          CORE::LINALG::ExtractMyVector(*zold_ptr, Strategy().SlTangentialDoFRowMap(true));
 
       zold_nox_ptr =
           Teuchos::rcp(new NOX::Epetra::Vector(ztold_ptr, NOX::Epetra::Vector::CreateView));

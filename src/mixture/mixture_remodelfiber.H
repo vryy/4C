@@ -99,7 +99,7 @@ namespace MIXTURE
      * @return Derivative of the residuum of the time integration scheme w.r.t. growth scalar and
      * lambda_r
      */
-    LINALG::Matrix<2, 2> IntegrateLocalEvolutionEquationsImplicit(double dt);
+    CORE::LINALG::Matrix<2, 2> IntegrateLocalEvolutionEquationsImplicit(double dt);
 
     /*!
      * @brief Integrate the local evolution equation with an explicit time integration scheme.

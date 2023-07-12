@@ -19,7 +19,7 @@ namespace ADAPTER
   class Coupling;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Equilibration;
   enum class EquilibrationMethod;
@@ -27,7 +27,7 @@ namespace LINALG
   class Solver;
   class SparseMatrix;
   class SparseOperator;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace SCATRA
 {
@@ -55,10 +55,10 @@ namespace SSTI
   //! equilibration methods applied to system matrix
   struct SSTIMonoEquilibrationMethod
   {
-    const LINALG::EquilibrationMethod global;     //! unique equilibration
-    const LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
-    const LINALG::EquilibrationMethod structure;  //! equilibration for structure block
-    const LINALG::EquilibrationMethod thermo;     //! equilibration for thermo block
+    const CORE::LINALG::EquilibrationMethod global;     //! unique equilibration
+    const CORE::LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
+    const CORE::LINALG::EquilibrationMethod structure;  //! equilibration for structure block
+    const CORE::LINALG::EquilibrationMethod thermo;     //! equilibration for thermo block
   };
 
   enum class Subproblem
@@ -125,7 +125,7 @@ namespace SSTI
     Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
+    std::vector<CORE::LINALG::EquilibrationMethod> GetBlockEquilibration();
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();
@@ -151,7 +151,7 @@ namespace SSTI
     //@{
     Teuchos::RCP<Epetra_Vector> increment_;
     Teuchos::RCP<Epetra_Vector> residual_;
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
     //@}
 
     //! evaluation of off-diagonal blocks
@@ -174,7 +174,7 @@ namespace SSTI
     //@{
     //! equilibration method applied to system matrix
     const struct SSTIMonoEquilibrationMethod equilibration_method_;
-    const LINALG::MatrixType matrixtype_;
+    const CORE::LINALG::MatrixType matrixtype_;
     //@}
 
     //! convergence check of Newton iteration
@@ -190,7 +190,7 @@ namespace SSTI
     Teuchos::RCP<SSTI::AssembleStrategyBase> strategy_assemble_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
+    Teuchos::RCP<CORE::LINALG::Equilibration> strategy_equilibration_;
   };
 }  // namespace SSTI
 #endif

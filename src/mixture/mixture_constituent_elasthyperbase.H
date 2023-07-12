@@ -115,11 +115,11 @@ namespace MIXTURE
      * @param gp Gauss point
      * @param eleGID Global element identifier
      */
-    void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
+    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
-        int eleGID) override;
+    void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+        int gp, int eleGID) override;
 
     /*!
      * \brief Returns a reference to all summands
@@ -165,9 +165,12 @@ namespace MIXTURE
      * \brief Returns a reference to the prestretch tensor at the Gauss point
      *
      * \param gp Gauss point
-     * \return const LINALG::Matrix<3, 3>& Reference to the prestretch tensor
+     * \return const CORE::LINALG::Matrix<3, 3>& Reference to the prestretch tensor
      */
-    const LINALG::Matrix<3, 3>& PrestretchTensor(const int gp) const { return prestretch_[gp]; }
+    const CORE::LINALG::Matrix<3, 3>& PrestretchTensor(const int gp) const
+    {
+      return prestretch_[gp];
+    }
 
     /*!
      * \brief Returns a reference to the cylinder coordinate system
@@ -195,7 +198,7 @@ namespace MIXTURE
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> potsum_;
 
     /// Prestretch of the constituent
-    std::vector<LINALG::Matrix<3, 3>> prestretch_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> prestretch_;
 
     /// AnisotropyExtension that handles the management of cylinder coordinate systems
     MAT::CylinderCoordinateSystemAnisotropyExtension cosyAnisotropyExtension_;

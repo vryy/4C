@@ -39,10 +39,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
-  LINALG::Matrix<81, 81> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<81, 81> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<81, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<81, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<81, 81> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<81, 81> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<81, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<81, 1> elevec2(elevec2_epetra.A(), true);
 
   // start with "none"
   DRT::ELEMENTS::NURBS::So_nurbs27::ActionType act = So_nurbs27::none;
@@ -111,7 +111,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<81, 81>* matptr = nullptr;
+      CORE::LINALG::Matrix<81, 81>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, matptr, nullptr, &elevec1, params);
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<81, 81> myemat(true);
+      CORE::LINALG::Matrix<81, 81> myemat(true);
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, nullptr, &elevec1, params);
     }
     break;
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  | calc. scaled thickness matrix for thin shell-like structs   (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& elemat1,
+void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81>& elemat1,
     const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
     DRT::Discretization& discretization, bool do_inverse)
 {
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     return;
   }
 
-  LINALG::Matrix<27, 1> weights;
+  CORE::LINALG::Matrix<27, 1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
@@ -268,15 +268,15 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
 
   // compute coordinates  of corners 0,2,6,18
 
-  LINALG::Matrix<27, 1> funct;
+  CORE::LINALG::Matrix<27, 1> funct;
 
-  LINALG::Matrix<3, 1> x0;
-  LINALG::Matrix<3, 1> x2;
-  LINALG::Matrix<3, 1> x6;
-  LINALG::Matrix<3, 1> x18;
+  CORE::LINALG::Matrix<3, 1> x0;
+  CORE::LINALG::Matrix<3, 1> x2;
+  CORE::LINALG::Matrix<3, 1> x6;
+  CORE::LINALG::Matrix<3, 1> x18;
 
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = -1.0;
     gpa(1) = -1.0;
     gpa(2) = -1.0;
@@ -296,7 +296,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
   }
 
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = 1.0;
     gpa(1) = -1.0;
     gpa(2) = -1.0;
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     }
   }
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = 1.0;
     gpa(1) = 1.0;
     gpa(2) = -1.0;
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     }
   }
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = -1.0;
     gpa(1) = -1.0;
     gpa(2) = 1.0;
@@ -353,7 +353,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     }
   }
 
-  LINALG::Matrix<3, 1> deltaX;
+  CORE::LINALG::Matrix<3, 1> deltaX;
 
   deltaX.Update(1.0, x2, -1.0, x0);
   const double length_r = deltaX.Norm2();
@@ -447,7 +447,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
     fac2 = 1.0 / C;
   }
 
-  LINALG::Matrix<27, 1> adjele(true);
+  CORE::LINALG::Matrix<27, 1> adjele(true);
 
   for (int i = 0; i < 27; i++)
   {
@@ -566,7 +566,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // (SPATIAL) FUNCTION BUSINESS
   const auto* funct = condition.Get<std::vector<int>>("funct");
-  LINALG::Matrix<NUMDIM_SONURBS27, 1> xrefegp(false);
+  CORE::LINALG::Matrix<NUMDIM_SONURBS27, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_SONURBS27; dim++)
@@ -586,7 +586,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   // there is nothing to be done for zero sized elements in knotspan
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
 
-  LINALG::Matrix<27, 1> weights;
+  CORE::LINALG::Matrix<27, 1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
     weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode])->W();
@@ -596,7 +596,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   /*------------------------------------------------------------------*/
 
   // material coord. of element
-  LINALG::Matrix<27, 3> xrefe;
+  CORE::LINALG::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
     const double* x = nodes[i]->X();
@@ -608,10 +608,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   const int numgp = 27;
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
-  LINALG::Matrix<3, 1> gpa;
+  CORE::LINALG::Matrix<3, 1> gpa;
 
-  LINALG::Matrix<27, 1> shape;
-  LINALG::Matrix<3, 27> deriv;
+  CORE::LINALG::Matrix<27, 1> shape;
+  CORE::LINALG::Matrix<3, 27> deriv;
 
   for (int gp = 0; gp < numgp; ++gp)
   {
@@ -623,7 +623,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
         shape, deriv, gpa, myknots, weights, DRT::Element::nurbs27);
 
     // compute the Jacobian matrix
-    LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
+    CORE::LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
     jac.Multiply(deriv, xrefe);
 
     // compute determinant of Jacobian
@@ -699,7 +699,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     return;
   }
 
-  LINALG::Matrix<27, 1> weights;
+  CORE::LINALG::Matrix<27, 1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
@@ -708,8 +708,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     weights(inode) = cp->W();
   }
 
-  const static std::vector<LINALG::Matrix<3, 27>> derivs = sonurbs27_derivs(myknots, weights);
-  LINALG::Matrix<27, 3> xrefe;
+  const static std::vector<CORE::LINALG::Matrix<3, 27>> derivs = sonurbs27_derivs(myknots, weights);
+  CORE::LINALG::Matrix<27, 3> xrefe;
   for (int i = 0; i < 27; ++i)
   {
     xrefe(i, 0) = Nodes()[i]->X()[0];
@@ -738,14 +738,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
-    std::vector<int>& lm,                 // location matrix
-    DRT::Discretization& discretization,  // discretisation to extract knot vector
-    std::vector<double>& disp,            // current displacements
-    std::vector<double>& residual,        // current residual displ
-    LINALG::Matrix<81, 81>* stiffmatrix,  // element stiffness matrix
-    LINALG::Matrix<81, 81>* massmatrix,   // element mass matrix
-    LINALG::Matrix<81, 1>* force,         // element internal force vector
-    Teuchos::ParameterList& params)       // strain output option
+    std::vector<int>& lm,                       // location matrix
+    DRT::Discretization& discretization,        // discretisation to extract knot vector
+    std::vector<double>& disp,                  // current displacements
+    std::vector<double>& residual,              // current residual displ
+    CORE::LINALG::Matrix<81, 81>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<81, 81>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<81, 1>* force,         // element internal force vector
+    Teuchos::ParameterList& params)             // strain output option
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -769,7 +769,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     return;
   }
 
-  LINALG::Matrix<27, 1> weights;
+  CORE::LINALG::Matrix<27, 1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
@@ -779,8 +779,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   }
 
   // update element geometry
-  LINALG::Matrix<27, 3> xrefe;  // material coord. of element
-  LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<27, 3> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
     const double* x = nodes[i]->X();
@@ -804,16 +804,16 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   invJ_.resize(numgp);
   detJ_.resize(numgp);
 
-  LINALG::Matrix<27, 1> funct;
-  LINALG::Matrix<3, 27> deriv;
+  CORE::LINALG::Matrix<27, 1> funct;
+  CORE::LINALG::Matrix<3, 27> deriv;
 
-  LINALG::Matrix<3, 27> N_XYZ;
+  CORE::LINALG::Matrix<3, 27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<3, 3> defgrd(true);
+  CORE::LINALG::Matrix<3, 3> defgrd(true);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = intpoints.qxg[gp][0];
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
@@ -826,7 +826,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    LINALG::Matrix<3, 3> invJac(true);
+    CORE::LINALG::Matrix<3, 3> invJac(true);
 
     invJac.Multiply(deriv, xrefe);
     double detJ = invJac.Invert();
@@ -845,13 +845,13 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<3, 3> cauchygreen;
+    CORE::LINALG::Matrix<3, 3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(6);
-    LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -879,7 +879,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<6, 81> bop;
+    CORE::LINALG::Matrix<6, 81> bop;
     for (int i = 0; i < 27; ++i)
     {
       bop(0, 3 * i) = defgrd(0, 0) * N_XYZ(0, i);
@@ -904,8 +904,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     }
 
     // call material law
-    LINALG::Matrix<6, 6> cmat(true);
-    LINALG::Matrix<6, 1> stress(true);
+    CORE::LINALG::Matrix<6, 6> cmat(true);
+    CORE::LINALG::Matrix<6, 1> stress(true);
     UTILS::GetTemperatureForStructuralMaterial<nurbs27>(funct, params);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
@@ -923,14 +923,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<6, 81> cb;
+      CORE::LINALG::Matrix<6, 81> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
-      LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                 // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      std::vector<double> SmB_L(3);       // intermediate Sm.B_L
+      CORE::LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
+      sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < 27; ++inod)
       {
@@ -979,19 +979,21 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
-    const std::vector<Epetra_SerialDenseVector>& myknots, const LINALG::Matrix<27, 1>& weights)
+const std::vector<CORE::LINALG::Matrix<27, 1>>
+DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
+    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const CORE::LINALG::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
 
-  std::vector<LINALG::Matrix<27, 1>> shapefcts(numgp);
+  std::vector<CORE::LINALG::Matrix<27, 1>> shapefcts(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up nodal f at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
-    LINALG::Matrix<3, 1> gp;
+    CORE::LINALG::Matrix<3, 1> gp;
     gp(0) = intpoints.qxg[igp][0];
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
@@ -1006,24 +1008,25 @@ const std::vector<LINALG::Matrix<27, 1>> DRT::ELEMENTS::NURBS::So_nurbs27::sonur
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
-    const std::vector<Epetra_SerialDenseVector>& myknots, const LINALG::Matrix<27, 1>& weights)
+const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
+    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const CORE::LINALG::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
 
-  std::vector<LINALG::Matrix<3, 27>> derivs(numgp);
+  std::vector<CORE::LINALG::Matrix<3, 27>> derivs(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int igp = 0; igp < intpoints.nquad; ++igp)
   {
-    LINALG::Matrix<3, 1> gp;
+    CORE::LINALG::Matrix<3, 1> gp;
     gp(0) = intpoints.qxg[igp][0];
     gp(1) = intpoints.qxg[igp][1];
     gp(2) = intpoints.qxg[igp][2];
 
-    LINALG::Matrix<27, 1> dummyfct;
+    CORE::LINALG::Matrix<27, 1> dummyfct;
 
     CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
         dummyfct, derivs[igp], gp, myknots, weights, DRT::Element::nurbs27);
@@ -1090,7 +1093,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   // there is nothing to be done for zero sized elements in knotspan
   if (zero_ele) return 0.;
 
-  LINALG::Matrix<27, 1> weights;
+  CORE::LINALG::Matrix<27, 1> weights;
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
@@ -1100,8 +1103,8 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   }
 
   // update element geometry
-  LINALG::Matrix<27, 3> xrefe;  // material coord. of element
-  LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<27, 3> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<27, 3> xcurr;  // current  coord. of element
   for (int i = 0; i < 27; ++i)
   {
     const double* x = nodes[i]->X();
@@ -1124,16 +1127,16 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   invJ_.resize(numgp);
   detJ_.resize(numgp);
 
-  LINALG::Matrix<27, 1> funct;
-  LINALG::Matrix<3, 27> deriv;
+  CORE::LINALG::Matrix<27, 1> funct;
+  CORE::LINALG::Matrix<3, 27> deriv;
 
-  LINALG::Matrix<3, 27> N_XYZ;
+  CORE::LINALG::Matrix<3, 27> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<3, 3> defgrd(true);
+  CORE::LINALG::Matrix<3, 3> defgrd(true);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    LINALG::Matrix<3, 1> gpa;
+    CORE::LINALG::Matrix<3, 1> gpa;
     gpa(0) = intpoints.qxg[gp][0];
     gpa(1) = intpoints.qxg[gp][1];
     gpa(2) = intpoints.qxg[gp][2];
@@ -1146,7 +1149,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
     **     J^-1 = [ x_,s  y_,s  z_,s ]
     **            [ x_,t  y_,t  z_,t ]
     */
-    LINALG::Matrix<3, 3> invJac(true);
+    CORE::LINALG::Matrix<3, 3> invJac(true);
 
     invJac.Multiply(deriv, xrefe);
     double detJ = invJac.Invert();
@@ -1165,13 +1168,13 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
     defgrd.MultiplyTT(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<3, 3> cauchygreen;
+    CORE::LINALG::Matrix<3, 3> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(6);
-    LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1193,7 +1196,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(
-    LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
+    CORE::LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1216,14 +1219,15 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(
  * \brief Helper function to evaluate the NURBS interpolation inside the element.
  */
 template <unsigned int n_points, unsigned int n_val>
-void EvalNurbs3DInterpolation(LINALG::Matrix<n_val, 1, double>& r,
-    const LINALG::Matrix<n_points * n_val, 1, double>& q, const LINALG::Matrix<3, 1, double>& xi,
-    const LINALG::Matrix<n_points, 1, double>& weights,
+void EvalNurbs3DInterpolation(CORE::LINALG::Matrix<n_val, 1, double>& r,
+    const CORE::LINALG::Matrix<n_points * n_val, 1, double>& q,
+    const CORE::LINALG::Matrix<3, 1, double>& xi,
+    const CORE::LINALG::Matrix<n_points, 1, double>& weights,
     const std::vector<Epetra_SerialDenseVector>& myknots,
     const DRT::Element::DiscretizationType& distype)
 {
   // Get the shape functions.
-  LINALG::Matrix<n_points, 1, double> N;
+  CORE::LINALG::Matrix<n_points, 1, double> N;
   CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(N, xi, myknots, weights, distype);
 
   // Multiply the shape functions with the control point values.
@@ -1256,13 +1260,13 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
   // Create the "nodes" for the hex27 visualization.
   {
     // Get the knots and weights for this element.
-    LINALG::Matrix<27, 1, double> weights(true);
+    CORE::LINALG::Matrix<27, 1, double> weights(true);
     std::vector<Epetra_SerialDenseVector> myknots(true);
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
     if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
     // Get the control points position in the reference configuration.
-    LINALG::Matrix<27 * 3, 1, double> q;
+    CORE::LINALG::Matrix<27 * 3, 1, double> q;
     for (unsigned int i_node = 0; i_node < (unsigned int)this->NumNode(); ++i_node)
     {
       const DRT::Node* node = this->Nodes()[i_node];
@@ -1270,8 +1274,8 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
     }
 
     // Loop over the "nodes" of the hex27 element.
-    LINALG::Matrix<3, 1, double> r;
-    LINALG::Matrix<3, 1, double> xi;
+    CORE::LINALG::Matrix<3, 1, double> r;
+    CORE::LINALG::Matrix<3, 1, double> xi;
     for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)
@@ -1309,13 +1313,13 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
   // Add the data at the "nodes" of the hex27 visualization.
   {
     // Get the knots and weights for this element.
-    LINALG::Matrix<27, 1, double> weights(true);
+    CORE::LINALG::Matrix<27, 1, double> weights(true);
     std::vector<Epetra_SerialDenseVector> myknots(true);
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
     if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
     // Get the element result vector.
-    LINALG::Matrix<27 * 3, 1, double> q;
+    CORE::LINALG::Matrix<27 * 3, 1, double> q;
     std::vector<double> eledisp;
     std::vector<int> lm, lmowner, lmstride;
     this->LocationVector(discret, lm, lmowner, lmstride);
@@ -1323,8 +1327,8 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
     q.SetView(eledisp.data());
 
     // Loop over the "nodes" of the hex27 element.
-    LINALG::Matrix<3, 1, double> r;
-    LINALG::Matrix<3, 1, double> xi;
+    CORE::LINALG::Matrix<3, 1, double> r;
+    CORE::LINALG::Matrix<3, 1, double> xi;
     for (unsigned int i_node_hex = 0; i_node_hex < number_of_ouput_points; i_node_hex++)
     {
       for (unsigned int i = 0; i < 3; i++)

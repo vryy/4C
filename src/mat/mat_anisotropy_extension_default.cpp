@@ -55,11 +55,11 @@ void MAT::DefaultAnisotropyExtension<numfib>::UnpackAnisotropy(
 }
 
 template <unsigned int numfib>
-void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
-  LINALG::Matrix<3, 1> ca1(true);
-  LINALG::Matrix<3, 1> ca2(true);
+  CORE::LINALG::Matrix<3, 1> ca1(true);
+  CORE::LINALG::Matrix<3, 1> ca2(true);
 
   // Fiber direction derived from local cosy
   if (init_mode_ == INIT_MODE_ELEMENT_EXTERNAL || init_mode_ == INIT_MODE_ELEMENT_FIBERS)
@@ -97,13 +97,13 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
   }
 
   // pull back in reference configuration
-  LINALG::Matrix<3, 1> a1_0(true);
-  LINALG::Matrix<3, 1> a2_0(true);
-  LINALG::Matrix<3, 3> idefgrd(true);
+  CORE::LINALG::Matrix<3, 1> a1_0(true);
+  CORE::LINALG::Matrix<3, 1> a2_0(true);
+  CORE::LINALG::Matrix<3, 3> idefgrd(true);
   idefgrd.Invert(defgrd);
 
 
-  std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+  std::array<CORE::LINALG::Matrix<3, 1>, numfib> fibers;
 
   if (numfib >= 1)
   {
@@ -126,9 +126,10 @@ void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
 }
 
 template <unsigned int numfib>
-void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec)
+void MAT::DefaultAnisotropyExtension<numfib>::SetFiberVecs(
+    const CORE::LINALG::Matrix<3, 1>& fibervec)
 {
-  std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+  std::array<CORE::LINALG::Matrix<3, 1>, numfib> fibers;
   fibers[0].Update(fibervec);
 
   if (numfib >= 2)
@@ -153,8 +154,8 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
       if (this->GetAnisotropy()->HasElementCylinderCoordinateSystem())
       {
         // initialize fiber vector with local coordinate system
-        LINALG::Matrix<3, 3> locsys(true);
-        LINALG::Matrix<3, 3> Id(true);
+        CORE::LINALG::Matrix<3, 3> locsys(true);
+        CORE::LINALG::Matrix<3, 3> Id(true);
         MAT::IdentityMatrix(Id);
         this->GetAnisotropy()->GetElementCylinderCoordinateSystem().EvaluateLocalCoordinateSystem(
             locsys);
@@ -164,7 +165,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
       else if (this->GetAnisotropy()->GetNumberOfElementFibers() > 0)
       {
         // initialize fibers from global given fibers
-        std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+        std::array<CORE::LINALG::Matrix<3, 1>, numfib> fibers;
         for (unsigned int i = 0; i < numfib; ++i)
         {
           fibers.at(i) = this->GetAnisotropy()->GetElementFibers().at(fiber_ids_.at(i));
@@ -205,7 +206,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
         int gp = 0;
         for (const auto& fiberList : this->GetAnisotropy()->GetGPFibers())
         {
-          std::array<LINALG::Matrix<3, 1>, numfib> fibers;
+          std::array<CORE::LINALG::Matrix<3, 1>, numfib> fibers;
 
           int i = 0;
           for (int id : fiber_ids_)
@@ -231,7 +232,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
 template <unsigned int numfib>
 void MAT::DefaultAnisotropyExtension<numfib>::DoExternalFiberInitialization()
 {
-  LINALG::Matrix<3, 3> Id(false);
+  CORE::LINALG::Matrix<3, 3> Id(false);
   MAT::IdentityMatrix(Id);
   SetFiberVecs(-1.0, Id, Id);
 }

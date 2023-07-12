@@ -35,11 +35,11 @@ namespace
 
   TEST(CoreUtilsLocalNewtonTest, NewtonVector)
   {
-    auto residuum_and_jacobian =
-        [](const LINALG::Matrix<2, 1>& x) -> std::tuple<LINALG::Matrix<2, 1>, LINALG::Matrix<2, 2>>
+    auto residuum_and_jacobian = [](const CORE::LINALG::Matrix<2, 1>& x)
+        -> std::tuple<CORE::LINALG::Matrix<2, 1>, CORE::LINALG::Matrix<2, 2>>
     {
-      LINALG::Matrix<2, 1> residuum(false);
-      LINALG::Matrix<2, 2> jacobian(false);
+      CORE::LINALG::Matrix<2, 1> residuum(false);
+      CORE::LINALG::Matrix<2, 2> jacobian(false);
 
       residuum(0) = std::exp(x(0) * x(1)) - 1;
       residuum(1) = 2 * std::exp(x(0) * x(1)) - x(0);
@@ -53,7 +53,7 @@ namespace
       return {residuum, jacobian};
     };
 
-    LINALG::Matrix<2, 1> x_0(true);
+    CORE::LINALG::Matrix<2, 1> x_0(true);
     x_0(0) = 1.1;
     x_0(1) = 0.1;
 

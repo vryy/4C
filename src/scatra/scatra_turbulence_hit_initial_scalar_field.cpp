@@ -405,7 +405,7 @@ namespace SCATRA
       DRT::Node* node = discret_->lRowNode(inode);
 
       // get coordinates
-      LINALG::Matrix<3, 1> xyz(true);
+      CORE::LINALG::Matrix<3, 1> xyz(true);
       for (int idim = 0; idim < 3; idim++) xyz(idim, 0) = node->X()[idim];
 
       // get global ids of all dofs of the node

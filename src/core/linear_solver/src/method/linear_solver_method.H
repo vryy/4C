@@ -34,7 +34,7 @@ namespace CORE::LINEAR_SOLVER
      */
     virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
         Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector) = 0;
 
     virtual int Solve() = 0;
 

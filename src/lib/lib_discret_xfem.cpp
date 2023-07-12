@@ -141,7 +141,7 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
     if (initialvec->Comm().NumProc() == 1 &&
         activevec->Comm().NumProc() == 1)  // for one proc , Export works fine!
     {
-      LINALG::Export(*initialvec, *fullvec);
+      CORE::LINALG::Export(*initialvec, *fullvec);
     }
     else
     {
@@ -151,7 +151,7 @@ void DRT::DiscretizationXFEM::ExportInitialtoActiveVector(
     }
   }
   fullvec->ReplaceMap(*initialfulldofrowmap_);  /// replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
-  LINALG::Export(*fullvec, *activevec);
+  CORE::LINALG::Export(*fullvec, *activevec);
 }
 
 /*------------------------------------------------------------------------------*
@@ -164,7 +164,7 @@ void DRT::DiscretizationXFEM::ExportActivetoInitialVector(
   // Is the discretization initialized?
   Initialized();
 
-  LINALG::Export(*activevec, *initialvec);
+  CORE::LINALG::Export(*activevec, *initialvec);
 }
 
 /*----------------------------------------------------------------------*
@@ -246,8 +246,8 @@ void DRT::DiscretizationXFEM::SetInitialState(
           name.c_str());
     }
 #endif
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap, false);
-    LINALG::Export(*state, *tmp);
+    Teuchos::RCP<Epetra_Vector> tmp = CORE::LINALG::CreateVector(*colmap, false);
+    CORE::LINALG::Export(*state, *tmp);
     state_[nds][name] = tmp;
   }
   return;

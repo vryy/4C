@@ -101,12 +101,13 @@ void MORTAR::MatrixRowColTransformer::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
-    const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat)
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
+MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
+    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
   ThrowIfNotInitAndSetup();
 
-  Teuchos::RCP<LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new LINALG::SparseMatrix(
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       **master_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
   RedistributedToUnredistributed(bt, src_mat, *dst_mat);
@@ -118,8 +119,8 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformer::Redistribute
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
-    const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat,
-    LINALG::SparseMatrix& dst_mat)
+    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
+    CORE::LINALG::SparseMatrix& dst_mat)
 {
   ThrowIfNotInitAndSetup();
 
@@ -134,12 +135,13 @@ void MORTAR::MatrixRowColTransformer::RedistributedToUnredistributed(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
-    const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat)
+Teuchos::RCP<CORE::LINALG::SparseMatrix>
+MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
+    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat)
 {
   ThrowIfNotInitAndSetup();
 
-  Teuchos::RCP<LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new LINALG::SparseMatrix(
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> dst_mat = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       **slave_row_[bt], src_mat.EpetraMatrix()->MaxNumEntries(), false, true));
 
   RedistributedToUnredistributed(bt, src_mat, *dst_mat);
@@ -151,8 +153,8 @@ Teuchos::RCP<LINALG::SparseMatrix> MORTAR::MatrixRowColTransformer::Unredistribu
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void MORTAR::MatrixRowColTransformer::UnredistributedToRedistributed(
-    const DRT::UTILS::MatBlockType bt, const LINALG::SparseMatrix& src_mat,
-    LINALG::SparseMatrix& dst_mat)
+    const DRT::UTILS::MatBlockType bt, const CORE::LINALG::SparseMatrix& src_mat,
+    CORE::LINALG::SparseMatrix& dst_mat)
 {
   ThrowIfNotInitAndSetup();
 

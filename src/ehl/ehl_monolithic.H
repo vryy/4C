@@ -27,14 +27,14 @@
  |                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class MultiMapExtractor;
 
   class BlockSparseMatrixBase;
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -131,7 +131,7 @@ namespace EHL
     void ApplyDBC();
 
     //! composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! solve linear EHL system
     void LinearSolve();
@@ -141,25 +141,25 @@ namespace EHL
 
     //! Evaluate lubrication-mechanical system matrix
     void ApplyLubricationCouplMatrix(
-        Teuchos::RCP<LINALG::SparseMatrix>
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             matheight,  //!< lubrication matrix associated with linearization wrt height
-        Teuchos::RCP<LINALG::SparseMatrix>
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>
             matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
-    void LinPressureForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
-    void LinPoiseuilleForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
-    void LinCouetteForceDisp(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dd, Teuchos::RCP<LINALG::SparseMatrix>& dm_dd);
+    void LinPressureForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
+    void LinPoiseuilleForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
+    void LinCouetteForceDisp(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dd,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dd);
 
-    void LinPressureForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
-    void LinPoiseuilleForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
-    void LinCouetteForcePres(
-        Teuchos::RCP<LINALG::SparseMatrix>& ds_dp, Teuchos::RCP<LINALG::SparseMatrix>& dm_dp);
+    void LinPressureForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
+    void LinPoiseuilleForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
+    void LinCouetteForcePres(Teuchos::RCP<CORE::LINALG::SparseMatrix>& ds_dp,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& dm_dp);
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
@@ -202,11 +202,11 @@ namespace EHL
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void ScaleSystem(CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(
-        LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        CORE::LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -249,7 +249,7 @@ namespace EHL
     Teuchos::RCP<Epetra_Map> CombinedDBCMap();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void SetDefaultParameters();
@@ -259,9 +259,9 @@ namespace EHL
     //! @name General purpose algorithm members
     //@{
 
-    bool solveradapttol_;                  //!< adapt solver tolerance
-    double solveradaptolbetter_;           //!< tolerance to which is adpated ????
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                        //!< adapt solver tolerance
+    double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -286,7 +286,7 @@ namespace EHL
     const Teuchos::ParameterList& ehldynmono_;  //!< monolithic EHL dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(Epetra_Vector& f,         //!< vector of length of all dofs
@@ -295,11 +295,11 @@ namespace EHL
     );
 
     //! block systemmatrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<LINALG::SparseMatrix> k_sl_;
-    Teuchos::RCP<LINALG::SparseMatrix> k_ls_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sl_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ls_;
 
     bool merge_ehl_blockmatrix_;  //!< bool whether EHL block matrix is merged
 
@@ -385,9 +385,9 @@ namespace EHL
   //
   //    //! evaluate single mortar integration cell of particular slave-side and master-side
   //    discretization types virtual void Evaluate(
-  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+  //        Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
   //        Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
   //        Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
   //        const DRT::Discretization&           idiscret,          //!< interface discretization
@@ -422,9 +422,9 @@ namespace EHL
   //
   //      //! evaluate single mortar integration cell of particular slave-side and master-side
   //      discretization types virtual void Evaluate(
-  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
-  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
-  //          Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
+  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
+  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+  //          Teuchos::RCP<CORE::LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
   //          Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual
   //          vector Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side
   //          residual vector const DRT::Discretization&           idiscret,          //!< interface

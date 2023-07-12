@@ -78,7 +78,7 @@ namespace DRT
      private:
       static DiscSh3Type instance_;
 
-      //  std::map<int,LINALG::Matrix<3,1> > MapToNeighbours_;
+      //  std::map<int,CORE::LINALG::Matrix<3,1> > MapToNeighbours_;
     };
 
     /*!
@@ -411,7 +411,7 @@ namespace DRT
       //! shell thickness
       double thickness_;
       //! shell thickness
-      LINALG::Matrix<12, 12, FAD> stiff_dummy3nodes_;
+      CORE::LINALG::Matrix<12, 12, FAD> stiff_dummy3nodes_;
       //! no. gaussian points in each spatial dimension
       int ngp_[3];
       //! no. gaussian points for triangle elements
@@ -428,10 +428,10 @@ namespace DRT
       int material_;
 
       // Nodal positions at current time step
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_;
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_;
 
       // Nodal positions at previous time step
-      LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_1_;
+      CORE::LINALG::Matrix<1, NUMDOF_DISCSH3> x_n_1_;
 
       CORE::DRT::UTILS::GaussRule2D gaussrule_;  ///< Gaussrule
 
@@ -503,16 +503,16 @@ namespace DRT
       \brief Submethod to compute interfacial area and its first and second
              derivatives w.r.t. the displacements (this is needed for surface energy problems)
       */
-      void ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                     ///< number of nodes
-          const int ndof,                                        ///< number of degrees of freedom
-          double& A,                                             ///< area
-          Teuchos::RCP<Epetra_SerialDenseVector> Adiff,          ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2          ///< second derivative
+      void ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
+          const int numnode,                                           ///< number of nodes
+          const int ndof,                                ///< number of degrees of freedom
+          double& A,                                     ///< area
+          Teuchos::RCP<Epetra_SerialDenseVector> Adiff,  ///< first derivative
+          Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2  ///< second derivative
       );
 
       void ComputeAreaRef(
-          const LINALG::SerialDenseMatrix& x0, const int numnode, const int ndof, double& A);
+          const CORE::LINALG::SerialDenseMatrix& x0, const int numnode, const int ndof, double& A);
 
       /*!
 
@@ -584,25 +584,25 @@ namespace DRT
 
 
       // calculate surface area of triangle (private)
-      FAD CalcSurfaceArea(LINALG::Matrix<1, 3, FAD>& vertex1, LINALG::Matrix<1, 3, FAD>& vertex2,
-          LINALG::Matrix<1, 3, FAD>& vertex3);
+      FAD CalcSurfaceArea(CORE::LINALG::Matrix<1, 3, FAD>& vertex1,
+          CORE::LINALG::Matrix<1, 3, FAD>& vertex2, CORE::LINALG::Matrix<1, 3, FAD>& vertex3);
 
-      double CalcSurfaceArea(LINALG::Matrix<1, 3>& vertex1, LINALG::Matrix<1, 3>& vertex2,
-          LINALG::Matrix<1, 3>& vertex3);
+      double CalcSurfaceArea(CORE::LINALG::Matrix<1, 3>& vertex1,
+          CORE::LINALG::Matrix<1, 3>& vertex2, CORE::LINALG::Matrix<1, 3>& vertex3);
 
       // calculate volume enclosed of element (private)
       void CalcVolume(FAD& volume, const std::vector<double>& disp, bool refconfig);
 
       // calculate surface area of element (private)
-      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormal(std::vector<FAD>& x_FAD);
+      CORE::LINALG::Matrix<1, 3, FAD> CalcSurfaceNormal(std::vector<FAD>& x_FAD);
 
       void CheckIfOutwardsNormal(Teuchos::ParameterList& params, const int NumGElements);
 
       // Calculate cross product of 2 FAD vectors
-      inline LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
-          LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2) const
+      inline CORE::LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
+          CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2) const
       {
-        LINALG::Matrix<1, 3, FAD> crossprod(true);
+        CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
         // Cross Product
         crossprod(0) = vector1(1) * vector2(2) - vector1(2) * vector2(1);
         crossprod(1) = vector1(2) * vector2(0) - vector1(0) * vector2(2);
@@ -616,9 +616,9 @@ namespace DRT
 
        \param x  (out)  : nodal coords in material frame
        */
-      inline LINALG::Matrix<1, 9> MaterialConfiguration() const
+      inline CORE::LINALG::Matrix<1, 9> MaterialConfiguration() const
       {
-        LINALG::Matrix<1, 9> x(true);
+        CORE::LINALG::Matrix<1, 9> x(true);
         const int numnode = NumNode();
         //     std::cout<<"numnode="<<numnode<<std::endl;
         for (int i = 0; i < numnode; ++i)
@@ -637,7 +637,7 @@ namespace DRT
 
        \param x  (out)  : nodal coords in material frame
        */
-      inline void MaterialConfiguration(LINALG::SerialDenseMatrix& x) const
+      inline void MaterialConfiguration(CORE::LINALG::SerialDenseMatrix& x) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -660,7 +660,7 @@ namespace DRT
       \param x     (out)  : nodal coords in spatial frame
       \param disp  (int)  : displacements
       */
-      LINALG::Matrix<1, 9> SpatialConfiguration(const std::vector<double>& disp) const;
+      CORE::LINALG::Matrix<1, 9> SpatialConfiguration(const std::vector<double>& disp) const;
 
       /*!
       \brief Create matrix with spatial configuration
@@ -669,7 +669,7 @@ namespace DRT
       \param disp  (int)  : displacements
       */
       inline void SpatialConfiguration(
-          LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
+          CORE::LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -681,12 +681,12 @@ namespace DRT
         return;
       }
 
-      LINALG::Matrix<1, 9> SpatialConfiguration(DRT::Discretization& dis) const;
+      CORE::LINALG::Matrix<1, 9> SpatialConfiguration(DRT::Discretization& dis) const;
 
-      LINALG::Matrix<1, 9> SpatialConfiguration(
+      CORE::LINALG::Matrix<1, 9> SpatialConfiguration(
           DRT::Discretization& dis, const Epetra_Vector& discol) const;
 
-      LINALG::Matrix<1, 9> GetVel(DRT::Discretization& dis) const;
+      CORE::LINALG::Matrix<1, 9> GetVel(DRT::Discretization& dis) const;
 
       void AddPrimaryDOFsMaster(DRT::Element& master, DRT::Element& neighbour,
           std::vector<int>& connectivity, std::vector<FAD>& x_FAD, DRT::Discretization& dis,
@@ -699,7 +699,8 @@ namespace DRT
       void SortPrimaryDOFs(DRT::Element& master, DRT::Element& neighbour, std::vector<FAD>& x_FAD,
           std::vector<FAD>& x_FAD_master, std::vector<FAD>& x_FAD_neighbour);
 
-      inline void MyDampingConstants(Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma);
+      inline void MyDampingConstants(
+          Teuchos::ParameterList& params, CORE::LINALG::Matrix<3, 1>& gamma);
 
 
       /*!
@@ -714,7 +715,8 @@ namespace DRT
       void sh3_lumpmass(const std::vector<double>& disp,
           Epetra_SerialDenseMatrix* massmatrix);  //!< element mass matrix
 
-      FAD CalcTheta(LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2);
+      FAD CalcTheta(
+          CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2);
 
 
     };  // class DiscSh3
@@ -897,10 +899,10 @@ namespace DRT
       void Print(std::ostream& os) const;
 
       // Calculate cross product of 2 FAD vectors
-      inline LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
-          LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2) const
+      inline CORE::LINALG::Matrix<1, 3, FAD> CalcCrossProduct(
+          CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2) const
       {
-        LINALG::Matrix<1, 3, FAD> crossprod(true);
+        CORE::LINALG::Matrix<1, 3, FAD> crossprod(true);
         // Cross Product
         crossprod(0) = vector1(1) * vector2(2) - vector1(2) * vector2(1);
         crossprod(1) = vector1(2) * vector2(0) - vector1(0) * vector2(2);
@@ -909,9 +911,10 @@ namespace DRT
         return crossprod;
       }
 
-      inline LINALG::Matrix<3, 3, FAD> SkewSymmetricTrans(LINALG::Matrix<1, 3, FAD>& v) const
+      inline CORE::LINALG::Matrix<3, 3, FAD> SkewSymmetricTrans(
+          CORE::LINALG::Matrix<1, 3, FAD>& v) const
       {
-        LINALG::Matrix<3, 3, FAD> w(true);
+        CORE::LINALG::Matrix<3, 3, FAD> w(true);
         w(0, 0) = 0;
         w(0, 1) = -v(2);
         w(0, 2) = v(1);
@@ -930,9 +933,9 @@ namespace DRT
 
        \param x  (out)  : nodal coords in material frame
        */
-      inline LINALG::Matrix<1, 9> MaterialConfiguration() const
+      inline CORE::LINALG::Matrix<1, 9> MaterialConfiguration() const
       {
-        LINALG::Matrix<1, 9> x(true);
+        CORE::LINALG::Matrix<1, 9> x(true);
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
         {
@@ -961,13 +964,13 @@ namespace DRT
       void ReassembleMATBlock(const int row_block,  ///< row block
           const int col_block,                      ///< column block
           Epetra_SerialDenseMatrix& mat_block,      ///< matrix block
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
               elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
               elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
               elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
               elematrix_ss,  ///< element matrix slave-slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
@@ -975,10 +978,10 @@ namespace DRT
               lm_slaveNodeToPatch  ///< local map between slave nodes and nodes in patch
       );
 
-      void ReassembleRHSBlock(const int row_block,         ///< row block
-          Epetra_SerialDenseVector& rhs_block,             ///< rhs block
-          LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
-          LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
+      void ReassembleRHSBlock(const int row_block,               ///< row block
+          Epetra_SerialDenseVector& rhs_block,                   ///< rhs block
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
@@ -987,23 +990,25 @@ namespace DRT
 
 
       // Calculate gradient of normal of a surface
-      void CalcGradienNormal(std::vector<FAD>& x_FAD, LINALG::Matrix<3, 3, FAD>& DnDx1,
-          LINALG::Matrix<3, 3, FAD>& DnDx2, LINALG::Matrix<3, 3, FAD>& DnDx3);
+      void CalcGradienNormal(std::vector<FAD>& x_FAD, CORE::LINALG::Matrix<3, 3, FAD>& DnDx1,
+          CORE::LINALG::Matrix<3, 3, FAD>& DnDx2, CORE::LINALG::Matrix<3, 3, FAD>& DnDx3);
 
       void LengthConstrtStiffmass(Teuchos::ParameterList& params,
           DRT::ELEMENTS::DiscSh3Line* edge,  ///< internal face element
           std::vector<FAD>& x_FAD_curr,
           DRT::Discretization& discretization,  ///< discretization
-          LINALG::Matrix<1, 12, FAD>& ana_force_aux, LINALG::Matrix<12, 12, FAD>& stiff_dummy);
+          CORE::LINALG::Matrix<1, 12, FAD>& ana_force_aux,
+          CORE::LINALG::Matrix<12, 12, FAD>& stiff_dummy);
 
       // Spatial Configuration
-      LINALG::Matrix<1, 6> SpatialConfiguration(DRT::Discretization& dis) const;
+      CORE::LINALG::Matrix<1, 6> SpatialConfiguration(DRT::Discretization& dis) const;
 
-      LINALG::Matrix<1, 6> SpatialConfiguration(
+      CORE::LINALG::Matrix<1, 6> SpatialConfiguration(
           DRT::Discretization& dis, const Epetra_Vector& discol) const;
 
 
-      FAD CalcTheta(LINALG::Matrix<1, 3, FAD>& vector1, LINALG::Matrix<1, 3, FAD>& vector2);
+      FAD CalcTheta(
+          CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2);
 
       FAD GetRefEdgeLength();
 
@@ -1016,9 +1021,9 @@ namespace DRT
       FAD GetCurrEdgeLength(std::vector<FAD>& x_FAD_curr);
 
       // calculate surface area of element (private)
-      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalMaster(std::vector<FAD>& x_FAD);
+      CORE::LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalMaster(std::vector<FAD>& x_FAD);
 
-      LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalSlave(std::vector<FAD>& x_FAD);
+      CORE::LINALG::Matrix<1, 3, FAD> CalcSurfaceNormalSlave(std::vector<FAD>& x_FAD);
 
 
       virtual DRT::ElementType& ElementType() const { return DiscSh3LineType::Instance(); }
@@ -1067,13 +1072,13 @@ namespace DRT
 
 
       void AssembleInternalFacesUsingNeighborData(const Teuchos::ParameterList& params,
-          DRT::ELEMENTS::DiscSh3Line* intface,              ///< internal face element
-          Teuchos::RCP<MAT::Material>& material,            ///< material for face stabilization
-          std::vector<int>& nds_master,                     ///< nodal dofset w.r.t. master element
-          std::vector<int>& nds_slave,                      ///< nodal dofset w.r.t. slave element
-          DRT::DiscretizationFaces& discretization,         ///< faces discretization
-          Teuchos::RCP<LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
-          Teuchos::RCP<Epetra_Vector> systemvector          ///< systemvector
+          DRT::ELEMENTS::DiscSh3Line* intface,       ///< internal face element
+          Teuchos::RCP<MAT::Material>& material,     ///< material for face stabilization
+          std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
+          std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
+          DRT::DiscretizationFaces& discretization,  ///< faces discretization
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
+          Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
       );
 
 
@@ -1091,17 +1096,18 @@ namespace DRT
       );
 
       void RemapForceVectoMasterSlave(
-          LINALG::Matrix<1, 12, FAD>& force,  ///< nodal dofset w.r.t master parent element
-          LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,
-          LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s, std::vector<int>& connectivity,
+          CORE::LINALG::Matrix<1, 12, FAD>& force,  ///< nodal dofset w.r.t master parent element
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s, std::vector<int>& connectivity,
           std::vector<int>& lm_slaveNodeToPatch);
 
       void RemapStiffmattoMasterSlave(
-          LINALG::Matrix<12, 12, FAD>& stiffmatrix,  ///< nodal dofset w.r.t master parent element
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_mm,
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ms,
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_sm,
-          LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ss,
+          CORE::LINALG::Matrix<12, 12, FAD>&
+              stiffmatrix,  ///< nodal dofset w.r.t master parent element
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_mm,
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ms,
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_sm,
+          CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>& elematrix_ss,
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&

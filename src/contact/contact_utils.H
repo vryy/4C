@@ -26,10 +26,10 @@ namespace DRT
   class Condition;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -71,7 +71,7 @@ namespace CONTACT
 
     /// write conservation data to an output file
     void WriteConservationDataToFile(const int mypid, const int interface_id, const int nln_iter,
-        const LINALG::SerialDenseMatrix& conservation_data, const std::string& ofile_path,
+        const CORE::LINALG::SerialDenseMatrix& conservation_data, const std::string& ofile_path,
         const std::string& prefix);
 
     /** \brief Detect DBC slave nodes and elements

@@ -106,7 +106,7 @@ CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::Beam3tospherepotentia
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 bool CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::Evaluate(
-    LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
+    CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint,
     const std::vector<DRT::Condition*> chargeconds, const double k, const double m)
 {
   // reset fpot and stiffpot class variables
@@ -179,14 +179,14 @@ void CONTACT::Beam3tospherepotential<numnodes,
   // vectors for shape functions and their derivatives
   // Attention: these are individual shape function values, NOT shape function matrices
   // values at all gauss points are stored in advance
-  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
-  std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
+  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i(numgp);     // = N1_i
+  std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>> N1_i_xi(numgp);  // = N1_i,xi
 
   // coords and derivatives of the two gauss points
-  LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
-  LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
-  LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
-  TYPE norm_dist = 0.0;                   // = |r1-r2|
+  CORE::LINALG::Matrix<3, 1, TYPE> r1(true);    // = r1
+  CORE::LINALG::Matrix<3, 1, TYPE> r2(true);    // = r2
+  CORE::LINALG::Matrix<3, 1, TYPE> dist(true);  // = r1-r2
+  TYPE norm_dist = 0.0;                         // = |r1-r2|
 
   // Evaluate shape functions at gauss points and store values
   GetShapeFunctions(N1_i, N1_i_xi, gausspoints);
@@ -203,7 +203,7 @@ void CONTACT::Beam3tospherepotential<numnodes,
   double q2 = chargeconds_[1]->GetDouble("val");
 
   // auxiliary variable
-  LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
+  CORE::LINALG::Matrix<3, 1, TYPE> fpot_tmp(true);
 
   // determine prefactor of the integral (depends on whether surface or volume potential is applied)
   double prefactor = k_ * m_;
@@ -282,7 +282,7 @@ void CONTACT::Beam3tospherepotential<numnodes,
     // auxiliary variables (same for both elements)
     TYPE norm_dist_exp2 = (m_ + 2) * pow(norm_dist, -m_ - 4);
 
-    LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
+    CORE::LINALG::Matrix<3, 3, TYPE> dist_dist_T(true);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -419,7 +419,7 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleFpot(Epe
     lmowner2[j] = node->Owner();
   }
 
-  // create copy (Epetra_Vector) of fpot1/2 for LINALG::Assemble() fcn
+  // create copy (Epetra_Vector) of fpot1/2 for CORE::LINALG::Assemble() fcn
   Epetra_SerialDenseVector fpot1_copy(dim1);
   Epetra_SerialDenseVector fpot2_copy(dim2);
   for (int i = 0; i < dim1; i++)
@@ -429,8 +429,8 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleFpot(Epe
   for (int i = 0; i < dim2; i++) fpot2_copy[i] = -CORE::FADUTILS::CastToDouble(fpot2_(i));
 
   // assemble into global force vector
-  LINALG::Assemble(fint, fpot1_copy, lm1, lmowner1);
-  LINALG::Assemble(fint, fpot2_copy, lm2, lmowner2);
+  CORE::LINALG::Assemble(fint, fpot1_copy, lm1, lmowner1);
+  CORE::LINALG::Assemble(fint, fpot2_copy, lm2, lmowner2);
 
   return;
 }
@@ -440,7 +440,7 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleFpot(Epe
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleStiffpot(
-    LINALG::SparseMatrix& stiffmatrix)
+    CORE::LINALG::SparseMatrix& stiffmatrix)
 {
   // get dimensions for vectors fpot1 and fpot2
   const int dim1 = 3 * numnodes * numnodalvalues;
@@ -592,8 +592,8 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleStiffpot
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::GetShapeFunctions(
-    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
-    std::vector<LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
+    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i,
+    std::vector<CORE::LINALG::Matrix<1, numnodes * numnodalvalues>>& N1_i_xi,
     CORE::DRT::UTILS::IntegrationPoints1D& gausspoints)
 {
   // get discretization type
@@ -629,8 +629,9 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::GetShapeFunction
 
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::ComputeCoords(
-    LINALG::Matrix<3, 1, TYPE>& r, const LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
-    const LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
+    CORE::LINALG::Matrix<3, 1, TYPE>& r,
+    const CORE::LINALG::Matrix<1, numnodes * numnodalvalues>& N_i,
+    const CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> elepos)
 {
   r.Clear();
 

@@ -381,61 +381,61 @@ namespace MAT
     void Update() override;
 
     //! evaluate material law
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient
-        const LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  //!< [IN] Green-Lagrange strain
-        Teuchos::ParameterList& params,                    //!< [IN] model parameter list
-        LINALG::Matrix<NUM_STRESS_3D, 1>*
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,      //!< [IN] deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,  //!< [IN] Green-Lagrange strain
+        Teuchos::ParameterList& params,                          //!< [IN] model parameter list
+        CORE::LINALG::Matrix<NUM_STRESS_3D, 1>*
             stress,  //!< [OUT] (mandatory) second Piola-Kirchhoff stress
-        LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
+        CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>*
             cmat,  //!< [OUT] (mandatory) material stiffness matrix
         int gp,    //!< [IN ]Gauss point
         int eleGID) override;
 
     //! transform Miller Bravais index notation of hexagonal lattices to Miller index notation
-    void MillerBravaisToMiller(const std::vector<LINALG::Matrix<4, 1>>&
+    void MillerBravaisToMiller(const std::vector<CORE::LINALG::Matrix<4, 1>>&
                                    NorHex,  //!< [IN] vector of slip/twinning plane normals
                                             //!< in Miller-Bravais index notation
-        const std::vector<LINALG::Matrix<4,
+        const std::vector<CORE::LINALG::Matrix<4,
             1>>& DirHex,  //!< [IN] vector of slip/twinning directions in Miller-Bravais index
                           //!< notation
-        std::vector<LINALG::Matrix<3, 1>>&
+        std::vector<CORE::LINALG::Matrix<3, 1>>&
             Nor,  //!< [OUT] vector of slip/twinning plane normals in Miller index notation
-        std::vector<LINALG::Matrix<3, 1>>&
+        std::vector<CORE::LINALG::Matrix<3, 1>>&
             Dir  //!< [OUT] vector of slip/twinning directions in Miller index notation
     );
 
     //! check if two vectors are parallel by checking the angle between them
-    bool CheckParallel(const LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
+    bool CheckParallel(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& Vec_2                  //!< [IN] vector 2
     );
     //! check if two vectors are orthogonal by checking the angle between them
-    bool CheckOrthogonal(const LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
-        const LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
+    bool CheckOrthogonal(const CORE::LINALG::Matrix<3, 1>& Vec_1,  //!< [IN] vector 1
+        const CORE::LINALG::Matrix<3, 1>& Vec_2                    //!< [IN] vector 2
     );
     //! local Newton-Raphson iteration
     //! this method identifies the plastic shears gamma_res and defect densities def_dens_res
     //! as well as the stress PK2_res for a given deformation gradient F
-    void NewtonRaphson(LINALG::Matrix<3, 3>& F,  //!< [IN] deformation gradient
-        std::vector<double>& gamma_res,          //!< [OUT] result vector of plastic shears
+    void NewtonRaphson(CORE::LINALG::Matrix<3, 3>& F,  //!< [IN] deformation gradient
+        std::vector<double>& gamma_res,                //!< [OUT] result vector of plastic shears
         std::vector<double>&
             def_dens_res,  //!< [OUT] result vector of defect densities (dislocation densities and
                            //!< twinned volume fractions)
-        LINALG::Matrix<3, 3>& PK2_res,  //!< [OUT] 2nd Piola-Kirchhoff stress
-        LINALG::Matrix<3, 3>& FP_res    //!< [OUT] plastic deformation gradient
+        CORE::LINALG::Matrix<3, 3>& PK2_res,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        CORE::LINALG::Matrix<3, 3>& FP_res    //!< [OUT] plastic deformation gradient
     );
 
     //! Evaluates the flow rule for a given total deformation gradient F,
     //! and a given vector of plastic shears gamma_trial and
     //! sets up the respective residuals residuals_trial, the 2nd Piola-Kirchhoff stress PK2_trial
     //! and trial defect densities def_dens_trial
-    void SetupFlowRule(LINALG::Matrix<3, 3> F,  //!< [IN] deformation gradient
-        std::vector<double> gamma_trial,        //!< [OUT] trial vector of plastic shears
-        LINALG::Matrix<3, 3>& FP_trial,         //!< [OUT] plastic deformation gradient
+    void SetupFlowRule(CORE::LINALG::Matrix<3, 3> F,  //!< [IN] deformation gradient
+        std::vector<double> gamma_trial,              //!< [OUT] trial vector of plastic shears
+        CORE::LINALG::Matrix<3, 3>& FP_trial,         //!< [OUT] plastic deformation gradient
         std::vector<double>&
             def_dens_trial,  //!< [OUT] trial vector of defect densities (dislocation densities and
                              //!< twinned volume fractions)
-        LINALG::Matrix<3, 3>& PK2_trial,      //!< [OUT] 2nd Piola-Kirchhoff stress
-        std::vector<double>& residuals_trial  //!< [OUT] vector of slip residuals
+        CORE::LINALG::Matrix<3, 3>& PK2_trial,  //!< [OUT] 2nd Piola-Kirchhoff stress
+        std::vector<double>& residuals_trial    //!< [OUT] vector of slip residuals
     );
 
     //! Return whether or not the material requires the deformation gradient for its evaluation
@@ -468,7 +468,7 @@ namespace MAT
     bool isinit_ = false;
 
     //! 3x3 identity matrix
-    LINALG::Matrix<3, 3> identity3;
+    CORE::LINALG::Matrix<3, 3> identity3;
 
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
@@ -587,13 +587,13 @@ namespace MAT
     //! magnitudes of Burgers vectors for twinning systems
     std::vector<double> twin_burgers_mag_;
     //! lattice orientation in terms of rotation matrix with respect to global coordinates
-    LINALG::Matrix<3, 3> lattice_orientation_;
+    CORE::LINALG::Matrix<3, 3> lattice_orientation_;
     //! slip plane normals and slip directions
-    std::vector<LINALG::Matrix<3, 1>> slip_plane_normal_;
-    std::vector<LINALG::Matrix<3, 1>> slip_direction_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> slip_plane_normal_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> slip_direction_;
     //! twinning plane normals and twinning directions
-    std::vector<LINALG::Matrix<3, 1>> twin_plane_normal_;
-    std::vector<LINALG::Matrix<3, 1>> twin_direction_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> twin_plane_normal_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> twin_direction_;
     //! indicator which slip and twinning systems are non-coplanar for work hardening
     std::vector<std::vector<bool>> is_non_coplanar_;
     //! deformation system identifier
@@ -613,9 +613,9 @@ namespace MAT
 
     //! old, i.e. at t=t_n
     //! deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> deform_grad_last_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> deform_grad_last_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> plastic_deform_grad_last_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> plastic_deform_grad_last_;
     //! vector of plastic shears (slip and twinning)
     Teuchos::RCP<std::vector<std::vector<double>>> gamma_last_;
     //! vector of dislocation densities (dislocations densities and twinned volume fractions)
@@ -623,9 +623,9 @@ namespace MAT
 
     //! current, i.e. at t=t_n+1
     //!  deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> deform_grad_current_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> deform_grad_current_;
     //! plastic part of deformation gradient at each Gauss-point
-    Teuchos::RCP<std::vector<LINALG::Matrix<3, 3>>> plastic_deform_grad_current_;
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<3, 3>>> plastic_deform_grad_current_;
     //! vector of plastic shears (slip and twinning)
     Teuchos::RCP<std::vector<std::vector<double>>> gamma_current_;
     //! vector of defect densities (dislocations densities and twinned volume fractions)

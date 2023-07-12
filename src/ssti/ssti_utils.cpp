@@ -50,33 +50,34 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   partial_maps[ssti_mono_algorithm.GetProblemPosition(Subproblem::thermo)] =
       Teuchos::rcp(new Epetra_Map(*ssti_mono_algorithm.ThermoField()->DofRowMap()));
   Teuchos::RCP<const Epetra_Map> temp_map =
-      LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
-  Teuchos::RCP<const Epetra_Map> merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
+      CORE::LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
+  Teuchos::RCP<const Epetra_Map> merged_map =
+      CORE::LINALG::MergeMap(temp_map, partial_maps[2], false);
   // initialize global map extractor
-  maps_subproblems_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*merged_map, partial_maps));
+  maps_subproblems_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor
   maps_subproblems_->CheckForValidMapExtractor();
 
   // initialize map extractors associated with blocks of subproblems
-  block_map_structure_ =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->DofRowMap(),
+  block_map_structure_ = Teuchos::rcp(
+      new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.StructureField()->DofRowMap(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
               1, ssti_mono_algorithm.StructureField()->DofRowMap())));
   switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       block_map_scatra_ = Teuchos::rcp(
-          new LINALG::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->DofRowMap(),
+          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ScaTraField()->DofRowMap(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
                   1, ssti_mono_algorithm.ScaTraField()->DofRowMap())));
       block_map_thermo_ = Teuchos::rcp(
-          new LINALG::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->DofRowMap(),
+          new CORE::LINALG::MultiMapExtractor(*ssti_mono_algorithm.ThermoField()->DofRowMap(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
                   1, ssti_mono_algorithm.ThermoField()->DofRowMap())));
       break;
     }
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       block_map_scatra_ = ssti_mono_algorithm.ScaTraField()->BlockMaps();
       block_map_thermo_ = ssti_mono_algorithm.ThermoField()->BlockMaps();
@@ -99,8 +100,8 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy) const
 {
-  auto mergedInterfaceMap =
-      LINALG::MultiMapExtractor::MergeMaps({meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
+  auto mergedInterfaceMap = CORE::LINALG::MultiMapExtractor::MergeMaps(
+      {meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
           meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
   if (not mergedInterfaceMap->UniqueGIDs()) dserror("Map not unique");
   return mergedInterfaceMap;
@@ -109,33 +110,33 @@ Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocks(
+Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocks(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
-    LINALG::MatrixType scatramatrixtype, unsigned nummaps) const
+    CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const
 {
-  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapinterface(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmapinterface(Teuchos::null);
 
   Teuchos::RCP<Epetra_Map> interfacemap = MapInterface(meshtyingstrategy);
 
   switch (scatramatrixtype)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
-      blockmapinterface = Teuchos::rcp(new LINALG::MultiMapExtractor(
+      blockmapinterface = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
           *interfacemap, std::vector<Teuchos::RCP<const Epetra_Map>>(1, interfacemap)));
       break;
     }
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapinterface(nummaps, Teuchos::null);
       for (int iblockmap = 0; iblockmap < static_cast<int>(nummaps); ++iblockmap)
       {
-        partial_blockmapinterface[iblockmap] = LINALG::MultiMapExtractor::MergeMaps(
+        partial_blockmapinterface[iblockmap] = CORE::LINALG::MultiMapExtractor::MergeMaps(
             {meshtyingstrategy->BlockMapsSlave().Map(iblockmap),
                 meshtyingstrategy->BlockMapsMaster().Map(iblockmap)});
       }
-      blockmapinterface =
-          Teuchos::rcp(new LINALG::MultiMapExtractor(*interfacemap, partial_blockmapinterface));
+      blockmapinterface = Teuchos::rcp(
+          new CORE::LINALG::MultiMapExtractor(*interfacemap, partial_blockmapinterface));
       break;
     }
     default:
@@ -152,25 +153,25 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocks(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocksSlave(
+Teuchos::RCP<CORE::LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocksSlave(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
-    LINALG::MatrixType scatramatrixtype, unsigned nummaps) const
+    CORE::LINALG::MatrixType scatramatrixtype, unsigned nummaps) const
 {
-  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapinterfaceslave(Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::MultiMapExtractor> blockmapinterfaceslave(Teuchos::null);
 
   switch (scatramatrixtype)
   {
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       const auto slavedofmap = meshtyingstrategy->CouplingAdapter()->SlaveDofMap();
-      blockmapinterfaceslave = Teuchos::rcp(new LINALG::MultiMapExtractor(
+      blockmapinterfaceslave = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(
           *slavedofmap, std::vector<Teuchos::RCP<const Epetra_Map>>(1, slavedofmap)));
       break;
     }
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       blockmapinterfaceslave =
-          Teuchos::rcp(new LINALG::MultiMapExtractor(meshtyingstrategy->BlockMapsSlave()));
+          Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(meshtyingstrategy->BlockMapsSlave()));
       break;
     }
     default:
@@ -194,13 +195,13 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
   switch (ssti_mono_algorithm.ScaTraField()->MatrixType())
   {
     // one single main-diagonal matrix block associated with scalar transport field
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       block_map_system_matrix_ = MapsSubProblems();
       break;
     }
       // many main-diagonal matrix blocks associated with scalar transport field
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       auto block_positions_scatra =
           ssti_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
@@ -222,7 +223,7 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
 
       // initialize map extractor associated with blocks of global system matrix
       block_map_system_matrix_ = Teuchos::rcp(
-          new LINALG::MultiMapExtractor(*MapsSubProblems()->FullMap(), maps_systemmatrix));
+          new CORE::LINALG::MultiMapExtractor(*MapsSubProblems()->FullMap(), maps_systemmatrix));
 
       break;
     }
@@ -238,8 +239,8 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
-    const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
-    bool interfacemeshtying)
+    const CORE::LINALG::MatrixType matrixtype_global,
+    const CORE::LINALG::MatrixType matrixtype_scatra, bool interfacemeshtying)
     : matrixtype_scatra_(matrixtype_scatra),
       ssti_maps_mono_(ssti_maps_mono),
       systemmatrix_(Teuchos::null),
@@ -258,14 +259,14 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
   // perform initializations associated with global system matrix
   switch (matrixtype_global)
   {
-    case LINALG::MatrixType::block_field:
+    case CORE::LINALG::MatrixType::block_field:
     {
       systemmatrix_ = SetupBlockMatrix(
           ssti_maps_mono->BlockMapSystemMatrix(), ssti_maps_mono->BlockMapSystemMatrix());
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       systemmatrix_ = SetupSparseMatrix(ssti_maps_mono->MapsSubProblems()->FullMap());
       break;
@@ -281,7 +282,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
   // setup blocks for coupling matrices
   switch (matrixtype_scatra)
   {
-    case LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition:
     {
       scatrastructuredomain_ =
           SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
@@ -309,7 +310,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       }
       break;
     }
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       scatrastructuredomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
       structurescatradomain_ = SetupSparseMatrix(ssti_maps_mono->BlockMapStructure()->FullMap());
@@ -362,8 +363,8 @@ void SSTI::SSTIMatrices::CompleteCouplingMatrices()
 {
   switch (matrixtype_scatra_)
   {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
+    case CORE::LINALG::MatrixType::block_condition:
+    case CORE::LINALG::MatrixType::block_condition_dof:
     {
       scatrastructuredomain_->Complete();
       scatrathermodomain_->Complete();
@@ -382,7 +383,7 @@ void SSTI::SSTIMatrices::CompleteCouplingMatrices()
       break;
     }
 
-    case LINALG::MatrixType::sparse:
+    case CORE::LINALG::MatrixType::sparse:
     {
       scatrastructuredomain_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
           *ssti_maps_mono_->BlockMapScatra()->FullMap());
@@ -441,29 +442,29 @@ void SSTI::SSTIMatrices::UnCompleteCouplingMatrices()
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
-    Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> col_map)
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> row_map,
+    Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> col_map)
 {
   const int expected_entries_per_row = 81;
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+  return Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
       *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> SSTI::SSTIMatrices::SetupSparseMatrix(
+Teuchos::RCP<CORE::LINALG::SparseMatrix> SSTI::SSTIMatrices::SetupSparseMatrix(
     const Teuchos::RCP<const Epetra_Map> row_map)
 {
   const int expected_entries_per_row = 27;
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::rcp(
-      new LINALG::SparseMatrix(*row_map, expected_entries_per_row, explicitdirichlet, savegraph));
+  return Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
 /*---------------------------------------------------------------------------------*

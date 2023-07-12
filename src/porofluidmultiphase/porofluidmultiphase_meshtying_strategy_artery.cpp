@@ -100,7 +100,7 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 
   // initialize Poromultiphase-elasticity-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *arttoporofluidcoupling_->GlobalExtractor(), *arttoporofluidcoupling_->GlobalExtractor(),
           81, false, true));
 
@@ -145,7 +145,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Update()
  | initialize the linear solver                            kremheller 07/20 |
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
-    Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   const Teuchos::ParameterList& porofluidparams =
       DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams();
@@ -196,9 +196,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::InitializeLinearSolver(
 /*--------------------------------------------------------------------------*
  | solve linear system of equations                        kremheller 04/18 |
  *--------------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-    Teuchos::RCP<Epetra_Vector> residual)
+void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat,
+    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual)
 {
   comb_systemmatrix_->Complete();
 
@@ -328,7 +328,7 @@ Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Art
 /*-----------------------------------------------------------------------*
  | access to block system matrix of artery poro problem kremheller 04/18 |
  *-----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
 POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::ArteryPorofluidSysmat() const
 {
   return comb_systemmatrix_;

@@ -322,10 +322,10 @@ double MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(const double si
 }
 
 double MAT::UTILS::MUSCLE::FiberStretch(
-    const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+    const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M)
 {
   // product C^T*M
-  LINALG::Matrix<3, 3> transpCM(false);
+  CORE::LINALG::Matrix<3, 3> transpCM(false);
   transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
 
   // stretch in fibre direction lambdaM
@@ -335,11 +335,11 @@ double MAT::UTILS::MUSCLE::FiberStretch(
   return lambdaM;
 }
 
-LINALG::Matrix<3, 3> MAT::UTILS::MUSCLE::DFiberStretch_DC(
-    const double lambdaM, const LINALG::Matrix<3, 3> &C, const LINALG::Matrix<3, 3> &M)
+CORE::LINALG::Matrix<3, 3> MAT::UTILS::MUSCLE::DFiberStretch_DC(
+    const double lambdaM, const CORE::LINALG::Matrix<3, 3> &C, const CORE::LINALG::Matrix<3, 3> &M)
 {
   // derivative of lambdaM w.r.t. C
-  LINALG::Matrix<3, 3> dlambdaMdC(M);
+  CORE::LINALG::Matrix<3, 3> dlambdaMdC(M);
   dlambdaMdC.Scale(0.5 / lambdaM);
 
   return dlambdaMdC;

@@ -150,7 +150,7 @@ void DRT::Discretization::AssignGlobalIDs(const Epetra_Comm& comm,
 
   int mysize = sendblock.size();
   comm.SumAll(&mysize, &size, 1);
-  int mypos = LINALG::FindMyPos(sendblock.size(), comm);
+  int mypos = CORE::LINALG::FindMyPos(sendblock.size(), comm);
 
   std::vector<int> send(size);
   std::fill(send.begin(), send.end(), 0);

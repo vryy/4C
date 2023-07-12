@@ -50,7 +50,7 @@ UTILS::ConstraintPenalty::ConstraintPenalty(
     }
     // initialize maps and importer
     errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->Comm()));
-    rederrormap_ = LINALG::AllreduceEMap(*errormap_);
+    rederrormap_ = CORE::LINALG::AllreduceEMap(*errormap_);
     errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
     errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
     acterror_ = Teuchos::rcp(new Epetra_Vector(*rederrormap_));
@@ -125,9 +125,10 @@ void UTILS::ConstraintPenalty::Initialize(const double& time)
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   // choose action
   switch (constrtype_)
@@ -174,9 +175,10 @@ void UTILS::ConstraintPenalty::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
+    Teuchos::RCP<Epetra_Vector> systemvector3)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
   if (!actdisc_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -294,8 +296,8 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(Teuchos::ParameterList& params
           // force+stiff)
           if (!assemblemat1) elevector2.Scale((*lagrvalues_force_)[condID - 1]);
           if (assemblemat1) elevector2.Scale((*lagrvalues_)[condID - 1]);
-          LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
-          LINALG::Assemble(*systemvector1, elevector2, lm, lmowner);
+          CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
+          CORE::LINALG::Assemble(*systemvector1, elevector2, lm, lmowner);
         }
       }
     }
@@ -365,7 +367,7 @@ void UTILS::ConstraintPenalty::EvaluateError(
         std::vector<int> constrowner;
         constrlm.push_back(condID - 1);
         constrowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
+        CORE::LINALG::Assemble(*systemvector, elevector3, constrlm, constrowner);
       }
 
       if (actdisc_->Comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))

@@ -61,12 +61,12 @@ namespace CONTACT
         void AddContributionsToConstrRHS(Epetra_Vector& augConstrRhs) const override;
 
         /// derived
-        Teuchos::RCP<LINALG::SparseMatrix> GetMatrixBlockPtr(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
             const enum DRT::UTILS::MatBlockType& bt,
             const CONTACT::ParamsInterface* cparams = NULL) const override;
 
         /// derived
-        void AddContributionsToMatrixBlockDisplDispl(LINALG::SparseMatrix& kdd,
+        void AddContributionsToMatrixBlockDisplDispl(CORE::LINALG::SparseMatrix& kdd,
             const CONTACT::ParamsInterface* cparams = NULL) const override;
 
         /// derived

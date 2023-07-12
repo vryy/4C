@@ -121,10 +121,10 @@ namespace CONTACT
        *  \param[in] n_ref       : normal evaluated at the reference point
        *
        *  \author hiermeier \date 07/17 */
-      void LMatGP(LINALG::Matrix<probdim, probdim>& lmat,
-          LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::MortarElement& tar_ele,
-          const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
-          const LINALG::Matrix<probdim, 1>& n_ref) const;
+      void LMatGP(CORE::LINALG::Matrix<probdim, probdim>& lmat,
+          CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES>& tar_deriv1, MORTAR::MortarElement& tar_ele,
+          const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+          const CORE::LINALG::Matrix<probdim, 1>& n_ref) const;
 
       /** \brief Get the right-hand-side for the GP projection
        *
@@ -140,9 +140,10 @@ namespace CONTACT
        *  \return FALSE, if GetGlobalPosition failed. Otherwise TRUE.
        *
        *  \author  hiermeier \date 07/17 */
-      bool RhsGP(LINALG::Matrix<probdim, 1>& rhs, const LINALG::Matrix<probdim, 1>& x_ref,
-          const LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
-          const LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
+      bool RhsGP(CORE::LINALG::Matrix<probdim, 1>& rhs,
+          const CORE::LINALG::Matrix<probdim, 1>& x_ref,
+          const CORE::LINALG::Matrix<probdim, 1>& n_ref, MORTAR::MortarElement& target_ele,
+          const CORE::LINALG::Matrix<probdim, TAR_NUMNODES>& tar_coords, const double* tar_xi,
           const double& alpha) const;
 
       /** \brief Get the global position at the parametric coordinates xi
@@ -158,20 +159,20 @@ namespace CONTACT
       template <DRT::Element::DiscretizationType type,
           unsigned numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<type>::numNodePerElement>
       bool GetGlobalPosition(MORTAR::MortarElement& ele,
-          const LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
-          LINALG::Matrix<probdim, 1>& pos) const;
+          const CORE::LINALG::Matrix<probdim, numnodes>& coords, const double* xi,
+          CORE::LINALG::Matrix<probdim, 1>& pos) const;
 
      private:
-      LINALG::Matrix<REF_NUMNODES, 1> ref_val_;
-      LINALG::Matrix<probdim, 1> x_ref_;
-      LINALG::Matrix<probdim, 1> n_ref_;
+      CORE::LINALG::Matrix<REF_NUMNODES, 1> ref_val_;
+      CORE::LINALG::Matrix<probdim, 1> x_ref_;
+      CORE::LINALG::Matrix<probdim, 1> n_ref_;
 
-      LINALG::Matrix<probdim, 1> rhs_;
-      LINALG::Matrix<probdim, probdim> lmat_;
-      LINALG::Matrix<probdim, 1> dx_;
+      CORE::LINALG::Matrix<probdim, 1> rhs_;
+      CORE::LINALG::Matrix<probdim, probdim> lmat_;
+      CORE::LINALG::Matrix<probdim, 1> dx_;
 
-      LINALG::Matrix<probdim, TAR_NUMNODES> tar_coords_;
-      LINALG::Matrix<TAR_DIM, TAR_NUMNODES> tar_deriv1_;
+      CORE::LINALG::Matrix<probdim, TAR_NUMNODES> tar_coords_;
+      CORE::LINALG::Matrix<TAR_DIM, TAR_NUMNODES> tar_deriv1_;
 
       unsigned iter_;
 

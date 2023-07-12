@@ -163,8 +163,8 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
 
-  invplrcglast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  invplrcgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  invplrcglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  invplrcgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
   accplstrainlast_ = Teuchos::rcp(new std::vector<double>);
   accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
@@ -176,7 +176,7 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, tmp1);
     accplstrainlast_->push_back(tmp1);
 
-    LINALG::Matrix<3, 3> tmp(true);
+    CORE::LINALG::Matrix<3, 3> tmp(true);
     // vectors of last converged state are unpacked
     ExtractfromPack(position, data, tmp);
     invplrcglast_->push_back(tmp);
@@ -198,8 +198,8 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
  *---------------------------------------------------------------------*/
 void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  invplrcglast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
-  invplrcgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  invplrcglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
+  invplrcgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
 
   accplstrainlast_ = Teuchos::rcp(new std::vector<double>);
   accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
@@ -210,7 +210,7 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* li
   accplstrainlast_->resize(numgp);
   accplstraincurr_->resize(numgp);
 
-  LINALG::Matrix<3, 3> emptymat(true);
+  CORE::LINALG::Matrix<3, 3> emptymat(true);
   for (int i = 0; i < 3; i++) emptymat(i, i) = 1.0;
 
   for (int i = 0; i < numgp; i++)
@@ -238,7 +238,7 @@ void MAT::PlasticNlnLogNeoHooke::Update()
   accplstrainlast_ = accplstraincurr_;
 
   // empty vectors of current data
-  invplrcgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3, 3>>);
+  invplrcgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
   accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
 
   // get the size of the vector
@@ -247,7 +247,7 @@ void MAT::PlasticNlnLogNeoHooke::Update()
   invplrcgcurr_->resize(histsize);
   accplstraincurr_->resize(histsize);
 
-  LINALG::Matrix<3, 3> emptymat(true);
+  CORE::LINALG::Matrix<3, 3> emptymat(true);
   for (int i = 0; i < 3; i++) emptymat(i, i) = 1.0;
 
   for (int i = 0; i < histsize; i++)
@@ -262,9 +262,10 @@ void MAT::PlasticNlnLogNeoHooke::Update()
 /*----------------------------------------------------------------------*
  | calculate stress and constitutive tensor                             |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
-    const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
+void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+    CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+    const int eleGID)
 {
   // elastic material data
   // get material parameters
@@ -285,17 +286,17 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   const double dt = params.get<double>("delta time");
 
-  LINALG::Matrix<3, 3> invdefgrd(*defgrd);
+  CORE::LINALG::Matrix<3, 3> invdefgrd(*defgrd);
   invdefgrd.Invert();
 
   // matrices for temporary stuff
-  LINALG::Matrix<3, 3> tmp1;
-  LINALG::Matrix<3, 3> tmp2;
+  CORE::LINALG::Matrix<3, 3> tmp1;
+  CORE::LINALG::Matrix<3, 3> tmp2;
 
   // 3x3 2nd-order identity matrix
-  LINALG::Matrix<3, 3> id2(true);
+  CORE::LINALG::Matrix<3, 3> id2(true);
   // 3x3 2nd-order deviatoric identity matrix in principal directions
-  LINALG::Matrix<3, 3> Idev;
+  CORE::LINALG::Matrix<3, 3> Idev;
   for (int i = 0; i < 3; i++)
   {
     id2(i, i) = 1.0;
@@ -309,7 +310,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
 
   // linear elasticity tensor in principal directions
-  LINALG::Matrix<3, 3> D_ep_principal(Idev);
+  CORE::LINALG::Matrix<3, 3> D_ep_principal(Idev);
   D_ep_principal.Scale(2.0 * G);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) D_ep_principal(i, j) += kappa;
@@ -320,12 +321,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // ------------------------------------------------------- trial strain
   // elastic left Cauchy-Green deformation tensor (LCG) at trial state
   // Be_trial = b_{e,n+1}^{trial} = F_{n+1} C_{p,n}^{-1} F_{n+1}
-  LINALG::Matrix<3, 3> Be_trial;
+  CORE::LINALG::Matrix<3, 3> Be_trial;
   tmp1.Multiply(*defgrd, invplrcglast_->at(gp));
   Be_trial.MultiplyNT(tmp1, *defgrd);
 
   // elastic LCG at final state
-  LINALG::Matrix<3, 3> Be;
+  CORE::LINALG::Matrix<3, 3> Be;
 
   // ***************************************************
   // Here we start the principal stress based algorithm
@@ -342,13 +343,13 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     for (int j = 0; j < 3; j++) n(i, j) = Be_trial(i, j);
 
   // calculate eigenvectors and eigenvalues
-  LINALG::SymmetricEigenProblem(n, lambda_trial_square);
+  CORE::LINALG::SymmetricEigenProblem(n, lambda_trial_square);
   // eigenvectors are stored in n, i.e. original matrix inserted in method is
   // destroyed.
   // eigenvalues correspond to the square of the stretches
 
-  // spatial principal direction n_alpha (in LINALG format)
-  std::vector<LINALG::Matrix<3, 1>> spatial_principal_directions;
+  // spatial principal direction n_alpha (in CORE::LINALG format)
+  std::vector<CORE::LINALG::Matrix<3, 1>> spatial_principal_directions;
   spatial_principal_directions.resize(3);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) (spatial_principal_directions.at(i))(j) = n(j, i);
@@ -357,21 +358,21 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // note, that for convenience in the later programming this is NOT
   // based on the correct pull-back N_alpha = lambda_alpha * F^-1 * n_alpha
   // Instead we just do N_alpha = F^{-1} * n_alpha
-  std::vector<LINALG::Matrix<3, 1>> material_principal_directions;
+  std::vector<CORE::LINALG::Matrix<3, 1>> material_principal_directions;
   material_principal_directions.resize(3);
   for (int i = 0; i < 3; i++)
     material_principal_directions.at(i).Multiply(invdefgrd, spatial_principal_directions.at(i));
 
   // deviatoric Kirchhoff stress at trial state
   // tau^{trial} = 2 * G * log(sqrt(lambda^2)) - 2/3 * G * log(detF)
-  LINALG::Matrix<3, 1> dev_KH_trial;
+  CORE::LINALG::Matrix<3, 1> dev_KH_trial;
   for (int i = 0; i < 3; i++)
     dev_KH_trial(i) = G * std::log(lambda_trial_square(i)) - 2.0 / 3.0 * G * std::log(detF);
 
   // deviatoric Kirchhoff stress at final state
   // For now we store the trial states. In case of plastic
   // material reaction, we will update it later
-  LINALG::Matrix<3, 1> dev_KH;
+  CORE::LINALG::Matrix<3, 1> dev_KH;
 
   // pressure (equal at trial state and final state) for the use with tau
   // tau = tau'_aa + p = tau'_aa + kappa * log(detF)
@@ -457,7 +458,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
         dserror("Local Newton iteration unconverged in %i iterations. Residual: %d", iter, res);
     }
     // flow vector (7.54a)
-    LINALG::Matrix<3, 1> flow_vector(dev_KH_trial);
+    CORE::LINALG::Matrix<3, 1> flow_vector(dev_KH_trial);
     flow_vector.Scale(1.0 / (sqrt(2.0 / 3.0) * abs_dev_KH_trial));
 
     // stress return mapping (7.60)
@@ -488,7 +489,7 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   // or tau_ij = tau'_ii + kappa ln(J)
   // S_ij   = F^-1 tau_ij F^-T
   //        = tau_ij (F^-1 n_i) \otimes (F^-1 n_i)
-  LINALG::Matrix<3, 3> PK2(true);
+  CORE::LINALG::Matrix<3, 3> PK2(true);
   for (int i = 0; i < 3; i++)
   {
     tmp1.MultiplyNT(material_principal_directions.at(i), material_principal_directions.at(i));

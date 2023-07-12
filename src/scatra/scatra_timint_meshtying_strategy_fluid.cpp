@@ -110,7 +110,7 @@ void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 /*----------------------------------------------------------------------*
  | initialize system matrix for fluid-fluid meshtying        fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemMatrix() const
+Teuchos::RCP<CORE::LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemMatrix() const
 {
   return meshtying_->InitSystemMatrix();
 }  // SCATRA::MeshtyingStrategyFluid::InitSystemMatrix
@@ -119,13 +119,14 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemM
 /*-------------------------------------------------------------------------*
  | solve linear system of equations for fluid-fluid meshtying   fang 12/14 |
  *-------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-    const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-    const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
+void SCATRA::MeshtyingStrategyFluid::Solve(
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,                //!< solver
+    const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,  //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>& increment,                    //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>& residual,                     //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>& phinp,                        //!< state vector at time n+1
     const int& iteration,  //!< number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
+    const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
 ) const
 {
   meshtying_->SolveMeshtying(
@@ -138,7 +139,7 @@ void SCATRA::MeshtyingStrategyFluid::Solve(const Teuchos::RCP<LINALG::Solver>& s
 /*-------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   fang 01/18 |
  *-------------------------------------------------------------------------*/
-const LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
+const CORE::LINALG::Solver& SCATRA::MeshtyingStrategyFluid::Solver() const
 {
   if (scatratimint_->Solver() == Teuchos::null) dserror("Invalid linear solver!");
   return *scatratimint_->Solver();

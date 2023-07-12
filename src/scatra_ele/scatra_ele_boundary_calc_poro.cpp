@@ -95,9 +95,9 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
-      std::vector<LINALG::Matrix<nen_, 1>> ephinp(
-          my::numdofpernode_, LINALG::Matrix<nen_, 1>(true));
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
+      std::vector<CORE::LINALG::Matrix<nen_, 1>> ephinp(
+          my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, ephinp, la[0].lm_);
 
       // get number of dofset associated with velocity related dofs
       const int ndsvel = my::scatraparams_->NdsVel();
@@ -117,10 +117,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
           lmvel[inode * nsd_ele_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
       // we deal with a nsd_-dimensional flow field
-      LINALG::Matrix<nsd_, nen_> econvel(true);
+      CORE::LINALG::Matrix<nsd_, nen_> econvel(true);
 
       // extract local values of convective velocity field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nsd_, nen_>>(*convel, econvel, lmvel);
 
       // rotate the vector field in the case of rotationally symmetric boundary conditions
       my::rotsymmpbc_->RotateMyValuesIfNecessary(econvel);
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
         lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_ele_];
 
       // extract local values of pressure field from global state vector
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, eprenp_, lmpre);
 
       // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
       // dimension. If so, we assume that this is the porosity
@@ -181,8 +181,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::CalcConvectiveFlux(
-    const DRT::FaceElement* ele, const std::vector<LINALG::Matrix<nen_, 1>>& ephinp,
-    const LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
+    const DRT::FaceElement* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(

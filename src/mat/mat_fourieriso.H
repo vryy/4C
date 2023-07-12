@@ -139,20 +139,20 @@ namespace MAT
 
     //@}
 
-    void Evaluate(const LINALG::Matrix<1, 1>& gradtemp, LINALG::Matrix<1, 1>& cmat,
-        LINALG::Matrix<1, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<1, 1>& gradtemp, CORE::LINALG::Matrix<1, 1>& cmat,
+        CORE::LINALG::Matrix<1, 1>& heatflux) const override;
 
-    void Evaluate(const LINALG::Matrix<2, 1>& gradtemp, LINALG::Matrix<2, 2>& cmat,
-        LINALG::Matrix<2, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<2, 1>& gradtemp, CORE::LINALG::Matrix<2, 2>& cmat,
+        CORE::LINALG::Matrix<2, 1>& heatflux) const override;
 
-    void Evaluate(const LINALG::Matrix<3, 1>& gradtemp, LINALG::Matrix<3, 3>& cmat,
-        LINALG::Matrix<3, 1>& heatflux) const override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 1>& gradtemp, CORE::LINALG::Matrix<3, 3>& cmat,
+        CORE::LINALG::Matrix<3, 1>& heatflux) const override;
 
-    void ConductivityDerivT(LINALG::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(CORE::LINALG::Matrix<3, 3>& dCondDT) const override { dCondDT.Clear(); }
 
-    void ConductivityDerivT(LINALG::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(CORE::LINALG::Matrix<2, 2>& dCondDT) const override { dCondDT.Clear(); }
 
-    void ConductivityDerivT(LINALG::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
+    void ConductivityDerivT(CORE::LINALG::Matrix<1, 1>& dCondDT) const override { dCondDT.Clear(); }
 
     double CapacityDerivT() const override { return 0; }
 

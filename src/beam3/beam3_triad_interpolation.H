@@ -52,27 +52,27 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<LINALG::Matrix<4, 1, T>> const& nodal_quaternions) = 0;
+    virtual void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions) = 0;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<LINALG::Matrix<3, 3, T>> const& nodal_triads) = 0;
+    virtual void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads) = 0;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     virtual void GetInterpolatedTriadAtXi(
-        LINALG::Matrix<3, 3, T>& triad, const double xi) const = 0;
+        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const = 0;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
     virtual void GetInterpolatedQuaternionAtXi(
-        LINALG::Matrix<4, 1, T>& quaternion, const double xi) const = 0;
+        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const = 0;
     //@}
 
    private:

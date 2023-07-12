@@ -25,7 +25,7 @@ ADAPTER::AdapterScatraWrapper::AdapterScatraWrapper(Teuchos::RCP<ScatraInterface
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::AdapterScatraWrapper::EvaluateAdditionalSolutionDependingModels(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // do nothing so far
   return;

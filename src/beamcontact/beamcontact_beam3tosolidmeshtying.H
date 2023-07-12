@@ -88,7 +88,7 @@ namespace CONTACT
     \brief Evaluate this contact element pair
     */
     virtual bool Evaluate(
-        LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp) = 0;
+        CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp) = 0;
 
     /*
     \brief Update nodal coordinates (and tangents) of all elements
@@ -181,7 +181,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp);
+    bool Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fint, const double& pp);
 
     /*
     \brief Update nodal coordinates (and tangents) of all elements
@@ -209,12 +209,12 @@ namespace CONTACT
     std::vector<DRT::Element*> element2_;
 
     //! current nodal positions (and tangents) of the two elements
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1pos_;
-    std::vector<LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2pos_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1pos_;
+    std::vector<CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2pos_;
 
     //! reference nodal positions (and tangents) of the two elements
-    LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1posref_;
-    std::vector<LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2posref_;
+    CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPEBTS> ele1posref_;
+    std::vector<CORE::LINALG::Matrix<3 * numnodessol, 1, TYPEBTS>> ele2posref_;
 
     //! flag indicating contact (active/inactive)
     bool contactflag_;

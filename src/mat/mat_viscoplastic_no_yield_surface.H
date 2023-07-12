@@ -174,8 +174,8 @@ namespace MAT
      * @param[in] p                 mean normal pressure
      * @return deviatoric trial stresses
      */
-    LINALG::Matrix<3, 3>& CalculateDeviatoricTrialStresses(
-        const LINALG::Matrix<6, 1>& Me_trial_Vstress, const double p) const;
+    CORE::LINALG::Matrix<3, 3>& CalculateDeviatoricTrialStresses(
+        const CORE::LINALG::Matrix<6, 1>& Me_trial_Vstress, const double p) const;
 
     /*!
      * @brief elastic stiffness tensor in intermediate configuration is calculated
@@ -184,8 +184,9 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return elastic stiffness tensor in intermediate configuration
      */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& CalculateElasticStiffness(
-        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& CalculateElasticStiffness(
+        const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
+        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @brief calculate linearization for local newton loop of internal evolution equations
@@ -195,7 +196,7 @@ namespace MAT
      * @param[in] terms               terms that can be precalculated and reused several times
      * @return Linearization matrix
      */
-    LINALG::Matrix<2, 2>& CalculateLinearization(const double equ_tens_stress_np,
+    CORE::LINALG::Matrix<2, 2>& CalculateLinearization(const double equ_tens_stress_np,
         const double flow_resistance_np, const MAT::PreCalculatedTerms& terms);
 
     /*!
@@ -209,7 +210,7 @@ namespace MAT
      * @param[in] terms                  terms that can be precalculated and reused several times
      * @return residual vector
      */
-    LINALG::Matrix<2, 1>& CalculateResidual(const double equ_tens_stress_np,
+    CORE::LINALG::Matrix<2, 1>& CalculateResidual(const double equ_tens_stress_np,
         const double equ_tens_trial_stress, const double flow_resistance_np,
         const double flow_resistance_n, const PreCalculatedTerms& terms);
 
@@ -219,8 +220,9 @@ namespace MAT
      * @param[in] Me        energy conjugated stress tensor
      * @return second Piola--Kirchhoff stresses
      */
-    LINALG::Matrix<3, 3>& CalculateSecondPiolaKirchhoffStresses(const LINALG::Matrix<3, 3>* defgrd,
-        const LINALG::Matrix<3, 3>& Re_trial, const LINALG::Matrix<3, 3>& Me) const;
+    CORE::LINALG::Matrix<3, 3>& CalculateSecondPiolaKirchhoffStresses(
+        const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>& Re_trial,
+        const CORE::LINALG::Matrix<3, 3>& Me) const;
 
     /*!
      * @param[in] Fe_trial        trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
@@ -228,8 +230,8 @@ namespace MAT
      * @param[out] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      */
     void CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
-        const LINALG::Matrix<3, 3>& Fe_trial, LINALG::Matrix<3, 1>& eigen_values,
-        LINALG::Matrix<3, 3>& eigen_vectors) const;
+        const CORE::LINALG::Matrix<3, 3>& Fe_trial, CORE::LINALG::Matrix<3, 1>& eigen_values,
+        CORE::LINALG::Matrix<3, 3>& eigen_vectors) const;
 
     /*!
      * @param[in] Fe_trial       trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
@@ -237,22 +239,24 @@ namespace MAT
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return trial elastic rotation tensor \f$ R^{*}_\text{e} \f$
      */
-    LINALG::Matrix<3, 3>& CalculateTrialElasticRotation(const LINALG::Matrix<3, 3>& Fe_trial,
-        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
+    CORE::LINALG::Matrix<3, 3>& CalculateTrialElasticRotation(
+        const CORE::LINALG::Matrix<3, 3>& Fe_trial, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
+        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return logarithmic elastic strains in strain-like Voigt notation
      */
-    LINALG::Matrix<6, 1>& CalculateLogElasticStrainInStrainLikeVoigtNotation(
-        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
+    CORE::LINALG::Matrix<6, 1>& CalculateLogElasticStrainInStrainLikeVoigtNotation(
+        const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
+        const CORE::LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @param[in] Me_trial_dev  deviatoric part of trial elastic stresses
      * @return trial elastic equivalent stress [sqrt(3/2 * trace(Me_trial_dev . Me_trial_dev))]
      */
-    double CalculateTrialEquivalentStress(const LINALG::Matrix<3, 3>& Me_trial_dev) const;
+    double CalculateTrialEquivalentStress(const CORE::LINALG::Matrix<3, 3>& Me_trial_dev) const;
 
     /*!
      * @brief inverse viscous deformation gradient is updated and returned
@@ -263,13 +267,14 @@ namespace MAT
      * @param[in] eta            deviatoric elastic deformation share
      * @return inverse viscous deformation gradient
      */
-    LINALG::Matrix<3, 3>& CalculateUpdatedInverseViscousDefgrad(
-        const LINALG::Matrix<3, 3>& last_iFv, const LINALG::Matrix<3, 3>& eigen_vectors,
-        const LINALG::Matrix<3, 1>& eigen_values, const double eta) const;
+    CORE::LINALG::Matrix<3, 3>& CalculateUpdatedInverseViscousDefgrad(
+        const CORE::LINALG::Matrix<3, 3>& last_iFv, const CORE::LINALG::Matrix<3, 3>& eigen_vectors,
+        const CORE::LINALG::Matrix<3, 1>& eigen_values, const double eta) const;
 
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        int gp, int eleGID) override;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
     /*!
      * @brief Local Newton-loop to solve for the internal evolution equations
@@ -277,7 +282,7 @@ namespace MAT
      * @param[in/out] x  solution vector
      * @param[in]     dt time step
      */
-    void LocalNewtonLoop(LINALG::Matrix<2, 1>& x, double dt);
+    void LocalNewtonLoop(CORE::LINALG::Matrix<2, 1>& x, double dt);
 
     /*!
      * @brief Calculate and return terms of the formulation that can be reused several times
@@ -299,7 +304,7 @@ namespace MAT
      *
      * @param[out] cmat elasticity tensor in intermediate configuration
      */
-    void SetupCmat(LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
+    void SetupCmat(CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>& cmat);
 
     void Update() override;
 
@@ -313,10 +318,10 @@ namespace MAT
     MAT::PAR::ViscoPlasticNoYieldSurface* params_;
 
     //! inverse plastic deformation gradient for each Gauss point at last converged state
-    std::vector<LINALG::Matrix<3, 3>> last_plastic_defgrd_inverse_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> last_plastic_defgrd_inverse_;
 
     //! current inverse plastic deformation gradient for each Gauss point
-    std::vector<LINALG::Matrix<3, 3>> current_plastic_defgrd_inverse_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> current_plastic_defgrd_inverse_;
 
     //! flow resistance 'S' for each Gauss point at last converged state
     std::vector<double> last_flowres_isotropic_;

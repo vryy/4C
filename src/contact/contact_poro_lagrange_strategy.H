@@ -21,12 +21,12 @@ namespace ADAPTER
 }
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -112,10 +112,10 @@ namespace CONTACT
      Evaluate poro coupling contact matrices for no penetration
      condition on contact surface
     */
-    void EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>&
+    void EvaluatePoroNoPenContact(Teuchos::RCP<CORE::LINALG::SparseMatrix>&
                                       k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
-        Teuchos::RCP<LINALG::SparseMatrix>& Feff,  // global fluid Matrix in poro
-        Teuchos::RCP<Epetra_Vector>& feff);        // global RHS of fluid in poro
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff,  // global fluid Matrix in poro
+        Teuchos::RCP<Epetra_Vector>& feff);              // global RHS of fluid in poro
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -123,8 +123,8 @@ namespace CONTACT
      Evaluate poro coupling contact matrices for no penetration
      condition on contact surface
     */
-    void EvaluatePoroNoPenContact(Teuchos::RCP<LINALG::SparseMatrix>& k_fseff,
-        std::map<int, Teuchos::RCP<LINALG::SparseMatrix>*>& Feff,
+    void EvaluatePoroNoPenContact(Teuchos::RCP<CORE::LINALG::SparseMatrix>& k_fseff,
+        std::map<int, Teuchos::RCP<CORE::LINALG::SparseMatrix>*>& Feff,
         Teuchos::RCP<Epetra_Vector>& feff);
 
     /*!
@@ -132,7 +132,7 @@ namespace CONTACT
 
      Evaluate all other matrixes here!
     */
-    void EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::SparseMatrix>&
+    void EvaluateMatPoroNoPen(Teuchos::RCP<CORE::LINALG::SparseMatrix>&
                                   k_fseff,   // global poro Coupling Matrix Fluid Structure K_FS
         Teuchos::RCP<Epetra_Vector>& feff);  // global RHS of fluid in poro
 
@@ -141,7 +141,8 @@ namespace CONTACT
 
      Evaluate all other matrixes here!
     */
-    void EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINALG::SparseMatrix>& Feff, int Column_Block_Id);
+    void EvaluateOtherMatPoroNoPen(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& Feff, int Column_Block_Id);
 
     /*!
     \brief Recovery method
@@ -198,41 +199,41 @@ namespace CONTACT
     // time integration
     double nopenalpha_;  // 1-theta!!!
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         csfsn_;  // poro coupling stiffness block Csf_sn (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         csfsm_;  // poro coupling stiffness block Csf_sm (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         csfss_;  // poro coupling stiffness block Csf_ss (needed for LM)
 
     // For Recovery of no penetration lagrange multiplier!!!
     Teuchos::RCP<Epetra_Vector> ffs_;  // poro fluid RHS (needed for no pen LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         cfssn_;  // poro coupling stiffness block Cfs_sn (needed for no pen LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         cfssm_;  // poro coupling stiffness block Cfs_sm (needed for no pen LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         cfsss_;  // poro coupling stiffness block Cfs_ss (needed for no pen LM)
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fsn_;  // poro fluid stiffness block F_sn (needed for no pen LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fsm_;  // poro fluid stiffness block F_sm (needed for no pen LM)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fss_;  // poro fluid stiffness block F_ss (needed for no pen LM)
 
-    std::map<int, Teuchos::RCP<LINALG::SparseOperator>>
+    std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>>
         cfx_s_;  // offdiagonal coupling stiffness blocks on slave side!
 
     // Matrices transformed to the fluid dofs!!!
-    Teuchos::RCP<LINALG::SparseMatrix> fdhat_;
-    Teuchos::RCP<LINALG::SparseMatrix> fmhataam_;
-    Teuchos::RCP<LINALG::SparseMatrix> finvda_;
-    Teuchos::RCP<LINALG::SparseMatrix> ftanginvD_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> fdhat_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> fmhataam_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> finvda_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> ftanginvD_;
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fdoldtransp_;  // global transposed Mortar matrix D (last end-point t_n)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fmoldtransp_;  // global transposed Mortar matrix M (last end-point t_n)
 
 
@@ -247,27 +248,27 @@ namespace CONTACT
 
     /// @name matrix transformation
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> linncoupveltransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> linncoupveltransform_;
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> linncoupdisptransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> linncoupdisptransform_;
     //! transform object for tangential times Dinv matrix \f$T*D^-1\f$
-    Teuchos::RCP<LINALG::MatrixRowColTransform> tanginvtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> tanginvtransform_;
     //! transform object for linearized tangentlambda matrix \f$lintanglambda\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> lintangentlambdatransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> lintangentlambdatransform_;
     //! transform object for linearized Dlambda matrix \f$linDlambda\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> porolindmatrixtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> porolindmatrixtransform_;
     //! transform object for linearized Mlambda matrix \f$linMlambda\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> porolinmmatrixtransform_;  // h.Willmann
     //! transform object for mhataam = invda * mmatrixa
-    Teuchos::RCP<LINALG::MatrixRowColTransform> mhataamtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowColTransform> mhataamtransform_;
     //! transform object for dhat
-    Teuchos::RCP<LINALG::MatrixRowTransform> dhattransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> dhattransform_;
     //! transform object for mold
-    Teuchos::RCP<LINALG::MatrixRowTransform> doldtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> doldtransform_;
     //! transform object for dold
-    Teuchos::RCP<LINALG::MatrixRowTransform> moldtransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> moldtransform_;
     //! transform object for active part of inverse D matrix \f$invDa\f$
-    Teuchos::RCP<LINALG::MatrixRowTransform> invDatransform_;
+    Teuchos::RCP<CORE::LINALG::MatrixRowTransform> invDatransform_;
 
 
     Teuchos::RCP<Epetra_Vector>
@@ -277,39 +278,40 @@ namespace CONTACT
 
     //... add the relevant matrices !!!
     Teuchos::RCP<Epetra_Vector> NCoup_;  ///< normal coupling vector (for RHS)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         NCoup_lindisp_;  ///< linearisation of normal coupling w.r.t. displacements
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         NCoup_linvel_;  ///< linearisation of normal coupling w.r.t. fluid velocity
 
     Teuchos::RCP<Epetra_Vector>
         fNCoup_;  ///< normal coupling vector (for RHS) -- transformed to fluid dofs
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fNCoup_lindisp_;  ///< linearisation of normal coupling w.r.t. displacements -- transformed
                           ///< to fluid dofs
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fNCoup_linvel_;  ///< linearisation of normal coupling w.r.t. fluid velocity -- transformed
                          ///< to fluid dofs
 
-    Teuchos::RCP<LINALG::SparseMatrix> Tangential_;  ///< matrix with tangential vectors inside
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
+        Tangential_;  ///< matrix with tangential vectors inside
 
-    Teuchos::RCP<LINALG::SparseMatrix> linTangentiallambda_;  ///< linearized tangential times
-                                                              ///< lambda
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> linTangentiallambda_;  ///< linearized tangential times
+                                                                    ///< lambda
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         flinTangentiallambda_;  ///< linearized tangential times lambda -- transformed to fluid dofs
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         porolindmatrix_;  // global Matrix LinD containing slave fc derivatives (with lm from poro
                           // no penetration)
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         porolinmmatrix_;  // global Matrix LinM containing master fc derivatives (with lm from poro
                           // no penetration)
 
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fporolindmatrix_;  // global Matrix LinD containing slave fc derivatives (with lm from poro
                            // no penetration) -- transformed to fluid dofs
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         fporolinmmatrix_;  // global Matrix LinM containing master fc derivatives (with lm from poro
                            // no penetration) -- transformed to fluid dofs
 

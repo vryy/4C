@@ -45,8 +45,9 @@ UTILS::Cardiovascular0DArterialProxDist::Cardiovascular0DArterialProxDist(
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat1, Teuchos::RCP<LINALG::SparseOperator> sysmat2,
-    Teuchos::RCP<LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat2,
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat3, Teuchos::RCP<Epetra_Vector> sysvec1,
     Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
     const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5)
 {
@@ -320,7 +321,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Evaluate(Teuchos::ParameterList& p
           cardiovascular0dlm.push_back(gindex[j]);
           cardiovascular0downer.push_back(curr->second->Owner());
         }
-        LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
+        CORE::LINALG::Assemble(*sysvec3, elevector3, cardiovascular0dlm, cardiovascular0downer);
       }
     }
   }
@@ -420,7 +421,7 @@ void UTILS::Cardiovascular0DArterialProxDist::Initialize(Teuchos::ParameterList&
         cardiovascular0dlm.push_back(gindex[j]);
         cardiovascular0downer.push_back(curr->second->Owner());
       }
-      LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
+      CORE::LINALG::Assemble(*sysvec1, elevector3, cardiovascular0dlm, cardiovascular0downer);
     }
   }
 

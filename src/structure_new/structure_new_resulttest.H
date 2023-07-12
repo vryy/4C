@@ -23,10 +23,10 @@ namespace DRT
   class DiscretizationInterface;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace IO
 {

@@ -17,11 +17,11 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration ...
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -76,11 +76,11 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(LINALG::SerialDenseVector* forcevec1,
-        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-        LINALG::SerialDenseMatrix* stiffmat22, const std::vector<DRT::Condition*> linechargeconds,
-        const double k, const double m) = 0;
+    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+        CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
+        CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
+        CORE::LINALG::SerialDenseMatrix* stiffmat22,
+        const std::vector<DRT::Condition*> linechargeconds, const double k, const double m) = 0;
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
@@ -112,28 +112,28 @@ namespace BEAMINTERACTION
     \brief Get coordinates of all interacting points on element1 and element2
     */
     virtual void GetAllInteractingPointCoordsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     virtual void GetAllInteractingPointCoordsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& coords) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const = 0;
 
     /*!
     \brief Get forces at all interacting points on element1 and element2
     */
     virtual void GetForcesAtAllInteractingPointsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& forces) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const = 0;
 
     virtual void GetForcesAtAllInteractingPointsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& forces) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const = 0;
 
     /*!
     \brief Get moments at all interacting points on element1 and element2
     */
     virtual void GetMomentsAtAllInteractingPointsElement1(
-        std::vector<LINALG::Matrix<3, 1, double>>& moments) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const = 0;
 
     virtual void GetMomentsAtAllInteractingPointsElement2(
-        std::vector<LINALG::Matrix<3, 1, double>>& moments) const = 0;
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const = 0;
 
     /*!
     \brief Get interaction free energy / potential

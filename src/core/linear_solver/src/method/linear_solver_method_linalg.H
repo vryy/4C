@@ -21,13 +21,13 @@
 // forward declarations
 class Epetra_LinearProblem;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
   class SparseOperator;
   class DownwindMatrix;
   class KrylovProjector;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CORE::LINEAR_SOLVER
 {
@@ -35,7 +35,7 @@ namespace CORE::LINEAR_SOLVER
   class SolverType;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   /*!
   \brief A general solver interface to Trilinos solvers and spooles
@@ -118,7 +118,7 @@ namespace LINALG
     */
     void Setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false,
-        Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
 
     /// solve linear system after setup has been done
     int Solve();
@@ -142,7 +142,7 @@ namespace LINALG
     */
     int Solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
         Teuchos::RCP<Epetra_MultiVector> b, bool refactor, bool reset = false,
-        Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
 
     /*!
     \brief Solve system of equations in one go (NOX)
@@ -163,7 +163,7 @@ namespace LINALG
                                 projection desired
     */
     int NoxSolve(Epetra_LinearProblem& linProblem, bool refactor, bool reset = false,
-        Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
 
     /*!
     \brief Reset the solver and clear data
@@ -316,6 +316,6 @@ namespace LINALG
 
   };  // class Solver
 
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 #endif  // SOLVER_LINALG_SOLVER_H

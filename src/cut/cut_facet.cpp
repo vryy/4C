@@ -247,13 +247,13 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
   if (isPlanarComputed_) return isPlanar_;
 
 
-  LINALG::Matrix<3, 1> x1;
-  LINALG::Matrix<3, 1> x2;
-  LINALG::Matrix<3, 1> x3;
+  CORE::LINALG::Matrix<3, 1> x1;
+  CORE::LINALG::Matrix<3, 1> x2;
+  CORE::LINALG::Matrix<3, 1> x3;
 
-  LINALG::Matrix<3, 1> b1;
-  LINALG::Matrix<3, 1> b2;
-  LINALG::Matrix<3, 1> b3;
+  CORE::LINALG::Matrix<3, 1> b1;
+  CORE::LINALG::Matrix<3, 1> b2;
+  CORE::LINALG::Matrix<3, 1> b3;
 
   unsigned i = Normal(points, x1, x2, x3, b1, b2, b3);
   if (i == 0)  // all on one line is ok
@@ -263,7 +263,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
     return true;
   }
 
-  LINALG::Matrix<3, 3> A;
+  CORE::LINALG::Matrix<3, 3> A;
   std::copy(b1.A(), b1.A() + 3, A.A());
   std::copy(b2.A(), b2.A() + 3, A.A() + 3);
   std::copy(b3.A(), b3.A() + 3, A.A() + 6);
@@ -278,10 +278,10 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& poin
 
     x3.Update(-1, x1, 1);
 
-    LINALG::Matrix<3, 3> B;
+    CORE::LINALG::Matrix<3, 3> B;
     B = A;
     x2 = 0;
-    double det = LINALG::gaussElimination<true, 3, double>(B, x3, x2);
+    double det = CORE::LINALG::gaussElimination<true, 3, double>(B, x3, x2);
     if (fabs(det) < LINSOLVETOL)
     {
       throw std::runtime_error("failed to find point position");
@@ -349,8 +349,8 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
   {
     std::vector<Point*> pts(points);
     // Find the middle point
-    LINALG::Matrix<3, 1> cur;
-    LINALG::Matrix<3, 1> avg(true);  // fill with zeros
+    CORE::LINALG::Matrix<3, 1> cur;
+    CORE::LINALG::Matrix<3, 1> avg(true);  // fill with zeros
     for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
     {
       Point* p1 = *i;
@@ -1001,9 +1001,9 @@ bool CORE::GEO::CUT::Facet::Equals(::DRT::Element::DiscretizationType distype)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-unsigned CORE::GEO::CUT::Facet::Normal(const std::vector<Point*>& points, LINALG::Matrix<3, 1>& x1,
-    LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3, LINALG::Matrix<3, 1>& b1,
-    LINALG::Matrix<3, 1>& b2, LINALG::Matrix<3, 1>& b3)
+unsigned CORE::GEO::CUT::Facet::Normal(const std::vector<Point*>& points,
+    CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
+    CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2, CORE::LINALG::Matrix<3, 1>& b3)
 {
   unsigned pointsize = points.size();
   if (pointsize < 3) return 0;
@@ -1113,7 +1113,7 @@ void CORE::GEO::CUT::Facet::NewQuad4Cell(Mesh& mesh, VolumeCell* volume,
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Facet::NewArbitraryCell(Mesh& mesh, VolumeCell* volume,
     const std::vector<Point*>& points, plain_boundarycell_set& bcells,
-    const CORE::DRT::UTILS::GaussIntegration& gp, const LINALG::Matrix<3, 1>& normal)
+    const CORE::DRT::UTILS::GaussIntegration& gp, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   BoundaryCell* bc = mesh.NewArbitraryCell(volume, this, points, gp, normal);
   bcells.insert(bc);
@@ -1332,7 +1332,7 @@ void CORE::GEO::CUT::Facet::CornerPointsLocal(
     std::vector<double> pt_local;
     const Point* po = *k;
     const double* coords = po->X();
-    LINALG::Matrix<3, 1> glo, loc;
+    CORE::LINALG::Matrix<3, 1> glo, loc;
 
     glo(0, 0) = coords[0];
     glo(1, 0) = coords[1];

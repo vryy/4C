@@ -33,7 +33,7 @@
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discretization> dis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidWrapper(fluid),
       dis_(dis),
@@ -41,7 +41,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
       output_(output),
       dirichletcond_(dirichletcond),
       interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
-      meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
+      meshmap_(Teuchos::rcp(new CORE::LINALG::MapExtractor())),
       locerrvelnp_(Teuchos::null),
       auxintegrator_(INPAR::FSI::timada_fld_none),
       numfsidbcdofs_(0),
@@ -123,7 +123,7 @@ void ADAPTER::FluidFSI::Init()
     intersectionmaps.push_back(GetDBCMapExtractor()->CondMap());
     intersectionmaps.push_back(Interface()->FSICondMap());
     Teuchos::RCP<Epetra_Map> intersectionmap =
-        LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+        CORE::LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
 
     // store number of interface DOFs subject to Dirichlet BCs on structure and fluid side of the
     // interface
@@ -177,7 +177,7 @@ void ADAPTER::FluidFSI::Update()
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFSI::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> relax = CORE::LINALG::CreateVector(*dofrowmap, true);
   Interface()->InsertFSICondVector(ivel, relax);
   fluidimpl_->LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
@@ -285,7 +285,7 @@ void ADAPTER::FluidFSI::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> grid
 void ADAPTER::FluidFSI::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master)
 {
   meshmap_->Setup(
-      *dis_->DofRowMap(nds_master), mm, LINALG::SplitMap(*dis_->DofRowMap(nds_master), *mm));
+      *dis_->DofRowMap(nds_master), mm, CORE::LINALG::SplitMap(*dis_->DofRowMap(nds_master), *mm));
 }
 
 /*----------------------------------------------------------------------*/
@@ -387,7 +387,7 @@ void ADAPTER::FluidFSI::UseBlockMatrix(bool splitmatrix)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::FluidFSI::LinearSolver()
+Teuchos::RCP<CORE::LINALG::Solver> ADAPTER::FluidFSI::LinearSolver()
 {
   return FluidWrapper::LinearSolver();
 }
@@ -407,7 +407,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
 
   // create a map with all DOFs that have either a Dirichlet boundary condition
   // or are located on the fsi interface
-  Teuchos::RCP<Epetra_Map> dbcfsimap = LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
+  Teuchos::RCP<Epetra_Map> dbcfsimap = CORE::LINALG::MultiMapExtractor::MergeMaps(dbcfsimaps);
 
   // create an element map with offset
   const int numallele = Discretization()->NumGlobalElements();
@@ -419,15 +419,15 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps;
   domainmaps.push_back(dbcfsimap);
   domainmaps.push_back(elemap);
-  Teuchos::RCP<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
+  Teuchos::RCP<Epetra_Map> domainmap = CORE::LINALG::MultiMapExtractor::MergeMaps(domainmaps);
 
   // build the corresponding map extractor
-  Teuchos::RCP<LINALG::MapExtractor> domainmapex =
-      Teuchos::rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
+  Teuchos::RCP<CORE::LINALG::MapExtractor> domainmapex =
+      Teuchos::rcp(new CORE::LINALG::MapExtractor(*domainmap, dbcfsimap));
 
   const int numofrowentries = 82;
-  Teuchos::RCP<LINALG::SparseMatrix> B =
-      Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMap(), numofrowentries, false));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> B =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*DofRowMap(), numofrowentries, false));
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -484,7 +484,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   B->Complete(*domainmap, *DofRowMap());
 
   // Compute the projection operator
-  Teuchos::RCP<LINALG::SparseMatrix> BTB = LINALG::Multiply(*B, true, *B, false, true);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> BTB = CORE::LINALG::Multiply(*B, true, *B, false, true);
 
   Teuchos::RCP<Epetra_Vector> BTvR = Teuchos::rcp(new Epetra_Vector(*domainmap));
   B->Multiply(true, *Velnp(), *BTvR);
@@ -501,8 +501,8 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
         "no simpler solver, that is used to solve this system, defined for fluid pressure problem. "
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
-  Teuchos::RCP<LINALG::Solver> solver =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
+  Teuchos::RCP<CORE::LINALG::Solver> solver = Teuchos::rcp(
+      new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(simplersolvernumber),
           Discretization()->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   if (solver->Params().isSublist("ML Parameters"))
@@ -649,13 +649,13 @@ void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond, double&
   // set '0' on all pressure DOFs
   Teuchos::RCP<const Epetra_Vector> zeros =
       Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(PressureRowMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(PressureRowMap()));
   // TODO: Do not misuse ApplyDirichlettoSystem()...works for this purpose here: writes zeros into
   // all pressure DoFs
 
   // set '0' on Dirichlet DOFs
   zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(GetDBCMapExtractor()->CondMap()));
+  CORE::LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(GetDBCMapExtractor()->CondMap()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
   Teuchos::RCP<Epetra_Vector> errorcond =
@@ -827,7 +827,7 @@ void ADAPTER::FluidFSI::BuildInnerVelMap()
   maps.push_back(FluidWrapper::VelocityRowMap());
   maps.push_back(Interface()->OtherMap());
   maps.push_back(GetDBCMapExtractor()->OtherMap());
-  innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
+  innervelmap_ = CORE::LINALG::MultiMapExtractor::IntersectMaps(maps);
 }
 
 /*----------------------------------------------------------------------*

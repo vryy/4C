@@ -42,7 +42,7 @@ namespace CONTACT
         std::vector<ElementNormal>& adj_ele_normals, MORTAR::MortarNode& slavenode);
 
     double UnitSlaveElementNormal(const MORTAR::MortarElement& sele,
-        const LINALG::Matrix<3, 2>& tau, LINALG::Matrix<3, 1>& unit_normal);
+        const CORE::LINALG::Matrix<3, 2>& tau, CORE::LINALG::Matrix<3, 1>& unit_normal);
 
     void Deriv1st_AveragedSlaveNormal(CONTACT::CoNode& cnode,
         const std::vector<ElementNormal>& adj_ele_normals, const double avg_normal_length,
@@ -56,7 +56,7 @@ namespace CONTACT
         MORTAR::MortarElement& sele, const double* xi, Deriv1stVecMap& d_non_unit_normal);
 
     void Deriv1st_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
-        const LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+        const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, Deriv1stVecMap& d_unit_normal, const bool reset);
 
     void Deriv2nd_AveragedSlaveNormal(CONTACT::CoNode& cnode,
@@ -71,14 +71,14 @@ namespace CONTACT
         MORTAR::MortarElement& sele, const double* xi, Deriv2ndVecMap& dd_non_unit_normal);
 
     void Deriv2nd_UnitSlaveNormal(const DRT::Element::DiscretizationType slavetype,
-        const LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
+        const CORE::LINALG::Matrix<3, 1>& unit_normal, const double length_n_inv,
         const Deriv1stVecMap& d_non_unit_normal, const Deriv1stVecMap& d_unit_normal,
         const Deriv2ndVecMap& dd_non_unit_normal, Deriv2ndVecMap& dd_unit_normal);
 
     /// collect all element nodal dofs and store them in one matrix
     template <unsigned probdim, unsigned numnode>
     void GetElementNodalDofs(
-        const MORTAR::MortarElement& ele, LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
+        const MORTAR::MortarElement& ele, CORE::LINALG::Matrix<probdim, numnode, int>& nodal_dofs);
 
     /// evaluate the Levi Civita pseudo tensor
     double LeviCivitaSymbol(const int i_1, const int i_2, const int i_3);
@@ -173,7 +173,7 @@ namespace CONTACT
 
         gaussPoints_.push_back(gp);
         uniqueProjAlpha_.push_back(uniqueProjAlpha);
-        uniqueMxi_.push_back(LINALG::Matrix<2, 1>(uniqueMxi, false));
+        uniqueMxi_.push_back(CORE::LINALG::Matrix<2, 1>(uniqueMxi, false));
         scaling_.push_back(scaling);
       }
 
@@ -201,7 +201,7 @@ namespace CONTACT
 
         stream << "#Mxi: " << uniqueMxi_.size() << " ( capacity: " << uniqueMxi_.capacity()
                << " )\n{ ";
-        for (std::vector<LINALG::Matrix<2, 1>>::const_iterator cit = uniqueMxi_.begin();
+        for (std::vector<CORE::LINALG::Matrix<2, 1>>::const_iterator cit = uniqueMxi_.begin();
              cit != uniqueMxi_.end(); ++cit)
           stream << " [ " << (*cit)(0) << ", " << (*cit)(1) << " ] ";
         stream << " }\n\n";
@@ -222,7 +222,7 @@ namespace CONTACT
       std::vector<double> uniqueProjAlpha_;
 
       /// projected master parametric coordinates
-      std::vector<LINALG::Matrix<2, 1>> uniqueMxi_;
+      std::vector<CORE::LINALG::Matrix<2, 1>> uniqueMxi_;
 
       /** Scale the GP weight if the slave gp projects onto more than one
        *  master element, otherwise the scaling factor is equal to 1.0 */
@@ -263,7 +263,7 @@ namespace CONTACT
       double xi_[2];
 
       /// unit normal at position xi_
-      LINALG::Matrix<3, 1> unit_n_;
+      CORE::LINALG::Matrix<3, 1> unit_n_;
 
       /// pointer to the corresponding element
       MORTAR::MortarElement* ele_;

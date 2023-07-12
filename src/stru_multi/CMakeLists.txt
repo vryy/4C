@@ -6,7 +6,6 @@ set(_stru_multi_dependencies
     inpar
     io
     lib
-    linalg
     mat
     so3
     structure

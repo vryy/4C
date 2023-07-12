@@ -119,9 +119,9 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ScatraMatAniso(*this)); }
 
     /// diffusivity
-    LINALG::Matrix<3, 1> Diffusivity(int eleid = -1) const
+    CORE::LINALG::Matrix<3, 1> Diffusivity(int eleid = -1) const
     {
-      LINALG::Matrix<3, 1> diff;
+      CORE::LINALG::Matrix<3, 1> diff;
       diff(0, 0) = params_->GetParameter(params_->diff1, eleid);
       diff(1, 0) = params_->GetParameter(params_->diff2, eleid);
       diff(2, 0) = params_->GetParameter(params_->diff3, eleid);

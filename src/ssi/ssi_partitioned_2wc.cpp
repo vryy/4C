@@ -105,8 +105,8 @@ void SSI::SSIPart2WC::Setup()
   SSI::SSIPart::Setup();
 
   // construct increment vectors
-  scaincnp_ = LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
-  dispincnp_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
+  scaincnp_ = CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
+  dispincnp_ = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -488,8 +488,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
 
   // these are the relaxed inputs
   Teuchos::RCP<Epetra_Vector> dispnp =
-      LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-  Teuchos::RCP<Epetra_Vector> velnp = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+      CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+  Teuchos::RCP<Epetra_Vector> velnp =
+      CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
 
   while (!stopnonliniter)
   {
@@ -586,7 +587,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  dispincnpold_ = LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
+  dispincnpold_ = CORE::LINALG::CreateVector(*StructureField()->DofRowMap(0), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -605,7 +606,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::CalcOmega(double& omega, const int
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
   Teuchos::RCP<Epetra_Vector> dispincnpdiff =
-      LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
+      CORE::LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
 
@@ -723,7 +724,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::OuterLoop()
 
   // this is the relaxed input
   Teuchos::RCP<Epetra_Vector> phinp =
-      LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
 
   while (!stopnonliniter)
   {
@@ -804,7 +805,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::Setup()
   SSI::SSIPart2WC::Setup();
 
   // setup old scatra increment vector
-  scaincnpold_ = LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+  scaincnpold_ = CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
 }
 
 /*----------------------------------------------------------------------*
@@ -822,7 +823,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::CalcOmega(double& omega, const int
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
   Teuchos::RCP<Epetra_Vector> scaincnpdiff =
-      LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
+      CORE::LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 
   double scaincnpdiffnorm = 0.0;

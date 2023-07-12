@@ -29,7 +29,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -53,9 +53,10 @@ namespace NOX::FSI
     LinearSystem(Teuchos::ParameterList& printParams,  ///< printing parameters
         Teuchos::ParameterList& linearSolverParams,    ///< parameters for linear solution
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,  ///< NOX interface to Jacobian
-        const Teuchos::RCP<Epetra_Operator>& J,         ///< the Jacobian or stiffness matrix
-        const NOX::Epetra::Vector& cloneVector,         ///< initial guess of the solution process
-        Teuchos::RCP<LINALG::Solver> structure_solver,  ///< (used-defined) linear algebraic solver
+        const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
+        const NOX::Epetra::Vector& cloneVector,  ///< initial guess of the solution process
+        Teuchos::RCP<CORE::LINALG::Solver>
+            structure_solver,  ///< (used-defined) linear algebraic solver
         const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject =
             Teuchos::null);  ///< scaling of the linear system
 
@@ -155,7 +156,7 @@ namespace NOX::FSI
     int callcount_;
 
     /// linear algebraic solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     Teuchos::Time timer_;
     mutable double timeApplyJacbianInverse_;

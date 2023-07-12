@@ -70,7 +70,7 @@ class SimpleWrapper
 
   void CreateSide(DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
 
-  int GetId(const LINALG::Matrix<3, 1>& x, std::vector<LINALG::Matrix<3, 1>>& points);
+  int GetId(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
 
   SimpleWrapper(const SimpleWrapper&);
   SimpleWrapper& operator=(const SimpleWrapper&);
@@ -82,9 +82,9 @@ class SimpleWrapper
   // std::map<DRT::Element::DiscretizationType, int> side_count_;
   int side_count_;
 
-  std::vector<LINALG::Matrix<3, 1>> element_points_;
+  std::vector<CORE::LINALG::Matrix<3, 1>> element_points_;
 
-  std::vector<LINALG::Matrix<3, 1>> side_points_;
+  std::vector<CORE::LINALG::Matrix<3, 1>> side_points_;
 };
 
 CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);

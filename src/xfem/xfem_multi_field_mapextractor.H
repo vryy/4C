@@ -31,7 +31,7 @@ namespace DRT
   class Node;
   class Element;
 }  // namespace DRT
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
   class SparseMatrix;
@@ -40,7 +40,7 @@ namespace LINALG
   class MatrixRowTransform;
   class MatrixColTransform;
   class MatrixRowColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace XFEM
 {
@@ -202,7 +202,7 @@ namespace XFEM
 
     /// @}
 
-    const LINALG::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
+    const CORE::LINALG::MultiMapExtractor& SlDofMapExtractor(enum FieldName field) const
     {
       return SlMapExtractor(SlaveId(field), map_dofs);
     }
@@ -364,17 +364,17 @@ namespace XFEM
 
     /// @name Add a partial system-matrix to the full matrix
     /// @{
-    inline void AddMatrix(const LINALG::SparseOperator& partial_mat, enum FieldName field,
-        LINALG::SparseOperator& full_mat, double scale)
+    inline void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, enum FieldName field,
+        CORE::LINALG::SparseOperator& full_mat, double scale)
     {
       AddMatrix(partial_mat, SlaveId(field), full_mat, scale);
     }
 
-    void AddMatrix(const LINALG::SparseOperator& partial_mat, int block,
-        LINALG::SparseOperator& full_mat, double scale);
+    void AddMatrix(const CORE::LINALG::SparseOperator& partial_mat, int block,
+        CORE::LINALG::SparseOperator& full_mat, double scale);
 
-    void AddMatrix(const LINALG::BlockSparseMatrixBase& partial_mat, int block,
-        LINALG::SparseMatrix& full_mat, double scale);
+    void AddMatrix(const CORE::LINALG::BlockSparseMatrixBase& partial_mat, int block,
+        CORE::LINALG::SparseMatrix& full_mat, double scale);
 
     /// @}
 
@@ -443,7 +443,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    const LINALG::MultiMapExtractor& MaMapExtractor(enum MapType map_type) const
+    const CORE::LINALG::MultiMapExtractor& MaMapExtractor(enum MapType map_type) const
     {
       if (master_map_extractor_.at(map_type).is_null())
         dserror("The master dof/node map extractor was not initialized!");
@@ -465,7 +465,8 @@ namespace XFEM
     }
     const Epetra_Map& SlaveNodeRowMap(unsigned dis_id, enum MULTIFIELD::BlockType btype) const;
 
-    const LINALG::MultiMapExtractor& SlMapExtractor(unsigned dis_id, enum MapType map_type) const
+    const CORE::LINALG::MultiMapExtractor& SlMapExtractor(
+        unsigned dis_id, enum MapType map_type) const
     {
       CheckInit();
 
@@ -487,11 +488,11 @@ namespace XFEM
     /** \brief Access the interface matrix row transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    LINALG::MatrixRowTransform& IMatRowTransform(enum FieldName field)
+    CORE::LINALG::MatrixRowTransform& IMatRowTransform(enum FieldName field)
     {
       return IMatRowTransform(SlaveId(field));
     }
-    LINALG::MatrixRowTransform& IMatRowTransform(unsigned dis_id)
+    CORE::LINALG::MatrixRowTransform& IMatRowTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -513,11 +514,11 @@ namespace XFEM
     /** \brief Access the interface matrix column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    LINALG::MatrixColTransform& IMatColTransform(enum FieldName field)
+    CORE::LINALG::MatrixColTransform& IMatColTransform(enum FieldName field)
     {
       return IMatColTransform(SlaveId(field));
     }
-    LINALG::MatrixColTransform& IMatColTransform(unsigned dis_id)
+    CORE::LINALG::MatrixColTransform& IMatColTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -539,11 +540,11 @@ namespace XFEM
     /** \brief Access the interface matrix row and column transformer for the given field
      *
      *  \author hiermeier \date 10/16 */
-    LINALG::MatrixRowColTransform& IMatRowColTransform(enum FieldName field)
+    CORE::LINALG::MatrixRowColTransform& IMatRowColTransform(enum FieldName field)
     {
       return IMatRowColTransform(SlaveId(field));
     }
-    LINALG::MatrixRowColTransform& IMatRowColTransform(unsigned dis_id)
+    CORE::LINALG::MatrixRowColTransform& IMatRowColTransform(unsigned dis_id)
     {
       CheckInit();
 
@@ -692,16 +693,17 @@ namespace XFEM
 
     std::vector<Teuchos::RCP<const Epetra_Map>> master_interface_node_maps_;
 
-    std::vector<std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>>> slave_map_extractors_;
-    std::vector<Teuchos::RCP<LINALG::MultiMapExtractor>> master_map_extractor_;
+    std::vector<std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>>> slave_map_extractors_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MultiMapExtractor>> master_map_extractor_;
 
-    Teuchos::RCP<LINALG::MultiMapExtractor> element_map_extractor_;
+    Teuchos::RCP<CORE::LINALG::MultiMapExtractor> element_map_extractor_;
 
     std::vector<Teuchos::RCP<XFEM::XFieldField::Coupling>> interface_couplings_;
 
-    std::vector<Teuchos::RCP<LINALG::MatrixRowTransform>> interface_matrix_row_transformers_;
-    std::vector<Teuchos::RCP<LINALG::MatrixColTransform>> interface_matrix_col_transformers_;
-    std::vector<Teuchos::RCP<LINALG::MatrixRowColTransform>> interface_matrix_row_col_transformers_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MatrixRowTransform>> interface_matrix_row_transformers_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MatrixColTransform>> interface_matrix_col_transformers_;
+    std::vector<Teuchos::RCP<CORE::LINALG::MatrixRowColTransform>>
+        interface_matrix_row_col_transformers_;
 
     std::set<int> xfem_dis_ids_;
 

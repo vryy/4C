@@ -117,7 +117,7 @@ void IO::DiscretizationReader::ReadMultiVector(
         "Source size: %d Target size: %d",
         name.c_str(), nv->GlobalLength(), vec->GlobalLength());
 
-  LINALG::Export(*nv, *vec);
+  CORE::LINALG::Export(*nv, *vec);
 }
 
 
@@ -1366,7 +1366,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
     // By applying GatherAll we get the combined map including all elemental values
     // which where found by VisNames
     const Epetra_Comm& comm = Comm();
-    LINALG::GatherAll(names, comm);
+    CORE::LINALG::GatherAll(names, comm);
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)
@@ -1429,7 +1429,7 @@ void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
      * which where found by VisNames
      */
     const Epetra_Comm& comm = Comm();
-    LINALG::GatherAll(names, comm);
+    CORE::LINALG::GatherAll(names, comm);
 
     // make sure there's no name with a dimension of less than 1
     for (fool = names.begin(); fool != names.end(); ++fool)

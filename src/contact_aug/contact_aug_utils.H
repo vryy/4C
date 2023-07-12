@@ -19,10 +19,10 @@
 #define QUICK_INSERT
 
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 namespace CONTACT
 {
   class CoInterface;
@@ -34,7 +34,7 @@ namespace CONTACT
 
     typedef std::vector<Teuchos::RCP<CONTACT::CoAbstractStrategy>> plain_strategy_set;
     typedef std::vector<Teuchos::RCP<CONTACT::CoInterface>> plain_interface_set;
-    typedef std::vector<Teuchos::RCP<LINALG::Solver>> plain_lin_solver_set;
+    typedef std::vector<Teuchos::RCP<CORE::LINALG::Solver>> plain_lin_solver_set;
     typedef std::vector<plain_interface_set> plain_interface_sets;
     typedef std::vector<INPAR::CONTACT::SolvingStrategy> plain_strattype_set;
 

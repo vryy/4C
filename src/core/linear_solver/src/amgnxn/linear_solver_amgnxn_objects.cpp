@@ -29,7 +29,7 @@ void CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::Update(
 CORE::LINEAR_SOLVER::AMGNXN::BlockedVector CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::DeepCopy()
     const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedVector::DeepCopy");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedVector::DeepCopy");
   BlockedVector out(this->GetNumBlocks());
   for (int i = 0; i < GetNumBlocks(); i++)
     out.SetVector(Teuchos::rcp(new Epetra_MultiVector(*(this->GetVector(i)))), i);
@@ -44,7 +44,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector CORE::LINEAR_SOLVER::AMGNXN::BlockedV
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
 CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::DeepCopyRCP() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedVector::DeepCopyRCP");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedVector::DeepCopyRCP");
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(this->GetNumBlocks()));
   for (int i = 0; i < GetNumBlocks(); i++)
     out->SetVector(Teuchos::rcp(new Epetra_MultiVector(*(this->GetVector(i)))), i);
@@ -59,7 +59,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::DeepCopyRCP() const
 Teuchos::RCP<CORE::LINEAR_SOLVER::AMGNXN::BlockedVector>
 CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::NewRCP(bool ZeroIt) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedVector::NewRCP");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedVector::NewRCP");
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(this->GetNumBlocks()));
   for (int i = 0; i < GetNumBlocks(); i++)
   {
@@ -78,7 +78,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::NewRCP(bool ZeroIt) const
 
 void CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::PutScalar(double a)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedVector::PutScalar");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedVector::PutScalar");
   for (int i = 0; i < GetNumBlocks(); i++) GetVector(i)->PutScalar(a);
 }
 
@@ -132,7 +132,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::GetBlockedVectorRCP(
 void CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::Apply(
     const BlockedVector& in, BlockedVector& out) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedMatrix::Apply");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedMatrix::Apply");
 
   // We assume that the maps of the involved objects match!
 
@@ -170,10 +170,10 @@ void CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::Apply(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<LINALG::BlockSparseMatrixBase>
-CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(LINALG::DataAccess access)
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(CORE::LINALG::DataAccess access)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix");
 
   int npr = 0;
   int rows = GetNumRows();
@@ -195,29 +195,30 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(LINALG::DataAcc
   std::vector<Teuchos::RCP<const Epetra_Map>> domain_maps(cols, Teuchos::null);
   for (int i = 0; i < cols; i++)
     domain_maps[i] = Teuchos::rcp(new Epetra_Map(matrices_[0 * cols + i]->DomainMap()));
-  Teuchos::RCP<Epetra_Map> fullmap_domain = LINALG::MultiMapExtractor::MergeMaps(domain_maps);
-  Teuchos::RCP<LINALG::MultiMapExtractor> domainmaps =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(*fullmap_domain, domain_maps));
+  Teuchos::RCP<Epetra_Map> fullmap_domain = CORE::LINALG::MultiMapExtractor::MergeMaps(domain_maps);
+  Teuchos::RCP<CORE::LINALG::MultiMapExtractor> domainmaps =
+      Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*fullmap_domain, domain_maps));
 
   // build the partial and full range maps
   std::vector<Teuchos::RCP<const Epetra_Map>> range_maps(rows, Teuchos::null);
   for (int i = 0; i < rows; i++)
     range_maps[i] = Teuchos::rcp(new Epetra_Map(matrices_[i * cols + 0]->RangeMap()));
-  Teuchos::RCP<Epetra_Map> fullmap_range = LINALG::MultiMapExtractor::MergeMaps(range_maps);
-  Teuchos::RCP<LINALG::MultiMapExtractor> rangemaps =
-      Teuchos::rcp(new LINALG::MultiMapExtractor(*fullmap_range, range_maps));
+  Teuchos::RCP<Epetra_Map> fullmap_range = CORE::LINALG::MultiMapExtractor::MergeMaps(range_maps);
+  Teuchos::RCP<CORE::LINALG::MultiMapExtractor> rangemaps =
+      Teuchos::rcp(new CORE::LINALG::MultiMapExtractor(*fullmap_range, range_maps));
 
   // Create the concrete matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> the_matrix =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          *domainmaps, *rangemaps, npr, true, false));
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>>
+      the_matrix = Teuchos::rcp(
+          new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+              *domainmaps, *rangemaps, npr, true, false));
 
   // Assign the blocks
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < cols; j++)
     {
-      Teuchos::RCP<LINALG::SparseMatrix> Aij = matrices_[i * cols + j];
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> Aij = matrices_[i * cols + j];
       if (Aij == Teuchos::null) dserror("We need a SparseMatrix here!");
       the_matrix->Assign(i, j, access, *Aij);
     }
@@ -227,8 +228,8 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockSparseMatrix(LINALG::DataAcc
   the_matrix->Complete();
 
   // Return
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> the_matrix_base =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(the_matrix);
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> the_matrix_base =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(the_matrix);
 
   return the_matrix_base;
 }
@@ -277,7 +278,7 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedMatrix::GetBlockedMatrix(
 void CORE::LINEAR_SOLVER::AMGNXN::DiagonalBlockedMatrix::Apply(
     const BlockedVector& in, BlockedVector& out) const
 {
-  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SOLVER::AMGNXN::DiagonalBlockedMatrix::Apply");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::SOLVER::AMGNXN::DiagonalBlockedMatrix::Apply");
   // We assume that the maps of the involved objects match!
 
   if (in.GetNumBlocks() != out.GetNumBlocks())

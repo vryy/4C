@@ -155,7 +155,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       // -> extract local values from the global vectors
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
       ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
 
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ExtractElementAndNodeValuesPoro(
       lmpre[inode] = la[ndsvel].lm_[inode * numveldofpernode + nsd_];
 
     // extract local values of pressure field from global state vector
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
+    DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*convel, my::eprenp_, lmpre);
   }
 
   // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than
@@ -391,12 +391,12 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
   else
   {
     // gauss point displacements
-    LINALG::Matrix<nsd_, 1> dispint(false);
+    CORE::LINALG::Matrix<nsd_, 1> dispint(false);
     dispint.Multiply(my::edispnp_, my::funct_);
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
-    LINALG::Matrix<nsd_, nsd_> xjm0;
+    CORE::LINALG::Matrix<nsd_, nsd_> xjm0;
     xjm0.MultiplyNT(my::deriv_, xyze0_);
 
     // inverse of transposed jacobian "ds/dX"

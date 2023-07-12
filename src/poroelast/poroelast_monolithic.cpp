@@ -53,7 +53,7 @@
 
 
 POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-    Teuchos::RCP<LINALG::MapExtractor> porosity_splitter)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
       printscreen_(true),   // ADD INPUT PARAMETER
       printiter_(true),     // ADD INPUT PARAMETER
@@ -98,7 +98,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       delhist_(Teuchos::null),
       mu_(0.0),
       equilibration_(Teuchos::null),
-      equilibration_method_(LINALG::EquilibrationMethod::none)
+      equilibration_method_(CORE::LINALG::EquilibrationMethod::none)
 {
   const Teuchos::ParameterList& sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -109,7 +109,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
 
   const Teuchos::ParameterList& poroparams = DRT::Problem::Instance()->PoroelastDynamicParams();
   equilibration_method_ =
-      Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(poroparams, "EQUILIBRATION");
+      Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
   strmethodname_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
@@ -139,7 +139,7 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
       }
     }
   }
-  blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::rcp(new CORE::LINALG::MultiMapExtractor);
 
   // contact no penetration constraint not yet works for non-matching structure and fluid
   // discretizations
@@ -441,7 +441,7 @@ void POROELAST::Monolithic::SetupSystem()
     if (vecSpaces[1]->NumGlobalElements() == 0) dserror("No fluid equation. Panic.");
 
     // full Poroelasticity-map
-    fullmap_ = LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
+    fullmap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(vecSpaces);
     // full Poroelasticity-blockmap
     blockrowdofmap_->Setup(*fullmap_, vecSpaces);
   }
@@ -452,13 +452,16 @@ void POROELAST::Monolithic::SetupSystem()
   // -------------------------------------------------------------
 
   // initialize Poroelasticity-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-      *Extractor(), *Extractor(), 81, false, true));
+  systemmatrix_ =
+      Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
+          *Extractor(), *Extractor(), 81, false, true));
 
-  k_sf_ = Teuchos::rcp(new LINALG::SparseMatrix(*(StructureField()->DofRowMap()), 81, true, true));
-  k_fs_ = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidField()->Discretization()->DofRowMap(0)),
-      //*(FluidField()->DofRowMap()),
-      81, true, true));
+  k_sf_ = Teuchos::rcp(
+      new CORE::LINALG::SparseMatrix(*(StructureField()->DofRowMap()), 81, true, true));
+  k_fs_ =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(*(FluidField()->Discretization()->DofRowMap(0)),
+          //*(FluidField()->DofRowMap()),
+          81, true, true));
 
   nopen_handle_->Setup(DofRowMap(), (FluidField()->Discretization()->DofRowMap(0)));
 
@@ -468,12 +471,13 @@ void POROELAST::Monolithic::SetupSystem()
 void POROELAST::Monolithic::SetupEquilibration()
 {
   // instantiate appropriate equilibration class
-  auto equilibration_method = std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_);
-  equilibration_ =
-      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method, fullmap_);
+  auto equilibration_method =
+      std::vector<CORE::LINALG::EquilibrationMethod>(1, equilibration_method_);
+  equilibration_ = CORE::LINALG::BuildEquilibration(
+      CORE::LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 }
 
-void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void POROELAST::Monolithic::SetupSystemMatrix(CORE::LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::SetupSystemMatrix");
 
@@ -484,7 +488,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
   if (k_ss == Teuchos::null) dserror("structure system matrix null pointer!");
 
@@ -493,7 +497,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // build mechanical-fluid block
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sf = StructFluidCouplingMatrix();
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_sf);
@@ -514,7 +518,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
-  Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_ff = FluidField()->SystemMatrix();
 
   if (k_ff == Teuchos::null) dserror("fuid system matrix null pointer!");
 
@@ -529,7 +533,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // build fluid-mechanical block
 
   // create empty matrix
-  Teuchos::RCP<LINALG::SparseMatrix> k_fs = FluidStructCouplingMatrix();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fs = FluidStructCouplingMatrix();
 
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);
@@ -543,13 +547,13 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   }
 
   // assign structure part to the Poroelasticity matrix
-  mat.Assign(0, 0, LINALG::View, *k_ss);
+  mat.Assign(0, 0, CORE::LINALG::View, *k_ss);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(0, 1, LINALG::View, *k_sf);
+  mat.Assign(0, 1, CORE::LINALG::View, *k_sf);
   // assign fluid part to the poroelasticity matrix
-  mat.Assign(1, 1, LINALG::View, *k_ff);
+  mat.Assign(1, 1, CORE::LINALG::View, *k_ff);
   // assign coupling part to the Poroelasticity matrix
-  mat.Assign(1, 0, LINALG::View, *k_fs);
+  mat.Assign(1, 0, CORE::LINALG::View, *k_fs);
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
@@ -588,10 +592,10 @@ void POROELAST::Monolithic::LinearSolve()
   if (directsolve_)
   {
     // merge blockmatrix to SparseMatrix
-    Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // apply dirichlet boundary conditions
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
     // standard solver call
@@ -600,7 +604,7 @@ void POROELAST::Monolithic::LinearSolve()
   else  // use bgs2x2_operator
   {
     // apply dirichlet boundary conditions
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
 
     // standard solver call
@@ -687,7 +691,7 @@ void POROELAST::Monolithic::CreateLinearSolver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new LINALG::Solver(
+  solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
       porosolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 
   // use solver blocks for structure and fluid
@@ -987,7 +991,7 @@ void POROELAST::Monolithic::PrintNewtonIterTextStream(std::ostringstream& oss)
 
 void POROELAST::Monolithic::PrintNewtonConv() {}
 
-void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf)
+void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf)
 {
   k_sf->Zero();
 
@@ -1038,7 +1042,7 @@ void POROELAST::Monolithic::ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOpera
   k_sf->Scale(1.0 - StructureField()->TimIntParam());
 }
 
-void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs)
+void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs)
 {
   k_fs->Zero();
 
@@ -1154,8 +1158,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
 
   Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> abs_iterinc = Teuchos::null;
-  iterinc = LINALG::CreateVector(*DofRowMap(), true);
-  abs_iterinc = LINALG::CreateVector(*DofRowMap(), true);
+  iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
+  abs_iterinc = CORE::LINALG::CreateVector(*DofRowMap(), true);
 
   const int dofs = iterinc->GlobalLength();
   std::cout << "in total " << dofs << " DOFs" << std::endl;
@@ -1168,15 +1172,15 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
   abs_iterinc->Update(1.0, *iterinc_, 0.0);
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
-  stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
+  stiff_approx = CORE::LINALG::CreateMatrix(*DofRowMap(), 81);
 
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
   Teuchos::RCP<Epetra_Vector> rhs_copy = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
 
-  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
-  Teuchos::RCP<LINALG::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new LINALG::SparseMatrix(sparse->EpetraMatrix(), LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse_copy =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(sparse->EpetraMatrix(), CORE::LINALG::Copy));
 
   bool output = false;
   if (output)
@@ -1210,7 +1214,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(
+    CORE::LINALG::ApplyDirichlettoSystem(
         sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
 
 
@@ -1266,8 +1270,9 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
 
   stiff_approx->FillComplete();
 
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
-  stiff_approx_sparse = Teuchos::rcp(new LINALG::SparseMatrix(stiff_approx, LINALG::Copy));
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_approx_sparse = Teuchos::null;
+  stiff_approx_sparse =
+      Teuchos::rcp(new CORE::LINALG::SparseMatrix(stiff_approx, CORE::LINALG::Copy));
 
   stiff_approx_sparse->Add(*sparse_copy, false, -1.0, 1.0);
 
@@ -1393,11 +1398,12 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOpe
 }
 
 void POROELAST::Monolithic::EvaluateCondition(
-    Teuchos::RCP<LINALG::SparseOperator> Sysmat, POROELAST::coupltype coupltype)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> Sysmat, POROELAST::coupltype coupltype)
 {
   nopen_handle_->Clear(coupltype);
-  Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix = nopen_handle_->ConstraintMatrix(coupltype);
-  Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix =
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> ConstraintMatrix =
+      nopen_handle_->ConstraintMatrix(coupltype);
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> StructVelConstraintMatrix =
       nopen_handle_->StructVelConstraintMatrix(coupltype);
 
   // evaluate condition on elements and assemble matrices
@@ -1430,39 +1436,41 @@ void POROELAST::Monolithic::EvaluateCondition(
   Sysmat->Add(*ConstraintMatrix, false, 1.0, 1.0);
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::StructFluidCouplingMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::Monolithic::StructFluidCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf_);
-  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sf_);
+  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::FluidStructCouplingMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::Monolithic::FluidStructCouplingMatrix()
 {
-  Teuchos::RCP<LINALG::SparseMatrix> sparse =
-      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_fs_);
-  if (sparse == Teuchos::null) dserror("cast to LINALG::SparseMatrix failed!");
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_fs_);
+  if (sparse == Teuchos::null) dserror("cast to CORE::LINALG::SparseMatrix failed!");
 
   return sparse;
 }
 
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::StructFluidCouplingBlockMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+POROELAST::Monolithic::StructFluidCouplingBlockMatrix()
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparse =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(k_sf_);
-  if (blocksparse == Teuchos::null) dserror("cast to LINALG::BlockSparseMatrixBase failed!");
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(k_sf_);
+  if (blocksparse == Teuchos::null) dserror("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
 
   return blocksparse;
 }
 
 
-Teuchos::RCP<LINALG::BlockSparseMatrixBase> POROELAST::Monolithic::FluidStructCouplingBlockMatrix()
+Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase>
+POROELAST::Monolithic::FluidStructCouplingBlockMatrix()
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparse =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(k_fs_);
-  if (blocksparse == Teuchos::null) dserror("cast to LINALG::BlockSparseMatrixBase failed!");
+  Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> blocksparse =
+      Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(k_fs_);
+  if (blocksparse == Teuchos::null) dserror("cast to CORE::LINALG::BlockSparseMatrixBase failed!");
 
   return blocksparse;
 }
@@ -1486,13 +1494,13 @@ void POROELAST::Monolithic::SetupNewton()
 
   // incremental solution vector with length of all dofs
   if (iterinc_ == Teuchos::null)
-    iterinc_ = LINALG::CreateVector(*DofRowMap(), true);
+    iterinc_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   else
     iterinc_->PutScalar(0.0);
 
   // a zero vector of full length
   if (zeros_ == Teuchos::null)
-    zeros_ = LINALG::CreateVector(*DofRowMap(), true);
+    zeros_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   else
     zeros_->PutScalar(0.0);
 
@@ -1589,8 +1597,8 @@ bool POROELAST::Monolithic::SetupSolver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(
-        new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+    solver_ = Teuchos::rcp(new CORE::LINALG::Solver(
+        solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   }
   else
     // create a linear solver
@@ -1624,7 +1632,7 @@ bool POROELAST::Monolithic::SetupSolver()
   return true;
 }
 
-Teuchos::RCP<LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
+Teuchos::RCP<CORE::LINALG::SparseMatrix> POROELAST::Monolithic::SystemMatrix()
 {
   return systemmatrix_->Merge();
 }
@@ -1646,8 +1654,8 @@ void POROELAST::Monolithic::Aitken()
   // difference of last two solutions
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = LINALG::CreateVector(*DofRowMap(), true);
-    delhist_ = LINALG::CreateVector(*DofRowMap(), true);
+    del_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    delhist_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
     del_->PutScalar(1.0e20);
     delhist_->PutScalar(0.0);
   }
@@ -1683,8 +1691,8 @@ void POROELAST::Monolithic::Aitken()
 {
   if (del_ == Teuchos::null)  // first iteration, itnum==1
   {
-    del_ = LINALG::CreateVector(*DofRowMap(), true);
-    delhist_ = LINALG::CreateVector(*DofRowMap(), true);
+    del_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
+    delhist_ = CORE::LINALG::CreateVector(*DofRowMap(), true);
   }
   del_->PutScalar(1.0e20);
   delhist_->PutScalar(0.0);
@@ -1839,10 +1847,12 @@ void POROELAST::Monolithic::EvalPoroMortar()
           //---Modifiy coupling matrix k_sf
 
           // Get matrix block!
-          Teuchos::RCP<LINALG::SparseOperator> k_ss = Teuchos::rcp<LINALG::SparseMatrix>(
-              new LINALG::SparseMatrix(systemmatrix_->Matrix(0, 0)));
-          Teuchos::RCP<LINALG::SparseOperator> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(
-              new LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
+          Teuchos::RCP<CORE::LINALG::SparseOperator> k_ss =
+              Teuchos::rcp<CORE::LINALG::SparseMatrix>(
+                  new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 0)));
+          Teuchos::RCP<CORE::LINALG::SparseOperator> k_sf =
+              Teuchos::rcp<CORE::LINALG::SparseMatrix>(
+                  new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
           Teuchos::RCP<Epetra_Vector> rhs_s = Extractor()->ExtractVector(rhs_, 0);
 
           // Evaluate Poro Contact Condensation for K_ss, K_sf
@@ -1850,10 +1860,10 @@ void POROELAST::Monolithic::EvalPoroMortar()
               StructureField()->WriteAccessDispnp(), k_ss, k_sf, rhs_s, Step(), iter_, false);
 
           // Assign modified matrixes & vectors
-          systemmatrix_->Assign(
-              0, 0, LINALG::Copy, *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_ss));
-          systemmatrix_->Assign(
-              0, 1, LINALG::Copy, *Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_sf));
+          systemmatrix_->Assign(0, 0, CORE::LINALG::Copy,
+              *Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_ss));
+          systemmatrix_->Assign(0, 1, CORE::LINALG::Copy,
+              *Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(k_sf));
           Extractor()->InsertVector(rhs_s, 0, rhs_);
 
           //---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
@@ -1863,10 +1873,11 @@ void POROELAST::Monolithic::EvalPoroMortar()
             costrategy.PoroInitialize(FluidStructureCoupling(),
                 FluidField()->DofRowMap());  // true stands for the no_penetration condition !!!
             // Get matrix blocks & rhs vector!
-            Teuchos::RCP<LINALG::SparseMatrix> f = Teuchos::rcp<LINALG::SparseMatrix>(
-                new LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
-            Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::rcp<LINALG::SparseMatrix>(
-                new LINALG::SparseMatrix(systemmatrix_->Matrix(1, 0)));
+            Teuchos::RCP<CORE::LINALG::SparseMatrix> f = Teuchos::rcp<CORE::LINALG::SparseMatrix>(
+                new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 1)));
+            Teuchos::RCP<CORE::LINALG::SparseMatrix> k_fs =
+                Teuchos::rcp<CORE::LINALG::SparseMatrix>(
+                    new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(1, 0)));
 
             Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_, 1);
 
@@ -1874,8 +1885,8 @@ void POROELAST::Monolithic::EvalPoroMortar()
             costrategy.EvaluatePoroNoPenContact(k_fs, f, frhs);
 
             // Assign modified matrixes & vectors
-            systemmatrix_->Assign(1, 1, LINALG::Copy, *f);
-            systemmatrix_->Assign(1, 0, LINALG::Copy, *k_fs);
+            systemmatrix_->Assign(1, 1, CORE::LINALG::Copy, *f);
+            systemmatrix_->Assign(1, 0, CORE::LINALG::Copy, *k_fs);
 
             Extractor()->InsertVector(*frhs, 1, *rhs_);
           }
@@ -1911,8 +1922,8 @@ void POROELAST::Monolithic::EvalPoroMortar()
         //---Modifiy coupling matrix k_sf
 
         // Get matrix block!
-        Teuchos::RCP<LINALG::SparseMatrix> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(
-            new LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> k_sf = Teuchos::rcp<CORE::LINALG::SparseMatrix>(
+            new CORE::LINALG::SparseMatrix(systemmatrix_->Matrix(0, 1)));
 
         // initialize poro meshtying
         costrategy.InitializePoroMt(k_sf);
@@ -1921,7 +1932,7 @@ void POROELAST::Monolithic::EvalPoroMortar()
         costrategy.EvaluateMeshtyingPoroOffDiag(k_sf);
 
         // Assign modified matrix
-        systemmatrix_->Assign(0, 1, LINALG::Copy, *k_sf);
+        systemmatrix_->Assign(0, 1, CORE::LINALG::Copy, *k_sf);
       }
     }
   }
@@ -1931,7 +1942,7 @@ void POROELAST::Monolithic::BuildCombinedDBCMap()
 {
   const Teuchos::RCP<const Epetra_Map> scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map> fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
-  combinedDBCMap_ = LINALG::MergeMap(scondmap, fcondmap, false);
+  combinedDBCMap_ = CORE::LINALG::MergeMap(scondmap, fcondmap, false);
 }
 
 void POROELAST::Monolithic::ReadRestart(const int step)

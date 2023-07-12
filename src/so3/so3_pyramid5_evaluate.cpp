@@ -36,11 +36,11 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
-  LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat2(elemat2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOP5, 1> elevec1(elevec1_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOP5, 1> elevec2(elevec2_epetra.A(), true);
-  LINALG::Matrix<NUMDOF_SOP5, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat1(elemat1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> elemat2(elemat2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOP5, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOP5, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOP5, 1> elevec3(elevec3_epetra.A(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_pyramid5::ActionType act = So_pyramid5::none;
@@ -118,7 +118,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* matptr = nullptr;
+      CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -152,7 +152,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
-      LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> myemat(true);
+      CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5> myemat(true);
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
@@ -242,9 +242,9 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
-        LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> stress;
-        LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> strain;
-        LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> plstrain;
+        CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> stress;
+        CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> strain;
+        CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D> plstrain;
         auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         auto iostrain =
@@ -304,13 +304,13 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // build incremental def gradient for every gauss point
-      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOP5, 9);
+      CORE::LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOP5, 9);
       DefGradient(mydisp, gpdefgrd, *prestress_);
 
       // update deformation gradient and put back to storage
-      LINALG::Matrix<3, 3> deltaF;
-      LINALG::Matrix<3, 3> Fhist;
-      LINALG::Matrix<3, 3> Fnew;
+      CORE::LINALG::Matrix<3, 3> deltaF;
+      CORE::LINALG::Matrix<3, 3> Fhist;
+      CORE::LINALG::Matrix<3, 3> Fnew;
       for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
@@ -362,7 +362,8 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       double intenergy = 0.0;
 
       // shape functions and Gauss weights
-      const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+      const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs =
+          sop5_derivs();
       const static std::vector<double> weights = sop5_weights();
 
       // get displacements of this processor
@@ -374,8 +375,8 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
       // update element geometry
-      LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
-      LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
+      CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
+      CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
 
       DRT::Node** nodes = Nodes();
       for (int i = 0; i < NUMNOD_SOP5; ++i)
@@ -402,20 +403,20 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         */
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
-        LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ(true);
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ(true);
         N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
         defgrd.MultiplyTT(xcurr, N_XYZ);
 
         // right Cauchy-Green tensor = F^T * F
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
         cauchygreen.MultiplyTN(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain;
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -465,8 +466,9 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         double energynorm = 0.0;
 
         // shape functions, derivatives and integration weights
-        const static std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> vals = sop5_shapefcts();
-        const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+        const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> vals = sop5_shapefcts();
+        const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs =
+            sop5_derivs();
         const static std::vector<double> weights = sop5_weights();
 
         // get displacements and extract values of this element
@@ -476,11 +478,11 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
         // nodal displacement vector
-        LINALG::Matrix<NUMDOF_SOP5, 1> nodaldisp;
+        CORE::LINALG::Matrix<NUMDOF_SOP5, 1> nodaldisp;
         for (int i = 0; i < NUMDOF_SOP5; ++i) nodaldisp(i, 0) = mydisp[i];
 
         // reference geometry (nodal positions)
-        LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
+        CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
         DRT::Node** nodes = Nodes();
         for (int i = 0; i < NUMNOD_SOP5; ++i)
         {
@@ -490,7 +492,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
         }
 
         // deformation gradient = identity tensor (geometrically linear case!)
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
         for (int i = 0; i < NUMDIM_SOP5; ++i) defgrd(i, i) = 1;
 
         //----------------------------------------------------------------
@@ -502,15 +504,15 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
           double fac = detJ_[gp] * weights[gp];
 
           // Gauss point in reference configuration
-          LINALG::Matrix<NUMDIM_SOP5, 1> xgp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, 1> xgp(true);
           for (int k = 0; k < NUMDIM_SOP5; ++k)
             for (int n = 0; n < NUMNOD_SOP5; ++n) xgp(k, 0) += (vals[gp])(n)*xrefe(n, k);
 
           //**************************************************************
           // get analytical solution
-          LINALG::Matrix<NUMDIM_SOP5, 1> uanalyt(true);
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainanalyt(true);
-          LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> derivanalyt(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, 1> uanalyt(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainanalyt(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> derivanalyt(true);
 
           CONTACT::AnalyticalSolutions3D(xgp, uanalyt, strainanalyt, derivanalyt);
           //**************************************************************
@@ -520,13 +522,13 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute displacements at GP
-          LINALG::Matrix<NUMDIM_SOP5, 1> ugp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, 1> ugp(true);
           for (int k = 0; k < NUMDIM_SOP5; ++k)
             for (int n = 0; n < NUMNOD_SOP5; ++n)
               ugp(k, 0) += (vals[gp])(n)*nodaldisp(NODDOF_SOP5 * n + k, 0);
 
           // displacement error
-          LINALG::Matrix<NUMDIM_SOP5, 1> uerror(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, 1> uerror(true);
           for (int k = 0; k < NUMDIM_SOP5; ++k) uerror(k, 0) = uanalyt(k, 0) - ugp(k, 0);
 
           // compute GP contribution to L2 error norm
@@ -538,18 +540,18 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
 
           // compute derivatives N_XYZ at GP w.r.t. material coordinates
           // by N_XYZ = J^-1 * N_rst
-          LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ(true);
           N_XYZ.Multiply(invJ_[gp], derivs[gp]);
 
           // compute partial derivatives at GP
-          LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> derivgp(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> derivgp(true);
           for (int l = 0; l < NUMDIM_SOP5; ++l)
             for (int m = 0; m < NUMDIM_SOP5; ++m)
               for (int k = 0; k < NUMNOD_SOP5; ++k)
                 derivgp(l, m) += N_XYZ(m, k) * nodaldisp(NODDOF_SOP5 * k + l, 0);
 
           // derivative error
-          LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> deriverror(true);
+          CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> deriverror(true);
           for (int k = 0; k < NUMDIM_SOP5; ++k)
             for (int m = 0; m < NUMDIM_SOP5; ++m)
               deriverror(k, m) = derivanalyt(k, m) - derivgp(k, m);
@@ -563,7 +565,7 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
           //--------------------------------------------------------------
 
           // compute linear B-operator
-          LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
           for (int i = 0; i < NUMNOD_SOP5; ++i)
           {
             bop(0, NODDOF_SOP5 * i + 0) = N_XYZ(0, i);
@@ -588,17 +590,17 @@ int DRT::ELEMENTS::So_pyramid5::Evaluate(Teuchos::ParameterList& params,
           }
 
           // compute linear strain at GP
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straingp(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> straingp(true);
           straingp.Multiply(bop, nodaldisp);
 
           // strain error
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainerror(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainerror(true);
           for (int k = 0; k < MAT::NUM_STRESS_3D; ++k)
             strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
 
           // compute stress vector and constitutive matrix
-          LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-          LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+          CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
           SolidMaterial()->Evaluate(&defgrd, &strainerror, params, &stress, &cmat, gp, Id());
 
           // compute GP contribution to energy error norm
@@ -676,7 +678,7 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   const auto* funct = condition.Get<std::vector<int>>("funct");
-  LINALG::Matrix<NUMDIM_SOP5, 1> xrefegp(false);
+  CORE::LINALG::Matrix<NUMDIM_SOP5, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
     for (int dim = 0; dim < NUMDIM_SOP5; dim++)
@@ -686,13 +688,13 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS                              *
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   const static std::vector<double> gpweights = sop5_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
@@ -705,7 +707,7 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     // compute the Jacobian matrix
-    LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> jac;
+    CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> jac;
     jac.Multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian
@@ -759,8 +761,8 @@ int DRT::ELEMENTS::So_pyramid5::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5::InitJacobianMapping()
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     xrefe(i, 0) = Nodes()[i]->X()[0];
@@ -796,12 +798,12 @@ void DRT::ELEMENTS::So_pyramid5::InitJacobianMapping()
 void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                            // current displacements
     std::vector<double>& residual,                                        // current residual displ
-    LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,         // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,          // element mass matrix
-    LINALG::Matrix<NUMDOF_SOP5, 1>* force,                         // element internal force vector
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force,                  // element internal force vector
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
     Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,    // stress output option
     const INPAR::STR::StrainType iostrain,    // strain output option
@@ -810,15 +812,15 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS                              *
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   const static std::vector<double> gpweights = sop5_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
 
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
@@ -833,7 +835,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     xcurr(i, 2) = xrefe(i, 2) + disp[i * NODDOF_SOP5 + 2];
   }
 
-  LINALG::Matrix<NUMDOF_SOP5, 1> nodaldisp;
+  CORE::LINALG::Matrix<NUMDOF_SOP5, 1> nodaldisp;
   for (int i = 0; i < NUMDOF_SOP5; ++i)
   {
     nodaldisp(i, 0) = disp[i];
@@ -842,11 +844,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
   // CAUTION: defgrd(true): filled with zeros!
-  LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
@@ -882,7 +884,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
     for (int i = 0; i < NUMNOD_SOP5; ++i)
     {
       bop(0, NODDOF_SOP5 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -907,7 +909,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     }
 
     // now build the linear strain
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainlin(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> strainlin(true);
     strainlin.Multiply(bop, nodaldisp);
 
     // and rename it as glstrain to use the common methods further on
@@ -915,7 +917,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
     glstrain.Update(1.0, strainlin);
 
     // return gp strains (only in case of stress/strain output)
@@ -932,7 +934,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
       {
         if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
         gl(0, 0) = glstrain(0);
         gl(0, 1) = 0.5 * glstrain(3);
         gl(0, 2) = 0.5 * glstrain(5);
@@ -944,11 +946,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
         gl(2, 2) = glstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -968,8 +970,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     }
 
     // call material law
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
@@ -979,8 +981,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
       case INPAR::STR::strain_gl:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
@@ -988,10 +990,10 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
       case INPAR::STR::strain_ea:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
         gl(0, 0) = plglstrain(0);
         gl(0, 1) = 0.5 * plglstrain(3);
         gl(0, 2) = 0.5 * plglstrain(5);
@@ -1003,11 +1005,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
         gl(2, 2) = plglstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1040,7 +1042,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
         if (elestress == nullptr) dserror("stress data not available");
         const double detF = defgrd.Determinant();
 
-        LINALG::Matrix<3, 3> pkstress;
+        CORE::LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -1051,8 +1053,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
         temp.Multiply(1.0 / detF, defgrd, pkstress);
         cauchystress.MultiplyNT(temp, defgrd);
 
@@ -1083,7 +1085,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_linstiffmass(std::vector<int>& lm,  // loc
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<6, NUMDOF_SOP5> cb;
+      CORE::LINALG::Matrix<6, NUMDOF_SOP5> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
     }
@@ -1123,15 +1125,15 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     std::vector<double>* vel,                                             // current velocities
     std::vector<double>* acc,                                             // current accelerations
     std::vector<double>& residual,                                        // current residual displ
-    std::vector<double>& dispmat,                                // current material displacements
-    LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,       // element stiffness matrix
-    LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,        // element mass matrix
-    LINALG::Matrix<NUMDOF_SOP5, 1>* force,                       // element internal force vector
-    LINALG::Matrix<NUMDOF_SOP5, 1>* forceinert,                  // element inertial force vector
-    LINALG::Matrix<NUMDOF_SOP5, 1>* force_str,                   // element structural force vector
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
-    LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
+    std::vector<double>& dispmat,                                 // current material displacements
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* stiffmatrix,  // element stiffness matrix
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* massmatrix,   // element mass matrix
+    CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force,                  // element internal force vector
+    CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* forceinert,             // element inertial force vector
+    CORE::LINALG::Matrix<NUMDOF_SOP5, 1>* force_str,              // element structural force vector
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestress,    // stresses at GP
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* elestrain,    // strains at GP
+    CORE::LINALG::Matrix<NUMGPT_SOP5, MAT::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
     Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,    // stress output option
     const INPAR::STR::StrainType iostrain,    // strain output option
@@ -1140,15 +1142,15 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS                              *
   ** ============================================================================*/
-  const static std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts = sop5_shapefcts();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   const static std::vector<double> gpweights = sop5_weights();
   /* ============================================================================*/
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xcurr;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
@@ -1172,10 +1174,10 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ;
   // build deformation gradient wrt to material configuration
   // in case of prestressing, build defgrd wrt to last stored configuration
-  LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(false);
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(false);
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     /* get the inverse of the Jacobian matrix which looks like:
@@ -1191,10 +1193,10 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     if (::UTILS::PRESTRESS::IsMulf(pstype_))
     {
       // get Jacobian mapping wrt to the stored configuration
-      LINALG::Matrix<3, 3> invJdef;
+      CORE::LINALG::Matrix<3, 3> invJdef;
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
-      LINALG::Matrix<3, 5> N_xyz;
+      CORE::LINALG::Matrix<3, 5> N_xyz;
       N_xyz.Multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
@@ -1204,11 +1206,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
       defgrd(2, 2) += 1.0;
 
       // get stored old incremental F
-      LINALG::Matrix<3, 3> Fhist;
+      CORE::LINALG::Matrix<3, 3> Fhist;
       prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
       // build total defgrd = delta F * F_old
-      LINALG::Matrix<3, 3> Fnew;
+      CORE::LINALG::Matrix<3, 3> Fnew;
       Fnew.Multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
@@ -1218,13 +1220,13 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     }
 
     // Right Cauchy-Green tensor = F^T * F
-    LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
+    CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1246,7 +1248,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
       {
         if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
         gl(0, 0) = glstrain(0);
         gl(0, 1) = 0.5 * glstrain(3);
         gl(0, 2) = 0.5 * glstrain(5);
@@ -1258,11 +1260,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         gl(2, 2) = glstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1301,7 +1303,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOP5> bop;
     for (int i = 0; i < NUMNOD_SOP5; ++i)
     {
       bop(0, NODDOF_SOP5 * i + 0) = defgrd(0, 0) * N_XYZ(0, i);
@@ -1326,8 +1328,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     }
 
     // call material law
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
-    LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
     // end of call material law
 
@@ -1337,8 +1339,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
       case INPAR::STR::strain_gl:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
@@ -1346,10 +1348,10 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
       case INPAR::STR::strain_ea:
       {
         if (eleplstrain == nullptr) dserror("plastic strain data not available");
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
-            params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
+            params.get<CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
         gl(0, 0) = plglstrain(0);
         gl(0, 1) = 0.5 * plglstrain(3);
         gl(0, 2) = 0.5 * plglstrain(5);
@@ -1361,11 +1363,11 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         gl(2, 2) = plglstrain(2);
 
         // inverse of deformation gradient
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
         invdefgrd.Invert(defgrd);
 
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
-        LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
+        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi;
         temp.Multiply(gl, invdefgrd);
         euler_almansi.MultiplyTN(invdefgrd, temp);
 
@@ -1398,7 +1400,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         if (elestress == nullptr) dserror("stress data not available");
         const double detF = defgrd.Determinant();
 
-        LINALG::Matrix<3, 3> pkstress;
+        CORE::LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);
         pkstress(0, 1) = stress(3);
         pkstress(0, 2) = stress(5);
@@ -1409,8 +1411,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         pkstress(2, 1) = pkstress(1, 2);
         pkstress(2, 2) = stress(2);
 
-        LINALG::Matrix<3, 3> temp;
-        LINALG::Matrix<3, 3> cauchystress;
+        CORE::LINALG::Matrix<3, 3> temp;
+        CORE::LINALG::Matrix<3, 3> cauchystress;
         temp.Multiply(1.0 / detF, defgrd, pkstress);
         cauchystress.MultiplyNT(temp, defgrd);
 
@@ -1441,14 +1443,14 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      LINALG::Matrix<6, NUMDOF_SOP5> cb;
+      CORE::LINALG::Matrix<6, NUMDOF_SOP5> cb;
       cb.Multiply(cmat, bop);
       stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
-      LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                 // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      std::vector<double> SmB_L(3);       // intermediate Sm.B_L
+      CORE::LINALG::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
+      sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOP5; ++inod)
       {
@@ -1507,9 +1509,9 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
           timintfac_dis = params.get<double>("timintfac_dis");
           timintfac_vel = params.get<double>("timintfac_vel");
         }
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_disp(true);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_disp(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass_vel(true);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> linmass(true);
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
         SolidMaterial()->EvaluateNonLinMass(
@@ -1522,7 +1524,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
         // evaluate accelerations at time n+1 at gauss point
-        LINALG::Matrix<NUMDIM_SOP5, 1> myacc(true);
+        CORE::LINALG::Matrix<NUMDIM_SOP5, 1> myacc(true);
         for (int idim = 0; idim < NUMDIM_SOP5; ++idim)
           for (int inod = 0; inod < NUMNOD_SOP5; ++inod)
             myacc(idim) += shapefcts[gp](inod) * (*acc)[idim + (inod * NUMDIM_SOP5)];
@@ -1531,7 +1533,7 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
         {
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
-          LINALG::Matrix<1, NUMDOF_SOP5> cb;
+          CORE::LINALG::Matrix<1, NUMDOF_SOP5> cb;
           cb.MultiplyTN(linmass_disp, bop);
           for (int inod = 0; inod < NUMNOD_SOP5; ++inod)
           {
@@ -1571,7 +1573,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // loc
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::sop5_lumpmass(LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass)
+void DRT::ELEMENTS::So_pyramid5::sop5_lumpmass(
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1594,9 +1597,9 @@ void DRT::ELEMENTS::So_pyramid5::sop5_lumpmass(LINALG::Matrix<NUMDOF_SOP5, NUMDO
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fcts at all Gauss Points                     |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
+const std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::sop5_shapefcts()
 {
-  std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts(NUMGPT_SOP5);
+  std::vector<CORE::LINALG::Matrix<NUMNOD_SOP5, 1>> shapefcts(NUMGPT_SOP5);
   // (r,s,t) gp-locations
   // fill up nodal f at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
@@ -1616,10 +1619,10 @@ const std::vector<LINALG::Matrix<NUMNOD_SOP5, 1>> DRT::ELEMENTS::So_pyramid5::so
 /*----------------------------------------------------------------------*
  |  Evaluate Pyramid5 Shape fct derivs at all  Gauss Points              |
  *----------------------------------------------------------------------*/
-const std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
+const std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>>
 DRT::ELEMENTS::So_pyramid5::sop5_derivs()
 {
-  std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs(NUMGPT_SOP5);
+  std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs(NUMGPT_SOP5);
   // (r,s,t) gp-locations
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const CORE::DRT::UTILS::GaussRule3D gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
@@ -1656,15 +1659,15 @@ const std::vector<double> DRT::ELEMENTS::So_pyramid5::sop5_weights()
  |  shape functions and derivatives for So_pyramid5                     |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5::sop5_shapederiv(
-    LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5>** shapefct,  // pointer to pointer of shapefct
-    LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5>** deriv,     // pointer to pointer of derivs
-    LINALG::Matrix<NUMGPT_SOP5, 1>** weights)             // pointer to pointer of weights
+    CORE::LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5>** shapefct,  // pointer to pointer of shapefct
+    CORE::LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5>** deriv,     // pointer to pointer of derivs
+    CORE::LINALG::Matrix<NUMGPT_SOP5, 1>** weights)             // pointer to pointer of weights
 {
   // static matrix objects, kept in memory
-  static LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5> f;    // shape functions
-  static LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5> df;   // derivatives
-  static LINALG::Matrix<NUMGPT_SOP5, 1> weightfactors;  // weights for each gp
-  static bool fdf_eval;                                 // flag for re-evaluate everything
+  static CORE::LINALG::Matrix<NUMNOD_SOP5, NUMGPT_SOP5> f;    // shape functions
+  static CORE::LINALG::Matrix<NUMDOF_SOP5, NUMNOD_SOP5> df;   // derivatives
+  static CORE::LINALG::Matrix<NUMGPT_SOP5, 1> weightfactors;  // weights for each gp
+  static bool fdf_eval;                                       // flag for re-evaluate everything
 
   if (fdf_eval == true)  // if true f,df already evaluated
   {
@@ -1686,8 +1689,8 @@ void DRT::ELEMENTS::So_pyramid5::sop5_shapederiv(
       const double s = intpoints.qxg[igp][1];
       const double t = intpoints.qxg[igp][2];
 
-      LINALG::Matrix<NUMNOD_SOP5, 1> funct;
-      LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> deriv;
+      CORE::LINALG::Matrix<NUMNOD_SOP5, 1> funct;
+      CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> deriv;
       CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, pyramid5);
       CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, pyramid5);
       for (int inode = 0; inode < NUMNOD_SOP5; ++inode)
@@ -1731,10 +1734,10 @@ int DRT::ELEMENTS::So_pyramid5Type::Initialize(DRT::Discretization& dis)
 void DRT::ELEMENTS::So_pyramid5::DefGradient(const std::vector<double>& disp,
     Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
 
   // update element geometry
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;  // current  coord. of element
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;  // current  coord. of element
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_SOP5 + 0];
@@ -1745,15 +1748,15 @@ void DRT::ELEMENTS::So_pyramid5::DefGradient(const std::vector<double>& disp,
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     // get Jacobian mapping wrt to the stored deformed configuration
-    LINALG::Matrix<3, 3> invJdef;
+    CORE::LINALG::Matrix<3, 3> invJdef;
     prestress.StoragetoMatrix(gp, invJdef, prestress.JHistory());
 
     // by N_XYZ = J^-1 * N_rst
-    LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
+    CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
     N_xyz.Multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
-    LINALG::Matrix<3, 3> defgrd;
+    CORE::LINALG::Matrix<3, 3> defgrd;
     defgrd.MultiplyTT(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
@@ -1769,7 +1772,8 @@ void DRT::ELEMENTS::So_pyramid5::DefGradient(const std::vector<double>& disp,
  | get and set temperature required for some materials      seitz 03/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5::GetTemperatureForStructuralMaterial(
-    const LINALG::Matrix<NUMNOD_SOP5, 1>& shapefctsGP,  // shape function of current Gauss-point
+    const CORE::LINALG::Matrix<NUMNOD_SOP5, 1>&
+        shapefctsGP,                // shape function of current Gauss-point
     Teuchos::ParameterList& params  // special material parameter e.g. scalartemp
 )
 {
@@ -1780,14 +1784,14 @@ void DRT::ELEMENTS::So_pyramid5::GetTemperatureForStructuralMaterial(
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses             seitz 03/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_pyramid5::GLtoEA(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
-    LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
-    LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi)
+void DRT::ELEMENTS::So_pyramid5::GLtoEA(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain,
+    CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* defgrd,
+    CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>* euler_almansi)
 {
   // e = F^{T-1} . E . F^{-1}
 
   // rewrite Green-Lagrange strain in tensor notation
-  LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> gl;
   gl(0, 0) = (*glstrain)(0);
   gl(0, 1) = 0.5 * (*glstrain)(3);
   gl(0, 2) = 0.5 * (*glstrain)(5);
@@ -1799,11 +1803,11 @@ void DRT::ELEMENTS::So_pyramid5::GLtoEA(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* g
   gl(2, 2) = (*glstrain)(2);
 
   // inverse of deformation gradient
-  LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
   invdefgrd.Invert((*defgrd));
 
   // (3x3) = (3x3) (3x3) (3x3)
-  LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
   temp.Multiply(gl, invdefgrd);
   (*euler_almansi).MultiplyTN(invdefgrd, temp);
 
@@ -1816,10 +1820,10 @@ void DRT::ELEMENTS::So_pyramid5::GLtoEA(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* g
 void DRT::ELEMENTS::So_pyramid5::UpdateJacobianMapping(
     const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress)
 {
-  const static std::vector<LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
+  const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
 
   // get incremental disp
-  LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
+  CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xdisp;
   for (int i = 0; i < NUMNOD_SOP5; ++i)
   {
     xdisp(i, 0) = disp[i * NODDOF_SOP5 + 0];
@@ -1827,11 +1831,11 @@ void DRT::ELEMENTS::So_pyramid5::UpdateJacobianMapping(
     xdisp(i, 2) = disp[i * NODDOF_SOP5 + 2];
   }
 
-  LINALG::Matrix<3, 3> invJhist;
-  LINALG::Matrix<3, 3> invJ;
-  LINALG::Matrix<3, 3> defgrd;
-  LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
-  LINALG::Matrix<3, 3> invJnew;
+  CORE::LINALG::Matrix<3, 3> invJhist;
+  CORE::LINALG::Matrix<3, 3> invJ;
+  CORE::LINALG::Matrix<3, 3> defgrd;
+  CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
+  CORE::LINALG::Matrix<3, 3> invJnew;
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     // get the invJ old state

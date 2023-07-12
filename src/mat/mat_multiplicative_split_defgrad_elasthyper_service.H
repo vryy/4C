@@ -19,24 +19,25 @@ gradient.
 
 namespace MAT
 {
-  inline void EvaluateCe(
-      const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iFin, LINALG::Matrix<3, 3>& Ce)
+  inline void EvaluateCe(const CORE::LINALG::Matrix<3, 3>& F,
+      const CORE::LINALG::Matrix<3, 3>& iFin, CORE::LINALG::Matrix<3, 3>& Ce)
   {
-    static LINALG::Matrix<3, 3> FiFin(false);
+    static CORE::LINALG::Matrix<3, 3> FiFin(false);
     FiFin.MultiplyNN(F, iFin);
     Ce.MultiplyTN(FiFin, FiFin);
   }
 
-  inline void EvaluateiCinCiCin(const LINALG::Matrix<3, 3>& C, const LINALG::Matrix<3, 3>& iCin,
-      LINALG::Matrix<3, 3>& iCinCiCin)
+  inline void EvaluateiCinCiCin(const CORE::LINALG::Matrix<3, 3>& C,
+      const CORE::LINALG::Matrix<3, 3>& iCin, CORE::LINALG::Matrix<3, 3>& iCinCiCin)
   {
-    static LINALG::Matrix<3, 3> CiCin(false);
+    static CORE::LINALG::Matrix<3, 3> CiCin(false);
     CiCin.MultiplyNN(C, iCin);
     iCinCiCin.MultiplyNN(iCin, CiCin);
   }
 
-  inline void ElastHyperEvaluateElasticPart(const LINALG::Matrix<3, 3>& F,
-      const LINALG::Matrix<3, 3>& iFin, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+  inline void ElastHyperEvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
+      const CORE::LINALG::Matrix<3, 3>& iFin, CORE::LINALG::Matrix<6, 1>& S_stress,
+      CORE::LINALG::Matrix<6, 6>& cmat,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum,
       MAT::SummandProperties summandProperties, const int gp, const int eleGID)
   {
@@ -49,16 +50,16 @@ namespace MAT
     cmat.Clear();
 
     // Variables needed for the computation of the stress resultants
-    static LINALG::Matrix<3, 3> C(true);
-    static LINALG::Matrix<3, 3> Ce(true);
-    static LINALG::Matrix<3, 3> iC(true);
-    static LINALG::Matrix<3, 3> iCin(true);
-    static LINALG::Matrix<3, 3> iCinCiCin(true);
+    static CORE::LINALG::Matrix<3, 3> C(true);
+    static CORE::LINALG::Matrix<3, 3> Ce(true);
+    static CORE::LINALG::Matrix<3, 3> iC(true);
+    static CORE::LINALG::Matrix<3, 3> iCin(true);
+    static CORE::LINALG::Matrix<3, 3> iCinCiCin(true);
 
-    static LINALG::Matrix<6, 1> iCinv(true);
-    static LINALG::Matrix<6, 1> iCinCiCinv(true);
-    static LINALG::Matrix<6, 1> iCv(true);
-    static LINALG::Matrix<3, 1> principleInvariantsCe(true);
+    static CORE::LINALG::Matrix<6, 1> iCinv(true);
+    static CORE::LINALG::Matrix<6, 1> iCinCiCinv(true);
+    static CORE::LINALG::Matrix<6, 1> iCv(true);
+    static CORE::LINALG::Matrix<3, 1> principleInvariantsCe(true);
 
     // Compute right Cauchy-Green tensor C=F^TF
     C.MultiplyTN(F, F);
@@ -78,16 +79,16 @@ namespace MAT
     // Compute principal invariants
     MAT::InvariantsPrincipal(principleInvariantsCe, Ce);
 
-    LINALG::Matrix<3, 1> dPIe(true);
-    LINALG::Matrix<6, 1> ddPIIe(true);
+    CORE::LINALG::Matrix<3, 1> dPIe(true);
+    CORE::LINALG::Matrix<6, 1> ddPIIe(true);
 
     MAT::ElastHyperEvaluateInvariantDerivatives(
         principleInvariantsCe, dPIe, ddPIIe, potsum, summandProperties, gp, eleGID);
 
     // 2nd Piola Kirchhoff stress factors (according to Holzapfel-Nonlinear Solid Mechanics p. 216)
-    static LINALG::Matrix<3, 1> gamma(true);
+    static CORE::LINALG::Matrix<3, 1> gamma(true);
     // constitutive tensor factors (according to Holzapfel-Nonlinear Solid Mechanics p. 261)
-    static LINALG::Matrix<8, 1> delta(true);
+    static CORE::LINALG::Matrix<8, 1> delta(true);
 
     MAT::CalculateGammaDelta(gamma, delta, principleInvariantsCe, dPIe, ddPIIe);
 

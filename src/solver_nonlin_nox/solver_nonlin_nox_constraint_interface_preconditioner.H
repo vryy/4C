@@ -23,7 +23,7 @@
 // forward declarations...
 class Epetra_Map;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
 }
@@ -80,7 +80,7 @@ namespace NOX
               std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
 
           //! Get the corresponding linear solver (optional)
-          virtual LINALG::Solver* GetLinearSolver() const { return NULL; };
+          virtual CORE::LINALG::Solver* GetLinearSolver() const { return NULL; };
         };
       }  // namespace Interface
     }    // namespace CONSTRAINT

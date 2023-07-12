@@ -89,11 +89,11 @@ namespace SCATRA
 
     void SetupMeshtying() override;
 
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+    void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+        const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
         const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
         const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const override;
+        const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector) const override;
   };
 
   template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
@@ -158,9 +158,9 @@ namespace SCATRA
             lumpedarea,  //!< lumped interface area fraction associated with slave-side node
         MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
         MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-        const std::vector<LINALG::Matrix<nen_slave_, 1>>&
+        const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>&
             ephinp_slave,  //!< state variables at slave-side nodes
-        const std::vector<LINALG::Matrix<nen_master_, 1>>&
+        const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>&
             ephinp_master,  //!< state variables at master-side nodes
         Epetra_SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -252,7 +252,7 @@ namespace SCATRA
     double GetFRT() const;
 
     //! nodal, slave-side temperature variables associated with time t_{n+1} or t_{n+alpha_f}
-    LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
+    CORE::LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
   };  // class MortarCellCalcElchSTIThermo
 
 
@@ -337,10 +337,10 @@ namespace SCATRA
     );
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<nen_slave_, 1>> eelchnp_slave_;
+    std::vector<CORE::LINALG::Matrix<nen_slave_, 1>> eelchnp_slave_;
 
     //! nodal, master-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
-    std::vector<LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
+    std::vector<CORE::LINALG::Matrix<nen_master_, 1>> eelchnp_master_;
   };  // class MortarCellCalcSTIElch
 }  // namespace SCATRA
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

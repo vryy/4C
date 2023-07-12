@@ -44,25 +44,26 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDir
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
     EvaluateForceStiff(const DRT::Discretization& discretization1,
         const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseOperator> cff,
-        Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
-        Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
+        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<CORE::LINALG::SparseOperator> cff,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbb,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cfb,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
   // resulting discrete element force vectors of the two interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce(2);
 
   // resulting discrete force vectors (centerline DOFs only!) of the two
   // interacting elements
-  std::vector<LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
+  std::vector<CORE::LINALG::SerialDenseVector> eleforce_centerlineDOFs(2);
 
   // linearizations
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // linearizations (centerline DOFs only!)
-  std::vector<std::vector<LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
-      2, std::vector<LINALG::SerialDenseMatrix>(2));
+  std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>> elestiff_centerlineDOFs(
+      2, std::vector<CORE::LINALG::SerialDenseMatrix>(2));
 
   // element gids of interacting elements
   std::vector<int> elegids(2);

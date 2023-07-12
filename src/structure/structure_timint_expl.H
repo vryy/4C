@@ -42,14 +42,14 @@ namespace STR
     //@{
 
     //! constructor
-    TimIntExpl(const Teuchos::ParameterList& timeparams,  //!< time parameters
-        const Teuchos::ParameterList& ioparams,           //!< ioflags
-        const Teuchos::ParameterList& sdynparams,         //!< input parameters
-        const Teuchos::ParameterList& xparams,            //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,         //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,              //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,       //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output     //!< the output
+    TimIntExpl(const Teuchos::ParameterList& timeparams,   //!< time parameters
+        const Teuchos::ParameterList& ioparams,            //!< ioflags
+        const Teuchos::ParameterList& sdynparams,          //!< input parameters
+        const Teuchos::ParameterList& xparams,             //!< extra flags
+        Teuchos::RCP<DRT::Discretization> actdis,          //!< current discretisation
+        Teuchos::RCP<CORE::LINALG::Solver> solver,         //!< the solver
+        Teuchos::RCP<CORE::LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+        Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
     //! Empty constructor
@@ -84,7 +84,7 @@ namespace STR
     \author rauch  */
     virtual void Init(const Teuchos::ParameterList& timeparams,
         const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver);
+        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
 
     /*! \brief Setup all class internal objects and members
 
@@ -352,7 +352,7 @@ namespace STR
     };
 
     //! Access to scaling matrix for STC
-    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
+    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
     {
       dserror("GetSTCMat() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -390,8 +390,8 @@ namespace STR
       return;
     }
 
-    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+    virtual void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
     {
       dserror("UseBlockMatrix() not implemented");
     }

@@ -66,7 +66,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     const double timetaufac,  //!< domain-integration factor times tau times time-integration factor
     const double
         rhstaufac,  //!< time-integration factor for rhs times tau times domain-integration factor
-    LINALG::Matrix<nen_, 1>&
+    CORE::LINALG::Matrix<nen_, 1>&
         tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
     double& rhsint  //!< rhs at Gauss point
 )
@@ -345,7 +345,8 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
     const double hist,     //!< history value at GP
     const double convphi,  //!< convective term (without convective part of migration term)
     const double frt,      //!< F/(RT)
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const CORE::LINALG::Matrix<nen_, 1>&
+        migconv,  //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
     const double
         rhsint  //!< rhs of Nernst-Planck equation (not of Newton-Raphson scheme) at Gauss point
 )
@@ -362,7 +363,7 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
 
   if (my::use2ndderiv_)
   {
-    LINALG::Matrix<nen_, 1> laplace(true);
+    CORE::LINALG::Matrix<nen_, 1> laplace(true);
     my::GetLaplacianStrongForm(laplace);
 
     diffphi = myelch::DiffManager()->GetIsotropicDiff(k) * laplace.Dot(my::ephinp_[k]);
@@ -393,19 +394,21 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
     const double timefacfac,         //!< domain-integration factor times time-integration factor
     const double taufac,      //!< stabilization parameter tau times domain-integration factor
     const double timetaufac,  //!< domain-integration factor times tau times time-integration factor
-    LINALG::Matrix<nen_, 1>&
+    CORE::LINALG::Matrix<nen_, 1>&
         tauderpot,     //!< derivatives of stabilization parameter w.r.t. electric potential
     const double frt,  //!< F/(RT)
-    const LINALG::Matrix<nen_, 1>& conv,     //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
-    const double conint,                     //!< concentration at GP
-    const LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-    const double residual                    //!< residual of Nernst-Planck equation in strong form
+    const CORE::LINALG::Matrix<nen_, 1>&
+        conv,  //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+    const CORE::LINALG::Matrix<nen_, 1>&
+        migconv,          //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double conint,  //!< concentration at GP
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
+    const double residual  //!< residual of Nernst-Planck equation in strong form
 )
 {
   // Compute Laplacian N,xx  +  N,yy +  N,zz of all shape functions at current integration point if
   // needed
-  LINALG::Matrix<nen_, 1> laplace(true);
+  CORE::LINALG::Matrix<nen_, 1> laplace(true);
   if (my::use2ndderiv_) my::GetLaplacianStrongForm(laplace);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -506,8 +509,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
     const int k,                     //!< index of current scalar
     const double timefacfac,         //!< domain-integration factor times time-integration factor
     const double frt,                //!< F/(RT)
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
-    const double conint                      //!< concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>&
+        migconv,         //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double conint  //!< concentration at GP
 )
 {
   const double timefacfac_diffus_valence_k = timefacfac *
@@ -547,8 +551,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
     const int k,                     //!< index of current scalar
     const double timefacfac,         //!< domain-integration factor times time-integration factor
     const double frt,                //!< F/(RT)
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-    const double conint                      //!< concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+    const double conint                            //!< concentration at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -594,8 +598,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
     const int k,                     //!< index of current scalar
     const double timefacfac,         //!< domain-integration factor times time-integration factor
     const double frt,                //!< F/(RT)
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-    const double conint                      //!< concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+    const double conint                            //!< concentration at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -752,9 +756,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
     const int k,                     //!< index of current scalar
     const double
         rhstaufac,  //!< time-integration factor for rhs times tau times domain-integration factor
-    const LINALG::Matrix<nen_, 1>& conv,     //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
-    const double residual                    //!< residual of Nernst-Planck equation in strong form
+    const CORE::LINALG::Matrix<nen_, 1>&
+        conv,  //!< convection operator: u_x*N,x + u_y*N,y + u_z*N,z
+    const CORE::LINALG::Matrix<nen_, 1>&
+        migconv,           //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
+    const double residual  //!< residual of Nernst-Planck equation in strong form
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -780,8 +786,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
     Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                     //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-    const double conint                      //!< concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+    const double conint                            //!< concentration at GP
 )
 {
   const double rhsfac_con_diffus_valence_k = rhsfac * conint *
@@ -803,9 +809,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
     Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                     //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-    const double conint,                     //!< concentration at GP
-    const LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+    const double conint,                           //!< concentration at GP
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -834,9 +840,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
     Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                     //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
-    const double conint,                     //!< concentration at GP
-    const LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
+    const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+    const double conint,                           //!< concentration at GP
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -871,13 +877,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
-    Epetra_SerialDenseVector& erhs,         //!< element vector to be filled
-    const int k,                            //!< index of current scalar
-    const double fac,                       //!< domain-integration factor
-    const double epsilon,                   //!< dielectric constant
-    const double faraday,                   //!< Faraday constant
-    const double conint,                    //!< concentration at GP
-    const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
+    Epetra_SerialDenseVector& erhs,               //!< element vector to be filled
+    const int k,                                  //!< index of current scalar
+    const double fac,                             //!< domain-integration factor
+    const double epsilon,                         //!< dielectric constant
+    const double faraday,                         //!< Faraday constant
+    const double conint,                          //!< concentration at GP
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -909,9 +915,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
-    Epetra_SerialDenseVector& erhs,         //!< element vector to be filled
-    const double fac,                       //!< domain-integration factor
-    const LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
+    Epetra_SerialDenseVector& erhs,               //!< element vector to be filled
+    const double fac,                             //!< domain-integration factor
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -1050,7 +1056,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Materials(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
-    std::vector<LINALG::Matrix<nen_, 1>>&
+    std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
     const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
     const double vol                    //!< element volume
@@ -1106,7 +1112,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
     for (int k = 0; k < my::numscal_; ++k)
     {
       // Compute effective velocity as sum of convective and migration velocities
-      LINALG::Matrix<nsd_, 1> veleff(VarManager()->ConVel(k));
+      CORE::LINALG::Matrix<nsd_, 1> veleff(VarManager()->ConVel(k));
       veleff.Update(
           myelch::DiffManager()->GetValence(k) * myelch::DiffManager()->GetIsotropicDiff(k),
           VarManager()->MigVelInt(), 1.);
@@ -1145,14 +1151,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::PrepareStabilization(
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcTauDerPotTaylorHughesZarins(
-    LINALG::Matrix<nen_, 1>&
+    CORE::LINALG::Matrix<nen_, 1>&
         tauderpot,        //!< derivatives of stabilization parameter w.r.t. electric potential
     double& tau,          //!< stabilization parameter
     const double densnp,  //!< density at t_(n+1)
     const double frt,     //!< F/(RT)
-    const double diffusvalence,            //!< diffusion coefficient times valence
-    const LINALG::Matrix<nsd_, 1>& veleff  //!< effective convective velocity (fluid velocity
-                                           //!< plus migration velocity if applicable)
+    const double diffusvalence,                  //!< diffusion coefficient times valence
+    const CORE::LINALG::Matrix<nsd_, 1>& veleff  //!< effective convective velocity (fluid velocity
+                                                 //!< plus migration velocity if applicable)
 )
 {
   /*

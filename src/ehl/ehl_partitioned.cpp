@@ -30,9 +30,9 @@ EHL::Partitioned::Partitioned(const Epetra_Comm& comm,
     const std::string lubrication_disname)
     : Base(comm, globaltimeparams, lubricationparams, structparams, struct_disname,
           lubrication_disname),
-      preincnp_(LINALG::CreateVector(
+      preincnp_(CORE::LINALG::CreateVector(
           *lubrication_->LubricationField()->Discretization()->DofRowMap(0), true)),
-      dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0), true))
+      dispincnp_(CORE::LINALG::CreateVector(*structure_->DofRowMap(0), true))
 {
   // call the EHL parameter lists
   const Teuchos::ParameterList& ehlparams = DRT::Problem::Instance()->ElastoHydroDynamicParams();

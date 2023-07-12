@@ -28,7 +28,7 @@
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> systemvector,
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
+    Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix)
 {
   if (systemmatrix == Teuchos::null)
     EvaluateNeumann(params, discret, *systemvector);
@@ -43,7 +43,7 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-    LINALG::SparseOperator* systemmatrix)
+    CORE::LINALG::SparseOperator* systemmatrix)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 5) EvaluateNeumann");
 
@@ -119,7 +119,7 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
 void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& condition,
     const double time, bool assemblemat, Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Discretization> discret, Epetra_Vector& systemvector,
-    LINALG::SparseOperator* systemmatrix)
+    CORE::LINALG::SparseOperator* systemmatrix)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
@@ -193,7 +193,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
         if (!assemblemat)
         {
           curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector);
-          LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
         }
         else
         {
@@ -203,7 +203,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
           else
             memset(elematrix.A(), 0, size * size * sizeof(double));
           curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector, &elematrix);
-          LINALG::Assemble(systemvector, elevector, lm, lmowner);
+          CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);
         }
       }

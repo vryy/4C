@@ -8,7 +8,6 @@ set(_scatra_ele_dependencies
     fluid_ele
     inpar
     lib
-    linalg
     mat
     nurbs_discret
     porofluidmultiphase_ele

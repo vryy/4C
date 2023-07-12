@@ -18,12 +18,12 @@
 #include "nurbs_discret_control_point.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class MapExtractor;
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace DRT
 {

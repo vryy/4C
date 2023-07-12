@@ -38,7 +38,7 @@ namespace DRT
        * @param fiber Vector of the coordinate system direction at the Gauss-points
        */
       void SetCoordinateSystemDirection(
-          CoordinateSystemDirection type, const std::vector<LINALG::Matrix<3, 1>>& fiber);
+          CoordinateSystemDirection type, const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber);
 
       /*!
        * \brief Returns a reference to coordinate system directions at every Gauss point belonging
@@ -47,7 +47,7 @@ namespace DRT
        * @param type Type of the coordinate system direction
        * @return Reference to the coordinate system direction
        */
-      const std::vector<LINALG::Matrix<3, 1>>& GetCoordinateSystemDirection(
+      const std::vector<CORE::LINALG::Matrix<3, 1>>& GetCoordinateSystemDirection(
           CoordinateSystemDirection type) const;
 
       /*!
@@ -57,21 +57,24 @@ namespace DRT
        * @param type Type of the coordinate system direction
        * @return Reference to the coordinate system direction
        */
-      std::vector<LINALG::Matrix<3, 1>>& GetCoordinateSystemDirectionMutual(
+      std::vector<CORE::LINALG::Matrix<3, 1>>& GetCoordinateSystemDirectionMutual(
           CoordinateSystemDirection type);
       /*!
        * \brief Inserts a fiber
        *
        * @param fiber Vector of the fiber at the Gauss-points
        */
-      void AddFiber(const std::vector<LINALG::Matrix<3, 1>>& fiber);
+      void AddFiber(const std::vector<CORE::LINALG::Matrix<3, 1>>& fiber);
 
       /*!
        * @brief Return the list of all fibers at all Gauss points
        *
        * @return Reference to the list of all fibers at all Gauss points
        */
-      const std::vector<std::vector<LINALG::Matrix<3, 1>>>& GetFibers() const { return fibers_; }
+      const std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>>& GetFibers() const
+      {
+        return fibers_;
+      }
 
       /*!
        * \brief Returns a reference to the specific fiber at every Gauss point
@@ -79,7 +82,7 @@ namespace DRT
        * @param fiberid Id of the fiber (starting from 0)
        * @return Reference to the coordinate system direction
        */
-      const std::vector<LINALG::Matrix<3, 1>>& GetFiber(std::size_t fiberid) const;
+      const std::vector<CORE::LINALG::Matrix<3, 1>>& GetFiber(std::size_t fiberid) const;
 
       /*!
        * \brief Returns a reference to the specific fiber at every Gauss point
@@ -87,7 +90,7 @@ namespace DRT
        * @param fiberid Id of the fiber (starting from 0)
        * @return Reference to the fiber
        */
-      std::vector<LINALG::Matrix<3, 1>>& GetFiberMutual(std::size_t fiberid);
+      std::vector<CORE::LINALG::Matrix<3, 1>>& GetFiberMutual(std::size_t fiberid);
 
       /*!
        * \brief Sets a type of angle
@@ -164,11 +167,11 @@ namespace DRT
 
      private:
       /// Map holding GP coordinate system directions
-      std::map<CoordinateSystemDirection, std::vector<LINALG::Matrix<3, 1>>>
+      std::map<CoordinateSystemDirection, std::vector<CORE::LINALG::Matrix<3, 1>>>
           coordinateSystemDirections_;
 
       /// List of numbered fibers
-      std::vector<std::vector<LINALG::Matrix<3, 1>>> fibers_;
+      std::vector<std::vector<CORE::LINALG::Matrix<3, 1>>> fibers_;
 
       /// Map holding GP angles of different names
       std::map<AngleType, std::vector<double>> angles_;

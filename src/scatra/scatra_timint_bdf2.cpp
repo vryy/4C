@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SCATRA::TimIntBDF2::TimIntBDF2(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       theta_(1.0),
@@ -55,12 +55,12 @@ void SCATRA::TimIntBDF2::Setup()
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   // state vector for solution at time t_{n-1}
-  phinm_ = LINALG::CreateVector(*dofrowmap, true);
+  phinm_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // fine-scale vector at time n+1
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    fsphinp_ = LINALG::CreateVector(*dofrowmap, true);
+    fsphinp_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters

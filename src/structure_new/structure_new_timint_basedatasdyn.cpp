@@ -115,7 +115,7 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     const Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes,
     const Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs,
-    const Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver>>>
+    const Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
         linsolvers)
 {
   // We have to call Setup() after Init()

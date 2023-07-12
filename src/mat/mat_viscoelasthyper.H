@@ -187,11 +187,11 @@ namespace MAT
     }
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,
+    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,      ///< Container for additional information
+        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
+        CORE::LINALG::Matrix<6, 6>* cmat,
         int gp,             ///< Gauss point
         const int eleGID);  ///< Constitutive matrix
 
@@ -206,50 +206,56 @@ namespace MAT
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards for viscous part
-    virtual void EvaluateKinQuantVis(LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 1>& scg,
-        LINALG::Matrix<6, 1>& icg, LINALG::Matrix<3, 1>& prinv, LINALG::Matrix<7, 1>& rateinv,
-        LINALG::Matrix<6, 1>& modrcg, Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& scgrate,
-        LINALG::Matrix<6, 1>& modrcgrate, LINALG::Matrix<7, 1>& modrateinv, int gp);
+    virtual void EvaluateKinQuantVis(CORE::LINALG::Matrix<6, 1>& rcg,
+        CORE::LINALG::Matrix<6, 1>& scg, CORE::LINALG::Matrix<6, 1>& icg,
+        CORE::LINALG::Matrix<3, 1>& prinv, CORE::LINALG::Matrix<7, 1>& rateinv,
+        CORE::LINALG::Matrix<6, 1>& modrcg, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>& scgrate, CORE::LINALG::Matrix<6, 1>& modrcgrate,
+        CORE::LINALG::Matrix<7, 1>& modrateinv, int gp);
 
     /// calculates the factors associated to the viscous laws
-    virtual void EvaluateMuXi(LINALG::Matrix<3, 1>& inv, LINALG::Matrix<3, 1>& modinv,
-        LINALG::Matrix<8, 1>& mu, LINALG::Matrix<8, 1>& modmu, LINALG::Matrix<33, 1>& xi,
-        LINALG::Matrix<33, 1>& modxi, LINALG::Matrix<7, 1>& rateinv,
-        LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp, int eleGID);
+    virtual void EvaluateMuXi(CORE::LINALG::Matrix<3, 1>& inv, CORE::LINALG::Matrix<3, 1>& modinv,
+        CORE::LINALG::Matrix<8, 1>& mu, CORE::LINALG::Matrix<8, 1>& modmu,
+        CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<33, 1>& modxi,
+        CORE::LINALG::Matrix<7, 1>& rateinv, CORE::LINALG::Matrix<7, 1>& modrateinv,
+        Teuchos::ParameterList& params, int gp, int eleGID);
 
     /// calculates the isotropic stress and elasticity tensor for viscous principal configuration
-    virtual void EvaluateIsoViscoPrincipal(LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat,
-        LINALG::Matrix<8, 1>& mu, LINALG::Matrix<33, 1>& xi, LINALG::Matrix<6, 6>& id4sharp,
-        LINALG::Matrix<6, 1>& scgrate);
+    virtual void EvaluateIsoViscoPrincipal(CORE::LINALG::Matrix<6, 1>& stress,
+        CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<8, 1>& mu,
+        CORE::LINALG::Matrix<33, 1>& xi, CORE::LINALG::Matrix<6, 6>& id4sharp,
+        CORE::LINALG::Matrix<6, 1>& scgrate);
 
     /// calculates the isotropic stress and elasticity tensor for viscous decoupled configuration
-    virtual void EvaluateIsoViscoModified(LINALG::Matrix<6, 1>& stressisomodisovisco,
-        LINALG::Matrix<6, 1>& stressisomodvolvisco, LINALG::Matrix<6, 6>& cmatisomodisovisco,
-        LINALG::Matrix<6, 6>& cmatisomodvolvisco, LINALG::Matrix<3, 1>& prinv,
-        LINALG::Matrix<3, 1>& modinv, LINALG::Matrix<8, 1>& modmu, LINALG::Matrix<33, 1>& modxi,
-        LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 1>& id2, LINALG::Matrix<6, 1>& icg,
-        LINALG::Matrix<6, 6>& id4, LINALG::Matrix<6, 1>& modrcgrate);
+    virtual void EvaluateIsoViscoModified(CORE::LINALG::Matrix<6, 1>& stressisomodisovisco,
+        CORE::LINALG::Matrix<6, 1>& stressisomodvolvisco,
+        CORE::LINALG::Matrix<6, 6>& cmatisomodisovisco,
+        CORE::LINALG::Matrix<6, 6>& cmatisomodvolvisco, CORE::LINALG::Matrix<3, 1>& prinv,
+        CORE::LINALG::Matrix<3, 1>& modinv, CORE::LINALG::Matrix<8, 1>& modmu,
+        CORE::LINALG::Matrix<33, 1>& modxi, CORE::LINALG::Matrix<6, 1>& rcg,
+        CORE::LINALG::Matrix<6, 1>& id2, CORE::LINALG::Matrix<6, 1>& icg,
+        CORE::LINALG::Matrix<6, 6>& id4, CORE::LINALG::Matrix<6, 1>& modrcgrate);
 
     /// calculates the stress and elasticitiy tensor for the viscous Genmax-material
     /// depending on the viscoelastic material isochoric-principal, isochoric-modified
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
-    virtual void EvaluateViscoGenMax(LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
-        int gp);
+    virtual void EvaluateViscoGenMax(CORE::LINALG::Matrix<6, 1>* stress,
+        CORE::LINALG::Matrix<6, 6>* cmat, CORE::LINALG::Matrix<6, 1>& Q,
+        CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, int gp);
 
     /// calculates the stress and elasticitiy tensor for the GeneneralizedMax-material
-    virtual void EvaluateViscoGeneralizedGenMax(LINALG::Matrix<6, 1>& Q,
-        LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
-        const LINALG::Matrix<6, 1>* glstrain, int gp, int eleGID);
+    virtual void EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6, 1>& Q,
+        CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, int gp, int eleGID);
 
     /// calculates the stress and elasticity tensor for the viscos Fract-material
     /// depending on the viscoelastic material isochoric-principal, isochoric-modified
     /// (volumetric and isochoric equal treaded) or anisotropic stresses and elasticity
     /// tensors are added
-    virtual void EvaluateViscoFract(LINALG::Matrix<6, 1> stress, LINALG::Matrix<6, 6> cmat,
-        LINALG::Matrix<6, 1>& Q, LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params,
-        int gp);
+    virtual void EvaluateViscoFract(CORE::LINALG::Matrix<6, 1> stress,
+        CORE::LINALG::Matrix<6, 6> cmat, CORE::LINALG::Matrix<6, 1>& Q,
+        CORE::LINALG::Matrix<6, 6>& cmatq, Teuchos::ParameterList& params, int gp);
 
     /// @name Flags to specify the viscous formulations
     //@{
@@ -262,32 +268,33 @@ namespace MAT
 
    private:
     /// viscous history Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>> histscgcurr_;  ///< current Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>>
+        histscgcurr_;  ///< current Cauchy-Green-Tensor
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>>
         histscglast_;  ///< Cauchy-Green-Tensor of last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>>
         histmodrcgcurr_;  ///< current decoupled Cauchy-Green-Tensor
-    Teuchos::RCP<std::vector<LINALG::Matrix<6, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<6, 1>>>
         histmodrcglast_;  ///< decoupled Cauchy-Green-Tensor of last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histartstresscurr_;  ///< current stress
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histartstresslast_;  ///< stress of last converged state
-    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>>
+    Teuchos::RCP<std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchstresscurr_;  ///< current stress of the branches
-    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>>
+    Teuchos::RCP<std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchstresslast_;  ///< stress of the branches of last converged state
-    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>>
+    Teuchos::RCP<std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchelaststresscurr_;  ///< current elastic stress of the branches
-    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>>
+    Teuchos::RCP<std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>>
         histbranchelaststresslast_;  ///< elastic stress of the branches of last converged state
-    Teuchos::RCP<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>
+    Teuchos::RCP<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>
         histfractartstresscurr_;  ///< current artificial stress of fractional SLS-model
-    Teuchos::RCP<std::vector<std::vector<LINALG::Matrix<NUM_STRESS_3D, 1>>>>
+    Teuchos::RCP<std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>>
         histfractartstresslastall_;  ///< artificial fractional stress of all last converged states
 
     bool isinitvis_;  ///< indicates if #Initialized routine has been called

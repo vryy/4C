@@ -20,7 +20,7 @@
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/
 FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
-    const LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
+    const CORE::LINALG::MultiMapExtractor& maps, ADAPTER::FSIStructureWrapper& structure,
     ADAPTER::Fluid& fluid, ADAPTER::AleFsiWrapper& ale, bool structuresplit, int symmetric,
     double omega, int iterations, double somega, int siterations, double fomega, int fiterations,
     double aomega, int aiterations, FILE* err)
@@ -34,8 +34,8 @@ FSI::ConstrOverlappingBlockMatrix::ConstrOverlappingBlockMatrix(
   fsimaps.push_back(maps.Map(0));
   fsimaps.push_back(maps.Map(1));
   fsimaps.push_back(maps.Map(2));
-  overallfsimap_ = LINALG::MultiMapExtractor::MergeMaps(fsimaps);
-  fsiextractor_ = LINALG::MultiMapExtractor(*overallfsimap_, fsimaps);
+  overallfsimap_ = CORE::LINALG::MultiMapExtractor::MergeMaps(fsimaps);
+  fsiextractor_ = CORE::LINALG::MultiMapExtractor(*overallfsimap_, fsimaps);
 
   // stuff needed for SIMPLE preconditioner -> this needs to be read
   // in from the input file one day!
@@ -62,11 +62,11 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
 
 #else
 
-  const LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
-  const LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
-  const LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
+  const CORE::LINALG::SparseMatrix& structInnerOp = Matrix(0, 0);
+  const CORE::LINALG::SparseMatrix& fluidInnerOp = Matrix(1, 1);
+  const CORE::LINALG::SparseMatrix& aleInnerOp = Matrix(2, 2);
 
-  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<CORE::LINALG::MapExtractor> fsidofmapex = Teuchos::null;
   Teuchos::RCP<Epetra_Map> irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
@@ -83,16 +83,16 @@ void FSI::ConstrOverlappingBlockMatrix::SetupPreconditioner()
 void FSI::ConstrOverlappingBlockMatrix::SGS(
     const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
 {
-  const LINALG::SparseMatrix& StructInnerOp = Matrix(0, 0);
-  const LINALG::SparseMatrix& StructBoundOp = Matrix(0, 1);
-  const LINALG::SparseMatrix& StructConOp = Matrix(0, 3);
-  const LINALG::SparseMatrix& FluidBoundOp = Matrix(1, 0);
-  const LINALG::SparseMatrix& FluidInnerOp = Matrix(1, 1);
-  const LINALG::SparseMatrix& FluidMeshOp = Matrix(1, 2);
-  const LINALG::SparseMatrix& FluidConOp = Matrix(1, 3);
-  const LINALG::SparseMatrix& AleInnerOp = Matrix(2, 2);
-  const LINALG::SparseMatrix& ConStructOp = Matrix(3, 0);
-  const LINALG::SparseMatrix& ConFluidOp = Matrix(3, 1);
+  const CORE::LINALG::SparseMatrix& StructInnerOp = Matrix(0, 0);
+  const CORE::LINALG::SparseMatrix& StructBoundOp = Matrix(0, 1);
+  const CORE::LINALG::SparseMatrix& StructConOp = Matrix(0, 3);
+  const CORE::LINALG::SparseMatrix& FluidBoundOp = Matrix(1, 0);
+  const CORE::LINALG::SparseMatrix& FluidInnerOp = Matrix(1, 1);
+  const CORE::LINALG::SparseMatrix& FluidMeshOp = Matrix(1, 2);
+  const CORE::LINALG::SparseMatrix& FluidConOp = Matrix(1, 3);
+  const CORE::LINALG::SparseMatrix& AleInnerOp = Matrix(2, 2);
+  const CORE::LINALG::SparseMatrix& ConStructOp = Matrix(3, 0);
+  const CORE::LINALG::SparseMatrix& ConFluidOp = Matrix(3, 1);
 
 
   // Extract vector blocks
@@ -178,14 +178,14 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
         {
           if (run > 0 or outerrun > 0)
           {
-            const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
+            const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
             aleBoundOp.Multiply(false, *fy, *tmpax);
             ax->Update(-1.0, *tmpax, 1.0);
           }
         }
         else
         {
-          const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
+          const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
           aleBoundOp.Multiply(false, *sy, *tmpax);
           ax->Update(-1.0, *tmpax, 1.0);
         }
@@ -275,13 +275,13 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
           if (structuresplit_)
           {
-            const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
+            const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 1);
             aleBoundOp.Multiply(false, *fy, *tmpax);
             ax->Update(-1.0, *tmpax, 1.0);
           }
           else
           {
-            const LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
+            const CORE::LINALG::SparseMatrix& aleBoundOp = Matrix(2, 0);
             aleBoundOp.Multiply(false, *sy, *tmpax);
             ax->Update(-1.0, *tmpax, 1.0);
           }
@@ -327,7 +327,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
     cx->Update(-1.0, inter, 1.0);
 
 
-    LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> invDiag(
+    CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy> invDiag(
         fsiextractor_, fsiextractor_, 1, false, true);
 
     if (prec_ == INPAR::FSI::Simple)
@@ -338,23 +338,23 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
       StructInnerOp.ExtractDiagonalCopy(structDiagVec);
       int err = structDiagVec.Reciprocal(structDiagVec);
       if (err) dserror("Epetra_MultiVector::Reciprocal (structure matrix) returned %d", err);
-      LINALG::SparseMatrix invstructDiag(structDiagVec);
+      CORE::LINALG::SparseMatrix invstructDiag(structDiagVec);
 
       Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(), false);
       FluidInnerOp.ExtractDiagonalCopy(fluidDiagVec);
       err = fluidDiagVec.Reciprocal(fluidDiagVec);
       if (err) dserror("Epetra_MultiVector::Reciprocal (fluid matrix) returned %d", err);
-      LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
+      CORE::LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
 
       Epetra_Vector aleDiagVec(AleInnerOp.RowMap(), false);
       AleInnerOp.ExtractDiagonalCopy(aleDiagVec);
       err = aleDiagVec.Reciprocal(aleDiagVec);
       if (err) dserror("Epetra_MultiVector::Reciprocal (ale matrix) returned %d", err);
-      LINALG::SparseMatrix invaleDiag(aleDiagVec);
+      CORE::LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-      invDiag.Assign(0, 0, LINALG::View, invstructDiag);
-      invDiag.Assign(1, 1, LINALG::View, invfluidDiag);
-      invDiag.Assign(2, 2, LINALG::View, invaleDiag);
+      invDiag.Assign(0, 0, CORE::LINALG::View, invstructDiag);
+      invDiag.Assign(1, 1, CORE::LINALG::View, invfluidDiag);
+      invDiag.Assign(2, 2, CORE::LINALG::View, invaleDiag);
     }
     else if (prec_ == INPAR::FSI::Simplec)
     {
@@ -363,21 +363,21 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
       Epetra_Vector structDiagVec(StructInnerOp.RowMap(), false);
       int err = StructInnerOp.EpetraMatrix()->InvRowSums(structDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (structure matrix) returned %d", err);
-      LINALG::SparseMatrix invstructDiag(structDiagVec);
+      CORE::LINALG::SparseMatrix invstructDiag(structDiagVec);
 
       Epetra_Vector fluidDiagVec(FluidInnerOp.RowMap(), false);
       err = FluidInnerOp.EpetraMatrix()->InvRowSums(fluidDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (fluid matrix) returned %d", err);
-      LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
+      CORE::LINALG::SparseMatrix invfluidDiag(fluidDiagVec);
 
       Epetra_Vector aleDiagVec(AleInnerOp.RowMap(), false);
       err = AleInnerOp.EpetraMatrix()->InvRowSums(aleDiagVec);
       if (err) dserror("Epetra_CrsMatrix::InvRowSums (ale matrix) returned %d", err);
-      LINALG::SparseMatrix invaleDiag(aleDiagVec);
+      CORE::LINALG::SparseMatrix invaleDiag(aleDiagVec);
 
-      invDiag.Assign(0, 0, LINALG::View, invstructDiag);
-      invDiag.Assign(1, 1, LINALG::View, invfluidDiag);
-      invDiag.Assign(2, 2, LINALG::View, invaleDiag);
+      invDiag.Assign(0, 0, CORE::LINALG::View, invstructDiag);
+      invDiag.Assign(1, 1, CORE::LINALG::View, invfluidDiag);
+      invDiag.Assign(2, 2, CORE::LINALG::View, invaleDiag);
     }
     else
       dserror("Unknown type of preconditioner for constraint fsi system");
@@ -387,13 +387,14 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
 
     // S = - B^ * D^{-1} * B^T
 
-    Teuchos::RCP<LINALG::SparseMatrix> temps =
-        LINALG::Multiply(ConStructOp, false, invDiag.Matrix(0, 0), false);
-    Teuchos::RCP<LINALG::SparseMatrix> interconA =
-        LINALG::Multiply(*temps, false, StructConOp, false, false);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> temps =
+        CORE::LINALG::Multiply(ConStructOp, false, invDiag.Matrix(0, 0), false);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> interconA =
+        CORE::LINALG::Multiply(*temps, false, StructConOp, false, false);
 
-    temps = LINALG::Multiply(ConFluidOp, false, invDiag.Matrix(1, 1), false);
-    Teuchos::RCP<LINALG::SparseMatrix> tempss = LINALG::Multiply(*temps, false, FluidConOp, false);
+    temps = CORE::LINALG::Multiply(ConFluidOp, false, invDiag.Matrix(1, 1), false);
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> tempss =
+        CORE::LINALG::Multiply(*temps, false, FluidConOp, false);
     interconA->Add(*tempss, false, 1.0, 1.0);
     interconA->Complete(StructConOp.DomainMap(), ConStructOp.RangeMap());
     interconA->Scale(-1.0);
@@ -403,7 +404,7 @@ void FSI::ConstrOverlappingBlockMatrix::SGS(
     constrsolvparams->set("solver", "umfpack");
     Teuchos::RCP<Epetra_Vector> interconsol =
         Teuchos::rcp(new Epetra_Vector(ConStructOp.RangeMap()));
-    Teuchos::RCP<LINALG::Solver> ConstraintSolver = Teuchos::rcp(new LINALG::Solver(
+    Teuchos::RCP<CORE::LINALG::Solver> ConstraintSolver = Teuchos::rcp(new CORE::LINALG::Solver(
         constrsolvparams, interconA->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
     ConstraintSolver->Solve(interconA->EpetraOperator(), interconsol, cx, true, true);
 

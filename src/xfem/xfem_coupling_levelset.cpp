@@ -173,7 +173,7 @@ void XFEM::LevelSetCoupling::InitStateVectors_Bg()
   // background-dis (fluid) related state vectors
   const Epetra_Map* bg_dofrowmap = bg_dis_->DofRowMap(bg_nds_phi_);
 
-  phinp_ = LINALG::CreateVector(*bg_dofrowmap, true);
+  phinp_ = CORE::LINALG::CreateVector(*bg_dofrowmap, true);
 }
 
 
@@ -189,12 +189,12 @@ void XFEM::LevelSetCoupling::InitStateVectors_Cutter()
   const Epetra_Map* cutter_dofcolmap =
       cutter_dis_->DofColMap(cutter_nds_phi_);  // used for level set field and its derivatives
 
-  cutter_phinp_ = LINALG::CreateVector(*cutter_dofrowmap, true);
-  cutter_phinp_col_ = LINALG::CreateVector(*cutter_dofcolmap, true);
-  gradphinp_smoothed_node_ = LINALG::CreateMultiVector(*cutter_dofrowmap, nsd_, true);
-  gradphinp_smoothed_node_col_ = LINALG::CreateMultiVector(*cutter_dofcolmap, nsd_, true);
-  curvaturenp_node_ = LINALG::CreateVector(*cutter_dofrowmap, true);
-  curvaturenp_node_col_ = LINALG::CreateVector(*cutter_dofcolmap, true);
+  cutter_phinp_ = CORE::LINALG::CreateVector(*cutter_dofrowmap, true);
+  cutter_phinp_col_ = CORE::LINALG::CreateVector(*cutter_dofcolmap, true);
+  gradphinp_smoothed_node_ = CORE::LINALG::CreateMultiVector(*cutter_dofrowmap, nsd_, true);
+  gradphinp_smoothed_node_col_ = CORE::LINALG::CreateMultiVector(*cutter_dofcolmap, nsd_, true);
+  curvaturenp_node_ = CORE::LINALG::CreateVector(*cutter_dofrowmap, true);
+  curvaturenp_node_col_ = CORE::LINALG::CreateVector(*cutter_dofcolmap, true);
 }
 
 
@@ -381,7 +381,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
   // make a copy of last time step
 
-  Teuchos::RCP<Epetra_Vector> delta_phi = LINALG::CreateVector(cutter_phinp_->Map(), true);
+  Teuchos::RCP<Epetra_Vector> delta_phi = CORE::LINALG::CreateVector(cutter_phinp_->Map(), true);
   delta_phi->Update(1.0, *cutter_phinp_, 0.0);
 
   // initializations
@@ -499,7 +499,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 
       // gradphinp_smoothed_node_ = Teuchos::rcp(new
       // Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
-      // LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
+      // CORE::LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
 
       {
         // As the object is a MultiVector, this has to be done to keep the structure from before...
@@ -512,8 +512,8 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
         Teuchos::rcp((*gradphinp_smoothed_rownode)(2), false)
             ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
 
-        LINALG::Export(*gradphinp_smoothed_rownode, *gradphinp_smoothed_node_);
-        LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
+        CORE::LINALG::Export(*gradphinp_smoothed_rownode, *gradphinp_smoothed_node_);
+        CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
       //---------------------------------------------- // SMOOTHED GRAD PHI END
@@ -582,7 +582,7 @@ void XFEM::LevelSetCoupling::MapCutterToBgVector(
 Teuchos::RCP<Epetra_Vector> XFEM::LevelSetCoupling::GetLevelSetFieldAsNodeRowVector()
 {
   Teuchos::RCP<Epetra_Vector> bg_phinp_nodemap_ =
-      LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
+      CORE::LINALG::CreateVector(*bg_dis_->NodeRowMap(), true);
 
   // loop the nodes
   for (int lnodeid = 0; lnodeid < bg_dis_->NumMyRowNodes(); ++lnodeid)
@@ -1018,8 +1018,9 @@ bool XFEM::LevelSetCouplingBC::HasMovingInterface() { return has_interface_moved
 
 
 
-void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-    LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(
+    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cond, time_);
@@ -1030,8 +1031,8 @@ void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditions(LINALG::Mat
 
 // TODO: remove old state implementation?!
 void XFEM::LevelSetCouplingWeakDirichlet::EvaluateCouplingConditionsOldState(
-    LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   // evaluate interface velocity (given by weak Dirichlet condition)
   EvaluateDirichletFunction(ivel, x, cond, time_ - dt_);
@@ -1066,15 +1067,15 @@ void XFEM::LevelSetCouplingWeakDirichlet::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms
@@ -1134,15 +1135,15 @@ void XFEM::LevelSetCouplingNeumann::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   if (inflow_stab_)
@@ -1173,8 +1174,9 @@ void XFEM::LevelSetCouplingNeumann::UpdateConfigurationMap_GP(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-    LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+    const DRT::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1185,8 +1187,9 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(LINALG::Matrix<3,
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-    LINALG::Matrix<6, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    CORE::LINALG::Matrix<6, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+    const DRT::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1198,8 +1201,9 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditions(LINALG::Matrix<3,
 // TODO: combine it with the function before with optional time parameter?!
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(LINALG::Matrix<3, 1>& ivel,
-    LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(
+    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   // no interface velocity to be evaluated
   ivel.Clear();
@@ -1328,8 +1332,9 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(LINALG::Matrix<3, 1>& ivel,
-    LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
+    CORE::LINALG::Matrix<3, 1>& itraction, const CORE::LINALG::Matrix<3, 1>& x,
+    const DRT::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
     dserror("initialize cutterele_cond_robin_dirichlet_ first!");
@@ -1350,8 +1355,8 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(LINALG::Matrix
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
-    LINALG::Matrix<3, 1>& ivel, LINALG::Matrix<3, 1>& itraction, const LINALG::Matrix<3, 1>& x,
-    const DRT::Condition* cond)
+    CORE::LINALG::Matrix<3, 1>& ivel, CORE::LINALG::Matrix<3, 1>& itraction,
+    const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   if (cutterele_cond_robin_dirichlet_.size() == 0)
     dserror("initialize cutterele_cond_robin_dirichlet_ first!");
@@ -1372,7 +1377,7 @@ void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
-    double& slipcoeff, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
+    double& slipcoeff, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond)
 {
   if (is_constant_sliplength_)
     slipcoeff = sliplength_;
@@ -1464,15 +1469,15 @@ void XFEM::LevelSetCouplingNavierSlip::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
@@ -1571,7 +1576,7 @@ void XFEM::LevelSetCouplingTwoPhase::InitStateVectors()
   XFEM::LevelSetCoupling::InitStateVectors();
 
   const Epetra_Map* cutter_dofrowmap = cutter_dis_->DofRowMap(cutter_nds_vel_);
-  cutter_transport_vel_ = LINALG::CreateVector(*cutter_dofrowmap, true);
+  cutter_transport_vel_ = CORE::LINALG::CreateVector(*cutter_dofrowmap, true);
 }
 
 
@@ -1690,12 +1695,12 @@ void XFEM::LevelSetCouplingTwoPhase::ExportGeometricQuantities()
   // map the cutterdis-based phinp to the bgdis-noderowmap based phinp
   MapCutterToBgVector(cutter_dis_, cutter_phinp_, cutter_nds_phi_, bg_dis_, phinp_, bg_nds_phi_);
 
-  LINALG::Export(*cutter_phinp_, *cutter_phinp_col_);
+  CORE::LINALG::Export(*cutter_phinp_, *cutter_phinp_col_);
 
   if (require_smoothedgradphi_)
-    LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
+    CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
 
-  if (require_nodalcurvature_) LINALG::Export(*curvaturenp_node_, *curvaturenp_node_col_);
+  if (require_nodalcurvature_) CORE::LINALG::Export(*curvaturenp_node_, *curvaturenp_node_col_);
 
   // column vectors are up to date gain
   col_vectors_valid_ = true;
@@ -1964,15 +1969,15 @@ void XFEM::LevelSetCouplingTwoPhase::UpdateConfigurationMap_GP(
     double& visc_s,          //< slave sided dynamic viscosity
     double& density_m,       //< master sided density
     double& visc_stab_tang,  //< viscous tangential NIT Penalty scaling
-    double& full_stab, const LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
+    double& full_stab, const CORE::LINALG::Matrix<3, 1>& x, const DRT::Condition* cond,
     DRT::Element* ele,   //< Element
     DRT::Element* bele,  //< Boundary Element
     double* funct,       //< local shape function for Gauss Point (from fluid element)
     double* derxy,  //< local derivatives of shape function for Gauss Point (from fluid element)
-    LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
-    LINALG::Matrix<3, 1>& normal,     //< normal at gp
-    LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
-    double* fulltraction              //< precomputed fsi traction (sigmaF n + gamma relvel)
+    CORE::LINALG::Matrix<3, 1>& rst_slave,  //< local coord of gp on slave boundary element
+    CORE::LINALG::Matrix<3, 1>& normal,     //< normal at gp
+    CORE::LINALG::Matrix<3, 1>& vel_m,      //< master velocity at gp
+    double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
   // Configuration of Penalty Terms

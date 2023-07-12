@@ -45,7 +45,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseOperator>
+Teuchos::RCP<const CORE::LINALG::SparseOperator>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix
@@ -54,7 +54,7 @@ ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix>
+Teuchos::RCP<const CORE::LINALG::SparseMatrix>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleStructureCouplingMatrix() const
 {
   // For the classical partitioned algorithm we do not have any contributions to the stiffness
@@ -107,7 +107,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::PrintViolation(double time, int step
   {
     double penalty_parameter = Bridge()->GetParams()->GetPenaltyParameter();
 
-    Teuchos::RCP<Epetra_Vector> violation = LINALG::CreateVector(
+    Teuchos::RCP<Epetra_Vector> violation = CORE::LINALG::CreateVector(
         Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(GetFluid(), true)->Velnp()->Map());
 
     int err =

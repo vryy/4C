@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
       void EvaluateForceStiff(Teuchos::RCP<::DRT::Discretization> discret,
           const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
           Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-          Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat) override;
+          Teuchos::RCP<CORE::LINALG::SparseMatrix> fe_sysmat) override;
 
       /**
        * \brief Return a const pointer to the mortar manager.

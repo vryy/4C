@@ -160,9 +160,9 @@ namespace MAT
        * \param[in]  go       Gauss point
        * \param[in]  eleGID   element global ID
        */
-      void AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-          const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-          const int eleGID) override;
+      void AddStrainEnergy(double& psi, const CORE::LINALG::Matrix<3, 1>& prinv,
+          const CORE::LINALG::Matrix<3, 1>& modinv, const CORE::LINALG::Matrix<6, 1>& glstrain,
+          const int gp, const int eleGID) override;
 
       /*!
        * \brief Add anisotropic principal stresses
@@ -174,9 +174,9 @@ namespace MAT
        * \param[in]  go       Gauss point
        * \param[in]  eleGID element GID
        */
-      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat,
-          LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
-          const int eleGID) override;
+      void AddStressAnisoPrincipal(const CORE::LINALG::Matrix<6, 1>& rcg,
+          CORE::LINALG::Matrix<6, 6>& cmat, CORE::LINALG::Matrix<6, 1>& stress,
+          Teuchos::ParameterList& params, const int gp, const int eleGID) override;
 
       /*!
        * \brief Set fiber directions
@@ -185,12 +185,12 @@ namespace MAT
        * \param[in] locsys    local coordinate system
        * \param[in] defgrd    deformation gradient
        */
-      void SetFiberVecs(const double newangle, const LINALG::Matrix<3, 3>& locsys,
-          const LINALG::Matrix<3, 3>& defgrd) override;
+      void SetFiberVecs(const double newangle, const CORE::LINALG::Matrix<3, 3>& locsys,
+          const CORE::LINALG::Matrix<3, 3>& defgrd) override;
 
       /// Get fiber directions
       void GetFiberVecs(
-          std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+          std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
           ) override;
 
       /*!
@@ -217,7 +217,7 @@ namespace MAT
        * \param[in] param parameter list pointer (optional)
        */
       int ResetInvariants(
-          const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
+          const CORE::LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
 
       /*!
        * \brief Add the material contributions to the second Piola Kirchhoff stress tensor
@@ -246,8 +246,8 @@ namespace MAT
        * \param[out] rcg_inv_s  Inverse of the right Cauchy green strain tensor
        *                        in perturbed Voigt stress notation
        */
-      void UpdateSecondPiolaKirchhoffStress(LINALG::Matrix<6, 1>& stress,
-          const LINALG::Matrix<6, 1>& rcg_s, LINALG::Matrix<6, 1>& rcg_inv_s) const;
+      void UpdateSecondPiolaKirchhoffStress(CORE::LINALG::Matrix<6, 1>& stress,
+          const CORE::LINALG::Matrix<6, 1>& rcg_s, CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
 
       /*!
        * \brief Update the elasticity tensor
@@ -284,7 +284,7 @@ namespace MAT
        *                        stress notation
        */
       void UpdateElasticityTensor(
-          LINALG::Matrix<6, 6>& cmat, const LINALG::Matrix<6, 1>& rcg_inv_s) const;
+          CORE::LINALG::Matrix<6, 6>& cmat, const CORE::LINALG::Matrix<6, 1>& rcg_inv_s) const;
 
       /// error handling in case of a negative deformation gradient determinant
       void ErrorHandling(const Teuchos::ParameterList* params, std::stringstream& msg) const;
@@ -294,14 +294,14 @@ namespace MAT
       my_params* params_ = nullptr;
 
       /// fiber direction
-      LINALG::Matrix<3, 1> A_;
+      CORE::LINALG::Matrix<3, 1> A_;
 
       /** \brief outer product of the fiber directions
        * \f$ \underline{A} \otimes \underline{A}\f$
        *
        * \note We are following a perturbed Voigt notation:
        * {11, 22, 33, 12, 23, 13}. */
-      LINALG::Matrix<6, 1> AA_;
+      CORE::LINALG::Matrix<6, 1> AA_;
 
       /// pseudo invariant \f$ I_4 \f$ ( strain measure in fiber direction )
       double I4_ = 0.0;

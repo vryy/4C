@@ -227,7 +227,7 @@ namespace CORE::GEO
        */
       void NewArbitraryCell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
           plain_boundarycell_set& bcells, const CORE::DRT::UTILS::GaussIntegration& gp,
-          const LINALG::Matrix<3, 1>& normal);
+          const CORE::LINALG::Matrix<3, 1>& normal);
 
       /// Get the BoundaryCells created on this facet
       void GetBoundaryCells(plain_boundarycell_set& bcells);
@@ -302,9 +302,10 @@ namespace CORE::GEO
 
       void GetNodalIds(Mesh& mesh, const std::vector<Point*>& points, std::vector<int>& nids);
 
-      unsigned Normal(const std::vector<Point*>& points, LINALG::Matrix<3, 1>& x1,
-          LINALG::Matrix<3, 1>& x2, LINALG::Matrix<3, 1>& x3, LINALG::Matrix<3, 1>& b1,
-          LINALG::Matrix<3, 1>& b2, LINALG::Matrix<3, 1>& b3);
+      unsigned Normal(const std::vector<Point*>& points, CORE::LINALG::Matrix<3, 1>& x1,
+          CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,
+          CORE::LINALG::Matrix<3, 1>& b1, CORE::LINALG::Matrix<3, 1>& b2,
+          CORE::LINALG::Matrix<3, 1>& b3);
 
       void FindCornerPoints();
 

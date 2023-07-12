@@ -59,9 +59,9 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
       if (numnod == 4)
       {
         const int numdim = 3;
-        LINALG::Matrix<4, numdim> xscurr;  // material coord. of element
+        CORE::LINALG::Matrix<4, numdim> xscurr;  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
-        LINALG::Matrix<numdim, 1> elementnormal;
+        CORE::LINALG::Matrix<numdim, 1> elementnormal;
 
         ComputeNormal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
           elevec3[0] = ComputeWeightedDistance(mydisp, *direct);
         else if (*value == "x")
         {
-          LINALG::Matrix<2, 3> xscurr;  // material coord. of element
+          CORE::LINALG::Matrix<2, 3> xscurr;  // material coord. of element
           SpatialConfiguration(xscurr, mydisp);
           elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
         }
@@ -103,10 +103,10 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
         const int numdim = 3;
         const int numnode = 4;
 
-        LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
+        CORE::LINALG::Matrix<numnode, numdim> xscurr;  // material coord. of element
         SpatialConfiguration(xscurr, mydisp);
 
-        LINALG::Matrix<numdim, 1> elementnormal;
+        CORE::LINALG::Matrix<numdim, 1> elementnormal;
         ComputeNormal(xscurr, elementnormal);
         if (abs(elementnormal.Norm2()) < 1E-6)
         {
@@ -136,7 +136,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
           elevec3[0] = ComputeWeightedDistance(mydisp, *direct);
         else if (*value == "x")
         {
-          LINALG::Matrix<2, 3> xscurr;  // spatial coord. of element
+          CORE::LINALG::Matrix<2, 3> xscurr;  // spatial coord. of element
           SpatialConfiguration(xscurr, mydisp);
           elevec3[0] = ComputeWeightedDistance(xscurr, *direct);
         }
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  * compute 3d normal */
 void DRT::ELEMENTS::ConstraintElement3::ComputeNormal(
-    const LINALG::Matrix<4, 3>& xc, LINALG::Matrix<3, 1>& elenorm)
+    const CORE::LINALG::Matrix<4, 3>& xc, CORE::LINALG::Matrix<3, 1>& elenorm)
 {
   elenorm(0, 0) = -(xc(0, 2) * xc(1, 1)) + xc(0, 1) * xc(1, 2) + xc(0, 2) * xc(2, 1) -
                   xc(1, 2) * xc(2, 1) - xc(0, 1) * xc(2, 2) + xc(1, 1) * xc(2, 2);
@@ -180,7 +180,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeNormal(
 /*----------------------------------------------------------------------*
  * normal distance between fourth point and plane */
 double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(
-    const LINALG::Matrix<4, 3>& xc, const LINALG::Matrix<3, 1>& normal)
+    const CORE::LINALG::Matrix<4, 3>& xc, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   return (-(normal(0, 0) * (xc(0, 0) - xc(3, 0))) + normal(1, 0) * (-xc(0, 1) + xc(3, 1)) -
              normal(2, 0) * (xc(0, 2) - xc(3, 2))) /
@@ -189,8 +189,8 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::Matrix<4, 3>& xc,
-    Epetra_SerialDenseVector& elevector, const LINALG::Matrix<3, 1>& normal)
+void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const CORE::LINALG::Matrix<4, 3>& xc,
+    Epetra_SerialDenseVector& elevector, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -291,8 +291,8 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::Matrix<4
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::Matrix<4, 3>& xc,
-    Epetra_SerialDenseMatrix& elematrix, const LINALG::Matrix<3, 1>& normal)
+void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const CORE::LINALG::Matrix<4, 3>& xc,
+    Epetra_SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<3, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -2864,7 +2864,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
 }
 
 double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance(
-    const LINALG::Matrix<2, 3> disp, const std::vector<double> direct)
+    const CORE::LINALG::Matrix<2, 3> disp, const std::vector<double> direct)
 {
   // norm of direct
   double norm = sqrt(pow(direct.at(0), 2) + pow(direct.at(1), 2) + pow(direct.at(2), 2));

@@ -79,8 +79,8 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::Setup(
   forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
   forcenp_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->DofRowMap()));
 
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(
-      *ia_discret->DofRowMap(), 81, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  stiff_ = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+      *ia_discret->DofRowMap(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   issetup_ = true;
 }

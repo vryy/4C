@@ -21,7 +21,7 @@
 #include "lib_element.H"
 
 // forward declarations
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseOperator;
 }
@@ -72,8 +72,8 @@ namespace DRT
 
     /// preevaluation
     virtual inline void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3)
     {

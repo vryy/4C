@@ -26,18 +26,19 @@ double MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetScalarProduct(int gp) 
   return 1.0;
 }
 
-const LINALG::Matrix<3, 1>& MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetFiber(int gp) const
+const CORE::LINALG::Matrix<3, 1>& MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetFiber(
+    int gp) const
 {
   return DefaultAnisotropyExtension<1>::GetFiber(gp, 0);
 }
 
-const LINALG::Matrix<3, 3>& MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor(
-    int gp) const
+const CORE::LINALG::Matrix<3, 3>&
+MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor(int gp) const
 {
   return DefaultAnisotropyExtension<1>::GetStructuralTensor(gp, 0);
 }
 
-const LINALG::Matrix<6, 1>&
+const CORE::LINALG::Matrix<6, 1>&
 MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int gp) const
 {
   return DefaultAnisotropyExtension<1>::GetStructuralTensor_stress(gp, 0);
@@ -79,20 +80,20 @@ void MAT::ELASTIC::CoupAnisoExpo::UnpackSummand(
 }
 
 void MAT::ELASTIC::CoupAnisoExpo::GetFiberVecs(
-    std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
+    std::vector<CORE::LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
 {
   if (anisotropyExtension_.FibersInitialized())
     fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT));
 }
 
-void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(
-    const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
+void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const double newgamma,
+    const CORE::LINALG::Matrix<3, 3>& locsys, const CORE::LINALG::Matrix<3, 3>& defgrd)
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
 
-void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const LINALG::Matrix<3, 1>& fibervec)
+void MAT::ELASTIC::CoupAnisoExpo::SetFiberVecs(const CORE::LINALG::Matrix<3, 1>& fibervec)
 {
   anisotropyExtension_.SetFiberVecs(fibervec);
 }

@@ -122,10 +122,10 @@ namespace DRT
          * overloaded!!)
          */
         virtual void GetInterfaceVelnp(
-            LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+            CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
-          ivelint = LINALG::Matrix<nsd_, 1>(true);
+          ivelint = CORE::LINALG::Matrix<nsd_, 1>(true);
         };
 
         /*!
@@ -134,10 +134,10 @@ namespace DRT
          * overloaded!!)
          */
         virtual void GetInterfaceVeln(
-            LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
+            CORE::LINALG::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
         ) const
         {
-          ivelint = LINALG::Matrix<nsd_, 1>(true);
+          ivelint = CORE::LINALG::Matrix<nsd_, 1>(true);
         };
 
         //! get interface pressure
@@ -155,7 +155,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void GetInterfaceVelGradnp(LINALG::Matrix<nsd_, nsd_>&
+        virtual void GetInterfaceVelGradnp(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -163,7 +163,7 @@ namespace DRT
         };
 
         //! get interface velocity gradient
-        virtual void GetInterfaceVelGradn(LINALG::Matrix<nsd_, nsd_>&
+        virtual void GetInterfaceVelGradn(CORE::LINALG::Matrix<nsd_, nsd_>&
                 velgradint  ///< interface velocity gradients at coupling slave side
         ) const
         {
@@ -192,17 +192,17 @@ namespace DRT
 
         //! get interface velocity jump at Gaussian point
         virtual void GetInterfaceJumpVelnp(
-            LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump or
-                                                   ///< prescribed DBC at Gaussian point
+            CORE::LINALG::Matrix<nsd_, 1>& ivelint_jump  ///< cutter element interface velocity jump
+                                                         ///< or prescribed DBC at Gaussian point
         ) const
         {
           dserror("There is no concrete slave element available.");
         };
 
         //! get interface velocity jump at Gaussian point for previous time step
-        virtual void GetInterfaceJumpVeln(
-            LINALG::Matrix<nsd_, 1>& ivelintn_jump  ///< cutter element interface velocity jump or
-                                                    ///< prescribed DBC at Gaussian point
+        virtual void GetInterfaceJumpVeln(CORE::LINALG::Matrix<nsd_, 1>&
+                ivelintn_jump  ///< cutter element interface velocity jump or
+                               ///< prescribed DBC at Gaussian point
         ) const
         {
           dserror("There is no concrete slave element available.");
@@ -212,23 +212,24 @@ namespace DRT
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
-        virtual void Evaluate(LINALG::Matrix<nsd_, 1>& xside)
+        virtual void Evaluate(CORE::LINALG::Matrix<nsd_, 1>& xside)
         {
           dserror("There is no concrete slave element available.");
         }
 
         //! evaluate shape function, derivatives and transformation w.r.t coupling slave element at
         //! gaussian point
-        virtual void Evaluate(LINALG::Matrix<nsd_, 1>& xside, LINALG::Matrix<nsd_, 1>& rst_slave)
+        virtual void Evaluate(
+            CORE::LINALG::Matrix<nsd_, 1>& xside, CORE::LINALG::Matrix<nsd_, 1>& rst_slave)
         {
           dserror("There is no concrete slave element available.");
         }
 
         //! compute interface force for side nodes
         virtual void ComputeInterfaceForce(
-            Epetra_SerialDenseVector& iforce,   ///< interface force vector
-            LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
-            const double& fac                   ///< integration factor
+            Epetra_SerialDenseVector& iforce,         ///< interface force vector
+            CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
+            const double& fac                         ///< integration factor
         )
         {
           dserror("There is no concrete slave element available.");
@@ -237,10 +238,10 @@ namespace DRT
         //! project gaussian point from linearized interface in normal direction onto corresponding
         //! side (2D slave element)
         virtual void ProjectOnSide(
-            LINALG::Matrix<nsd_, 1>&
+            CORE::LINALG::Matrix<nsd_, 1>&
                 x_gp_lin,  ///< global coordinates of gaussian point w.r.t linearized interface
-            LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
-            LINALG::Matrix<nsd_, 1>&
+            CORE::LINALG::Matrix<nsd_, 1>& x_side,  ///< projected gaussian point on side
+            CORE::LINALG::Matrix<nsd_, 1>&
                 xi_side  ///< local coordinates of projected gaussian point w.r.t side
         )
         {
@@ -323,15 +324,15 @@ namespace DRT
         //! slave_ele
         virtual void ApplyConvStabTerms(
             const Teuchos::RCP<SlaveElementInterface<distype>>&
-                slave_ele,                            ///< associated slave element coupling object
-            const LINALG::Matrix<nen_, 1>& funct_m,   ///< master shape functions
-            const LINALG::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
-            const LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
-            const double& density_m,                  ///< fluid density (master)
-            const double& NIT_stab_fac_conv,          ///< full Nitsche's penalty term scaling
-                                                      ///< (viscous+convective part)
-            const double& timefacfac,                 ///< theta*dt
-            const LINALG::Matrix<nsd_, 1>&
+                slave_ele,  ///< associated slave element coupling object
+            const CORE::LINALG::Matrix<nen_, 1>& funct_m,   ///< master shape functions
+            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< vector of slave shape functions
+            const CORE::LINALG::Matrix<nsd_, 1>& normal,    ///< normal vector n^b
+            const double& density_m,                        ///< fluid density (master)
+            const double& NIT_stab_fac_conv,                ///< full Nitsche's penalty term scaling
+                                                            ///< (viscous+convective part)
+            const double& timefacfac,                       ///< theta*dt
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
             const INPAR::XFEM::EleCouplingCondType& cond_type  ///< condition type
@@ -339,28 +340,30 @@ namespace DRT
 
         //! build coupling matrices for Nitsche's method (NIT)
         virtual void NIT_evaluateCoupling(
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
-            const double& timefacfac,                ///< theta*dt*fac
-            const double& pres_timefacfac,           ///< scaling for pressure part
-            const double& visceff_m,                 ///< viscosity in coupling master fluid
-            const double& visceff_s,                 ///< viscosity in coupling slave fluid
-            const double& density_m,                 ///< fluid density (master) USED IN XFF
-            const LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-            const LINALG::Matrix<nsd_, nen_>&
+            const double& timefacfac,                      ///< theta*dt*fac
+            const double& pres_timefacfac,                 ///< scaling for pressure part
+            const double& visceff_m,                       ///< viscosity in coupling master fluid
+            const double& visceff_s,                       ///< viscosity in coupling slave fluid
+            const double& density_m,                       ///< fluid density (master) USED IN XFF
+            const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+            const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
-            const LINALG::Matrix<nsd_, nsd_>&
+            const CORE::LINALG::Matrix<nsd_, nsd_>&
                 vderxy_m,          ///< coupling master spatial velocity derivatives
             const double& pres_m,  ///< coupling master pressure
-            const LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
-            const LINALG::Matrix<nsd_, 1>& itraction_jump,  ///< prescribed interface traction, jump
-                                                            ///< height for coupled problems
-            const LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
-            const LINALG::Matrix<nsd_, nsd_>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
+                itraction_jump,  ///< prescribed interface traction, jump
+                                 ///< height for coupled problems
+            const CORE::LINALG::Matrix<nsd_, nsd_>&
+                proj_tangential,  ///< tangential projection matrix
+            const CORE::LINALG::Matrix<nsd_, nsd_>&
                 LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
             const std::vector<Epetra_SerialDenseMatrix>&
                 solid_stress,  ///< structural cauchy stress and linearization
@@ -370,27 +373,29 @@ namespace DRT
 
         //! add rhs contributions from old time step in Nitsche's (NIT) method
         virtual void NIT_evaluateCouplingOldState(
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 normal,  ///< outward pointing normal (defined by the coupling partner, that
                          ///< determines the interface traction)
-            const double& timefacfac,                ///< dt*(1-theta)*fac
-            bool isImplPressure,                     ///< flag for implicit pressure treatment
-            const double& visceff_m,                 ///< viscosity in coupling master fluid
-            const double& visceff_s,                 ///< viscosity in coupling slave fluid
-            const double& density_m,                 ///< fluid density (master) USED IN XFF
-            const LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
-            const LINALG::Matrix<nsd_, nen_>&
+            const double& timefacfac,                      ///< dt*(1-theta)*fac
+            bool isImplPressure,                           ///< flag for implicit pressure treatment
+            const double& visceff_m,                       ///< viscosity in coupling master fluid
+            const double& visceff_s,                       ///< viscosity in coupling slave fluid
+            const double& density_m,                       ///< fluid density (master) USED IN XFF
+            const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
+            const CORE::LINALG::Matrix<nsd_, nen_>&
                 derxy_m,  ///< spatial derivatives of coupling master shape functions
-            const LINALG::Matrix<nsd_, nsd_>&
+            const CORE::LINALG::Matrix<nsd_, nsd_>&
                 vderxy_m,          ///< coupling master spatial velocity derivatives
             const double& pres_m,  ///< coupling master pressure
-            const LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>& velint_m,  ///< coupling master interface velocity
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity, Dirichlet values or jump height
                                ///< for coupled problems
-            const LINALG::Matrix<nsd_, nsd_>& proj_tangential,  ///< tangential projection matrix
-            const LINALG::Matrix<nsd_, 1>& itraction_jump,  ///< prescribed interface traction, jump
-                                                            ///< height for coupled problems
+            const CORE::LINALG::Matrix<nsd_, nsd_>&
+                proj_tangential,  ///< tangential projection matrix
+            const CORE::LINALG::Matrix<nsd_, 1>&
+                itraction_jump,  ///< prescribed interface traction, jump
+                                 ///< height for coupled problems
             std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
                 configmap  ///< Interface Terms configuration map
             ) = 0;
@@ -467,43 +472,45 @@ namespace DRT
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
         virtual void MHCS_buildCouplingMatrices(
-            const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
-            const double& fac,                      ///< integration factor
-            const LINALG::Matrix<nen_, 1>& funct,   ///< shape function
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+            const double& fac,                            ///< integration factor
+            const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s,  ///< block rhs vector \f$ rhs_{\sigma} \f$
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
             ) = 0;
 
         //! evaluate interface matrices for mixed/hybrid viscous stress-based (MHVS) coupling
         virtual void MHVS_buildCouplingMatrices(
-            const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
-            const double& fac,                      ///< integration factor
-            const LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
-                rhs_s,                          ///< block rhs vector \f$ rhs_{\sigma}\f$
-            const double& press,                ///< background element pressure
-            LINALG::Matrix<nen_, 1>& rhs_pmus,  ///< contribution to block rhs vector \f$rhs_p\f$
-                                                ///< (includes interface slave velocity terms)
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+            const double& fac,                            ///< integration factor
+            const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+                rhs_s,            ///< block rhs vector \f$ rhs_{\sigma}\f$
+            const double& press,  ///< background element pressure
+            CORE::LINALG::Matrix<nen_, 1>&
+                rhs_pmus,  ///< contribution to block rhs vector \f$rhs_p\f$
+                           ///< (includes interface slave velocity terms)
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 ivelint_jump,  ///< prescribed interface velocity or interface jump height
-            const LINALG::Matrix<nsd_, 1>&
+            const CORE::LINALG::Matrix<nsd_, 1>&
                 itraction_jump  ///< prescribed interface traction or interface jump height
             ) = 0;
 
         //! build the final coupling matrices for mixed/hybrid Cauchy or viscous stress-based
         //! coupling (MHCS or MHVS)
         virtual void HybridLM_buildFinalCouplingMatrices(
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>&
-                BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, master_numdof_, numstressdof_>&
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+                numstressdof_>& BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
+                numstressdof_>&
                 BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_, master_numdof_>&
-                BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
-            LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+                master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
+            CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
                 rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
             ) = 0;
       };

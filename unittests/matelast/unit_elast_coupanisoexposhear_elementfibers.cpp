@@ -21,10 +21,10 @@ namespace
 {
 
 
-  void SetupSingleStructuralTensor(const LINALG::Matrix<3, 1>& fiber1,
-      const LINALG::Matrix<3, 1>& fiber2, LINALG::Matrix<3, 3>& structuralTensor)
+  void SetupSingleStructuralTensor(const CORE::LINALG::Matrix<3, 1>& fiber1,
+      const CORE::LINALG::Matrix<3, 1>& fiber2, CORE::LINALG::Matrix<3, 3>& structuralTensor)
   {
-    LINALG::Matrix<3, 3> fiber1fiber2T(false);
+    CORE::LINALG::Matrix<3, 3> fiber1fiber2T(false);
 
     fiber1fiber2T.MultiplyNT(fiber1, fiber2);
 
@@ -89,9 +89,9 @@ namespace
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<LINALG::Matrix<3, 1>> eleFibers_;
-    LINALG::Matrix<3, 3> eleTensors_;
-    LINALG::Matrix<6, 1> eleTensors_stress_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> eleFibers_;
+    CORE::LINALG::Matrix<3, 3> eleTensors_;
+    CORE::LINALG::Matrix<6, 1> eleTensors_stress_;
     double eleScalarProducts_;
   };
 

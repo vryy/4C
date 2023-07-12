@@ -21,9 +21,9 @@ MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Materia
 
 MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params) : params_(params) {}
 
-void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
-    const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-    const int eleGID)
+void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi,
+    const CORE::LINALG::Matrix<3, 1>& prinv, const CORE::LINALG::Matrix<3, 1>& modinv,
+    const CORE::LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
 {
   // material parameters for isochoric part
   const double mue = params_->mue_;  // Shear modulus
@@ -47,8 +47,9 @@ void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi, const LINALG::Matri
     psi += psiadd;
 }
 
-void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(CORE::LINALG::Matrix<3, 1>& dPI,
+    CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   // material parameters for isochoric part
   const double mue = params_->mue_;  // Shear modulus
@@ -72,8 +73,9 @@ void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dP
   ddPII(3) -= (1. - f) * 0.5 * mue / prinv(2) / prinv(2);
 }
 
-void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
-    const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
+void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(
+    CORE::LINALG::Matrix<10, 1>& dddPIII_iso, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
+    const int eleGID)
 {
   // material parameters for isochoric part
   const double mu = params_->mue_;   // Shear modulus

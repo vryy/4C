@@ -70,12 +70,12 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::EvalStrContactRHS()
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
   Epetra_Vector augfs_exp(*ProblemDofs());
-  LINALG::Export(Data().SlForceLm(), augfs_exp);
+  CORE::LINALG::Export(Data().SlForceLm(), augfs_exp);
   Data().StrContactRhs().Scale(-1.0, augfs_exp);
 
   // Master side
   Epetra_Vector augfm_exp(*ProblemDofs());
-  LINALG::Export(Data().MaForceLm(), augfm_exp);
+  CORE::LINALG::Export(Data().MaForceLm(), augfm_exp);
   CATCH_EPETRA_ERROR(Data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
 
   return;
@@ -183,14 +183,14 @@ void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::DecreaseCn(const CONTACT::Params
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::STEEPESTASCENT_SP::Strategy::AddContributionsToMatrixBlockLmLm(
-    LINALG::SparseMatrix& kzz) const
+    CORE::LINALG::SparseMatrix& kzz) const
 {
   Teuchos::RCP<Epetra_Vector> active_mod_diag = GetKzzDiagModification();
-  if (LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(kzz, *active_mod_diag))
+  if (CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(kzz, *active_mod_diag))
   {
     Epetra_Vector kzz_diag = Epetra_Vector(kzz.RangeMap(), true);
     kzz.ExtractDiagonalCopy(kzz_diag);
-    LINALG::AssembleMyVector(1.0, kzz_diag, 1.0, *active_mod_diag);
+    CORE::LINALG::AssembleMyVector(1.0, kzz_diag, 1.0, *active_mod_diag);
 
     // if the matrix is filled, we try to replace the diagonal
     if (kzz.ReplaceDiagonalValues(kzz_diag)) dserror("ReplaceDiagonalValues failed!");

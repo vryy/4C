@@ -724,7 +724,7 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   {
     // communicate all master and slave pairs
     // caution: we build redundant maps here, containing all master nodes
-    LINALG::GatherAll(pbcmap, *comm_);
+    CORE::LINALG::GatherAll(pbcmap, *comm_);
 
     // and build slave master pairs
     for (std::map<int, std::set<int>>::iterator curr = pbcmap.begin(); curr != pbcmap.end(); ++curr)

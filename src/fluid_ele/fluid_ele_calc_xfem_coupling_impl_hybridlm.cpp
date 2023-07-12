@@ -24,22 +24,22 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHCS_buildCouplingMatrices(
-          const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
-          const double& fac,                      ///< integration factor
-          const LINALG::Matrix<nen_, 1>& funct,   ///< shape function
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+          const double& fac,                            ///< integration factor
+          const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< shape function
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
               rhs_s,  ///< block rhs vector \f$ rhs_{\sigma} \f$
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity or interface jump height
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction or interface jump height
       )
       {
-        LINALG::Matrix<nen_, slave_nen_> bK_ms;
-        LINALG::Matrix<slave_nen_, nen_> bK_sm;
+        CORE::LINALG::Matrix<nen_, slave_nen_> bK_ms;
+        CORE::LINALG::Matrix<slave_nen_, nen_> bK_sm;
 
         // interface velocity at gauss-point (current gauss-point in calling method)
-        LINALG::Matrix<nsd_, 1> velint_s(true);
+        CORE::LINALG::Matrix<nsd_, 1> velint_s(true);
         this->GetInterfaceVelnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
@@ -47,7 +47,7 @@ namespace DRT
         velint_s.Update(1.0, ivelint_jump, 1.0);
 
         // get nodal shape function vector
-        LINALG::Matrix<slave_nen_, 1> slave_funct(true);
+        CORE::LINALG::Matrix<slave_nen_, 1> slave_funct(true);
         this->GetSlaveFunct(slave_funct);
 
         bK_ms.MultiplyNT(funct, slave_funct);
@@ -69,8 +69,9 @@ namespace DRT
           }
         }
 
-        const double km = 1.0;                                // only master-sided weighting
-        LINALG::Matrix<slave_nen_, 1> funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
+        const double km = 1.0;  // only master-sided weighting
+        CORE::LINALG::Matrix<slave_nen_, 1>
+            funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
@@ -82,22 +83,22 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MHVS_buildCouplingMatrices(
-          const LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
-          const double& fac,                      ///< integration factor
-          const LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
-              rhs_s,                          ///< block rhs vector \f$ rhs_{\sigma}\f$
-          const double& press,                ///< background element pressure
-          LINALG::Matrix<nen_, 1>& rhs_pmus,  ///< part of block rhs vector \f$rhs_p\f$ including
-                                              ///< interface velocity terms
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>& normal,  ///< normal vector
+          const double& fac,                            ///< integration factor
+          const CORE::LINALG::Matrix<nen_, 1>& funct,   ///< background element shape functions
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+              rhs_s,                                ///< block rhs vector \f$ rhs_{\sigma}\f$
+          const double& press,                      ///< background element pressure
+          CORE::LINALG::Matrix<nen_, 1>& rhs_pmus,  ///< part of block rhs vector \f$rhs_p\f$
+                                                    ///< including interface velocity terms
+          const CORE::LINALG::Matrix<nsd_, 1>&
               ivelint_jump,  ///< prescribed interface velocity or interface jump height
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction or interface jump height
       )
       {
         // interface velocity at gauss-point (current gauss-point in calling method)
-        LINALG::Matrix<nsd_, 1> velint_s(true);
+        CORE::LINALG::Matrix<nsd_, 1> velint_s(true);
         this->GetInterfaceVelnp(velint_s);
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
@@ -106,10 +107,10 @@ namespace DRT
 
         // block submatrices for interface coupling; s: slave side, m: master side (always
         // background here)
-        LINALG::Matrix<nen_, slave_nen_> bG_ms(true);
-        LINALG::Matrix<slave_nen_, nen_> bG_sm(true);
+        CORE::LINALG::Matrix<nen_, slave_nen_> bG_ms(true);
+        CORE::LINALG::Matrix<slave_nen_, nen_> bG_sm(true);
 
-        LINALG::Matrix<slave_nen_, 1> slave_funct;
+        CORE::LINALG::Matrix<slave_nen_, 1> slave_funct;
         this->GetSlaveFunct(slave_funct);
 
         bG_ms.MultiplyNT(funct, slave_funct);
@@ -199,8 +200,9 @@ namespace DRT
           rhC_us_(sIndex(ir, Pres), 0) = 0.0;
         }
 
-        const double km = 1.0;                                // only master-sided weighting
-        LINALG::Matrix<slave_nen_, 1> funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
+        const double km = 1.0;  // only master-sided weighting
+        CORE::LINALG::Matrix<slave_nen_, 1>
+            funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
         funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
@@ -216,9 +218,9 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void HybridLMCoupling<distype, slave_distype, slave_numdof>::MH_Traction_Consistency_Term(
-          const LINALG::Matrix<slave_nen_, 1>&
+          const CORE::LINALG::Matrix<slave_nen_, 1>&
               funct_s_timefacfac_km,  ///< funct_s * timefacfac *kappa_m
-          const LINALG::Matrix<nsd_, 1>&
+          const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump  ///< prescribed interface traction, jump height for coupled problems
       )
       {
@@ -256,23 +258,27 @@ namespace DRT
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void
       HybridLMCoupling<distype, slave_distype, slave_numdof>::HybridLM_buildFinalCouplingMatrices(
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>&
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_, numstressdof_>&
               BinvK_ss,  ///< block inverse \f$ K^{-1}_{\sigma\sigma} \f$
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, master_numdof_, numstressdof_>&
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, master_numdof_,
+              numstressdof_>&
               BKumsInvKss,  ///< block matrix \f$ K_{u\sigma} \cdot K^{-1}_{\sigma\sigma} \f$
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, nen_>, numstressdof_, master_numdof_>&
-              BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
-          LINALG::BlockMatrix<LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, nen_>, numstressdof_,
+              master_numdof_>& BK_sum,  ///< block matrix \f$ K_{\sigma u} \f$
+          CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, 1>, numstressdof_, 1>&
               rhs_s  ///< block rhs vector \f$ rhs_{\sigma}\f$
       )
       {
         // final coupling matrices in block form
-        LINALG::BlockMatrix<LINALG::Matrix<nen_, slave_nen_>, master_numdof_, nsd_> BCumus;
-        LINALG::BlockMatrix<LINALG::Matrix<slave_nen_, nen_>, nsd_, master_numdof_> BCusum;
+        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<nen_, slave_nen_>, master_numdof_, nsd_>
+            BCumus;
+        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, nen_>, nsd_, master_numdof_>
+            BCusum;
 
         // auxiliary matrices for intermediate calculation results of the matrix product
-        LINALG::BlockMatrix<LINALG::Matrix<slave_nen_, nen_>, nsd_, numstressdof_> BGussInvKss;
-        LINALG::BlockMatrix<LINALG::Matrix<slave_nen_, 1>, nsd_, 1> BGussinvKssrhs_s;
+        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, nen_>, nsd_, numstressdof_>
+            BGussInvKss;
+        CORE::LINALG::BlockMatrix<CORE::LINALG::Matrix<slave_nen_, 1>, nsd_, 1> BGussinvKssrhs_s;
 
         // BKusInvKss:
         // (K_ums + G_ums) * K_ss^-1 (MHVS) or
@@ -304,7 +310,7 @@ namespace DRT
             // (um-us)
             if (BCumus.IsUsed(imdof, isvel))
             {
-              const LINALG::Matrix<nen_, slave_nen_>& bCumus = *BCumus(imdof, isvel);
+              const CORE::LINALG::Matrix<nen_, slave_nen_>& bCumus = *BCumus(imdof, isvel);
               // loop over slave element nodes
               for (unsigned isn = 0; isn < slave_nen_; ++isn)
               {
@@ -319,7 +325,7 @@ namespace DRT
             // (us-um), MHCS: (us-pm)
             if (BCusum.IsUsed(isvel, imdof))
             {
-              const LINALG::Matrix<slave_nen_, nen_>& bCusum = *BCusum(isvel, imdof);
+              const CORE::LINALG::Matrix<slave_nen_, nen_>& bCusum = *BCusum(isvel, imdof);
               // loop over slave element nodes
               for (unsigned isn = 0; isn < slave_nen_; ++isn)
               {
@@ -337,7 +343,7 @@ namespace DRT
           // (us-pm)
           if (BG_uspm_.IsUsed(isvel, 0))
           {
-            const LINALG::Matrix<slave_nen_, nen_>& bGuspm = *BG_uspm_(isvel, 0);
+            const CORE::LINALG::Matrix<slave_nen_, nen_>& bGuspm = *BG_uspm_(isvel, 0);
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
             {
@@ -352,7 +358,7 @@ namespace DRT
           // (pm-us)
           if (BG_pmus_.IsUsed(0, isvel))
           {
-            const LINALG::Matrix<nen_, slave_nen_>& bGpmus = *BG_pmus_(0, isvel);
+            const CORE::LINALG::Matrix<nen_, slave_nen_>& bGpmus = *BG_pmus_(0, isvel);
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
             {
@@ -367,7 +373,8 @@ namespace DRT
           // rhs - us
           if (BGussinvKssrhs_s.IsUsed(isvel, 0))
           {
-            const LINALG::Matrix<slave_nen_, 1>& bGussinvKssrhs_s = *BGussinvKssrhs_s(isvel, 0);
+            const CORE::LINALG::Matrix<slave_nen_, 1>& bGussinvKssrhs_s =
+                *BGussinvKssrhs_s(isvel, 0);
 
             // loop over slave element nodes
             for (unsigned isn = 0; isn < slave_nen_; ++isn)
@@ -389,7 +396,7 @@ namespace DRT
             // extract the stress-velocity coupling submatrix
             if (BG_sus_.IsUsed(ibr, ibc))
             {
-              LINALG::Matrix<nen_, slave_nen_>& bGsus = *BG_sus_(ibr, ibc);
+              CORE::LINALG::Matrix<nen_, slave_nen_>& bGsus = *BG_sus_(ibr, ibc);
 
               // transfer the entries
               for (unsigned ir = 0; ir < nen_; ++ir)
@@ -417,7 +424,7 @@ namespace DRT
           {
             if (BG_uss_.IsUsed(ibr, ibc))
             {
-              LINALG::Matrix<slave_nen_, nen_>& bGuss = *BG_uss_(ibr, ibc);
+              CORE::LINALG::Matrix<slave_nen_, nen_>& bGuss = *BG_uss_(ibr, ibc);
 
               // transfer the entries
               for (unsigned ic = 0; ic < nen_; ++ic)

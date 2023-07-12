@@ -31,7 +31,8 @@
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
 FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
-    const Teuchos::RCP<LINALG::Solver>& solver, const Teuchos::RCP<Teuchos::ParameterList>& params,
+    const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+    const Teuchos::RCP<Teuchos::ParameterList>& params,
     const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),
@@ -99,7 +100,7 @@ void FLD::TimIntStationaryHDG::Reset(bool completeReset, int numsteps, int iter)
 {
   FluidImplicitTimeInt::Reset(completeReset, numsteps, iter);
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  intvelnp_ = LINALG::CreateVector(*intdofrowmap, true);
+  intvelnp_ = CORE::LINALG::CreateVector(*intdofrowmap, true);
   if (discret_->Comm().MyPID() == 0)
     std::cout << "Number of degrees of freedom in HDG system: "
               << discret_->DofRowMap(0)->NumGlobalElements() << std::endl;
@@ -141,7 +142,7 @@ void FLD::TimIntStationaryHDG::SetOldPartOfRighthandside()
 void FLD::TimIntStationaryHDG::SetStateTimInt()
 {
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  Teuchos::RCP<Epetra_Vector> zerovec = LINALG::CreateVector(*intdofrowmap, true);
+  Teuchos::RCP<Epetra_Vector> zerovec = CORE::LINALG::CreateVector(*intdofrowmap, true);
 
   discret_->SetState(0, "velaf", velnp_);
   discret_->SetState(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!

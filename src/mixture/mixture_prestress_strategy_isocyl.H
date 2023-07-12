@@ -72,7 +72,7 @@ namespace MIXTURE
      */
     void EvaluatePrestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
-        MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
+        MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /*!
@@ -93,8 +93,8 @@ namespace MIXTURE
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
     void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
-        LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
+        MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
+        CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters

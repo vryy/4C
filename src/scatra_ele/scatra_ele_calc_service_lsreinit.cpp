@@ -44,8 +44,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       //------------------------------------------------------
       // Step 1: precompute element penalty parameter
@@ -81,8 +81,8 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         dserror("Cannot get state vector 'phizero' and/ or 'phinp'!");
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
+      DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
 
       // get current direction
       const int dir = params.get<int>("direction");
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<nsd_, 1> gradphizero(true);
+  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -247,7 +247,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<nsd_, 1> gradphizero(true);
+  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -283,14 +283,14 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
     // get sign function
     double signphi = 0.0;
     // gradient of current scalar
-    LINALG::Matrix<nsd_, 1> gradphi(true);
+    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
     SignFunction(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
     // get velocity at element center
-    LINALG::Matrix<nsd_, 1> convelint(true);
+    CORE::LINALG::Matrix<nsd_, 1> convelint(true);
     if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
     // convective term
     //    double conv_phi = convelint.Dot(gradphi);
@@ -356,7 +356,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
   //----------------------------------------------------------------------
 
   // get gradient of initial phi at element center
-  LINALG::Matrix<nsd_, 1> gradphizero(true);
+  CORE::LINALG::Matrix<nsd_, 1> gradphizero(true);
   gradphizero.Multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
@@ -384,7 +384,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     double phinp = 0.0;
     phinp = my::funct_.Dot(my::ephinp_[0]);
     // gradient of current scalar
-    LINALG::Matrix<nsd_, 1> gradphi(true);
+    CORE::LINALG::Matrix<nsd_, 1> gradphi(true);
     gradphi.Multiply(my::derxy_, my::ephinp_[0]);
     // get norm
     const double gradphi_norm = gradphi.Norm2();
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
     //    }
 
     // get velocity at element center
-    LINALG::Matrix<nsd_, 1> convelint(true);
+    CORE::LINALG::Matrix<nsd_, 1> convelint(true);
     if (lsreinitparams_->ReinitType() == INPAR::SCATRA::reinitaction_sussman)
     {
       // get sign function

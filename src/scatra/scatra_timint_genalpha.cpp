@@ -26,7 +26,7 @@
  |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntGenAlpha::TimIntGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       phiaf_(Teuchos::null),
@@ -63,11 +63,11 @@ void SCATRA::TimIntGenAlpha::Setup()
   // -----------------------------
 
   // scalar at times n+alpha_F and n+alpha_M
-  phiaf_ = LINALG::CreateVector(*dofrowmap, true);
-  phiam_ = LINALG::CreateVector(*dofrowmap, true);
+  phiaf_ = CORE::LINALG::CreateVector(*dofrowmap, true);
+  phiam_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // temporal derivative of scalar at times n+1, n and n+alpha_M
-  phidtam_ = LINALG::CreateVector(*dofrowmap, true);
+  phidtam_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // compute specific time factor for generalized-alpha time integration:
   // genalphatimefac = gamma*alpha_F/alpha_M
@@ -77,7 +77,7 @@ void SCATRA::TimIntGenAlpha::Setup()
   // fine-scale vector at time n+alpha_F
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    fsphiaf_ = LINALG::CreateVector(*dofrowmap, true);
+    fsphiaf_ = CORE::LINALG::CreateVector(*dofrowmap, true);
 
   // -------------------------------------------------------------------
   // set element parameters

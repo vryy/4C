@@ -67,26 +67,36 @@ namespace DRT
           Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
           bool offdiag = false) override;
 
-      void Sysmat(const LINALG::Matrix<nsd_, nen_>& ebofoaf,
-          const LINALG::Matrix<nsd_, nen_>& eprescpgaf, const LINALG::Matrix<nsd_, nen_>& ebofon,
-          const LINALG::Matrix<nsd_, nen_>& eprescpgn, const LINALG::Matrix<nsd_, nen_>& evelaf,
-          const LINALG::Matrix<nsd_, nen_>& evelam, const LINALG::Matrix<nsd_, nen_>& eveln,
-          const LINALG::Matrix<nsd_, nen_>& evelnp, const LINALG::Matrix<nsd_, nen_>& fsevelaf,
-          const LINALG::Matrix<nen_, 1>& fsescaaf, const LINALG::Matrix<nsd_, nen_>& evel_hat,
-          const LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
-          const LINALG::Matrix<nen_, 1>& epreaf, const LINALG::Matrix<nen_, 1>& epream,
-          const LINALG::Matrix<nen_, 1>& epren, const LINALG::Matrix<nen_, 1>& eprenp,
-          const LINALG::Matrix<nsd_, nen_>& eaccam, const LINALG::Matrix<nen_, 1>& escaaf,
-          const LINALG::Matrix<nen_, 1>& escaam, const LINALG::Matrix<nen_, 1>& escadtam,
-          const LINALG::Matrix<nsd_, nen_>& eveldtam, const LINALG::Matrix<nen_, 1>& epredtam,
-          const LINALG::Matrix<nen_, 1>& escabofoaf, const LINALG::Matrix<nen_, 1>& escabofon,
-          const LINALG::Matrix<nsd_, nen_>& emhist, const LINALG::Matrix<nsd_, nen_>& edispnp,
-          const LINALG::Matrix<nsd_, nen_>& egridv,
-          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
-          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
-          LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce, const LINALG::Matrix<nen_, 1>& eporo,
-          const LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
-          const LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
+      void Sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
+          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
+          const CORE::LINALG::Matrix<nsd_, nen_>& ebofon,
+          const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgn,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelam,
+          const CORE::LINALG::Matrix<nsd_, nen_>& eveln,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+          const CORE::LINALG::Matrix<nsd_, nen_>& fsevelaf,
+          const CORE::LINALG::Matrix<nen_, 1>& fsescaaf,
+          const CORE::LINALG::Matrix<nsd_, nen_>& evel_hat,
+          const CORE::LINALG::Matrix<nsd_ * nsd_, nen_>& ereynoldsstress_hat,
+          const CORE::LINALG::Matrix<nen_, 1>& epreaf, const CORE::LINALG::Matrix<nen_, 1>& epream,
+          const CORE::LINALG::Matrix<nen_, 1>& epren, const CORE::LINALG::Matrix<nen_, 1>& eprenp,
+          const CORE::LINALG::Matrix<nsd_, nen_>& eaccam,
+          const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
+          const CORE::LINALG::Matrix<nen_, 1>& escadtam,
+          const CORE::LINALG::Matrix<nsd_, nen_>& eveldtam,
+          const CORE::LINALG::Matrix<nen_, 1>& epredtam,
+          const CORE::LINALG::Matrix<nen_, 1>& escabofoaf,
+          const CORE::LINALG::Matrix<nen_, 1>& escabofon,
+          const CORE::LINALG::Matrix<nsd_, nen_>& emhist,
+          const CORE::LINALG::Matrix<nsd_, nen_>& edispnp,
+          const CORE::LINALG::Matrix<nsd_, nen_>& egridv,
+          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
+          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
+          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
+          const CORE::LINALG::Matrix<nen_, 1>& eporo,
+          const CORE::LINALG::Matrix<nsd_, 2 * nen_>& egradphi,
+          const CORE::LINALG::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
           Teuchos::RCP<const MAT::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
           double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
@@ -94,15 +104,15 @@ namespace DRT
 
       //! get ALE grid displacements and grid velocity for element
       virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
-          LINALG::Matrix<nsd_, nen_>& edispnp);
+          CORE::LINALG::Matrix<nsd_, nen_>& edispnp);
 
       //! linearisation in the case of mesh motion 3-D
       virtual void LinMeshMotion_3D(
-          LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
-          const LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
-          const double& press,                       ///< pressure at integration point
-          const double& timefac,                     ///< time factor
-          const double& timefacfac                   ///< = timefac x fac
+          CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
+          const double& press,                             ///< pressure at integration point
+          const double& timefac,                           ///< time factor
+          const double& timefacfac                         ///< = timefac x fac
       );
 
      private:
@@ -146,7 +156,7 @@ namespace DRT
 
       //! evaluate enrichment (2)
       virtual double EnrichmentShapeDer(
-          LINALG::Matrix<nsd_, 1>& derpsigp, LINALG::Matrix<numderiv2_, 1>& der2psigp);
+          CORE::LINALG::Matrix<nsd_, 1>& derpsigp, CORE::LINALG::Matrix<numderiv2_, 1>& der2psigp);
 
       //! go increment of tauw for projection matrix
       virtual void XWallTauWIncForward();
@@ -194,31 +204,31 @@ namespace DRT
 
 
       //! nodal values of wall distance
-      LINALG::Matrix<enren_, 1> ewdist_;
+      CORE::LINALG::Matrix<enren_, 1> ewdist_;
 
       //! nodal values of tauw
-      LINALG::Matrix<enren_, 1> etauw_;
+      CORE::LINALG::Matrix<enren_, 1> etauw_;
 
       //! nodal values of inctauw
-      LINALG::Matrix<enren_, 1> einctauw_;
+      CORE::LINALG::Matrix<enren_, 1> einctauw_;
 
       //! nodal values of ramp function
-      LINALG::Matrix<enren_, 1> eramp_;
+      CORE::LINALG::Matrix<enren_, 1> eramp_;
 
       //! nodal values of toggle vector
-      LINALG::Matrix<enren_, 1> etoggle_;
+      CORE::LINALG::Matrix<enren_, 1> etoggle_;
 
       //! nodal values of psi
-      LINALG::Matrix<enren_, 1> epsi_;
+      CORE::LINALG::Matrix<enren_, 1> epsi_;
 
       //! nodal values of new psi
-      LINALG::Matrix<enren_, 1> epsinew_;
+      CORE::LINALG::Matrix<enren_, 1> epsinew_;
 
       //! nodal values of old psi
-      LINALG::Matrix<enren_, 1> epsiold_;
+      CORE::LINALG::Matrix<enren_, 1> epsiold_;
 
       //! nodal values of inctauw
-      LINALG::Matrix<enren_, 1> eincwdist_;
+      CORE::LINALG::Matrix<enren_, 1> eincwdist_;
 
       //! kinematic viscosity
       double visc_;
@@ -240,29 +250,29 @@ namespace DRT
       bool evaluate_sysmat_;
 
       //! node coordinates
-      LINALG::Matrix<nsd_, enren_> xyze_;
+      CORE::LINALG::Matrix<nsd_, enren_> xyze_;
 
       //! array for enr shape functions
-      LINALG::Matrix<enren_, 1> functenr_;
+      CORE::LINALG::Matrix<enren_, 1> functenr_;
       //! array for enr shape functions
-      LINALG::Matrix<enren_, 1> funct_;
+      CORE::LINALG::Matrix<enren_, 1> funct_;
 
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, enren_> derxyenr_;
+      CORE::LINALG::Matrix<nsd_, enren_> derxyenr_;
       //! global derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<nsd_, enren_> derxy_;
+      CORE::LINALG::Matrix<nsd_, enren_> derxy_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<numderiv2_, enren_> derxyenr2_;
+      CORE::LINALG::Matrix<numderiv2_, enren_> derxyenr2_;
 
       //! global second derivatives of shape functions w.r.t x,y,z
-      LINALG::Matrix<numderiv2_, enren_> derxy2_;
+      CORE::LINALG::Matrix<numderiv2_, enren_> derxy2_;
 
       //! array for shape function derivatives w.r.t r,s,t
-      LINALG::Matrix<nsd_, enren_> deriv_;
+      CORE::LINALG::Matrix<nsd_, enren_> deriv_;
 
       //! array for second derivatives of shape function w.r.t r,s,t
-      LINALG::Matrix<numderiv2_, enren_> deriv2_;
+      CORE::LINALG::Matrix<numderiv2_, enren_> deriv2_;
 
 
       // find a definition of k and B in:

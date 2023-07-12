@@ -118,7 +118,7 @@ void FS3I::ACFSI::SetMeanWallShearStresses() const
 
   // insert structure interface entries into vector with full structure length
   Teuchos::RCP<Epetra_Vector> structurewss =
-      LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
+      CORE::LINALG::CreateVector(*(fsi_->StructureField()->Interface()->FullMap()), true);
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
@@ -169,7 +169,7 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of sca
   // evaluate simplified kedem-katchalsy condtion
   //----------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> rhs_scal = scatracoupforce_[i];
-  Teuchos::RCP<LINALG::SparseMatrix> mat_scal = scatracoupmat_[i];
+  Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_scal = scatracoupmat_[i];
 
   rhs_scal->PutScalar(0.0);
   mat_scal->Zero();
@@ -180,7 +180,7 @@ void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(const int i  // id of sca
   const Teuchos::RCP<const Epetra_Map> dbcmap =
       scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
   mat_scal->ApplyDirichlet(*dbcmap, false);
-  LINALG::ApplyDirichlettoSystem(rhs_scal, scatrazeros_[i], *dbcmap);
+  CORE::LINALG::ApplyDirichlettoSystem(rhs_scal, scatrazeros_[i], *dbcmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -352,7 +352,7 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   // add coupling to the resiudal
   //----------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> rhs_struct_scal = scatracoupforce_[1];
-  const Teuchos::RCP<LINALG::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
+  const Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
   const Teuchos::RCP<Epetra_Vector> residual = scatra->Residual();
 
   residual->Update(1.0, *rhs_struct_scal, 1.0);
@@ -368,14 +368,14 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   //----------------------------------------------------------------------
   // add coupling to the sysmat
   //----------------------------------------------------------------------
-  const Teuchos::RCP<LINALG::SparseMatrix> sysmat = scatra->SystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat = scatra->SystemMatrix();
   sysmat->Add(*mat_struct_scal, false, 1.0, 1.0);
 
   //----------------------------------------------------------------------
   // solve the scatra problem
   //----------------------------------------------------------------------
   const Teuchos::RCP<Epetra_Vector> structurescatraincrement =
-      LINALG::CreateVector(*scatra->DofRowMap(), true);
+      CORE::LINALG::CreateVector(*scatra->DofRowMap(), true);
   scatra->Solver()->Solve(sysmat->EpetraOperator(), structurescatraincrement, residual, true, true);
 
   //----------------------------------------------------------------------
@@ -531,7 +531,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
 
     // build difference vector with the reference
     const Teuchos::RCP<Epetra_Vector> phidiff_bltsl_ =
-        LINALG::CreateVector(*scatra->DofRowMap(), true);
+        CORE::LINALG::CreateVector(*scatra->DofRowMap(), true);
     phidiff_bltsl_->Update(1.0, *phinp, -1.0, *structurephinp_blts_, 0.0);
 
     // Extract the dof of interest
@@ -775,9 +775,9 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
 /*----------------------------------------------------------------------*
  | Build map extractor which extracts the j-th dof           Thon 08/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
+std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
 {
-  std::vector<Teuchos::RCP<LINALG::MapExtractor>> extractjthscalar;
+  std::vector<Teuchos::RCP<CORE::LINALG::MapExtractor>> extractjthscalar;
 
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra =
       scatravec_[1]->ScaTraField();  // structure scatra
@@ -826,7 +826,7 @@ std::vector<Teuchos::RCP<LINALG::MapExtractor>> FS3I::ACFSI::BuildMapExtractor()
         new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis->Comm()));
     otherdofmapvec.clear();
 
-    Teuchos::RCP<LINALG::MapExtractor> getjdof = Teuchos::rcp(new LINALG::MapExtractor);
+    Teuchos::RCP<CORE::LINALG::MapExtractor> getjdof = Teuchos::rcp(new CORE::LINALG::MapExtractor);
     getjdof->Setup(*dis->DofRowMap(), conddofmap, otherdofmap);
     extractjthscalar.push_back(getjdof);
   }
@@ -855,9 +855,9 @@ bool FS3I::ACFSI::ModuloIsRealtiveZero(const double value, const double modulo, 
  *----------------------------------------------------------------------*/
 FS3I::MeanManager::MeanManager(
     const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap)
-    : SumWss_(LINALG::CreateVector(wssmap, true)),
-      SumPhi_(LINALG::CreateVector(phimap, true)),
-      SumPres_(LINALG::CreateVector(pressuremap, true)),
+    : SumWss_(CORE::LINALG::CreateVector(wssmap, true)),
+      SumPhi_(CORE::LINALG::CreateVector(phimap, true)),
+      SumPres_(CORE::LINALG::CreateVector(pressuremap, true)),
       SumDtWss_(0.0),
       SumDtPhi_(0.0),
       SumDtPres_(0.0)

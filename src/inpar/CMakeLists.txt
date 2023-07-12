@@ -6,7 +6,6 @@ set(_inpar_dependencies
     core
     io
     lib
-    linalg
     solver_nonlin_nox
     tutorial
     )

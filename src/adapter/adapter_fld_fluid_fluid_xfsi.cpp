@@ -27,7 +27,7 @@ conjunction with XFluidFluid!
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
-    const std::string coupling_name_xfsi, Teuchos::RCP<LINALG::Solver> solver,
+    const std::string coupling_name_xfsi, Teuchos::RCP<CORE::LINALG::Solver> solver,
     Teuchos::RCP<Teuchos::ParameterList> params, Teuchos::RCP<IO::DiscretizationWriter> output)
     : XFluidFSI(fluid, coupling_name_xfsi, solver, params, output)
 {

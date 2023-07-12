@@ -53,12 +53,12 @@ void CONTACT::AUG::LAGRANGE::Strategy::EvalStrContactRHS()
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
   Epetra_Vector augfs_exp(*ProblemDofs());
-  LINALG::Export(Data().SlForceLm(), augfs_exp);
+  CORE::LINALG::Export(Data().SlForceLm(), augfs_exp);
   Data().StrContactRhs().Scale(-1.0, augfs_exp);
 
   // Master side
   Epetra_Vector augfm_exp(*ProblemDofs());
-  LINALG::Export(Data().MaForceLm(), augfm_exp);
+  CORE::LINALG::Export(Data().MaForceLm(), augfm_exp);
   CATCH_EPETRA_ERROR(Data().StrContactRhs().Update(-1.0, augfm_exp, 1.0));
 
   return;

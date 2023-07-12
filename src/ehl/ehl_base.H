@@ -30,7 +30,7 @@ namespace ADAPTER
   class CouplingEhlMortar;
 }  // namespace ADAPTER
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class MapExtractor;
 }
@@ -104,15 +104,15 @@ namespace EHL
     Teuchos::RCP<Epetra_Vector> stritraction_M_;
 
     //! Transformation matrix for lubrication pre dof map <-> lubrication disp dof map
-    Teuchos::RCP<LINALG::SparseMatrix> lubrimaptransform_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> lubrimaptransform_;
 
     //! Mapextractors for dealing with interface vectors of the structure field
-    Teuchos::RCP<LINALG::MapExtractor> slaverowmapextr_;
-    Teuchos::RCP<LINALG::MapExtractor> masterrowmapextr_;
-    Teuchos::RCP<LINALG::MapExtractor> mergedrowmapextr_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> slaverowmapextr_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> masterrowmapextr_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> mergedrowmapextr_;
 
     //! Transformation matrix for slave side node map <-> slave side disp dof map
-    Teuchos::RCP<LINALG::SparseMatrix> slavemaptransform_;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> slavemaptransform_;
 
     //! several adapters to transform maps
     Teuchos::RCP<CORE::ADAPTER::Coupling> ada_strDisp_to_lubDisp_;

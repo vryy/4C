@@ -27,7 +27,7 @@ namespace DRT
   class Element;
 }  // namespace DRT
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -104,13 +104,13 @@ namespace CORE::VOLMORTAR
      \brief get projection matrix 2 --> 1
 
      */
-    Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix12() { return P12_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetPMatrix12() { return P12_; };
 
     /*!
      \brief get projection matrix 1 --> 2
 
      */
-    Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix21() { return P21_; };
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetPMatrix21() { return P21_; };
 
     /*!
      \brief assign materials
@@ -151,14 +151,14 @@ namespace CORE::VOLMORTAR
      \brief calc dops for background mesh
 
      */
-    virtual std::map<int, LINALG::Matrix<9, 2>> CalcBackgroundDops(
+    virtual std::map<int, CORE::LINALG::Matrix<9, 2>> CalcBackgroundDops(
         Teuchos::RCP<::DRT::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
 
      */
-    virtual LINALG::Matrix<9, 2> CalcDop(::DRT::Element& ele);
+    virtual CORE::LINALG::Matrix<9, 2> CalcDop(::DRT::Element& ele);
 
     /*!
      \brief center triangulation (if delaunay fails)
@@ -381,7 +381,7 @@ namespace CORE::VOLMORTAR
      */
     virtual std::vector<int> Search(::DRT::Element& ele,
         Teuchos::RCP<CORE::GEO::SearchTree> SearchTree,
-        std::map<int, LINALG::Matrix<9, 2>>& currentKDOPs);
+        std::map<int, CORE::LINALG::Matrix<9, 2>>& currentKDOPs);
 
     // don't want = operator and cctor
     VolMortarCoupl operator=(const VolMortarCoupl& old);
@@ -408,19 +408,19 @@ namespace CORE::VOLMORTAR
     //! @name mortar matrices and projector
     // s1 = D1^-1 * M12 * s2  = P12 * s2
     // s2 = D2^-1 * M21 * s1  = P21 * s1
-    Teuchos::RCP<LINALG::SparseMatrix> D1_;   /// global Mortar matrix D1  for Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix> D2_;   /// global Mortar matrix D2  for Omega_2
-    Teuchos::RCP<LINALG::SparseMatrix> M12_;  /// global Mortar matrix M12 for Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix> M21_;  /// global Mortar matrix M21 for Omega_2
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> D1_;   /// global Mortar matrix D1  for Omega_1
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> D2_;   /// global Mortar matrix D2  for Omega_2
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M12_;  /// global Mortar matrix M12 for Omega_1
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> M21_;  /// global Mortar matrix M21 for Omega_2
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         P12_;  /// global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix>
+    Teuchos::RCP<CORE::LINALG::SparseMatrix>
         P21_;  /// global Mortar projection matrix P Omega_1 -> Omega_2
     //@}
 
     //! @name trafo matrices for quadr. elements
-    Teuchos::RCP<LINALG::SparseMatrix> T1_;  /// global trafo matrix for Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix> T2_;  /// global trafo matrix for Omega_2
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> T1_;  /// global trafo matrix for Omega_1
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> T2_;  /// global trafo matrix for Omega_2
     //@}
 
     //! @name maps
@@ -453,7 +453,7 @@ namespace CORE::VOLMORTAR
         volcell_;  /// set of volume cells for direct divergence integration
 
     // search algorithm
-    LINALG::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
+    CORE::LINALG::Matrix<9, 3> dopnormals_;  /// dop normals for seach algorithm
 
     // input
     INPAR::VOLMORTAR::DualQuad dualquad_;  /// type of quadratic weighting interpolation
@@ -469,10 +469,10 @@ namespace CORE::VOLMORTAR
     Teuchos::RCP<Epetra_Map> mergedmap_;
 
     // mortar matrices for mesh init
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrixXA_;  /// global Mortar matrix D for field A
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrixXB_;  /// global Mortar matrix D for field B
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrixXA_;  /// global Mortar matrix M for field A
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrixXB_;  /// global Mortar matrix M for field B
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixXA_;  /// global Mortar matrix D for field A
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixXB_;  /// global Mortar matrix D for field B
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrixXA_;  /// global Mortar matrix M for field A
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> mmatrixXB_;  /// global Mortar matrix M for field B
 
     //@}
   };

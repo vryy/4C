@@ -17,10 +17,10 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration ...
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace CONTACT
 {
@@ -67,7 +67,8 @@ namespace STR
       virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      virtual bool AssembleJacobian(LINALG::SparseOperator& jac, const double& timefac_np) const;
+      virtual bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
 
       //! derived
       virtual void WriteRestart(
@@ -131,7 +132,7 @@ namespace STR
       Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
 
       //! stiffness contributions from beam interactions
-      Teuchos::RCP<LINALG::SparseMatrix> stiff_beaminteract_ptr_;
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> stiff_beaminteract_ptr_;
 
       //! force contributions from beam interaction at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> f_beaminteract_np_ptr_;

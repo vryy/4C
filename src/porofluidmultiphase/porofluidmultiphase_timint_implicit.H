@@ -42,7 +42,7 @@ namespace IO
   class DiscretizationWriter;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class Solver;
   class SparseMatrix;
@@ -50,7 +50,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
   class KrylovProjector;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace ADAPTER
 {
@@ -165,13 +165,13 @@ namespace POROFLUIDMULTIPHASE
     void PrepareSystemForNewtonSolve();
 
     //! direct access to system matrix
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
     {
-      return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+      return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     };
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
     {
       return dbcmaps_with_volfracpress_;
     }
@@ -192,7 +192,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const;
 
     //! direct access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
+    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ArteryPorofluidSysmat() const;
 
     //! output solution and restart data to file
     virtual void Output();
@@ -360,10 +360,10 @@ namespace POROFLUIDMULTIPHASE
     virtual void ApplyStartingDBC();
 
     //! call elements to calculate fluid coupling matrix with structure and assemble
-    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_fs);
+    virtual void AssembleFluidStructCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_fs);
 
     //! call elements to calculate fluid coupling matrix with scatra and assemble
-    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP<LINALG::SparseOperator> k_pfs);
+    virtual void AssembleFluidScatraCouplingMat(Teuchos::RCP<CORE::LINALG::SparseOperator> k_pfs);
 
     //! return the right time-scaling-factor for the true residual
     virtual double ResidualScaling() const = 0;
@@ -445,7 +445,7 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! linear solver
-    Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<CORE::LINALG::Solver> solver_;
 
     //! solver number in input file
     const int linsolvernumber_;
@@ -645,22 +645,22 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<LINALG::SparseOperator> sysmat_;
+    Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
     //! maps for extracting Dirichlet and free DOF sets, here the additional dofs have been added
     //! which have to be zeroed out for the volume fraction pressure since it is not defined if the
     //! corresponding volume fraction is equal to zero (or smaller than minvolfrac)
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_with_volfracpress_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_with_volfracpress_;
 
     //! maps for extracting Dirichlet and free DOF sets with additional starting Dirichlet boundary
     //! condition
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps_starting_condition_;
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_starting_condition_;
 
     //! the vector containing body and surface forces
     Teuchos::RCP<Epetra_Vector> neumann_loads_;

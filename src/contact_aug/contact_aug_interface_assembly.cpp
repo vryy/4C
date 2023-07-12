@@ -77,7 +77,7 @@ CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::NodeBasedAs
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleBMatrix(
-    LINALG::SparseMatrix& BMatrix) const
+    CORE::LINALG::SparseMatrix& BMatrix) const
 {
   const int nummyndof = IData().SNDofRowMap()->NumMyElements();
   const int* myndofs = IData().SNDofRowMap()->MyGlobalElements();
@@ -164,7 +164,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Add_Va
     int err = sl_force_g_row.Export(sl_force_g_col, exCol2Row, Add);
     if (err) dserror("Export failed with error code %d.", err);
 
-    LINALG::AssembleMyVector(1.0, sl_force_g, 1.0, sl_force_g_row);
+    CORE::LINALG::AssembleMyVector(1.0, sl_force_g, 1.0, sl_force_g_row);
   }
 }
 
@@ -214,7 +214,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
     int err = sl_force_lmi_row.Export(sl_force_lmi_col, exCol2Row, Add);
     if (err) dserror("Export failed with error code %d.", err);
 
-    LINALG::AssembleMyVector(1.0, sl_force_lm_inactive, 1.0, sl_force_lmi_row);
+    CORE::LINALG::AssembleMyVector(1.0, sl_force_lm_inactive, 1.0, sl_force_lmi_row);
   }
 
   // consistency check
@@ -234,7 +234,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleInactiveDDMatrix(
-    LINALG::SparseMatrix& inactive_dd_matrix, const Epetra_Vector& cnVec,
+    CORE::LINALG::SparseMatrix& inactive_dd_matrix, const Epetra_Vector& cnVec,
     const double inactive_scale) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -270,7 +270,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGLmLinMatrix(
-    LINALG::SparseMatrix& dGLmLinMatrix) const
+    CORE::LINALG::SparseMatrix& dGLmLinMatrix) const
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -319,7 +319,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
-    assemble_policy>::AssembleDGGLinMatrix(LINALG::SparseMatrix& dGGLinMatrix,
+    assemble_policy>::AssembleDGGLinMatrix(CORE::LINALG::SparseMatrix& dGGLinMatrix,
     const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
@@ -396,7 +396,7 @@ void CONTACT::AUG::STEEPESTASCENT::INTERFACE::NodeBasedAssembleStrategy<
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDGGLinMatrix(
-    LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
+    CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const
 {
   // loop over all active augmented slave nodes of the interface
   const int nummyanodes = IData().ActiveNodes()->NumMyElements();
@@ -521,7 +521,7 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
  *----------------------------------------------------------------------------*/
 template <typename assemble_policy>
 void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::AssembleDLmNWGapLinMatrix(
-    LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
+    CORE::LINALG::SparseMatrix& dLmNWGapLinMatrix, const enum MapType map_type) const
 {
   // loop over all active augmented slave nodes of the interface
   const Epetra_Map& snode_rowmap = this->SlNodeRowMap(map_type);
@@ -554,7 +554,8 @@ void CONTACT::AUG::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>::Assemb
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const double cn_awgap_ainv,
-    const double awgap, const NodeDataContainer& augdata, LINALG::SparseMatrix& dGGLinMatrix) const
+    const double awgap, const NodeDataContainer& augdata,
+    CORE::LINALG::SparseMatrix& dGGLinMatrix) const
 {
   const Deriv1stMap& d_a = augdata.GetDeriv1st_Kappa();
   const Deriv1stMap& d_wgap_sl_c = augdata.GetDeriv1st_WGapSl_Complete();
@@ -575,7 +576,7 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_Var_A_Lin_GG(const dou
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double cn_awgap_awgap,
-    const NodeDataContainer& augdata, LINALG::SparseMatrix& dGGLinMatrix) const
+    const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const
 {
   const Deriv2ndMap& dd_kappa = augdata.GetDeriv2nd_Kappa();
   // sanity check
@@ -592,7 +593,7 @@ void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::Add_DD_A_GG(const double c
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::INTERFACE::CompleteAssemblePolicy::AssembleInactiveDDMatrix(const double scale,
-    const NodeDataContainer& augdata, LINALG::SparseMatrix& inactive_dd_matrix) const
+    const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& inactive_dd_matrix) const
 {
   const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_A();
   // sanity check

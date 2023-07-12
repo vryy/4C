@@ -899,7 +899,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
   }
   if (poro_)  // as velocities of structure and fluid exist also on master nodes!!!
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
     // initialize poro node data container for master nodes!!!
     for (int i = 0; i < masternodes()->NumMyElements(); ++i)
     {
@@ -963,7 +963,7 @@ Teuchos::RCP<BINSTRATEGY::BinningStrategy> MORTAR::MortarInterface::SetupBinning
     const double meanVelocity)
 {
   // Initialize eXtendedAxisAlignedBoundingBox (XAABB)
-  LINALG::Matrix<3, 2> XAABB(false);
+  CORE::LINALG::Matrix<3, 2> XAABB(false);
   for (unsigned int dim = 0; dim < 3; ++dim)
   {
     XAABB(dim, 0) = +1.0e12;
@@ -1147,8 +1147,8 @@ void MORTAR::MortarInterface::Redistribute()
   // (4) Merge global interface node row and column map
   //**********************************************************************
   // merge node maps from slave and master parts
-  Teuchos::RCP<Epetra_Map> rownodes = LINALG::MergeMap(srownodes, mrownodes, false);
-  Teuchos::RCP<Epetra_Map> colnodes = LINALG::MergeMap(scolnodes, mcolnodes, false);
+  Teuchos::RCP<Epetra_Map> rownodes = CORE::LINALG::MergeMap(srownodes, mrownodes, false);
+  Teuchos::RCP<Epetra_Map> colnodes = CORE::LINALG::MergeMap(scolnodes, mcolnodes, false);
 
   //**********************************************************************
   // (5) Get partitioning information into discretization
@@ -1241,7 +1241,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
     //   stproc.push_back(Comm().MyPID());
     // std::vector<int> rtproc(0);
-    // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
+    // CORE::LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
     // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
     // the node gids and element gids are gathered among procs.
@@ -1258,7 +1258,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
 
     // gather all gids of nodes redundantly
     std::vector<int> rdata;
-    LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+    CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
     // build completely overlapping map of nodes (on ALL processors)
     Teuchos::RCP<Epetra_Map> newnodecolmap =
@@ -1273,7 +1273,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
 
     // gather all gids of elements redundantly
     rdata.resize(0);
-    LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+    CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
     // build complete overlapping map of elements (on ALL processors)
     Teuchos::RCP<Epetra_Map> newelecolmap =
@@ -1309,7 +1309,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
     //   stproc.push_back(Comm().MyPID());
     // std::vector<int> rtproc(0);
-    // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
+    // CORE::LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
     // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
     // the node gids and element gids are gathered among procs.
@@ -1333,7 +1333,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
 
     // gather all master row node gids redundantly
     std::vector<int> rdata;
-    LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+    CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
     // add my own slave column node ids (non-redundant, standard overlap)
     const Epetra_Map* nodecolmap = Discret().NodeColMap();
@@ -1366,7 +1366,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
 
     // gather all gids of elements redundantly
     rdata.resize(0);
-    LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
+    CORE::LINALG::Gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), Comm());
 
     // add my own slave column node ids (non-redundant, standard overlap)
     const Epetra_Map* elecolmap = Discret().ElementColMap();
@@ -1412,7 +1412,7 @@ void MORTAR::MortarInterface::ExtendInterfaceGhosting(
     // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
     //   stproc.push_back(Comm().MyPID());
     // std::vector<int> rtproc(0);
-    // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
+    // CORE::LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),allproc.data(),Comm());
     //
     // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
     // the node gids and element gids are gathered among procs.
@@ -1556,7 +1556,7 @@ void MORTAR::MortarInterface::CreateSearchTree()
       case INPAR::MORTAR::ExtendGhosting::redundant_all:
       case INPAR::MORTAR::ExtendGhosting::redundant_master:
       {
-        melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+        melefullmap = CORE::LINALG::AllreduceEMap(*melerowmap_);
         break;
       }
       default:
@@ -1981,7 +1981,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->DofColMap(), false));
-      LINALG::Export(vec, *global);
+      CORE::LINALG::Export(vec, *global);
 
       // set displacements in interface discretization
       idiscret_->SetState(StateType2String(statetype), global);
@@ -2015,7 +2015,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->DofColMap(), false));
-      LINALG::Export(vec, *global);
+      CORE::LINALG::Export(vec, *global);
 
       // loop over all nodes to set current displacement
       // (use fully overlapping column map)
@@ -2043,7 +2043,7 @@ void MORTAR::MortarInterface::SetState(const enum StateType& statetype, const Ep
       // alternative method to get vec to full overlap
       Teuchos::RCP<Epetra_Vector> global =
           Teuchos::rcp(new Epetra_Vector(*idiscret_->DofColMap(), false));
-      LINALG::Export(vec, *global);
+      CORE::LINALG::Export(vec, *global);
 
       // set displacements in interface discretization
       idiscret_->SetState(StateType2String(statetype), global);
@@ -2740,7 +2740,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     case INPAR::MORTAR::ExtendGhosting::redundant_all:
     case INPAR::MORTAR::ExtendGhosting::redundant_master:
     {
-      melefullmap = LINALG::AllreduceEMap(*melerowmap_);
+      melefullmap = CORE::LINALG::AllreduceEMap(*melerowmap_);
       break;
     }
     case INPAR::MORTAR::ExtendGhosting::roundrobin:
@@ -3367,7 +3367,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
     }
 
     // do assembly
-    LINALG::Assemble(zglobal, lmnode, lmdof, lmowner);
+    CORE::LINALG::Assemble(zglobal, lmnode, lmdof, lmowner);
   }
 }
 
@@ -3375,7 +3375,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
 /*----------------------------------------------------------------------*
  |  Assemble Mortar D matrix                                  popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
+void MORTAR::MortarInterface::AssembleD(CORE::LINALG::SparseMatrix& dglobal)
 {
   const bool nonsmooth = DRT::INPUT::IntegralValue<int>(InterfaceParams(), "NONSMOOTH_GEOMETRIES");
   const bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(
@@ -3452,7 +3452,7 @@ void MORTAR::MortarInterface::AssembleD(LINALG::SparseMatrix& dglobal)
 /*----------------------------------------------------------------------*
  |  Assemble Mortar M matrix                                  popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AssembleM(LINALG::SparseMatrix& mglobal)
+void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -3540,7 +3540,7 @@ void MORTAR::MortarInterface::AssembleM(LINALG::SparseMatrix& mglobal)
  |  Assemble Mortar matrices                                 farah 02/16|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AssembleDM(
-    LINALG::SparseMatrix& dglobal, LINALG::SparseMatrix& mglobal)
+    CORE::LINALG::SparseMatrix& dglobal, CORE::LINALG::SparseMatrix& mglobal)
 {
   // call subroutines:
 
@@ -3555,7 +3555,7 @@ void MORTAR::MortarInterface::AssembleDM(
 /*----------------------------------------------------------------------*
  |  Assemble matrix of normals                                popp 10/11|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
+void MORTAR::MortarInterface::AssembleNormals(CORE::LINALG::SparseMatrix& nglobal)
 {
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -3580,8 +3580,8 @@ void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
 /*----------------------------------------------------------------------*
  |  Assemble interface displacement trafo matrices            popp 06/10|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::AssembleTrafo(
-    LINALG::SparseMatrix& trafo, LINALG::SparseMatrix& invtrafo, std::set<int>& donebefore)
+void MORTAR::MortarInterface::AssembleTrafo(CORE::LINALG::SparseMatrix& trafo,
+    CORE::LINALG::SparseMatrix& invtrafo, std::set<int>& donebefore)
 {
   // check for dual shape functions and quadratic slave elements
   if (shapefcn_ == INPAR::MORTAR::shape_standard || !quadslave_)
@@ -4123,7 +4123,7 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
   //**********************************************************************
   // export tying information to standard column map
   Teuchos::RCP<Epetra_Vector> coltied = Teuchos::rcp(new Epetra_Vector(*snodecolmap_));
-  LINALG::Export(*rowtied, *coltied);
+  CORE::LINALG::Export(*rowtied, *coltied);
 
   //**********************************************************************
   // STEP 3: Extract tying info for slave node column map (locally)
@@ -4274,15 +4274,15 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
   /* Write interface displacement
    *
    * The interface displacement has been handed in via the parameter list outParams.
-   * Grab it from there, then use LINALG::Export() to extract the interface
+   * Grab it from there, then use CORE::LINALG::Export() to extract the interface
    * portion from the global displacement vector. Finally, write the interface
    * portion using this interfaces' discretization writer.
    */
   {
     // Get full displacement vector and extract interface displacement
     RCP<const Epetra_Vector> disp = outputParams.get<RCP<const Epetra_Vector>>("displacement");
-    RCP<Epetra_Vector> iDisp = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*disp, *iDisp);
+    RCP<Epetra_Vector> iDisp = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*disp, *iDisp);
 
     // Write the interface displacement field
     writer->WriteVector("displacement", iDisp, IO::VectorType::dofvector);
@@ -4293,8 +4293,8 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
     // Get full Lagrange multiplier vector and extract values of this interface
     RCP<const Epetra_Vector> lagMult =
         outputParams.get<RCP<const Epetra_Vector>>("interface traction");
-    RCP<Epetra_Vector> iLagMult = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*lagMult, *iLagMult);
+    RCP<Epetra_Vector> iLagMult = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*lagMult, *iLagMult);
 
     // Write this interface's Lagrange multiplier field
     writer->WriteVector("interfacetraction", iLagMult, IO::VectorType::dofvector);
@@ -4305,8 +4305,8 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
     // Get nodal forces
     RCP<const Epetra_Vector> slaveforces =
         outputParams.get<RCP<const Epetra_Vector>>("slave forces");
-    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*slaveforces, *forces);
+    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*slaveforces, *forces);
 
     // Write to output
     writer->WriteVector("slaveforces", forces, IO::VectorType::dofvector);
@@ -4317,8 +4317,8 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
     // Get nodal forces
     RCP<const Epetra_Vector> masterforces =
         outputParams.get<RCP<const Epetra_Vector>>("master forces");
-    RCP<Epetra_Vector> forces = LINALG::CreateVector(*idiscret_->DofRowMap());
-    LINALG::Export(*masterforces, *forces);
+    RCP<Epetra_Vector> forces = CORE::LINALG::CreateVector(*idiscret_->DofRowMap());
+    CORE::LINALG::Export(*masterforces, *forces);
 
     // Write to output
     writer->WriteVector("masterforces", forces, IO::VectorType::dofvector);
@@ -4330,9 +4330,9 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*mnoderowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> nodeRowMap = LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*nodeRowMap, true);
-    LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> nodeRowMap = CORE::LINALG::MergeMap(snoderowmap_, mnoderowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*nodeRowMap, true);
+    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
     writer->WriteVector("slavemasternodes", masterSlaveVec, IO::VectorType::nodevector);
   }
@@ -4342,17 +4342,17 @@ void MORTAR::MortarInterface::PostprocessQuantities(const Teuchos::ParameterList
     RCP<Epetra_Vector> masterVec = Teuchos::rcp(new Epetra_Vector(*melerowmap_));
     masterVec->PutScalar(1.0);
 
-    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> masterSlaveVec = LINALG::CreateVector(*eleRowMap, true);
-    LINALG::Export(*masterVec, *masterSlaveVec);
+    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> masterSlaveVec = CORE::LINALG::CreateVector(*eleRowMap, true);
+    CORE::LINALG::Export(*masterVec, *masterSlaveVec);
 
     writer->WriteVector("slavemasterelements", masterSlaveVec, IO::VectorType::elementvector);
   }
 
   // Write element owners
   {
-    RCP<const Epetra_Map> eleRowMap = LINALG::MergeMap(selerowmap_, melerowmap_, false);
-    RCP<Epetra_Vector> owner = LINALG::CreateVector(*eleRowMap);
+    RCP<const Epetra_Map> eleRowMap = CORE::LINALG::MergeMap(selerowmap_, melerowmap_, false);
+    RCP<Epetra_Vector> owner = CORE::LINALG::CreateVector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->ElementRowMap()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->lRowElement(i)->Owner();

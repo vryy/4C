@@ -14,7 +14,6 @@ set(_adapter_dependencies
     io
     levelset
     lib
-    linalg
     lubrication
     mat
     membrane

@@ -150,24 +150,24 @@ void NTS::CoInterpolator::Interpolate2D(
 
       int ndof = 2;
       int ncol = meles[nummaster]->NumNode();
-      LINALG::SerialDenseVector mval(ncol);
-      LINALG::SerialDenseMatrix mderiv(ncol, 1);
+      CORE::LINALG::SerialDenseVector mval(ncol);
+      CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
       meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
 
       // get slave and master nodal coords for Jacobian / GP evaluation
-      LINALG::SerialDenseMatrix scoord(3, sele->NumNode());
-      LINALG::SerialDenseMatrix mcoord(3, ncol);
+      CORE::LINALG::SerialDenseMatrix scoord(3, sele->NumNode());
+      CORE::LINALG::SerialDenseMatrix mcoord(3, ncol);
       sele->GetNodalCoords(scoord);
       meles[nummaster]->GetNodalCoords(mcoord);
 
       // nodal coords from previous time step and lagrange mulitplier
-      Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-      Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele->NumNode()));
-      mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, ncol));
-      lagmult = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele->NumNode()));
+      scoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele->NumNode()));
+      mcoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, ncol));
+      lagmult = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele->NumNode()));
       sele->GetNodalCoordsOld(*scoordold);
       meles[nummaster]->GetNodalCoordsOld(*mcoordold);
       sele->GetNodalLagMult(*lagmult);
@@ -405,24 +405,24 @@ bool NTS::CoInterpolator::Interpolate3D(
 
       int ndof = 3;
       int ncol = meles[nummaster]->NumNode();
-      LINALG::SerialDenseVector mval(ncol);
-      LINALG::SerialDenseMatrix mderiv(ncol, 2);
+      CORE::LINALG::SerialDenseVector mval(ncol);
+      CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
       meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
 
       // get slave and master nodal coords for Jacobian / GP evaluation
-      LINALG::SerialDenseMatrix scoord(3, sele->NumNode());
-      LINALG::SerialDenseMatrix mcoord(3, ncol);
+      CORE::LINALG::SerialDenseMatrix scoord(3, sele->NumNode());
+      CORE::LINALG::SerialDenseMatrix mcoord(3, ncol);
       sele->GetNodalCoords(scoord);
       meles[nummaster]->GetNodalCoords(mcoord);
 
       // nodal coords from previous time step and lagrange mulitplier
-      Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-      Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele->NumNode()));
-      mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, ncol));
-      lagmult = Teuchos::rcp(new LINALG::SerialDenseMatrix(3, sele->NumNode()));
+      scoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele->NumNode()));
+      mcoordold = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, ncol));
+      lagmult = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, sele->NumNode()));
       sele->GetNodalCoordsOld(*scoordold);
       meles[nummaster]->GetNodalCoordsOld(*mcoordold);
       sele->GetNodalLagMult(*lagmult);
@@ -610,13 +610,13 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
 
         int ndof = 3;
         int ncol = meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(ncol);
-        LINALG::SerialDenseMatrix mderiv(ncol, 2);
+        CORE::LINALG::SerialDenseVector mval(ncol);
+        CORE::LINALG::SerialDenseMatrix mderiv(ncol, 2);
         meles[nummaster]->EvaluateShape(mxi, mval, mderiv, ncol, false);
 
         // get slave and master nodal coords for Jacobian / GP evaluation
-        LINALG::SerialDenseMatrix scoord(3, sele.NumNode());
-        LINALG::SerialDenseMatrix mcoord(3, ncol);
+        CORE::LINALG::SerialDenseMatrix scoord(3, sele.NumNode());
+        CORE::LINALG::SerialDenseMatrix mcoord(3, ncol);
         sele.GetNodalCoords(scoord);
         meles[nummaster]->GetNodalCoords(mcoord);
 
@@ -674,10 +674,10 @@ void NTS::CoInterpolator::nwTE2D(CONTACT::CoNode& mynode, double& area, double& 
  |  node-wise slip                                          farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwSlip2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
     CORE::GEN::pairedvector<int, double>& dmxi)
 {
   const int ncol = mele.NumNode();
@@ -815,12 +815,12 @@ void NTS::CoInterpolator::nwSlip2D(CONTACT::CoNode& mynode, MORTAR::MortarElemen
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwWear2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    LINALG::SerialDenseMatrix& scoord, LINALG::SerialDenseMatrix& mcoord,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
-    Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize, double& jumpval,
-    double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseMatrix& scoord, CORE::LINALG::SerialDenseMatrix& mcoord,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> scoordold,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mcoordold,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> lagmult, int& snodes, int& linsize,
+    double& jumpval, double& area, double* gpn, CORE::GEN::pairedvector<int, double>& dmxi,
     CORE::GEN::pairedvector<int, double>& dslipmatrix, CORE::GEN::pairedvector<int, double>& dwear)
 {
   const int ncol = mele.NumNode();
@@ -1042,8 +1042,9 @@ void NTS::CoInterpolator::nwWear2D(CONTACT::CoNode& mynode, MORTAR::MortarElemen
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    CORE::GEN::pairedvector<int, double>& dmxi, double* gpn)
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::GEN::pairedvector<int, double>& dmxi,
+    double* gpn)
 {
   const int ncol = mele.NumNode();
   std::array<double, 3> sgpx = {0.0, 0.0, 0.0};
@@ -1129,7 +1130,7 @@ void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode, MORTAR::MortarElement
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double* gpn)
 {
   const int ncol = mele.NumNode();
@@ -1227,7 +1228,7 @@ void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode, MORTAR::MortarElement
  |  projected master temperature at the slave node          seitz 08/15 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwMasterTemp(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-    const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
+    const CORE::LINALG::SerialDenseVector& mval, const CORE::LINALG::SerialDenseMatrix& mderiv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi)
 {
   const int ncol = mele.NumNode();
@@ -1270,8 +1271,8 @@ void NTS::CoInterpolator::nwMasterTemp(CONTACT::CoNode& mynode, MORTAR::MortarEl
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode, MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele, LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
-    CORE::GEN::pairedvector<int, double>& dmxi)
+    MORTAR::MortarElement& mele, CORE::LINALG::SerialDenseVector& mval,
+    CORE::LINALG::SerialDenseMatrix& mderiv, CORE::GEN::pairedvector<int, double>& dmxi)
 {
   const int ncol = mele.NumNode();
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
@@ -1317,7 +1318,7 @@ void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode, MORTAR::MortarElement&
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
 void NTS::CoInterpolator::nwDM3D(CONTACT::CoNode& mynode, MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& mderiv,
+    CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& mderiv,
     std::vector<CORE::GEN::pairedvector<int, double>>& dmxi)
 {
   const int ncol = mele.NumNode();
@@ -1400,10 +1401,10 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Morta
   // we also need shape function derivs in A and B
   double psxigp[2] = {sxigp, 0.0};
   double pmxigp[2] = {mxigp, 0.0};
-  LINALG::SerialDenseVector valsxigp(numsnode);
-  LINALG::SerialDenseVector valmxigp(nummnode);
-  LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
-  LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
+  CORE::LINALG::SerialDenseVector valsxigp(numsnode);
+  CORE::LINALG::SerialDenseVector valmxigp(nummnode);
+  CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 1);
+  CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 1);
 
   sele.EvaluateShape(psxigp, valsxigp, derivsxigp, numsnode, false);
   mele.EvaluateShape(pmxigp, valmxigp, derivmxigp, nummnode, false);
@@ -1580,10 +1581,10 @@ void NTS::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Morta
   }
 
   // we also need shape function derivs at the GP
-  LINALG::SerialDenseVector valsxigp(numsnode);
-  LINALG::SerialDenseVector valmxigp(nummnode);
-  LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
-  LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
+  CORE::LINALG::SerialDenseVector valsxigp(numsnode);
+  CORE::LINALG::SerialDenseVector valmxigp(nummnode);
+  CORE::LINALG::SerialDenseMatrix derivsxigp(numsnode, 2, true);
+  CORE::LINALG::SerialDenseMatrix derivmxigp(nummnode, 2, true);
 
   sele.EvaluateShape(sxigp, valsxigp, derivsxigp, numsnode);
   mele.EvaluateShape(mxigp, valmxigp, derivmxigp, nummnode);
@@ -1599,7 +1600,7 @@ void NTS::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Morta
     }
 
   // build 3x3 factor matrix L
-  LINALG::Matrix<3, 3> lmatrix(true);
+  CORE::LINALG::Matrix<3, 3> lmatrix(true);
   for (int k = 0; k < 3; ++k) lmatrix(k, 2) = -sgpn[k];
   for (int z = 0; z < nummnode; ++z)
     for (int k = 0; k < 3; ++k)
@@ -1855,7 +1856,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(
       kink_projection = true;
       snode.HasProj() = true;
 
-      static LINALG::Matrix<nm_, 1> mval;
+      static CORE::LINALG::Matrix<nm_, 1> mval;
       MORTAR::UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value
@@ -2044,7 +2045,7 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
       kink_projection = true;
       snode.HasProj() = true;
 
-      static LINALG::Matrix<nm_, 1> mval;
+      static CORE::LINALG::Matrix<nm_, 1> mval;
       MORTAR::UTILS::EvaluateShape_Displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value

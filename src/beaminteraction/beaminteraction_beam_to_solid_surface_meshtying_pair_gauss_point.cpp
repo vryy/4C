@@ -38,7 +38,7 @@ template <typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::EvaluateAndAssemble(
     const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
@@ -54,10 +54,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for position and force vectors.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type> coupling_vector;
-  LINALG::Matrix<3, 1, scalar_type> force;
-  LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type> coupling_vector;
+  CORE::LINALG::Matrix<3, 1, scalar_type> force;
+  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -109,10 +109,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   }
 
   // Get the pair GIDs.
-  LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, int> pair_gid;
+  CORE::LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, int> pair_gid;
   {
     // Get the beam centerline GIDs.
-    LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+    CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
     UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.

@@ -49,7 +49,7 @@ template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::EvaluateAndAssemble(
     const Teuchos::RCP<const ::DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<CORE::LINALG::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
@@ -86,41 +86,41 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
       q_fad(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
           n_dof_fad_, fad_offset + i_dof, CORE::FADUTILS::CastToDouble(q_original(i_dof)));
   };
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> q_beam;
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> q_solid;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> q_beam;
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> q_solid;
   set_q_fad(this->ele1pos_, q_beam);
   set_q_fad(this->ele2pos_, q_solid, beam::n_dof_);
 
   // Initialize pair wise vectors and matrices.
-  LINALG::Matrix<n_dof_pair_, 1, double> force_pair(true);
-  LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> stiff_pair(true);
-  LINALG::Matrix<n_dof_pair_, 1, scalar_type_pair> force_pair_local;
-  LINALG::Matrix<n_dof_pair_, 3, double> d_force_d_psi;
-  LINALG::Matrix<n_dof_pair_, n_dof_rot_, double> local_stiffness_rot;
+  CORE::LINALG::Matrix<n_dof_pair_, 1, double> force_pair(true);
+  CORE::LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> stiff_pair(true);
+  CORE::LINALG::Matrix<n_dof_pair_, 1, scalar_type_pair> force_pair_local;
+  CORE::LINALG::Matrix<n_dof_pair_, 3, double> d_force_d_psi;
+  CORE::LINALG::Matrix<n_dof_pair_, n_dof_rot_, double> local_stiffness_rot;
 
   // Shape function matrices.
-  LINALG::Matrix<3, solid::n_dof_, scalar_type_pair> N;
-  LINALG::Matrix<3, beam::n_dof_, scalar_type_pair> H;
-  LINALG::Matrix<3, n_dof_rot_, scalar_type_pair> L;
-  std::vector<LINALG::Matrix<3, 3, double>> I_tilde_vector;
-  LINALG::Matrix<3, n_dof_rot_, double> I_tilde;
+  CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_pair> N;
+  CORE::LINALG::Matrix<3, beam::n_dof_, scalar_type_pair> H;
+  CORE::LINALG::Matrix<3, n_dof_rot_, scalar_type_pair> L;
+  std::vector<CORE::LINALG::Matrix<3, 3, double>> I_tilde_vector;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde;
 
   // Initialize vector and matrix variables for the Gauss integration.
-  LINALG::Matrix<3, 1, double> dr_beam_ref;
-  LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_ref;
-  LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_current;
-  LINALG::Matrix<3, 1, scalar_type_pair> pos_beam;
-  LINALG::Matrix<3, 1, scalar_type_pair> pos_solid;
-  LINALG::Matrix<4, 1, double> quaternion_double;
-  LINALG::Matrix<3, 1, double> rotation_vector_double;
-  LINALG::Matrix<4, 1, scalar_type_pair> quaternion_fad;
-  LINALG::Matrix<3, 1, scalar_type_pair> rotation_vector_fad;
-  LINALG::Matrix<3, 3, scalar_type_pair> triad_fad;
-  LINALG::Matrix<3, 3, double> T_beam_double;
-  LINALG::Matrix<3, n_dof_rot_, double> T_times_I_tilde;
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> temp_solid_force;
-  LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> temp_beam_force;
-  LINALG::Matrix<n_dof_rot_, 1, scalar_type_pair> temp_beam_force_rot;
+  CORE::LINALG::Matrix<3, 1, double> dr_beam_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_ref;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pair> cross_section_vector_current;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pair> pos_beam;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pair> pos_solid;
+  CORE::LINALG::Matrix<4, 1, double> quaternion_double;
+  CORE::LINALG::Matrix<3, 1, double> rotation_vector_double;
+  CORE::LINALG::Matrix<4, 1, scalar_type_pair> quaternion_fad;
+  CORE::LINALG::Matrix<3, 1, scalar_type_pair> rotation_vector_fad;
+  CORE::LINALG::Matrix<3, 3, scalar_type_pair> triad_fad;
+  CORE::LINALG::Matrix<3, 3, double> T_beam_double;
+  CORE::LINALG::Matrix<3, n_dof_rot_, double> T_times_I_tilde;
+  CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_pair> temp_solid_force;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, scalar_type_pair> temp_beam_force;
+  CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_pair> temp_beam_force_rot;
 
   // Initialize scalar variables.
   double eta = 1e10;
@@ -208,7 +208,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     // Evaluate the force on the rotational beam DOFs.
     // In comparison to the mentioned paper, the relative cross section vector is also contained
     // here, but it cancels out in the cross product with itself.
-    LINALG::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
+    CORE::LINALG::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
     temp_beam_rot_cross.CrossProduct(cross_section_vector_current, r_diff);
     temp_beam_force_rot.MultiplyTN(L, temp_beam_rot_cross);
     for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
@@ -245,10 +245,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   }
 
   // Get the GIDs of this pair.
-  LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
+  CORE::LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
 
   // Beam centerline GIDs.
-  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  CORE::LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(*discret, this->Element1(), beam_centerline_gid);
   for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
     gid_pair(i_dof_beam) = beam_centerline_gid(i_dof_beam);
@@ -291,7 +291,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Reset
  */
 template <typename beam, typename solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::GetTriadAtXiDouble(
-    const double xi, LINALG::Matrix<3, 3, double>& triad, const bool reference) const
+    const double xi, CORE::LINALG::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {

@@ -117,10 +117,10 @@ namespace LOMA
     void SetupMonoLomaMatrix();
 
     /// evaluate off-diagonal block with fluid weighting functions
-    void EvaluateLomaODBlockMatFluid(Teuchos::RCP<LINALG::SparseMatrix> mat_fs);
+    void EvaluateLomaODBlockMatFluid(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_fs);
 
     /// evaluate off-diagonal block with scatra weighting functions
-    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<LINALG::SparseMatrix> mat_sf);
+    // void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<CORE::LINALG::SparseMatrix> mat_sf);
 
     /// set up right-hand-side for monolithic low-Mach-number system
     void SetupMonoLomaRHS();
@@ -144,7 +144,7 @@ namespace LOMA
     bool monolithic_;
 
     /// dof row map splitted in (field) blocks for monolithic solver
-    LINALG::MultiMapExtractor lomablockdofrowmap_;
+    CORE::LINALG::MultiMapExtractor lomablockdofrowmap_;
 
     /// combined Dirichlet boundary condition map for monolithic solver
     /// (unique map of all dofs with Dirichlet boundary conditions)
@@ -160,10 +160,10 @@ namespace LOMA
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     /// block matrix for monolithic solver
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> lomasystemmatrix_;
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> lomasystemmatrix_;
 
     /// monolithic solver
-    Teuchos::RCP<LINALG::Solver> lomasolver_;
+    Teuchos::RCP<CORE::LINALG::Solver> lomasolver_;
 
     /// time-step length, maximum time and maximum number of steps
     double dt_;

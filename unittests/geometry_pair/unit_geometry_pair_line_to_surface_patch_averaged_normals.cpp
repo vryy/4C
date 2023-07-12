@@ -171,11 +171,11 @@ namespace
       }
 
       // Check an surface position on the element.
-      LINALG::Matrix<3, 1, double> xi;
+      CORE::LINALG::Matrix<3, 1, double> xi;
       xi(0) = 0.2;
       xi(1) = -0.8;
       xi(2) = 0.69;
-      LINALG::Matrix<3, 1, scalar_type> r;
+      CORE::LINALG::Matrix<3, 1, scalar_type> r;
       GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFacePosition(), r,
           face_element->GetDrtFaceElement(), face_element->GetCurrentNormals());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)

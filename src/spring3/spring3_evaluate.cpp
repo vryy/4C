@@ -321,10 +321,10 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
   DummyForce.Size(6);
   DummyForce.Scale(0);
   // 1x6 velocity vector
-  LINALG::Matrix<1, 6> DummyVel;
+  CORE::LINALG::Matrix<1, 6> DummyVel;
   DummyVel.Clear();
   // 1x6 displacement vector
-  LINALG::Matrix<1, 6> DummyDisp;
+  CORE::LINALG::Matrix<1, 6> DummyDisp;
   DummyDisp.Clear();
   // Map velocity global level into element level
   if (vel.size() > 12)
@@ -413,9 +413,9 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
     torsion_stiffmass(params, disp, stiffmatrix, force);
 
   /*****************Compare magnitude of calculated forces********************/
-  //  LINALG::Matrix<6,1> axialforce;
+  //  CORE::LINALG::Matrix<6,1> axialforce;
   //  axialforce.Clear();
-  //  LINALG::Matrix<6,1> moment;
+  //  CORE::LINALG::Matrix<6,1> moment;
   //  moment.Clear();
   //  for (int i=0; i<3; i++)
   //  {
@@ -445,7 +445,7 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
  | nonlinear stiffness matrix (private) mukherjee 04/15| | engineering strain measure, in case of
  spring                                                             |
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const LINALG::Matrix<1, 6>& DummyDisp,
+void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const CORE::LINALG::Matrix<1, 6>& DummyDisp,
     Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseVector& DummyForce)
 {
   //  Teuchos::ParameterList statmechparams =
@@ -457,10 +457,10 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const LINALG::Matrix<1, 6>& 
   //  double spring= 1e-1;
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6, 1> xcurr;
+  CORE::LINALG::Matrix<6, 1> xcurr;
 
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6, 1> aux;
+  CORE::LINALG::Matrix<6, 1> aux;
 
   // current nodal position (first
   for (int j = 0; j < 3; ++j)
@@ -507,18 +507,18 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const LINALG::Matrix<1, 6>& 
  | Calculate change in angle from reference configuration                     mukherjee 09/14|
  *-------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::CalcDeltaTheta(
-    std::vector<double>& disp, LINALG::Matrix<1, 3>& thetacurr)
+    std::vector<double>& disp, CORE::LINALG::Matrix<1, 3>& thetacurr)
 {
   // current tangential vector
-  std::vector<LINALG::Matrix<3, 1>> tcurrNode;
+  std::vector<CORE::LINALG::Matrix<3, 1>> tcurrNode;
   tcurrNode.resize(3);
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node)
-  LINALG::Matrix<1, 6> xcurr(true);
+  CORE::LINALG::Matrix<1, 6> xcurr(true);
 
 
   // Calculate current directional vector of the truss element (v_1 in derivation)
   // v_1 direction 1---->2 i.e. v1=d2-d1;
-  LINALG::Matrix<1, 3> diff_disp_curr(true);
+  CORE::LINALG::Matrix<1, 3> diff_disp_curr(true);
 
   // current nodal position and directional vector of the truss
   for (int j = 0; j < 3; ++j)
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::Spring3::CalcDeltaTheta(
   }
 
   // current tangent vector
-  std::vector<LINALG::Matrix<3, 1>> Tcurr;
+  std::vector<CORE::LINALG::Matrix<3, 1>> Tcurr;
   Tcurr.resize(2);
   // current tangent vector
   if (FilamentIsReissner_)
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::Spring3::CalcDeltaTheta(
        location++)  // Location of torsional spring. There are three locations
   {
     double dotprod = 0.0;
-    LINALG::Matrix<1, 3> crossprod(true);
+    CORE::LINALG::Matrix<1, 3> crossprod(true);
     double CosTheta = 0.0;
     double SinTheta = 0.0;
 
@@ -655,15 +655,15 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
 {
   // Calculate current directional vector of the truss element (v_1 in derivation)
   // v_1 direction 1---->2 i.e. v1=d2-d1;
-  LINALG::Matrix<1, 3> diff_disp_curr(true);
+  CORE::LINALG::Matrix<1, 3> diff_disp_curr(true);
 
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node)
-  LINALG::Matrix<1, 6> xcurr(true);
-  LINALG::Matrix<1, 6> theta_0(true);
+  CORE::LINALG::Matrix<1, 6> xcurr(true);
+  CORE::LINALG::Matrix<1, 6> theta_0(true);
 
   // current tangential vector (first entries 0,1,2 for first node, 3,4,5 for second node)
-  LINALG::Matrix<1, 3> tcurrNode1(true);
-  LINALG::Matrix<1, 3> tcurrNode2(true);
+  CORE::LINALG::Matrix<1, 3> tcurrNode1(true);
+  CORE::LINALG::Matrix<1, 3> tcurrNode2(true);
 
   // current nodal position and directional vector of the truss
   for (int j = 0; j < 3; ++j)
@@ -672,13 +672,13 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
     xcurr(j + 3) = Nodes()[1]->X()[j] + disp[6 + j];  // second node
     diff_disp_curr(j) = (xcurr(j + 3) - xcurr(j));    // v1 = d2 - d1
   }
-  std::vector<LINALG::Matrix<3, 1>> Tcurr;
+  std::vector<CORE::LINALG::Matrix<3, 1>> Tcurr;
   Tcurr.resize(2);
   // current tangent vector
   if (FilamentIsReissner_)
   {
-    LINALG::Matrix<3, 1> Tcurr1(true);
-    LINALG::Matrix<3, 1> Tcurr2(true);
+    CORE::LINALG::Matrix<3, 1> Tcurr1(true);
+    CORE::LINALG::Matrix<3, 1> Tcurr2(true);
 
     this->GetCurrTangents(disp, Tcurr);
     this->TcurrBeam3r(Tcurr1, Tcurr2);
@@ -699,7 +699,7 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
 
 
   deltatheta_.Clear();
-  LINALG::Matrix<1, 3> thetacurr(true);
+  CORE::LINALG::Matrix<1, 3> thetacurr(true);
   CalcDeltaTheta(disp, thetacurr);
   double ThetaBoundary1 = M_PI / 4;
   double ThetaBoundary2 = 3 * M_PI / 4;
@@ -709,16 +709,16 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   //  //Energy potential
   //  FAD W = 0.0;
   //  // Current tangents
-  //  LINALG::Matrix<3,1,FAD> t1(true);
-  //    LINALG::Matrix<3,1,FAD> t2(true);
-  //    LINALG::Matrix<3,1,FAD> t1_unit(true);
-  //    LINALG::Matrix<3,1,FAD> t2_unit(true);
+  //  CORE::LINALG::Matrix<3,1,FAD> t1(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t2(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t1_unit(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t2_unit(true);
   //
   //    // Reference tangents
-  //  LINALG::Matrix<3,1,FAD> t10(true);
-  //    LINALG::Matrix<3,1,FAD> t20(true);
-  //    LINALG::Matrix<3,1,FAD> t10_unit(true);
-  //    LINALG::Matrix<3,1,FAD> t20_unit(true);
+  //  CORE::LINALG::Matrix<3,1,FAD> t10(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t20(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t10_unit(true);
+  //    CORE::LINALG::Matrix<3,1,FAD> t20_unit(true);
   //
   //    t1(0)=1.0;
   //    t2(1)=1.0;
@@ -764,10 +764,10 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   /*%%%%%%%%%%%%%Check with  analytical results %%%%%%%%%%%%%%%%%%%%%*/
   //
   //      // Reference tangents
-  //      LINALG::Matrix<3,1> tangent10(true);
-  //      LINALG::Matrix<3,1> tangent20(true);
-  //      LINALG::Matrix<3,1> tangent10_unit(true);
-  //      LINALG::Matrix<3,1> tangent20_unit(true);
+  //      CORE::LINALG::Matrix<3,1> tangent10(true);
+  //      CORE::LINALG::Matrix<3,1> tangent20(true);
+  //      CORE::LINALG::Matrix<3,1> tangent10_unit(true);
+  //      CORE::LINALG::Matrix<3,1> tangent20_unit(true);
   //
   //      // Compute terms at reference config.
   //      tangent10(0)=1.0;
@@ -776,10 +776,10 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   //      tangent10_unit.Scale(1.0/tangent10.Norm2());
   //
   //
-  //      LINALG::Matrix<3,1> t1_m(true);
-  //      LINALG::Matrix<3,1> t1_l(true);
-  //      LINALG::Matrix<3,1> t1_r(true);
-  //      LINALG::Matrix<3,1> t2_m(true);
+  //      CORE::LINALG::Matrix<3,1> t1_m(true);
+  //      CORE::LINALG::Matrix<3,1> t1_l(true);
+  //      CORE::LINALG::Matrix<3,1> t1_r(true);
+  //      CORE::LINALG::Matrix<3,1> t2_m(true);
   //
   //      t1_m(0)=1.0;
   //      t1_l(0)=1.0;
@@ -881,8 +881,9 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
  | Calculate torsional stiffness matrices and forces between tangents of beam       mukherjee 09/14|
  *-------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& params,
-    double theta, double deltatheta, LINALG::Matrix<1, 3>& tcurr1, LINALG::Matrix<1, 3>& tcurr2,
-    Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce)
+    double theta, double deltatheta, CORE::LINALG::Matrix<1, 3>& tcurr1,
+    CORE::LINALG::Matrix<1, 3>& tcurr2, Epetra_SerialDenseMatrix& TorStiffmatrix,
+    Epetra_SerialDenseVector& TorForce)
 {
   // Norms of the tangential vectors and directional displacement vector
   double norm_t2 = tcurr2.Norm2();
@@ -890,8 +891,8 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
   double s = cos(theta);
 
   // Calculate gradient of theta w.r.t. unknown dofs , in this case {t1,t2}
-  LINALG::Matrix<1, 3> A(true);  // Identical to "A" in derivation
-  LINALG::Matrix<1, 3> B(true);  // Identical to "B" in derivation
+  CORE::LINALG::Matrix<1, 3> A(true);  // Identical to "A" in derivation
+  CORE::LINALG::Matrix<1, 3> B(true);  // Identical to "B" in derivation
 
   for (int i = 0; i < 3; i++)
   {
@@ -902,7 +903,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
   }
 
   // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
-  LINALG::Matrix<1, 6> aux_c(true);  // Identical to "c" in derivation
+  CORE::LINALG::Matrix<1, 6> aux_c(true);  // Identical to "c" in derivation
 
   for (int j = 0; j < 3; j++)
   {
@@ -922,10 +923,10 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
   //%%%%%%% Calculation of stiffness matrix %%%%%%%%
 
   // Calculate auxiliary vectors for computation of stiffnessmatrices
-  LINALG::Matrix<3, 3> dadt1(true);
-  LINALG::Matrix<3, 3> dadt2(true);  // Identical to "C" in derivation
-  LINALG::Matrix<3, 3> dbdt1(true);
-  LINALG::Matrix<3, 3> dbdt2(true);  // Identical to "D" in derivation
+  CORE::LINALG::Matrix<3, 3> dadt1(true);
+  CORE::LINALG::Matrix<3, 3> dadt2(true);  // Identical to "C" in derivation
+  CORE::LINALG::Matrix<3, 3> dbdt1(true);
+  CORE::LINALG::Matrix<3, 3> dbdt2(true);  // Identical to "D" in derivation
 
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
@@ -975,7 +976,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
  |
  *--------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& params,
-    LINALG::Matrix<1, 3>& tangentcurr1, LINALG::Matrix<1, 3>& tangentcurr2,
+    CORE::LINALG::Matrix<1, 3>& tangentcurr1, CORE::LINALG::Matrix<1, 3>& tangentcurr2,
     Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce)
 {
   // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
@@ -983,28 +984,28 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   const int totdof = 6;  // (t1,t2)
 
   // FAD calculated stiff matrix for validation purposes
-  LINALG::Matrix<totdof, totdof, FAD> stiffmatrix_check(true);
-  LINALG::Matrix<1, totdof, FAD> force_check(true);
+  CORE::LINALG::Matrix<totdof, totdof, FAD> stiffmatrix_check(true);
+  CORE::LINALG::Matrix<1, totdof, FAD> force_check(true);
 
   // matrix for current positions and tangents
   std::vector<FAD> disp_tot(totdof, 0.0);
 
   // current tangent at Node 1
-  LINALG::Matrix<3, 1, FAD> tcurr1(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tcurr1(true);
   // current tangent at Node 2
-  LINALG::Matrix<3, 1, FAD> tcurr2(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tcurr2(true);
   // reference tangent at Node 1
-  LINALG::Matrix<3, 1, FAD> tref1(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tref1(true);
   // reference tangent at Node 2
-  LINALG::Matrix<3, 1, FAD> tref2(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tref2(true);
   // unit current tangent at Node 1
-  LINALG::Matrix<3, 1, FAD> tcurr1_unit(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tcurr1_unit(true);
   // unit current tangent at Node 2
-  LINALG::Matrix<3, 1, FAD> tcurr2_unit(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tcurr2_unit(true);
   // unit reference tangent at Node 1
-  LINALG::Matrix<3, 1, FAD> tref1_unit(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tref1_unit(true);
   // unit reference tangent at Node 2
-  LINALG::Matrix<3, 1, FAD> tref2_unit(true);
+  CORE::LINALG::Matrix<3, 1, FAD> tref2_unit(true);
 
   for (int i = 0; i < 3; i++)
   {
@@ -1046,11 +1047,11 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   for (int i = 0; i < totdof; i++) force_check(i) = W.dx(i);
 
   // Analytical matrix for computation of forces
-  LINALG::Matrix<1, 3, FAD> A(true);
-  LINALG::Matrix<1, 3, FAD> B(true);
+  CORE::LINALG::Matrix<1, 3, FAD> A(true);
+  CORE::LINALG::Matrix<1, 3, FAD> B(true);
   // Auxiliary matrix
-  LINALG::Matrix<3, 3, FAD> t1_aux(true);
-  LINALG::Matrix<3, 3, FAD> t2_aux(true);
+  CORE::LINALG::Matrix<3, 3, FAD> t1_aux(true);
+  CORE::LINALG::Matrix<3, 3, FAD> t2_aux(true);
 
   // Calculate dot product
   FAD t1t2curr_unit = CORE::FADUTILS::ScalarProduct(tcurr1_unit, tcurr2_unit);
@@ -1065,7 +1066,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
     }
 
   // FAD force vector for computation of forces
-  LINALG::Matrix<1, totdof, FAD> FADforce(true);
+  CORE::LINALG::Matrix<1, totdof, FAD> FADforce(true);
   for (int i = 0; i < 3; i++)
   {
     FADforce(i) = A(i);
@@ -1075,7 +1076,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
   }
 
   // FAD force vector for computation of forces
-  LINALG::Matrix<totdof, totdof, FAD> FADstiffMatrix(true);
+  CORE::LINALG::Matrix<totdof, totdof, FAD> FADstiffMatrix(true);
 
   for (int i = 0; i < totdof; i++)
     for (int j = 0; j < totdof; j++) TorStiffmatrix(i, j) = FADforce(i).dx(j);
@@ -1091,14 +1092,14 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
  |
  *--------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterList& params,
-    double theta_0, LINALG::Matrix<1, 3>& tcurrNode1, LINALG::Matrix<1, 3>& tcurrNode2,
+    double theta_0, CORE::LINALG::Matrix<1, 3>& tcurrNode1, CORE::LINALG::Matrix<1, 3>& tcurrNode2,
     Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce)
 {
   // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   // FAD calculated stiff matrix for validation purposes
-  LINALG::Matrix<6, 6, FAD> stiffmatrix_check;
+  CORE::LINALG::Matrix<6, 6, FAD> stiffmatrix_check;
   stiffmatrix_check.Clear();
-  LINALG::Matrix<1, 6, FAD> force_check;
+  CORE::LINALG::Matrix<1, 6, FAD> force_check;
 
   // total no of dofs
   const int totdof = 6;
@@ -1107,9 +1108,9 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
   std::vector<FAD> disp_tot(totdof, 0.0);
 
   // diff_disp = d2 -d1
-  LINALG::Matrix<1, 3, FAD> tangent2;
+  CORE::LINALG::Matrix<1, 3, FAD> tangent2;
   // t1 = tangent
-  LINALG::Matrix<1, 3, FAD> tangent1;
+  CORE::LINALG::Matrix<1, 3, FAD> tangent1;
 
   for (int i = 0; i < 3; i++)
   {
@@ -1179,9 +1180,9 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
   FAD spring = 0.0;
 
   // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
-  LINALG::Matrix<1, 3, FAD> aux_a(true);  // Identical to "a" in derivation
-  LINALG::Matrix<1, 3, FAD> aux_b(true);  // Identical to "b" in derivation
-  LINALG::Matrix<1, 6, FAD> aux_c(true);  // Identical to "c" in derivation
+  CORE::LINALG::Matrix<1, 3, FAD> aux_a(true);  // Identical to "a" in derivation
+  CORE::LINALG::Matrix<1, 3, FAD> aux_b(true);  // Identical to "b" in derivation
+  CORE::LINALG::Matrix<1, 6, FAD> aux_c(true);  // Identical to "c" in derivation
 
   for (int j = 0; j < 3; j++)
   {
@@ -1207,7 +1208,7 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
     }
   }  // for(int i = 0; i < dofpn*nnode; i++)
 
-  LINALG::Matrix<6, 6, FAD> stiff_relerr;
+  CORE::LINALG::Matrix<6, 6, FAD> stiff_relerr;
   stiff_relerr.Clear();
   for (int row = 0; row < 6; row++)
   {
@@ -1262,12 +1263,12 @@ void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterLis
  | using automatic differentiation                                                  mukherjee 09/14
  |
  *--------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Spring3::FADThetaLinearisation(LINALG::Matrix<1, 3>& diff_disp,
-    LINALG::Matrix<1, 3>& tcurr, LINALG::Matrix<1, 3>& A, LINALG::Matrix<1, 3>& B)
+void DRT::ELEMENTS::Spring3::FADThetaLinearisation(CORE::LINALG::Matrix<1, 3>& diff_disp,
+    CORE::LINALG::Matrix<1, 3>& tcurr, CORE::LINALG::Matrix<1, 3>& A, CORE::LINALG::Matrix<1, 3>& B)
 {
   // 1x6 Auxilary vector to verify linearisation of angle w.r.t. variables. Contributions to vector
   // {t1, v1} in respective order
-  LINALG::Matrix<1, 6> AuxilaryVector(true);
+  CORE::LINALG::Matrix<1, 6> AuxilaryVector(true);
   for (int i = 0; i < 3; i++)
   {
     AuxilaryVector(i) = A(i);
@@ -1276,7 +1277,7 @@ void DRT::ELEMENTS::Spring3::FADThetaLinearisation(LINALG::Matrix<1, 3>& diff_di
 
   // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   // FAD calculated linearisation for validation purposes
-  LINALG::Matrix<1, 6, FAD> vector_check;
+  CORE::LINALG::Matrix<1, 6, FAD> vector_check;
 
   // total no of dofs
   const int totdof = 6;
@@ -1285,9 +1286,9 @@ void DRT::ELEMENTS::Spring3::FADThetaLinearisation(LINALG::Matrix<1, 3>& diff_di
   std::vector<FAD> disp_tot(totdof, 0.0);
 
   // diff_disp = d2 -d1
-  LINALG::Matrix<1, 3, FAD> FADdiff_disp;
+  CORE::LINALG::Matrix<1, 3, FAD> FADdiff_disp;
   // t1 = tangent
-  LINALG::Matrix<1, 3, FAD> tangent;
+  CORE::LINALG::Matrix<1, 3, FAD> tangent;
 
   for (int i = 0; i < 3; i++)
   {
@@ -1327,7 +1328,7 @@ void DRT::ELEMENTS::Spring3::FADThetaLinearisation(LINALG::Matrix<1, 3>& diff_di
   }
 
 
-  LINALG::Matrix<1, totdof, FAD> vector_relerr;
+  CORE::LINALG::Matrix<1, totdof, FAD> vector_relerr;
   vector_relerr.Clear();
 
   for (int index = 0; index < totdof; index++)

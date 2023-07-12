@@ -172,10 +172,10 @@ namespace DRT
       /*========================================================================*/
 
       //! initial node coordinates
-      LINALG::Matrix<nsd_, nen_> xyze0_;
+      CORE::LINALG::Matrix<nsd_, nen_> xyze0_;
 
       //! nodal porosity values at t_(n+1)
-      LINALG::Matrix<nen_, 1> eporosity_;
+      CORE::LINALG::Matrix<nen_, 1> eporosity_;
 
       //! flag indacting a node based porosity
       bool isnodalporosity_;
@@ -237,14 +237,15 @@ namespace DRT
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const LINALG::Matrix<NSD, 1>& ConVel(const int k) const {//    if(k<NO_CONVECTION_NR)
+      virtual const CORE::LINALG::Matrix<NSD, 1>& ConVel(const int k) const {
+          //    if(k<NO_CONVECTION_NR)
           {return my::convelint_;
     }
     //    else
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const LINALG::Matrix<NEN, 1>& Conv(const int k) const {//    if(k<NO_CONVECTION_NR)
+  virtual const CORE::LINALG::Matrix<NEN, 1>& Conv(const int k) const {//    if(k<NO_CONVECTION_NR)
       {return my::conv_;
 }  // namespace DRT
    //    else
@@ -262,8 +263,8 @@ virtual const double& ConvPhi(const int k) const {//    if(k<NO_CONVECTION_NR)
 ;
 
 private:
-LINALG::Matrix<NSD, 1> zeroconvel_;
-LINALG::Matrix<NEN, 1> zeroconv_;
+CORE::LINALG::Matrix<NSD, 1> zeroconvel_;
+CORE::LINALG::Matrix<NEN, 1> zeroconv_;
 double zero_;
 }
 ;

@@ -53,9 +53,9 @@ namespace BEAMINTERACTION
      * @param local_constraint_offset (outl) Local constraint offset vector.
      * @return True if pair is in contact.
      */
-    bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa,
-        LINALG::SerialDenseVector& local_constraint_offset) override;
+    bool EvaluateDM(CORE::LINALG::SerialDenseMatrix& local_D,
+        CORE::LINALG::SerialDenseMatrix& local_M, CORE::LINALG::SerialDenseVector& local_kappa,
+        CORE::LINALG::SerialDenseVector& local_constraint_offset) override;
 
     /**
      * \brief This pair enforces constraints via a mortar-type method, which requires an own
@@ -74,9 +74,9 @@ namespace BEAMINTERACTION
         Teuchos::ParameterList& visualization_params) const override;
 
    protected:
-    virtual void EvaluatePenaltyForce(LINALG::Matrix<3, 1, scalar_type>& force,
+    virtual void EvaluatePenaltyForce(CORE::LINALG::Matrix<3, 1, scalar_type>& force,
         const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
-        LINALG::Matrix<3, 1, scalar_type> v_beam) const;
+        CORE::LINALG::Matrix<3, 1, scalar_type> v_beam) const;
   };
 }  // namespace BEAMINTERACTION
 

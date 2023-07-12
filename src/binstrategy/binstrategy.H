@@ -207,7 +207,7 @@ namespace BINSTRATEGY
      *
      * \return const bounding box dimension of binning domain
      */
-    inline LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const
+    inline CORE::LINALG::Matrix<3, 2> const& DomainBoundingBoxCornerPositions() const
     {
       return domain_bounding_box_corner_positions_;
     }
@@ -240,7 +240,7 @@ namespace BINSTRATEGY
      * \param[in] domain_bounding_box_corner_positions dimension for binning domain
      */
     inline void SetDomainBoundingBoxCornerPositions(
-        LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions)
+        CORE::LINALG::Matrix<3, 2> const& domain_bounding_box_corner_positions)
     {
       domain_bounding_box_corner_positions_ = domain_bounding_box_corner_positions;
     }
@@ -327,7 +327,7 @@ namespace BINSTRATEGY
      * \param[in] pos  position to be converted into ijk
      * \param[out] ijk resulting ijk
      */
-    void ConvertPosToijk(const LINALG::Matrix<3, 1>& pos, int* ijk) const;
+    void ConvertPosToijk(const CORE::LINALG::Matrix<3, 1>& pos, int* ijk) const;
 
     /*!
      * \brief convert position to bin id
@@ -336,7 +336,7 @@ namespace BINSTRATEGY
      *
      * \return position of which the corresponding bin id is asked for
      */
-    int ConvertPosToGid(const LINALG::Matrix<3, 1>& pos) const;
+    int ConvertPosToGid(const CORE::LINALG::Matrix<3, 1>& pos) const;
 
     /*!
      * \brief get 26 neighboring bin ids (one bin layer) to binID (if existing)
@@ -360,7 +360,7 @@ namespace BINSTRATEGY
      * \param[in] binId bin id of which corners are calculated
      * \param[out] bincorners position of corners of given bin
      */
-    void GetBinCorners(const int binId, std::vector<LINALG::Matrix<3, 1>>& bincorners) const;
+    void GetBinCorners(const int binId, std::vector<CORE::LINALG::Matrix<3, 1>>& bincorners) const;
 
     /*!
      * \brief get all bin centers (needed for repartitioning)
@@ -378,7 +378,7 @@ namespace BINSTRATEGY
      *
      * \return centroid of requested bin
      */
-    LINALG::Matrix<3, 1> GetBinCentroid(const int binId) const;
+    CORE::LINALG::Matrix<3, 1> GetBinCentroid(const int binId) const;
 
     /*!
      * \brief get minimal size of bins
@@ -718,7 +718,8 @@ namespace BINSTRATEGY
     void ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
         std::vector<Teuchos::RCP<DRT::Discretization>> discret,
         std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
-        LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions, bool set_bin_size_lower_bound_);
+        CORE::LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions,
+        bool set_bin_size_lower_bound_);
 
     /*!
      * \brief compute lower bound for bin size as largest element in discret
@@ -750,7 +751,7 @@ namespace BINSTRATEGY
      * \param[in] set_bin_size_lower_bound_ flag indicating to set bin size lower bound
      */
     void ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
-        Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
+        Teuchos::RCP<DRT::Discretization> discret, CORE::LINALG::Matrix<3, 2>& XAABB,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null,
         bool set_bin_size_lower_bound_ = false);
 
@@ -796,7 +797,7 @@ namespace BINSTRATEGY
     /*!
      * \brief binning domain edges
      */
-    LINALG::Matrix<3, 2> domain_bounding_box_corner_positions_;
+    CORE::LINALG::Matrix<3, 2> domain_bounding_box_corner_positions_;
 
     /*!
      * \brief if simulation domain is deforming, e.g. under shear, this handler takes care of this

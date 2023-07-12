@@ -49,12 +49,12 @@ void DRT::ELEMENTS::AssembleNodalElementCount(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
-    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
+    const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
 {
   const int numNodesPerElement =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
-  LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
+  CORE::LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
   CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
 
   const int num_dof_per_node = static_cast<int>(nodal_quantity.size()) / numNodesPerElement;
@@ -72,12 +72,12 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
 }
 
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
-    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex27>(
-    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet4>(
-    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet10>(
-    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::wedge6>(
-    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+    const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);

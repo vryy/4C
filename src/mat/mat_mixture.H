@@ -180,11 +180,11 @@ namespace MAT
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    void Update(LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
+    void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
-    void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
-        int eleGID) override;
+    void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, int gp,
+        Teuchos::ParameterList& params, int eleGID) override;
 
     /// \brief This material law uses the extended update method
     bool UsesExtendedUpdate() override { return true; }
@@ -201,9 +201,10 @@ namespace MAT
      * @param cmat (out) Linearization of the material law in Voigt notation
      * @param eleGID (in) Global element id
      */
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
-        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int gp, const int eleGID) final;
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
+        const int eleGID) final;
 
     /// \brief Return material mass density given by mixture rule
     double Density() const { return mixture_rule_->ReturnMassDensity(); };

@@ -215,10 +215,10 @@ void DRT::ELEMENTS::So_sh8p8::Print(std::ostream& os) const
  |  extrapolation of quantities at the GPs to the nodes      tk 04/09   |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol(
-    LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
+    CORE::LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
 {
   // static variables, that are the same for every element
-  static LINALG::Matrix<NUMNOD_, NUMGPT_> expol;
+  static CORE::LINALG::Matrix<NUMNOD_, NUMGPT_> expol;
   static bool isfilled;
 
 
@@ -272,7 +272,7 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol(
     isfilled = true;
   }
 
-  LINALG::Matrix<NUMNOD_, MAT::NUM_STRESS_3D> nodalstresses;
+  CORE::LINALG::Matrix<NUMNOD_, MAT::NUM_STRESS_3D> nodalstresses;
 
   nodalstresses.Multiply(expol, stresses);
 

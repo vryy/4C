@@ -22,7 +22,7 @@
 STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
-    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<LINALG::Solver> contactsolver,
+    Teuchos::RCP<CORE::LINALG::Solver> solver, Teuchos::RCP<CORE::LINALG::Solver> contactsolver,
     Teuchos::RCP<IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       modexpleuler_(DRT::INPUT::IntegralValue<int>(sdynparams, "MODIFIEDEXPLEULER") == 1),
@@ -45,7 +45,7 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void STR::TimIntExplEuler::Init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<LINALG::Solver> solver)
+    Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver)
 {
   // call Init() in base class
   STR::TimIntExpl::Init(timeparams, sdynparams, xparams, actdis, solver);
@@ -79,11 +79,11 @@ void STR::TimIntExplEuler::Setup()
   ResizeMStep();
 
   // allocate force vectors
-  fextn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fintn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fviscn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  fcmtn_ = LINALG::CreateVector(*DofRowMapView(), true);
-  frimpn_ = LINALG::CreateVector(*DofRowMapView(), true);
+  fextn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fintn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fviscn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  fcmtn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
+  frimpn_ = CORE::LINALG::CreateVector(*DofRowMapView(), true);
 
   return;
 }
@@ -211,7 +211,7 @@ int STR::TimIntExplEuler::IntegrateStep()
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
     if (lumpmass_ == false ||
-        Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_) == Teuchos::null)
+        Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_) == Teuchos::null)
     {
       // refactor==false: This is not necessary, because we always
       // use the same constant mass matrix, which was firstly factorised
@@ -222,9 +222,9 @@ int STR::TimIntExplEuler::IntegrateStep()
     else
     {
       // extract the diagonal values of the mass matrix
-      Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
-          (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->RowMap(), false);
-      (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_))->ExtractDiagonalCopy(*diag);
+      Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(
+          (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_))->RowMap(), false);
+      (Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mass_))->ExtractDiagonalCopy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )
       accn_->ReciprocalMultiply(1.0, *diag, *frimpn_, 0.0);
     }

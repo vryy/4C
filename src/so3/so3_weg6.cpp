@@ -104,7 +104,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
   for (int i = 0; i < NUMGPT_WEG6; ++i)
   {
     detJ_[i] = 0.0;
-    invJ_[i] = LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
+    invJ_[i] = CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
   }
 
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
@@ -237,7 +237,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   invJ_.resize(size);
   for (int i = 0; i < size; ++i)
   {
-    invJ_[i] = LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
+    invJ_[i] = CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>(true);
     ExtractfromPack(position, data, invJ_[i]);
   }
 
@@ -270,7 +270,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
-  LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
+  CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6> xrefe;  // material coord. of element
   for (int i = 0; i < NUMNOD_WEG6; ++i)
   {
     const double* x = nodes[i]->X();
@@ -279,10 +279,10 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
     xrefe(i, 2) = x[2];
   }
   const DRT::Element::DiscretizationType distype = Shape();
-  LINALG::Matrix<NUMNOD_WEG6, 1> funct;
+  CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
   CORE::DRT::UTILS::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
-  LINALG::Matrix<1, NUMDIM_WEG6> midpoint;
+  CORE::LINALG::Matrix<1, NUMDIM_WEG6> midpoint;
   // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
   std::vector<double> centercoords(3);

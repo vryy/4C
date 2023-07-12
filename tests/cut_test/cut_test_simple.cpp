@@ -1481,9 +1481,9 @@ void test_hex8_quad4_mesh()
 
 void test_position2d()
 {
-  LINALG::Matrix<3, 3> side_xyze;
-  LINALG::Matrix<3, 1> xyz;
-  LINALG::Matrix<3, 1> shift;
+  CORE::LINALG::Matrix<3, 3> side_xyze;
+  CORE::LINALG::Matrix<3, 1> xyz;
+  CORE::LINALG::Matrix<3, 1> shift;
 
   side_xyze(0, 0) = -0.20710678118654757;
   side_xyze(1, 0) = 0;
@@ -1505,7 +1505,7 @@ void test_position2d()
 
   for (int i = 0; i < 3; ++i)
   {
-    LINALG::Matrix<3, 1> x1(&side_xyze(0, i), true);
+    CORE::LINALG::Matrix<3, 1> x1(&side_xyze(0, i), true);
     x1.Update(1, shift, 1);
   }
   xyz.Update(1, shift, 1);

@@ -95,11 +95,11 @@ void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors()
     // export row map based displacement vector
     Teuchos::RCP<Epetra_Vector> temp = disp_row_;
     disp_row_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofRowMap(), true));
-    LINALG::Export(*temp, *disp_row_);
+    CORE::LINALG::Export(*temp, *disp_row_);
 
     // update column map based displacement vector
     disp_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
-    LINALG::Export(*disp_row_, *disp_col_);
+    CORE::LINALG::Export(*disp_row_, *disp_col_);
 
     // store displacements after last transfer
     disp_row_last_transfer_ = Teuchos::rcp(new Epetra_Vector(*disp_row_));
@@ -109,30 +109,30 @@ void PARTICLEWALL::WallDataState::UpdateMapsOfStateVectors()
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_));
-    LINALG::Export(*vel_col_, *temp);
+    CORE::LINALG::Export(*vel_col_, *temp);
     // export old row map based vector to new column map based vector
     vel_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
-    LINALG::Export(*temp, *vel_col_);
+    CORE::LINALG::Export(*temp, *vel_col_);
   }
 
   if (acc_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_));
-    LINALG::Export(*acc_col_, *temp);
+    CORE::LINALG::Export(*acc_col_, *temp);
     // export old row map based vector to new column map based vector
     acc_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
-    LINALG::Export(*temp, *acc_col_);
+    CORE::LINALG::Export(*temp, *acc_col_);
   }
 
   if (force_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*curr_dof_row_map_));
-    LINALG::Export(*force_col_, *temp);
+    CORE::LINALG::Export(*force_col_, *temp);
     // export old row map based vector to new column map based vector
     force_col_ = Teuchos::rcp(new Epetra_Vector(*walldiscretization_->DofColMap(), true));
-    LINALG::Export(*temp, *force_col_);
+    CORE::LINALG::Export(*temp, *force_col_);
   }
 
   // set new dof row map

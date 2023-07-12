@@ -681,10 +681,10 @@ namespace NOX
             int max_theta_id_;
 
             /// filter point coordinates
-            LINALG::SerialDenseVector coords_;
+            CORE::LINALG::SerialDenseVector coords_;
 
             /// margin of each filter point coordinate
-            LINALG::SerialDenseVector margin_;
+            CORE::LINALG::SerialDenseVector margin_;
 
             /// global number of coordinates per filter point
             static unsigned num_coords_;
@@ -704,13 +704,13 @@ namespace NOX
             static std::vector<bool> isvalid_scaling_;
 
             /// global scaling of each coordinate
-            static LINALG::SerialDenseVector scale_;
+            static CORE::LINALG::SerialDenseVector scale_;
 
             /// global weights for the filter point scaling
-            static LINALG::SerialDenseVector weights_;
+            static CORE::LINALG::SerialDenseVector weights_;
 
             /// global maximal infeasibility values
-            static LINALG::SerialDenseVector global_scaled_max_thetas_;
+            static CORE::LINALG::SerialDenseVector global_scaled_max_thetas_;
 
            private:
             /// this vector contains all registered filter points
@@ -767,10 +767,10 @@ namespace NOX
           const double st_;
 
           /// linear model terms / slopes of the objective and infeasibility merit-functions
-          LINALG::SerialDenseVector model_lin_terms_;
+          CORE::LINALG::SerialDenseVector model_lin_terms_;
 
           /// mixed 2-nd order terms of the objective and infeasibility merit-functions
-          LINALG::SerialDenseVector model_mixed_terms_;
+          CORE::LINALG::SerialDenseVector model_mixed_terms_;
 
           /// armijo inner status test object
           Teuchos::RCP<Generic> armijo_test_;

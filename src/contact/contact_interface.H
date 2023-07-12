@@ -19,7 +19,7 @@
 // forward declarations
 class Epetra_FEVector;
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SerialDenseMatrix;
 }
@@ -34,7 +34,7 @@ namespace DRT
   class Node;
 }
 
-namespace LINALG
+namespace CORE::LINALG
 {
   class SparseMatrix;
 }
@@ -826,8 +826,8 @@ namespace CONTACT
 
     */
     virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
-        const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
-        const Teuchos::RCP<LINALG::SparseMatrix> doldmod);
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix> dmatrixmod,
+        const Teuchos::RCP<CORE::LINALG::SparseMatrix> doldmod);
 
     /*!
       \brief Evaluate nodal distances and linearization
@@ -890,14 +890,14 @@ namespace CONTACT
 
     \param[in/out] lambdaglobal Matrix to be assembled into
     */
-    virtual void AssembleLinZ(LINALG::SparseMatrix& lambdaglobal);
+    virtual void AssembleLinZ(CORE::LINALG::SparseMatrix& lambdaglobal);
 
     /*!
     \brief Assemble matrix T containing nodal tangents and/or matrix N containing nodal normals!
 
     */
-    virtual void AssembleTN(Teuchos::RCP<LINALG::SparseMatrix> tglobal = Teuchos::null,
-        Teuchos::RCP<LINALG::SparseMatrix> nglobal = Teuchos::null);
+    virtual void AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> tglobal = Teuchos::null,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> nglobal = Teuchos::null);
 
     /*!
     \brief Assemble matrix S containing linearizations
@@ -908,7 +908,7 @@ namespace CONTACT
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(LINALG::SparseMatrix& sglobal);
+    virtual void AssembleS(CORE::LINALG::SparseMatrix& sglobal);
 
     /*!
     \brief Assemble matrix Tderiv and Nderiv containing linearizations
@@ -924,8 +924,10 @@ namespace CONTACT
      - false -> standard contact lagrange multiplier!
 
     */
-    virtual void AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> tderivglobal = Teuchos::null,
-        Teuchos::RCP<LINALG::SparseMatrix> nderivglobal = Teuchos::null, bool usePoroLM = false);
+    virtual void AssembleTNderiv(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> tderivglobal = Teuchos::null,
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> nderivglobal = Teuchos::null,
+        bool usePoroLM = false);
 
     /*!
     \brief Assemble matrices LinD, LinM containing linearizations
@@ -940,18 +942,18 @@ namespace CONTACT
      - false -> standard contact lagrange multiplier!
 
     */
-    virtual void AssembleLinDM(
-        LINALG::SparseMatrix& lindglobal, LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
+    virtual void AssembleLinDM(CORE::LINALG::SparseMatrix& lindglobal,
+        CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin d
     */
-    virtual void AssembleLinD(LINALG::SparseMatrix& lindglobal, bool usePoroLM = false);
+    virtual void AssembleLinD(CORE::LINALG::SparseMatrix& lindglobal, bool usePoroLM = false);
 
     /*!
     \brief subroutine assemble lin m
     */
-    virtual void AssembleLinM(LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
+    virtual void AssembleLinM(CORE::LINALG::SparseMatrix& linmglobal, bool usePoroLM = false);
 
 
     /*!
@@ -988,8 +990,8 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(LINALG::SparseMatrix& linstickLMglobal,
-        LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    virtual void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -999,20 +1001,20 @@ namespace CONTACT
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal,
-        LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    virtual void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
     /*!
       \brief Assemble linearization of regularized normal constraint
     */
     virtual void AssembleNormalContactRegularization(
-        LINALG::SparseMatrix& d_disp, LINALG::SparseMatrix& d_lm, Epetra_Vector& f);
+        CORE::LINALG::SparseMatrix& d_disp, CORE::LINALG::SparseMatrix& d_lm, Epetra_Vector& f);
 
     /*!
       \brief Assemble linearization of slip condition with regularized normal constraint
     */
-    virtual void AssembleLinSlipNormalRegularization(LINALG::SparseMatrix& linslipLMglobal,
-        LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    virtual void AssembleLinSlipNormalRegularization(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
 
 
     /*!
@@ -1084,7 +1086,8 @@ namespace CONTACT
     \brief Assemble linearisation of normal coupling weighted condition for poro contact
 
     */
-    virtual void AssembleNCoupLin(LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs,
+    virtual void AssembleNCoupLin(
+        CORE::LINALG::SparseMatrix& sglobal, CORE::ADAPTER::Coupling& coupfs,
         bool AssembleVelocityLin = false  // if true velocity linearisation will be assembled into
                                           // sglobal, otherwise lin. w.r.t. displacements!
     );
@@ -1098,7 +1101,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void AssembleCoupLinD(
-        LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
+        CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
 
@@ -1108,7 +1111,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void AssembleCoupLinM(
-        LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
+        CORE::LINALG::SparseMatrix& CoupLin, const Teuchos::RCP<Epetra_Vector> x);
 
     /*!
     \brief Store current (contact) nodal entries to old ones
@@ -1134,7 +1137,7 @@ namespace CONTACT
 
     */
     void EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-        LINALG::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
+        CORE::LINALG::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
 
     /*!
     \brief Get the nodal interface force
@@ -1145,8 +1148,8 @@ namespace CONTACT
     @param force ??
     @param node Node that is queried
     */
-    void GetForceOfNode(
-        LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force, const DRT::Node& node) const;
+    void GetForceOfNode(CORE::LINALG::Matrix<3, 1>& nodal_force, const Epetra_Vector& force,
+        const DRT::Node& node) const;
 
     /*!
     \brief Visualize contact stuff with gmsh
@@ -1225,15 +1228,15 @@ namespace CONTACT
     \brief Check stick condition derivatives with finite differences
 
     */
-    virtual void FDCheckStickDeriv(
-        LINALG::SparseMatrix& linstickLMglobal, LINALG::SparseMatrix& linstickDISglobal);
+    virtual void FDCheckStickDeriv(CORE::LINALG::SparseMatrix& linstickLMglobal,
+        CORE::LINALG::SparseMatrix& linstickDISglobal);
 
     /*!
     \brief Check slip condition derivatives with finite differences
 
     */
     virtual void FDCheckSlipDeriv(
-        LINALG::SparseMatrix& linslipLMglobal, LINALG::SparseMatrix& linslipDISglobal);
+        CORE::LINALG::SparseMatrix& linslipLMglobal, CORE::LINALG::SparseMatrix& linslipDISglobal);
 
     /*!
     \brief Check penalty approach with finite differences
@@ -1280,26 +1283,26 @@ namespace CONTACT
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+    void AddLTLstiffness(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+    void AddLTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+    void AddNTSstiffnessMaster(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+    void AddLTLstiffnessFric(Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff);
 
     Teuchos::RCP<Epetra_Vector>& GetCn() { return cnValues_; };
 

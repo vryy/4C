@@ -72,7 +72,7 @@ void CORE::GEO::NearestObject::clear()
  |  set node object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::setNodeObjectType(
-    const int nodeId, const int label, const LINALG::Matrix<3, 1>& physcoord)
+    const int nodeId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = NODE_OBJECT;
   nodeId_ = nodeId;
@@ -88,8 +88,8 @@ void CORE::GEO::NearestObject::setNodeObjectType(
 /*----------------------------------------------------------------------*
  |  set line object type                                     u.may 08/08|
  *----------------------------------------------------------------------*/
-void CORE::GEO::NearestObject::setLineObjectType(
-    const int lineId, const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
+void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int surfId,
+    const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = LINE_OBJECT;
   lineId_ = lineId;
@@ -106,7 +106,7 @@ void CORE::GEO::NearestObject::setLineObjectType(
  |  set surface object type                                  u.may 08/08|
  *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::setSurfaceObjectType(
-    const int surfId, const int label, const LINALG::Matrix<3, 1>& physcoord)
+    const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
   objectType_ = SURFACE_OBJECT;
   surfId_ = surfId;
