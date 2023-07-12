@@ -29,9 +29,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   Yes
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1

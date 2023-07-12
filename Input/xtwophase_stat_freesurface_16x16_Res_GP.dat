@@ -40,16 +40,13 @@ OUTPUT_GMSH                     no
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_STRAIN                   No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         No
-FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  None
 THERM_TEMPGRAD                  None

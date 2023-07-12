@@ -196,9 +196,7 @@ MAXTIME                         4.0
 TIMESTEP                        0.1
 -----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         Yes
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
@@ -206,7 +204,6 @@ PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
 STRUCT_SURFACTANT               No

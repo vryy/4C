@@ -23,7 +23,6 @@ SHAPEFCT                        Polynomial
 OUTPUT_GMSH                     No
 OUTPUT_BIN                      No
 STRUCT_DISP                     Yes
-FLUID_SOL                       Yes
 FILESTEPS                       1000
 STDOUTEVRY                      1
 WRITE_TO_SCREEN                 Yes

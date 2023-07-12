@@ -40,7 +40,6 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("STRUCT_ELE", "Yes", "Output of element properties", &io);
   BoolParameter("STRUCT_DISP", "Yes", "Output of displacements", &io);
   BoolParameter("STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", &io);
-  BoolParameter("STRUCT_SE", "No", "Output of strain energy", &io);
   BoolParameter("STRUCT_CURRENT_VOLUME", "No",
       "Output of current element volume as scalar value for each structural element", &io);
   setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
@@ -88,12 +87,10 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::STR::ConditionNumber::max_min_ev_ratio, INPAR::STR::ConditionNumber::one_norm,
           INPAR::STR::ConditionNumber::inf_norm, INPAR::STR::ConditionNumber::none),
       &io);
-  BoolParameter("FLUID_SOL", "Yes", "", &io);
   BoolParameter("FLUID_STRESS", "No", "", &io);
   BoolParameter("FLUID_WALL_SHEAR_STRESS", "No", "", &io);
   BoolParameter("FLUID_ELEDATA_EVRY_STEP", "No", "", &io);
   BoolParameter("FLUID_NODEDATA_FIRST_STEP", "No", "", &io);
-  BoolParameter("FLUID_VIS", "No", "", &io);
   BoolParameter("THERM_TEMPERATURE", "No", "", &io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),

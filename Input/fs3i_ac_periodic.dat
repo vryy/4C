@@ -28,16 +28,13 @@ RANDSEED                        -1
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          No
 STRUCT_STRAIN                   No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_WALL_SHEAR_STRESS         Yes
-FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25
 WRITE_TO_SCREEN                 Yes
