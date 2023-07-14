@@ -1128,7 +1128,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // Thermo-hyperelasticity / finite strain von-Mises plasticity
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticHyperElast",
-        "Thermo-hyperelastic / finite strain plastic von Mises material",
+        "Thermo-hyperelastic / finite strain plastic von Mises material "
+        "with linear and exponential isotropic hardening",
         INPAR::MAT::m_thermoplhyperelast));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
@@ -1137,21 +1138,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "CTE", "coefficient of thermal expansion", 0., true);
     AddNamedReal(m, "INITTEMP", "initial, reference temperature", 0., true);
     AddNamedReal(m, "YIELD", "initial yield stress");
-    AddNamedReal(m, "ISOHARD", "isotropic hardening modulus", 0., true);
+    AddNamedReal(m, "ISOHARD", "linear isotropic hardening modulus", 0., true);
     AddNamedReal(m, "SATHARDENING", "saturation hardening", 0., true);
     AddNamedReal(m, "HARDEXPO", "hardening exponent", 0., true);
-    AddNamedReal(m, "YIELDSOFT", "yield stress softening", 0., true);
-    AddNamedReal(m, "HARDSOFT", "hardening softening", 0., true);
+    AddNamedReal(m, "YIELDSOFT", "thermal yield stress softening", 0., true);
+    AddNamedReal(m, "HARDSOFT", "thermal hardening softening (acting on SATHARDENING and ISOHARD)",
+        0., true);
     AddNamedReal(m, "TOL", "tolerance for local Newton iteration", 1.e-8, true);
 
     AppendMaterialDefinition(matlist, m);
   }
 
+
   /*----------------------------------------------------------------------*/
   // Hyperelasticity / finite strain von-Mises plasticity
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNlnLogNeoHooke",
-        "hyperelastic / finite strain plastic von Mises material", INPAR::MAT::m_plnlnlogneohooke));
+        "hyperelastic / finite strain plastic von Mises material "
+        "with linear and exponential isotropic hardening",
+        INPAR::MAT::m_plnlnlogneohooke));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -1159,7 +1164,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "YIELD", "yield stress");
     AddNamedReal(m, "ISOHARD", "isotropic hardening modulus");
     AddNamedReal(m, "SATHARDENING", "saturation hardening");
-    AddNamedReal(m, "HARDEXPO", "hardening exponent");
+    AddNamedReal(m, "HARDEXPO", "linear hardening exponent");
     AddNamedReal(m, "VISC", "VISCOSITY", 0., true);
     AddNamedReal(m, "RATE_DEPENDENCY", "rate dependency", 0., true);
 
@@ -1170,14 +1175,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // Plastic linear elastic St.Venant Kirchhoff / von Mises
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
-        "elastic St.Venant Kirchhoff / plastic von Mises material", INPAR::MAT::m_pllinelast));
+        "elastic St.Venant Kirchhoff / plastic von Mises material "
+        "with linear isotropic and kineamtic hardening",
+        INPAR::MAT::m_pllinelast));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "YIELD", "yield stress");
-    AddNamedReal(m, "ISOHARD", "isotropic hardening modulus");
-    AddNamedReal(m, "KINHARD", "kinematic hardening modulus");
+    AddNamedReal(m, "ISOHARD", "linear isotropic hardening modulus");
+    AddNamedReal(m, "KINHARD", "linear kinematic hardening modulus");
     AddNamedReal(m, "TOL", "tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist, m);

@@ -45,7 +45,7 @@ for line in $(git diff --cached --name-only --diff-filter=ACMR)
 do
 
 # check if there are non-ascii characters in the file (excluding *.md files)
-if [[ $line != *.md ]]
+if [[ "$line" != *.md && "$line" != *.rst ]]
 then
   non_ascii_chars=`(git diff HEAD $line | grep --perl-regex --no-filename --only-matching --binary-files=without-match "[^\x00-\x7F]" | sort --unique | tr --delete '\n')`
   if [ -n "$non_ascii_chars" ]; then

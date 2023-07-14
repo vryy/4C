@@ -11,6 +11,7 @@ yamlfmt==1.1.0
 # for readthedocs:
 pytest
 sphinx
+sphinx-multibuild
 sphinx-rtd-theme
 myst-parser
 nbsphinx
