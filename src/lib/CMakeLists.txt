@@ -8,7 +8,6 @@ set(_lib_dependencies
     comm
     contact_constitutivelaw
     core
-    create_rtdfiles
     elemag
     fiber
     fluid

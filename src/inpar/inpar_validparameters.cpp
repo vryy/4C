@@ -108,10 +108,12 @@ void PrintHelpMessage()
             << "\n"
             << "SYNOPSIS\n"
             << "\t" << baci_build
-            << " [-h] [--help] [-p] [--parameters] [-d] [--datfile] [-ngroup=x] "
-               "[-glayout=a,b,c,...] [-nptype=parallelism_type]\n"
-            << "\t\tdat_name output_name [restart=y] [restartfrom=restart_file_name] [ dat_name0 "
-               "output_name0 [restart=y] [restartfrom=restart_file_name] ... ] [--interactive]\n"
+            << " [-h | --help] [-p | --parameters] [-d | --datfile] [-ngroup=<x>] \\ \n"
+               "\t\t[-glayout=a,b,c,...] [-nptype=<parallelism_type>] \\ \n"
+            << "\t\t<dat_name> <output_name> [restart=<y>] [restartfrom=restart_file_name] \\ \n"
+               "\t\t[ <dat_name0> <output_name0> [restart=<y>] [restartfrom=restart_file_name] ... "
+               "] \\ \n"
+               "\t\t[--interactive]\n"
             << "\n"
             << "DESCRIPTION\n"
             << "\tThe am besten simulation tool in the world.\n"
@@ -126,36 +128,41 @@ void PrintHelpMessage()
             << "\t--datfile or -d\n"
             << "\t\tPrint example dat_file with all available parameters.\n"
             << "\n"
-            << "\t-ngroup=x\n"
+            << "\t-ngroup=<x>\n"
             << "\t\tSpecify the number of groups for nested parallelism. (default: 1)\n"
             << "\n"
-            << "\t-glayout=a,b,c,...\n"
-            << "\t\tSpecify the number of processors per group. Argument \"-ngroup\" is mandatory "
-               "and must be preceding. (default: equal distribution)\n"
+            << "\t-glayout=<a>,<b>,<c>,...\n"
+            << "\t\tSpecify the number of processors per group. \n"
+               "\t\tArgument \"-ngroup\" is mandatory and must be preceding. \n"
+               "\t\t(default: equal distribution)\n"
             << "\n"
-            << "\t-nptype=parallelism_type\n"
+            << "\t-nptype=<parallelism_type>\n"
             << "\t\tAvailable options: \"separateDatFiles\", \"everyGroupReadDatFile\" and "
-               "\"copyDatFile\"; Must be set if \"-ngroup\" > 1.\n"
+               "\"copyDatFile\"; \n"
+               "\t\tMust be set if \"-ngroup\" > 1.\n"
             << "\t\t\"diffgroupx\" can be used to compare results from separate but parallel baci "
-               "runs; x must be 0 and 1 for the respective run"
+               "runs; \n"
+               "\t\tx must be 0 and 1 for the respective run\n"
             << "\n"
-            << "\tdat_name\n"
-            << "\t\tName of the input file (Usually *.dat)\n"
+            << "\t<dat_name>\n"
+            << "\t\tName of the input file, including the suffix (Usually *.dat)\n"
             << "\n"
-            << "\toutput_name\n"
+            << "\t<output_name>\n"
             << "\t\tPrefix of your output files.\n"
             << "\n"
-            << "\trestart=y\n"
-            << "\t\tRestart the simulation from step y. It always refers to the previously defined "
-               "dat_name and output_name. (default: 0 or from dat_name)\n"
+            << "\trestart=<y>\n"
+            << "\t\tRestart the simulation from step <y>. \n"
+               "\t\tIt always refers to the previously defined <dat_name> and <output_name>. \n"
+               "\t\t(default: 0 or from <dat_name>)\n"
             << "\n"
-            << "\trestartfrom=restart_file_name\n"
-            << "\t\tRestart the simulation from the files prefixed with restart_file_name. "
-               "(default: output_name)\n"
+            << "\trestartfrom=<restart_file_name>\n"
+            << "\t\tRestart the simulation from the files prefixed with <restart_file_name>. \n"
+               "\t\t(default: <output_name>)\n"
             << "\n"
             << "\t--interactive\n"
-            << "\t\tBaci waits at the beginning for keyboard input. Helpful for parallel debugging "
-               "when attaching to a single job. Must be specified at the end in the command line.\n"
+            << "\t\tBaci waits at the beginning for keyboard input. \n"
+               "\t\tHelpful for parallel debugging when attaching to a single job. \n"
+               "\t\tMust be specified at the end in the command line.\n"
             << "\n"
             << "BUGS\n"
             << "\t100% bug free since 1964.\n"
@@ -462,17 +469,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
-  const auto key_or_value_contains_space = [](const auto& entry)
-  {
-    const auto string_has_space = [](const std::string& s)
-    { return std::any_of(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }); };
+  // Helper function to check if string contains a space.
+  const auto string_has_space = [](const std::string& s)
+  { return std::any_of(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }); };
 
-    const auto& value = entry.second;
-    const bool value_has_space = value.template isType<std::string>() &&
-                                 string_has_space(Teuchos::getValue<std::string>(value));
+  return std::any_of(list.begin(), list.end(),
+      [&](const auto& it)
+      {
+        // skip entries that are lists: they are allowed to have spaces
+        if (it.second.isList()) return false;
 
-    return value_has_space || string_has_space(entry.key);
-  };
+        const std::string& name = it.key;
 
-  return std::any_of(list.begin(), list.end(), key_or_value_contains_space);
+        const Teuchos::RCP<const Teuchos::Array<std::string>>& values_ptr =
+            it.second.validator()->validStringValues();
+
+        const bool value_has_space =
+            (values_ptr != Teuchos::null) &&
+            std::any_of(values_ptr->begin(), values_ptr->end(), string_has_space);
+
+        return value_has_space || string_has_space(name);
+      });
 }

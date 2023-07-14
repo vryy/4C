@@ -134,6 +134,7 @@ add_subdirectory(src)
 
 # Process documentation
 add_subdirectory(doc EXCLUDE_FROM_ALL)
+add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
 # NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to

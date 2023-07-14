@@ -334,7 +334,7 @@ namespace DRT
             codelines.push_back("--" + std::string(std::max<int>(65 - l, 0), '-') + fullname);
             WriteCode(stream, codelines);
 
-            if (INPUT::NeedToPrintEqualSign(list))
+            if (INPUT::NeedToPrintEqualSign(list.sublist(name)))
             {
               WriteNote(stream,
                   "   The parameters in this section need an equal sign (=) "
