@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <Teuchos_TimeMonitor.hpp>
+#include <utility>
 
 #include "lib_discret.H"
 #include "lib_exporter.H"
@@ -21,28 +22,22 @@
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- |  comm             (in)  a communicator object                        |
  *----------------------------------------------------------------------*/
-DRT::Discretization::Discretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm)
+DRT::Discretization::Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm)
     : name_(name), comm_(comm), writer_(Teuchos::null), filled_(false), havedof_(false)
 {
-  dofsets_.push_back(Teuchos::rcp(new DofSet()));
+  dofsets_.emplace_back(Teuchos::rcp(new DofSet()));
 }
 
 /*----------------------------------------------------------------------*
- |  Add an element (public)                                  mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::AddElement(Teuchos::RCP<DRT::Element> ele)
 {
   element_[ele->Id()] = ele;
   Reset();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |Calls Reset() on each processor if not Filled() == true on each proc   |
- |                                                            cyron 10/09|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::CheckFilledGlobally()
 {
@@ -59,46 +54,39 @@ void DRT::Discretization::CheckFilledGlobally()
 
   // if not Filled() == true on all the processors call Reset()
   if (!globalfilled) Reset();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Add a node (public)                                      mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::AddNode(Teuchos::RCP<DRT::Node> node)
 {
   node_[node->Id()] = node;
   Reset();
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  delete an node (public)                                  mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteNode(Teuchos::RCP<DRT::Node> node)
 {
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator fool = node_.find(node->Id());
-  if (fool == node_.end()) return false;
-  node_.erase(fool);
+  auto it_node = node_.find(node->Id());
+  if (it_node == node_.end()) return false;
+  node_.erase(it_node);
   Reset();
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  delete an node (public)                                  mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteNode(const int gid)
 {
-  std::map<int, Teuchos::RCP<DRT::Node>>::iterator fool = node_.find(gid);
-  if (fool == node_.end()) return false;
-  node_.erase(fool);
+  auto it_node = node_.find(gid);
+  if (it_node == node_.end()) return false;
+  node_.erase(it_node);
   Reset();
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  remove all nodes  (public)                               ghamm 10/13|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteNodes()
 {
@@ -109,7 +97,6 @@ bool DRT::Discretization::DeleteNodes()
 }
 
 /*----------------------------------------------------------------------*
- |  remove all nodes  (public)                            sudhakar 12/14|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElements()
 {
@@ -120,31 +107,28 @@ bool DRT::Discretization::DeleteElements()
 }
 
 /*----------------------------------------------------------------------*
- |  delete an element (public)                               mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElement(Teuchos::RCP<DRT::Element> ele)
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool = element_.find(ele->Id());
-  if (fool == element_.end()) return false;
-  element_.erase(fool);
+  auto it_ele = element_.find(ele->Id());
+  if (it_ele == element_.end()) return false;
+  element_.erase(it_ele);
   Reset();
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  delete an element (public)                               mwgee 10/08|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::DeleteElement(const int gid)
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool = element_.find(gid);
-  if (fool == element_.end()) return false;
-  element_.erase(fool);
+  auto it_ele = element_.find(gid);
+  if (it_ele == element_.end()) return false;
+  element_.erase(it_ele);
   Reset();
   return true;
 }
 
 /*----------------------------------------------------------------------*
- |  remove all nodes and elements (public)                   ghamm 03/13|
  *----------------------------------------------------------------------*/
 bool DRT::Discretization::ClearDiscret()
 {
@@ -157,7 +141,6 @@ bool DRT::Discretization::ClearDiscret()
 }
 
 /*----------------------------------------------------------------------*
- |  get nodal row map (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeRowMap() const
 {
@@ -173,7 +156,6 @@ const Epetra_Map* DRT::Discretization::NodeRowMap() const
 }
 
 /*----------------------------------------------------------------------*
- |  get nodal column map (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeColMap() const
 {
@@ -189,7 +171,6 @@ const Epetra_Map* DRT::Discretization::NodeColMap() const
 }
 
 /*----------------------------------------------------------------------*
- |  get element row map (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementRowMap() const
 {
@@ -205,7 +186,6 @@ const Epetra_Map* DRT::Discretization::ElementRowMap() const
 }
 
 /*----------------------------------------------------------------------*
- |  get element column map (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::ElementColMap() const
 {
@@ -221,7 +201,6 @@ const Epetra_Map* DRT::Discretization::ElementColMap() const
 }
 
 /*----------------------------------------------------------------------*
- |  get global no of elements (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalElements() const
 {
@@ -237,7 +216,6 @@ int DRT::Discretization::NumGlobalElements() const
 }
 
 /*----------------------------------------------------------------------*
- |  get no of my row elements (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowElements() const
 {
@@ -253,7 +231,6 @@ int DRT::Discretization::NumMyRowElements() const
 }
 
 /*----------------------------------------------------------------------*
- |  get no of my column elements (public)                    mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyColElements() const
 {
@@ -264,7 +241,6 @@ int DRT::Discretization::NumMyColElements() const
 }
 
 /*----------------------------------------------------------------------*
- |  get global no of nodes (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumGlobalNodes() const
 {
@@ -280,7 +256,6 @@ int DRT::Discretization::NumGlobalNodes() const
 }
 
 /*----------------------------------------------------------------------*
- |  get no of my row nodes (public)                          mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyRowNodes() const
 {
@@ -296,7 +271,6 @@ int DRT::Discretization::NumMyRowNodes() const
 }
 
 /*----------------------------------------------------------------------*
- |  get no of my column nodes (public)                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 int DRT::Discretization::NumMyColNodes() const
 {
@@ -307,21 +281,15 @@ int DRT::Discretization::NumMyColNodes() const
 }
 
 /*----------------------------------------------------------------------*
- |  query existance of element (public)                      mwgee 12/06|
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::HaveGlobalElement(int gid) const
+bool DRT::Discretization::HaveGlobalElement(const int gid) const
 {
-  std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr = element_.find(gid);
-  if (curr == element_.end())
-    return false;
-  else
-    return true;
+  return element_.find(gid) != element_.end();
 }
 
 /*----------------------------------------------------------------------*
- |  get element with global id (public)                      mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::Discretization::gElement(int gid) const
+DRT::Element* DRT::Discretization::gElement(const int gid) const
 {
 #ifdef DEBUG
   std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator curr = element_.find(gid);
@@ -336,19 +304,13 @@ DRT::Element* DRT::Discretization::gElement(int gid) const
 }
 
 /*----------------------------------------------------------------------*
- |  query existance of node (public)                         mwgee 12/06|
  *----------------------------------------------------------------------*/
-bool DRT::Discretization::HaveGlobalNode(int gid) const
+bool DRT::Discretization::HaveGlobalNode(const int gid) const
 {
-  std::map<int, Teuchos::RCP<DRT::Node>>::const_iterator curr = node_.find(gid);
-  if (curr == node_.end())
-    return false;
-  else
-    return true;
+  return node_.find(gid) != node_.end();
 }
 
 /*----------------------------------------------------------------------*
- |  get node with global id (public)                         mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Node* DRT::Discretization::gNode(int gid) const
 {
@@ -365,7 +327,6 @@ DRT::Node* DRT::Discretization::gNode(int gid) const
 }
 
 /*----------------------------------------------------------------------*
- |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis)
 {
@@ -374,7 +335,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  Print discretization (public)                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Print(std::ostream& os) const
 {
@@ -437,7 +397,7 @@ void DRT::Discretization::Print(std::ostream& os) const
               if (dof.size())
               {
                 os << " Dofs ";
-                for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+                for (int i : dof) os << std::setw(6) << i << " ";
               }
             }
             os << std::endl;
@@ -457,7 +417,7 @@ void DRT::Discretization::Print(std::ostream& os) const
               if (dof.size())
               {
                 os << " Dofs ";
-                for (unsigned i = 0; i < dof.size(); ++i) os << std::setw(6) << dof[i] << " ";
+                for (int i : dof) os << std::setw(6) << i << " ";
               }
             }
             os << std::endl;
@@ -467,7 +427,7 @@ void DRT::Discretization::Print(std::ostream& os) const
       }
       // print conditions
       {
-        int numcond = condition_.size();
+        const unsigned numcond = condition_.size();
         if (numcond) os << "-------------------------- Proc " << proc << " :\n";
         if (numcond)
         {
@@ -484,13 +444,11 @@ void DRT::Discretization::Print(std::ostream& os) const
     }
     Comm().Barrier();
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  get dof row map (public)                                 mwgee 12/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofRowMap(unsigned nds) const
+const Epetra_Map* DRT::Discretization::DofRowMap(const unsigned nds) const
 {
   dsassert(nds < dofsets_.size(), "undefined dof set");
   if (!Filled()) dserror("FillComplete was not called on this discretization");
@@ -501,9 +459,8 @@ const Epetra_Map* DRT::Discretization::DofRowMap(unsigned nds) const
 
 
 /*----------------------------------------------------------------------*
- |  get dof column map (public)                              mwgee 12/06|
  *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
+const Epetra_Map* DRT::Discretization::DofColMap(const unsigned nds) const
 {
   dsassert(nds < dofsets_.size(), "undefined dof set");
   if (!Filled()) dserror("FillComplete was not called on this discretization");
@@ -514,10 +471,9 @@ const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
 
 
 /*----------------------------------------------------------------------*
- |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ReplaceDofSet(
-    unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets)
+    const unsigned nds, Teuchos::RCP<DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   dsassert(nds < dofsets_.size(), "undefined dof set");
   // if we already have our dofs here and we add a properly filled (proxy)
@@ -525,7 +481,6 @@ void DRT::Discretization::ReplaceDofSet(
   havedof_ = havedof_ and newdofset->Filled() and nds != 0;
   if (replaceinstatdofsets) newdofset->ReplaceInStaticDofsets(dofsets_[nds]);
   dofsets_[nds] = newdofset;
-  return;
 }
 
 
@@ -537,33 +492,30 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSetInterface> newdofset)
   // DofSet, we do not need (and do not want) to refill.
   havedof_ = havedof_ and newdofset->Filled();
   dofsets_.push_back(newdofset);
-  return dofsets_.size() - 1;
+  return static_cast<int>(dofsets_.size() - 1);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSetInterface> DRT::Discretization::GetDofSetProxy(int nds)
+Teuchos::RCP<DRT::DofSetInterface> DRT::Discretization::GetDofSetProxy(const int nds)
 {
   dsassert(nds < (int)dofsets_.size(), "undefined dof set");
   return Teuchos::rcp(new DofSetProxy(&*dofsets_[nds]));
 }
 
 /*----------------------------------------------------------------------*
- |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ReplaceDofSet(
-    Teuchos::RCP<DofSetInterface> newdofset, bool replaceinstatdofsets)
+    Teuchos::RCP<DofSetInterface> newdofset, const bool replaceinstatdofsets)
 {
   dsassert(dofsets_.size() == 1, "expect just one dof set");
   havedof_ = false;
   if (replaceinstatdofsets) newdofset->ReplaceInStaticDofsets(dofsets_[0]);
   dofsets_[0] = newdofset;
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | get master to slave coupling for periodic domains    rasthofer 04/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::map<int, std::vector<int>>> DRT::Discretization::GetAllPBCCoupledColNodes()
 {
@@ -573,14 +525,18 @@ Teuchos::RCP<std::map<int, std::vector<int>>> DRT::Discretization::GetAllPBCCoup
     Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
+    {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
       return pbcdofset->GetCoupledNodes();
+    }
   }
 
   return Teuchos::rcp(new std::map<int, std::vector<int>>);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeConnectivity()
 {
   // check for pbcs
@@ -589,9 +545,11 @@ Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeCon
     Teuchos::RCP<PBCDofSet> pbcdofset = Teuchos::rcp_dynamic_cast<PBCDofSet>(dofsets_[nds]);
 
     if (pbcdofset != Teuchos::null)
+    {
       // it is assumed that, if one pbc set is available, all other potential dofsets hold the same
       // layout
       return pbcdofset->GetSlaveToMasterNodeConnectivity();
+    }
   }
 
   return Teuchos::null;
@@ -599,10 +557,9 @@ Teuchos::RCP<std::map<int, int>> DRT::Discretization::GetPBCSlaveToMasterNodeCon
 
 
 /*----------------------------------------------------------------------*
- |  set a reference to a data vector (public)                mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::SetState(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    const unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::SetState");
 
@@ -662,18 +619,14 @@ void DRT::Discretization::SetState(
     // save state
     state_[nds][name] = tmp;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Set a condition of a certain name                          (public) |
- |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::SetCondition(const std::string& name, Teuchos::RCP<Condition> cond)
 {
   condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, cond));
   filled_ = false;
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -692,58 +645,49 @@ void DRT::Discretization::ReplaceConditions(
       condition_.insert(std::pair<std::string, Teuchos::RCP<Condition>>(name, *cit));
   }
   filled_ = false;
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Get a condition of a certain name                          (public) |
- |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::GetCondition(
     const std::string& name, std::vector<DRT::Condition*>& out) const
 {
-  const int num = condition_.count(name);
+  const unsigned num = condition_.count(name);
   out.resize(num);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator startit =
-      condition_.lower_bound(name);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator endit =
-      condition_.upper_bound(name);
-  int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
-  for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
+  unsigned count = 0;
+
+  auto range = condition_.equal_range(name);
+  for (auto cond = range.first; cond != range.second; ++cond)
+  {
+    out[count++] = cond->second.get();
+  }
   if (count != num) dserror("Mismatch in number of conditions found");
-  return;
 }
 /*----------------------------------------------------------------------*
- |  Get a condition of a certain name                          (public) |
- |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::GetCondition(
     const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const
 {
-  const int num = condition_.count(name);
+  const unsigned num = condition_.count(name);
   out.resize(num);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator startit =
-      condition_.lower_bound(name);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator endit =
-      condition_.upper_bound(name);
-  int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
-  for (curr = startit; curr != endit; ++curr) out[count++] = curr->second;
+  unsigned count = 0;
+
+  auto range = condition_.equal_range(name);
+  for (auto cond = range.first; cond != range.second; ++cond)
+  {
+    out[count++] = cond->second;
+  }
   if (count != num) dserror("Mismatch in number of conditions found");
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Get a condition of a certain name                          (public) |
- |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Discretization::GetCondition(const std::string& name) const
 {
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr = condition_.find(name);
-  if (curr == condition_.end()) return NULL;
-  curr = condition_.lower_bound(name);
-  return curr->second.get();
+  auto it_cond = condition_.find(name);
+  if (it_cond == condition_.end()) return nullptr;
+  it_cond = condition_.lower_bound(name);
+  return it_cond->second.get();
 }
 
 
@@ -752,20 +696,14 @@ DRT::Condition* DRT::Discretization::GetCondition(const std::string& name) const
 void DRT::Discretization::GetConditionNames(std::vector<std::string>& names) const
 {
   std::set<std::string> n;
-  for (std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr =
-           condition_.begin();
-       curr != condition_.end(); ++curr)
-  {
-    n.insert(curr->first);
-  }
+  for (const auto& [name, cond] : condition_) n.insert(name);
+
   names.reserve(n.size());
   names.assign(n.begin(), n.end());
 }
 
 
 /*----------------------------------------------------------------------*
- |  Pack local elements (row map) into buffer                  (public) |
- |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyElements() const
 {
@@ -773,31 +711,19 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyElements() const
 
   DRT::PackBuffer buffer;
 
-  for (std::vector<DRT::Element*>::const_iterator i = elerowptr_.begin(); i != elerowptr_.end();
-       ++i)
-  {
-    DRT::Element* e = *i;
-    e->Pack(buffer);
-  }
+  for (auto* ele : elerowptr_) ele->Pack(buffer);
 
   buffer.StartPacking();
 
-  for (std::vector<DRT::Element*>::const_iterator i = elerowptr_.begin(); i != elerowptr_.end();
-       ++i)
-  {
-    DRT::Element* e = *i;
-    e->Pack(buffer);
-  }
+  for (auto* ele : elerowptr_) ele->Pack(buffer);
 
-  Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
+  auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   return block;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Pack local nodes (row map) into buffer                     (public) |
- |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyNodes() const
 {
@@ -805,31 +731,22 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackMyNodes() const
 
   DRT::PackBuffer buffer;
 
-  for (std::vector<DRT::Node*>::const_iterator i = noderowptr_.begin(); i != noderowptr_.end(); ++i)
-  {
-    DRT::Node* n = *i;
-    n->Pack(buffer);
-  }
+  for (auto* node : noderowptr_) node->Pack(buffer);
 
   buffer.StartPacking();
 
-  for (std::vector<DRT::Node*>::const_iterator i = noderowptr_.begin(); i != noderowptr_.end(); ++i)
-  {
-    DRT::Node* n = *i;
-    n->Pack(buffer);
-  }
+  for (auto* node : noderowptr_) node->Pack(buffer);
 
-  Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
+  auto block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
   return block;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Pack condition into buffer                                 (public) |
- |                                                          a.ger 11/07 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(const std::string condname) const
+Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(
+    const std::string& condname) const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -839,19 +756,11 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(const std::st
 
   DRT::PackBuffer buffer;
 
-  for (std::vector<DRT::Condition*>::const_iterator i = cond.begin(); i != cond.end(); ++i)
-  {
-    DRT::Condition* c = *i;
-    c->Pack(buffer);
-  }
+  for (auto* c : cond) c->Pack(buffer);
 
   buffer.StartPacking();
 
-  for (std::vector<DRT::Condition*>::const_iterator i = cond.begin(); i != cond.end(); ++i)
-  {
-    DRT::Condition* c = *i;
-    c->Pack(buffer);
-  }
+  for (auto* c : cond) c->Pack(buffer);
 
   Teuchos::RCP<std::vector<char>> block = Teuchos::rcp(new std::vector<char>);
   std::swap(*block, buffer());
@@ -860,8 +769,6 @@ Teuchos::RCP<std::vector<char>> DRT::Discretization::PackCondition(const std::st
 
 
 /*----------------------------------------------------------------------*
- |  Unpack element buffer and create local elements            (public) |
- |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
 {
@@ -871,8 +778,8 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
     std::vector<char> data;
     ParObject::ExtractfromPack(index, *e, data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
-    DRT::Element* ele = dynamic_cast<Element*>(o);
-    if (ele == NULL)
+    auto* ele = dynamic_cast<Element*>(o);
+    if (ele == nullptr)
     {
       dserror("Failed to build an element from the element data");
     }
@@ -884,8 +791,6 @@ void DRT::Discretization::UnPackMyElements(Teuchos::RCP<std::vector<char>> e)
 }
 
 /*----------------------------------------------------------------------*
- |  Unpack nodal buffer and create local nodes                 (public) |
- |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
 {
@@ -895,24 +800,22 @@ void DRT::Discretization::UnPackMyNodes(Teuchos::RCP<std::vector<char>> e)
     std::vector<char> data;
     ParObject::ExtractfromPack(index, *e, data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
-    DRT::Node* n = dynamic_cast<Node*>(o);
-    if (n == NULL)
+    auto* node = dynamic_cast<Node*>(o);
+    if (node == nullptr)
     {
       dserror("Failed to build a node from the node data");
     }
-    n->SetOwner(comm_->MyPID());
-    AddNode(Teuchos::rcp(n));
+    node->SetOwner(comm_->MyPID());
+    AddNode(Teuchos::rcp(node));
   }
   // in case AddNode forgets...
   Reset();
 }
 
 /*----------------------------------------------------------------------*
- |  Unpack buffer and create local condition                   (public) |
- |                                                          a.ger 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackCondition(
-    const Teuchos::RCP<std::vector<char>> e, const std::string condname)
+    const Teuchos::RCP<std::vector<char>> e, const std::string& condname)
 {
   std::vector<char>::size_type index = 0;
   while (index < e->size())
@@ -920,8 +823,8 @@ void DRT::Discretization::UnPackCondition(
     std::vector<char> data;
     DRT::ParObject::ExtractfromPack(index, *e, data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
-    DRT::Condition* cond = dynamic_cast<DRT::Condition*>(o);
-    if (cond == NULL)
+    auto* cond = dynamic_cast<DRT::Condition*>(o);
+    if (cond == nullptr)
     {
       dserror("Failed to build boundary condition from the stored data %s", condname.c_str());
     }
@@ -932,7 +835,7 @@ void DRT::Discretization::UnPackCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::RedistributeState(unsigned nds, const std::string& name)
+void DRT::Discretization::RedistributeState(const unsigned nds, const std::string& name)
 {
   // only redistribute if state has been set
   if (HasState(nds, name))
