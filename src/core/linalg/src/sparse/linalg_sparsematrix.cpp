@@ -875,8 +875,7 @@ void CORE::LINALG::SparseMatrix::UnComplete()
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::ApplyDirichlet(
-    const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock)
+void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock)
 {
   // if matrix is filled, global assembly was called already and all nonlocal values are
   // distributed
@@ -886,8 +885,6 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(
   {
     dserror("Dirichlet map and toggle vector cannot be combined");
   }
-
-  const Epetra_Vector& dbct = *dbctoggle;
 
   if (explicitdirichlet_)
   {
@@ -918,7 +915,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(
     for (int i = 0; i < nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);
-      if (dbct[i] != 1.0)
+      if (dbctoggle[i] != 1.0)
       {
         int numentries;
 #ifdef DEBUG
@@ -961,7 +958,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(
     const int nummyrows = sysmat_->NumMyRows();
     for (int i = 0; i < nummyrows; ++i)
     {
-      if (dbct[i] == 1.0)
+      if (dbctoggle[i] == 1.0)
       {
         int* indexOffset;
         int* indices;
@@ -1131,9 +1128,8 @@ void CORE::LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle, boo
 /*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
-    Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo, const Epetra_Map& dbctoggle,
-    bool diagonalblock, bool complete)
+void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(const CORE::LINALG::SparseMatrix& trafo,
+    const Epetra_Map& dbctoggle, bool diagonalblock, bool complete)
 {
   if (not Filled()) dserror("expect filled matrix to apply dirichlet conditions");
 
@@ -1160,7 +1156,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
     const int maxnumentries = sysmat_->MaxNumEntries();
 
     // prepare working arrays for extracting rows in trafo matrix
-    const int trafomaxnumentries = trafo->MaxNumEntries();
+    const int trafomaxnumentries = trafo.MaxNumEntries();
     int trafonumentries = 0;
     std::vector<int> trafoindices(trafomaxnumentries, 0);
     std::vector<double> trafovalues(trafomaxnumentries, 0.0);
@@ -1200,11 +1196,11 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
         {
           // extract values of trafo at the inclined dbc dof
 #ifdef DEBUG
-          int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(
+          int err = trafo.EpetraMatrix()->ExtractGlobalRowCopy(
               row, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
 #else
-          trafo->EpetraMatrix()->ExtractGlobalRowCopy(
+          trafo.EpetraMatrix()->ExtractGlobalRowCopy(
               row, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
 #endif
         }
@@ -1244,7 +1240,7 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
     const int nummyrows = sysmat_->NumMyRows();
 
     // prepare working arrays for extracting rows in trafo matrix
-    const int trafomaxnumentries = trafo->MaxNumEntries();
+    const int trafomaxnumentries = trafo.MaxNumEntries();
     int trafonumentries = 0;
     std::vector<int> trafoindices(trafomaxnumentries, 0);
     std::vector<double> trafovalues(trafomaxnumentries, 0.0);
@@ -1269,11 +1265,11 @@ void CORE::LINALG::SparseMatrix::ApplyDirichletWithTrafo(
         if (diagonalblock)
         {
 #ifdef DEBUG
-          err = trafo->EpetraMatrix()->ExtractMyRowCopy(
+          err = trafo.EpetraMatrix()->ExtractMyRowCopy(
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
           if (err < 0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", err);
 #else
-          trafo->EpetraMatrix()->ExtractMyRowCopy(
+          trafo.EpetraMatrix()->ExtractMyRowCopy(
               i, trafomaxnumentries, trafonumentries, trafovalues.data(), trafoindices.data());
 #endif
 

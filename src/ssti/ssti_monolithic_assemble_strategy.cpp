@@ -1163,7 +1163,7 @@ void SSTI::AssembleStrategyBlock::ApplyStructuralDBCSystemMatrix(
           Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
       systemmatrix_block->Matrix(PositionStructure(), iblock)
           .ApplyDirichletWithTrafo(
-              locsysmanager_structure->Trafo(), *dbcmap_structure, iblock == PositionStructure());
+              *locsysmanager_structure->Trafo(), *dbcmap_structure, iblock == PositionStructure());
       locsysmanager_structure->RotateLocalToGlobal(
           Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
     }
@@ -1200,7 +1200,7 @@ void SSTI::AssembleStrategySparse::ApplyStructuralDBCSystemMatrix(
     // apply structural Dirichlet conditions
     locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
     systemmatrix_structure->ApplyDirichletWithTrafo(
-        locsysmanager_structure->Trafo(), *dbcmap_structure);
+        *locsysmanager_structure->Trafo(), *dbcmap_structure);
     locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
 
     // assemble structural rows of global system matrix back into global system matrix
@@ -1260,7 +1260,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateGlobalToLocal(rhs_structure_master);
-    CORE::LINALG::ApplyDirichlettoSystem(rhs_structure_master, zeros,
+    CORE::LINALG::ApplyDirichletToSystem(*rhs_structure_master, *zeros,
         *ssti_mono_->StructureField()->GetDBCMapExtractor()->CondMap());
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->RotateLocalToGlobal(rhs_structure_master);

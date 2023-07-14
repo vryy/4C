@@ -670,8 +670,15 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(
-      stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+  if (GetLocSysTrafo() != Teuchos::null)
+  {
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+        *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+  }
+  else
+  {
+    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  }
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -1537,8 +1544,16 @@ int STR::TimIntImpl::NewtonFull()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichlettoSystem(
-        stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+    if (GetLocSysTrafo() != Teuchos::null)
+    {
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+    }
+    else
+    {
+      CORE::LINALG::ApplyDirichletToSystem(
+          *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    }
 
     // *********** time measurement ***********
     double dtcpu = timer_->wallTime();
@@ -2118,8 +2133,15 @@ int STR::TimIntImpl::LsSolveNewtonStep()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  CORE::LINALG::ApplyDirichlettoSystem(
-      stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+  if (GetLocSysTrafo() != Teuchos::null)
+  {
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+        *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+  }
+  else
+  {
+    CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+  }
 
   /**************************************************************
   ***                     Solver Call                         ***
@@ -2538,8 +2560,17 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      CORE::LINALG::ApplyDirichlettoSystem(
-          stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+      if (GetLocSysTrafo() != Teuchos::null)
+      {
+        CORE::LINALG::ApplyDirichletToSystem(
+            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+            *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+      }
+      else
+      {
+        CORE::LINALG::ApplyDirichletToSystem(
+            *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+      }
 
       // prepare residual Lagrange multiplier
       lagrincr->PutScalar(0.0);
@@ -2719,8 +2750,17 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
-      CORE::LINALG::ApplyDirichlettoSystem(
-          stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+      if (GetLocSysTrafo() != Teuchos::null)
+      {
+        CORE::LINALG::ApplyDirichletToSystem(
+            *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_), *disi_, *fres_,
+            *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+      }
+      else
+      {
+        CORE::LINALG::ApplyDirichletToSystem(
+            *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+      }
 
       // *********** time measurement ***********
       double dtcpu = timer_->wallTime();
@@ -3365,8 +3405,16 @@ int STR::TimIntImpl::PTC()
 
     // apply Dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichlettoSystem(
-        stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+    if (GetLocSysTrafo() != Teuchos::null)
+    {
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+    }
+    else
+    {
+      CORE::LINALG::ApplyDirichletToSystem(
+          *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
+    }
 
     // *********** time measurement ***********
     double dtcpu = timer_->wallTime();
@@ -4146,7 +4194,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
-  CORE::LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for #disi_
   solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, true);
@@ -4188,8 +4236,14 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve(const bool preparejacobian)
   // apply Dirichlet BCs to system of equations
   if (preparejacobian)
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
-        stiff_, disi_, fres_, GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+    if (GetLocSysTrafo() != Teuchos::null)
+    {
+      CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(stiff_),
+          *disi_, *fres_, *GetLocSysTrafo(), *zeros_, *(dbcmaps_->CondMap()));
+    }
+    else
+      CORE::LINALG::ApplyDirichletToSystem(
+          *stiff_, *disi_, *fres_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // final sip

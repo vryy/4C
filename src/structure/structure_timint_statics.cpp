@@ -130,7 +130,7 @@ void STR::TimIntStatics::PredictConstVelConsistAcc()
     // Displacement increment over last time step
     Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
-    CORE::LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -163,7 +163,7 @@ void STR::TimIntStatics::PredictConstAcc()
     Teuchos::RCP<Epetra_Vector> disp_inc = CORE::LINALG::CreateVector(*DofRowMapView(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
-    CORE::LINALG::ApplyDirichlettoSystem(disp_inc, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*disp_inc, *zeros_, *(dbcmaps_->CondMap()));
     disn_->Update(1.0, *(*dis_)(0), 0.0);
     disn_->Update(1., *disp_inc, 1.);
     veln_->Update(1.0, *(*vel_)(0), 0.0);
@@ -234,7 +234,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   // build tangent matrix : effective dynamic stiffness matrix
@@ -304,7 +304,7 @@ void STR::TimIntStatics::EvaluateForceResidual()
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
-    CORE::LINALG::ApplyDirichlettoSystem(fresn_str_, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*fresn_str_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
   return;

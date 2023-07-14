@@ -786,8 +786,8 @@ void LOMA::Algorithm::MonoLomaSystemSolve()
   lomaincrement_->PutScalar(0.0);
 
   // apply Dirichlet boundary conditions to system
-  CORE::LINALG::ApplyDirichlettoSystem(
-      lomasystemmatrix_, lomaincrement_, lomarhs_, Teuchos::null, zeros_, *lomadbcmap_);
+  CORE::LINALG::ApplyDirichletToSystem(
+      *lomasystemmatrix_, *lomaincrement_, *lomarhs_, *zeros_, *lomadbcmap_);
 
   // solve monolithic low-Mach-number system
   lomasolver_->Solve(lomasystemmatrix_->EpetraOperator(), lomaincrement_, lomarhs_, true, true);

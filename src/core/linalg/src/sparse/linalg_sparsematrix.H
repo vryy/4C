@@ -274,8 +274,7 @@ namespace CORE::LINALG
 
     void UnComplete();
 
-    void ApplyDirichlet(
-        const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true);
 
     /// Apply dirichlet boundary condition to a matrix.
     ///
@@ -295,7 +294,7 @@ namespace CORE::LINALG
     /// is needed to treat efficiently Dirichlet BCs with local co-ordinate systems.
     /// The transformation matrix #trafo basically holds rotation matrices
     /// for the DOFs of the nodes.
-    void ApplyDirichletWithTrafo(Teuchos::RCP<const CORE::LINALG::SparseMatrix> trafo,
+    void ApplyDirichletWithTrafo(const CORE::LINALG::SparseMatrix& trafo,
         const Epetra_Map& dbctoggle, bool diagonalblock = true, bool complete = true);
 
     /// create matrix that contains all Dirichlet lines from my

@@ -224,8 +224,8 @@ void ART::ArtNetImplStationary::SolveScatra()
 void ART::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
-  CORE::LINALG::ApplyDirichlettoSystem(
-      sysmat_, pressureincnp_, rhs_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(
+      *sysmat_, *pressureincnp_, *rhs_, *zeros_, *(dbcmaps_->CondMap()));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

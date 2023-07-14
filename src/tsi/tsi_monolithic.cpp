@@ -1003,7 +1003,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   PrepareSystemForNewtonSolve()
   //     blank residual DOFs that are on Dirichlet BC
   //     in case of local coordinate systems rotate the residual forth and back
-  //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
+  //     Be AWARE: ApplyDirichletToSystem has to be called with rotated stiff_!
   if (iter_ == 0)
     StructureField()->Evaluate();
   else
@@ -2935,13 +2935,13 @@ void TSI::Monolithic::ApplyDBC()
     {
       locsysman_->RotateGlobalToLocal(k_ss);
       k_ss->ApplyDirichletWithTrafo(
-          locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), true);
+          *locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), true);
       locsysman_->RotateLocalToGlobal(k_ss);
     }
     {
       locsysman_->RotateGlobalToLocal(k_st);
       k_st->ApplyDirichletWithTrafo(
-          locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), false);
+          *locsysman_->Trafo(), *StructureField()->GetDBCMapExtractor()->CondMap(), false);
       locsysman_->RotateLocalToGlobal(k_st);
     }
   }
@@ -2967,22 +2967,22 @@ void TSI::Monolithic::ApplyDBC()
     Teuchos::RCP<Epetra_Vector> s_rhs, t_rhs;
     ExtractFieldVectors(rhs_, s_rhs, t_rhs);
     locsysman_->RotateGlobalToLocal(s_rhs);
-    CORE::LINALG::ApplyDirichlettoSystem(
-        s_rhs, zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *s_rhs, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
     locsysman_->RotateLocalToGlobal(s_rhs);
 
-    CORE::LINALG::ApplyDirichlettoSystem(
-        t_rhs, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *t_rhs, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
 
     Extractor()->InsertVector(*s_rhs, 0, *rhs_);
     Extractor()->InsertVector(*t_rhs, 1, *rhs_);
   }
   else
   {
-    CORE::LINALG::ApplyDirichlettoSystem(
-        rhs_, zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
-    CORE::LINALG::ApplyDirichlettoSystem(
-        rhs_, zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *rhs_, *zeros_, *StructureField()->GetDBCMapExtractor()->CondMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *rhs_, *zeros_, *ThermoField()->GetDBCMapExtractor()->CondMap());
   }
 }
 

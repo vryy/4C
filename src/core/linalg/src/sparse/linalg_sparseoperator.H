@@ -196,8 +196,7 @@ namespace CORE::LINALG
     virtual void UnComplete() = 0;
 
     /// Apply dirichlet boundary condition to a matrix
-    virtual void ApplyDirichlet(
-        const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock = true) = 0;
+    virtual void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
     ///

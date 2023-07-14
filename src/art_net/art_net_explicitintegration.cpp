@@ -387,7 +387,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     {
       TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     }
-    CORE::LINALG::ApplyDirichlettoSystem(sysmat_, qanp_, rhs_, bcval_, dbctog_);
+    CORE::LINALG::ApplyDirichletToSystem(*sysmat_, *qanp_, *rhs_, *bcval_, *dbctog_);
   }
 
   //-------solve for total new velocities and pressures

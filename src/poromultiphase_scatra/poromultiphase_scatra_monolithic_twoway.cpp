@@ -1125,8 +1125,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::PoroMultiPhaseS
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
 
     if (i == spaltenr)

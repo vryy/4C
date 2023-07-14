@@ -2036,20 +2036,19 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletToSystem()
   // -------------------------------------------------------------------
   incvel_->PutScalar(0.0);
 
-  Teuchos::RCP<const CORE::LINALG::SparseMatrix> locsysTrafo = Teuchos::null;
-
   if (locsysman_ != Teuchos::null)
   {
+    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     // Transform system matrix and rhs to local co-ordinate systems
     locsysman_->RotateGlobalToLocal(SystemMatrix(), residual_);
 
-    locsysTrafo = locsysman_->Trafo();
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_),
+        *incvel_, *residual_, *locsysman_->Trafo(), *zeros_, *(dbcmaps_->CondMap()));
   }
-
+  else
   {
-    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, incvel_, residual_, locsysTrafo, zeros_, *(dbcmaps_->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
   }
 
 }  // FluidImplicitTimeInt::ApplyDirichletToSystem
@@ -4135,7 +4134,8 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
   sysmat_->Complete();
 
   // apply DBC to system matrix
-  CORE::LINALG::ApplyDirichlettoSystem(sysmat_, incvel_, residual_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(
+      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 }
 
 
@@ -5424,7 +5424,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
   //          boundary conditions
   incvel_->PutScalar(0.0);
 
-  CORE::LINALG::ApplyDirichlettoSystem(incvel_, residual_, relax, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*incvel_, *residual_, *relax, *(dbcmaps_->CondMap()));
 
   CustomSolve(relax);
   //-------solve for residual displacements to correct incremental displacements
@@ -6367,8 +6367,8 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
   // apply Dirichlet BCs to system of equations
   incvel_->PutScalar(0.0);
   sysmat_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(
-      sysmat_, incvel_, residual_, Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(
+      *sysmat_, *incvel_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // solve for incvel_
   solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, true);

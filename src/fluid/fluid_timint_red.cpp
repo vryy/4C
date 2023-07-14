@@ -424,8 +424,8 @@ void FLD::TimIntRedModels::AVM3Preparation()
   AVM3AssembleMatAndRHS(eleparams);
 
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::ApplyDirichlettoSystem(
-      sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
+  CORE::LINALG::ApplyDirichletToSystem(
+      *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
 
   // get scale-separation matrix
   AVM3GetScaleSeparationMatrix();
@@ -439,7 +439,7 @@ void FLD::TimIntRedModels::AVM3Preparation()
 void FLD::TimIntRedModels::CustomSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   // apply Womersley as a Dirichlet BC
-  CORE::LINALG::ApplyDirichlettoSystem(incvel_, residual_, relax, *(vol_surf_flow_bc_maps_));
+  CORE::LINALG::ApplyDirichletToSystem(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
 
   // apply Womersley as a Dirichlet BC
   sysmat_->ApplyDirichlet(*(vol_surf_flow_bc_maps_));
@@ -509,14 +509,14 @@ void FLD::TimIntRedModels::ApplyDirichletToSystem()
   if (LocsysManager() != Teuchos::null)
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, incvel_, residual_, locsysman_->Trafo(), zeros_, *(vol_surf_flow_bc_maps_));
+    CORE::LINALG::ApplyDirichletToSystem(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(sysmat_),
+        *incvel_, *residual_, *locsysman_->Trafo(), *zeros_, *(vol_surf_flow_bc_maps_));
   }
   else
   {
     // apply Womersley as a Dirichlet BC
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, incvel_, residual_, zeros_, *(vol_surf_flow_bc_maps_));
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sysmat_, *incvel_, *residual_, *zeros_, *(vol_surf_flow_bc_maps_));
   }
   return;
 }

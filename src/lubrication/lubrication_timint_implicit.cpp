@@ -707,14 +707,14 @@ void LUBRICATION::TimIntImpl::NonlinearSolve()
       // time measurement: application of DBC to system
       TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + apply DBC to system");
 
-      CORE::LINALG::ApplyDirichlettoSystem(
-          sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
+      CORE::LINALG::ApplyDirichletToSystem(
+          *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
       // additionally apply Dirichlet condition to unprojectable nodes
       // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
       if (inf_gap_toggle_lub_ != Teuchos::null)
-        CORE::LINALG::ApplyDirichlettoSystem(
-            sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
+        CORE::LINALG::ApplyDirichletToSystem(
+            *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
     }
 
     // abort nonlinear iteration if desired
@@ -1241,21 +1241,21 @@ void LUBRICATION::TimIntImpl::Evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichlettoSystem(prenp_, residual_, zeros_, inf_gap_toggle_lub_);
+    CORE::LINALG::ApplyDirichletToSystem(*prenp_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
   // Apply Dirichlet boundary conditions to system of equations
   // residual values are supposed to be zero at Dirichlet boundaries
-  CORE::LINALG::ApplyDirichlettoSystem(
-      sysmat_, increment_, residual_, zeros_, *(dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(
+      *sysmat_, *increment_, *residual_, *zeros_, *(dbcmaps_->CondMap()));
 
   // additionally apply Dirichlet condition to unprojectable nodes
   // (gap undefined, i.e. no reasonalbe Reynolds equation to be solved)
   if (inf_gap_toggle_lub_ != Teuchos::null)
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_, increment_, residual_, zeros_, inf_gap_toggle_lub_);
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sysmat_, *increment_, *residual_, *zeros_, *inf_gap_toggle_lub_);
 }
 
 /*----------------------------------------------------------------------*

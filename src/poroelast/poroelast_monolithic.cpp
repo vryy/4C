@@ -595,8 +595,7 @@ void POROELAST::Monolithic::LinearSolve()
     Teuchos::RCP<CORE::LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
     // apply dirichlet boundary conditions
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sparse, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichletToSystem(*sparse, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
     solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -604,8 +603,8 @@ void POROELAST::Monolithic::LinearSolve()
   else  // use bgs2x2_operator
   {
     // apply dirichlet boundary conditions
-    CORE::LINALG::ApplyDirichlettoSystem(
-        systemmatrix_, iterinc_, rhs_, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
     // standard solver call
     solver_->Solve(systemmatrix_->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -1214,8 +1213,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(Teuchos::RCP<CORE::LINALG::Spa
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sparse_copy, iterinc_, rhs_copy, Teuchos::null, zeros_, *CombinedDBCMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *CombinedDBCMap());
 
 
     if (i == column_number)

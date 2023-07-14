@@ -2501,8 +2501,8 @@ void FLD::XFluid::Solve()
     //          residual displacements are supposed to be zero at
     //          boundary conditions
     state_->IncVel()->PutScalar(0.0);
-    CORE::LINALG::ApplyDirichlettoSystem(state_->SystemMatrix(), state_->IncVel(),
-        state_->Residual(), state_->Zeros(), *(state_->DBCMapExtractor()->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(*state_->SystemMatrix(), *state_->IncVel(),
+        *state_->Residual(), *state_->Zeros(), *(state_->DBCMapExtractor()->CondMap()));
 
 
     //-------solve for residual displacements to correct incremental displacements
@@ -4230,10 +4230,10 @@ void FLD::XFluid::XTimint_ReconstructGhostValues(
   {
     discret_->Comm().Barrier();
     TEUCHOS_FUNC_TIME_MONITOR(
-        "FLD::XFluid::XTimint_ReconstructGhostValues::ApplyDirichlettoSystem");
+        "FLD::XFluid::XTimint_ReconstructGhostValues::ApplyDirichletToSystem");
 
-    CORE::LINALG::ApplyDirichlettoSystem(
-        sysmat_gp, incvel_gp, residual_gp, zeros_gp, *(ghost_penaly_dbcmaps->CondMap()));
+    CORE::LINALG::ApplyDirichletToSystem(
+        *sysmat_gp, *incvel_gp, *residual_gp, *zeros_gp, *(ghost_penaly_dbcmaps->CondMap()));
   }
 
   //-------solve for residual displacements to correct incremental displacements
@@ -5088,8 +5088,8 @@ void FLD::XFluid::PredictTangVelConsistAcc()
   // apply Dirichlet BCs to system of equations
   state_->incvel_->PutScalar(0.0);
   state_->sysmat_->Complete();
-  CORE::LINALG::ApplyDirichlettoSystem(state_->sysmat_, state_->incvel_, state_->residual_,
-      Teuchos::null, state_->zeros_, *(state_->dbcmaps_->CondMap()));
+  CORE::LINALG::ApplyDirichletToSystem(*state_->sysmat_, *state_->incvel_, *state_->residual_,
+      *state_->zeros_, *(state_->dbcmaps_->CondMap()));
 
   // solve for incvel_
   solver_->Solve(state_->sysmat_->EpetraOperator(), state_->incvel_, state_->residual_, true, true);

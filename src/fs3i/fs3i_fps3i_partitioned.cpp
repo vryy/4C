@@ -731,7 +731,7 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
       // apply Dirichlet boundary conditions to coupling matrix and vector
       const Teuchos::RCP<const Epetra_Map> dbcmap = scatra->DirichMaps()->CondMap();
       coupmat->ApplyDirichlet(*dbcmap, false);
-      CORE::LINALG::ApplyDirichlettoSystem(coupforce, scatrazeros_[i], *dbcmap);
+      CORE::LINALG::ApplyDirichletToSystem(*coupforce, *scatrazeros_[i], *dbcmap);
     }
   }
 }

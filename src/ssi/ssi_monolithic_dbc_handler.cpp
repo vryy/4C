@@ -77,8 +77,8 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
 
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateGlobalToLocal(rhs_struct);
-  CORE::LINALG::ApplyDirichlettoSystem(
-      rhs_struct, zeros_struct, *StructureField()->GetDBCMapExtractor()->CondMap());
+  CORE::LINALG::ApplyDirichletToSystem(
+      *rhs_struct, *zeros_struct, *StructureField()->GetDBCMapExtractor()->CondMap());
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->RotateLocalToGlobal(rhs_struct);
 
@@ -88,15 +88,16 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
       Teuchos::rcp(new Epetra_Vector(*ScaTraField()->DirichMaps()->CondMap()));
-  CORE::LINALG::ApplyDirichlettoSystem(rhs, zeros_scatra, *ScaTraField()->DirichMaps()->CondMap());
+  CORE::LINALG::ApplyDirichletToSystem(
+      *rhs, *zeros_scatra, *ScaTraField()->DirichMaps()->CondMap());
 
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
   if (IsScaTraManifold())
   {
     const auto zeros_scatramanifold =
         Teuchos::rcp(new Epetra_Vector(*ScaTraManifoldField()->DirichMaps()->CondMap()));
-    CORE::LINALG::ApplyDirichlettoSystem(
-        rhs, zeros_scatramanifold, *ScaTraManifoldField()->DirichMaps()->CondMap());
+    CORE::LINALG::ApplyDirichletToSystem(
+        *rhs, *zeros_scatramanifold, *ScaTraManifoldField()->DirichMaps()->CondMap());
   }
 }
 
@@ -158,7 +159,7 @@ void SSI::DBCHandlerSparse::ApplyStructureDBCWithLocSysRotationToSystemMatrix(
   // apply structure Dirichlet conditions
   locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
   systemmatrix_structure->ApplyDirichletWithTrafo(
-      locsysmanager_structure->Trafo(), *dbcmap_structure);
+      *locsysmanager_structure->Trafo(), *dbcmap_structure);
   locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
 
   // assemble structure rows of global system matrix back into global system matrix
@@ -181,7 +182,7 @@ void SSI::DBCHandlerBlock::ApplyStructureDBCWithLocSysRotationToSystemMatrix(
         Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
     systemmatrix_block->Matrix(PositionStructure(), iblock)
         .ApplyDirichletWithTrafo(
-            locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
+            *locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
     locsysmanager_structure->RotateLocalToGlobal(
         Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
   }

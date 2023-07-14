@@ -199,7 +199,7 @@ void CORE::LINALG::BlockSparseMatrixBase::UnComplete()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::BlockSparseMatrixBase::ApplyDirichlet(
-    const Teuchos::RCP<const Epetra_Vector> dbctoggle, bool diagonalblock)
+    const Epetra_Vector& dbctoggle, bool diagonalblock)
 {
   int rows = Rows();
   int cols = Cols();
@@ -209,7 +209,7 @@ void CORE::LINALG::BlockSparseMatrixBase::ApplyDirichlet(
     for (int cblock = 0; cblock < cols; ++cblock)
     {
       CORE::LINALG::SparseMatrix& bmat = Matrix(rblock, cblock);
-      bmat.ApplyDirichlet(rowtoggle, diagonalblock and rblock == cblock);
+      bmat.ApplyDirichlet(*rowtoggle, diagonalblock and rblock == cblock);
     }
   }
 }

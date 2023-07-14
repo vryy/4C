@@ -623,9 +623,8 @@ void FSI::MonolithicXFEM::ApplyDBC()
   // evaluate (PrepareSystemForNewtonSolve()) are applied twice
 
   // apply combined Dirichlet to whole XFSI system
-  CORE::LINALG::ApplyDirichlettoSystem(systemmatrix_, iterinc_, rhs_,
-      Teuchos::null,  // possible trafo?!
-      zeros_, *CombinedDBCMap());
+  CORE::LINALG::ApplyDirichletToSystem(
+      *systemmatrix_, *iterinc_, *rhs_, *zeros_, *CombinedDBCMap());
 
   return;
 }
