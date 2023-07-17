@@ -18,6 +18,7 @@
 */
 /*----------------------------------------------------------------------*/
 #include <utility>
+#include <unordered_set>
 
 #include "scatra_timint_implicit.H"
 
@@ -3370,53 +3371,29 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
 {
   if (matrixtype_ == CORE::LINALG::MatrixType::block_condition)
   {
-    // extract number of domain partitioning conditions
-    const unsigned ncond = partitioningconditions.size();
-
-    // prepare vector for maps to be built
-    blockmaps.resize(ncond, Teuchos::null);
-
-    // loop over all domain partitioning conditions
-    for (unsigned icond = 0; icond < ncond; ++icond)
+    for (const auto& cond : partitioningconditions)
     {
-      // initialize set for dof IDs associated with current partitioning condition
-      std::set<int> dofids;
+      // all dofs that form one block map
+      std::vector<int> dofs;
 
-      // extract nodes associated with current domain partitioning condition
-      const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
-
-      // loop over all nodes associated with current domain partitioning condition
-      for (int nodegid : *nodegids)
+      for (int nodegid : *cond->Nodes())
       {
-        // extract global ID of current node
-        // consider current node only if node is owned by current processor
-        // need to make sure that node is stored on current processor, otherwise cannot resolve
-        // "->Owner()"
         if (discret_->HaveGlobalNode(nodegid) and
             discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())
         {
-          // add dof IDs associated with current node to corresponding set
           const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(nodegid));
-          std::copy(nodedofs.begin(), nodedofs.end(), std::inserter(dofids, dofids.end()));
+          std::copy(nodedofs.begin(), nodedofs.end(), std::inserter(dofs, dofs.end()));
         }
       }
+#ifdef DEBUG
+      std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
+      dsassert(dof_set.size() == dofs.size(), "The dofs are not unique");
+#endif
 
-      // transform set for dof IDs into vector and then into Epetra map
-      int nummyelements(0);
-      int* myglobalelements(nullptr);
-      std::vector<int> dofidvec;
-      if (!dofids.empty())
-      {
-        dofidvec.reserve(dofids.size());
-        dofidvec.assign(dofids.begin(), dofids.end());
-        nummyelements = static_cast<int>(dofidvec.size());
-        myglobalelements = dofidvec.data();
-      }
-      blockmaps[icond] = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
-          discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
+      blockmaps.emplace_back(Teuchos::rcp(
+          new Epetra_Map(-1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->Comm())));
     }
   }
-  // safety check
   else
     dserror("Invalid type of global system matrix!");
 }
