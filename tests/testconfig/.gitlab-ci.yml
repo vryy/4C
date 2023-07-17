@@ -264,7 +264,7 @@ variables:
   - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
     doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
     # Move final doxygen into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen
+  - mv $CI_PROJECT_DIR/../baci-build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
   - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
