@@ -6,6 +6,8 @@
 \level 2
 
  *------------------------------------------------------------------------------------------------*/
+#include <unordered_set>
+
 #include "io_control.H"
 #include "io.H"
 
@@ -36,8 +38,6 @@
 #include "scatra_timint_elch.H"
 #include "scatra_timint_elch_service.H"
 #include "scatra_resulttest_elch.H"
-
-#include "coupling_adapter.H"
 
 #include "lib_utils_parallel.H"
 
@@ -3190,60 +3190,36 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
           "variable!");
     }
 
-    // extract number of domain partitioning conditions
-    const std::size_t ncond = partitioningconditions.size();
-
-    // each domain block specified by the domain partitioning conditions is again subdivided into
-    // the specific dofs, therefore (ncond * NumDofPerNode()) block maps are set up below
-    blockmaps.resize(ncond * NumDofPerNode(), Teuchos::null);
-
-    // loop over all domain partitioning conditions
-    for (unsigned icond = 0; icond < ncond; ++icond)
+    for (const auto& cond : partitioningconditions)
     {
-      // we need to initialize as many sets as number of dofs per node, since all ids
-      // corresponding to a specific dof shall be grouped into a separate set
-      std::vector<std::set<int>> dofids(NumDofPerNode());
+      // all dofs that form one block map
+      std::vector<std::vector<int>> partitioned_dofs(NumDofPerNode());
 
-      // extract nodes associated with current domain partitioning condition
-      const std::vector<int>* nodegids = partitioningconditions[icond]->Nodes();
-
-      // loop over all nodes associated with current domain partitioning condition
-      for (int nodegid : *nodegids)
+      for (const int node_gid : *cond->Nodes())
       {
-        // extract global ID of current node
-        // consider current node only if node is owned by current processor need to make sure that
-        // node is stored on current processor, otherwise cannot resolve "->Owner()"
-        if (discret_->HaveGlobalNode(nodegid) and
-            discret_->gNode(nodegid)->Owner() == discret_->Comm().MyPID())
+        if (discret_->HaveGlobalNode(node_gid) and
+            discret_->gNode(node_gid)->Owner() == discret_->Comm().MyPID())
         {
-          // extract dof IDs associated with current node
-          const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(nodegid));
+          const std::vector<int> nodedofs = discret_->Dof(0, discret_->gNode(node_gid));
+          dsassert(NumDofPerNode() == static_cast<int>(nodedofs.size()),
+              "Global number of dofs per node is not equal the number of dofs of this node.");
 
-          // for each dof we add the id of the current node to its corresponding set
-          for (unsigned dof = 0; dof < dofids.size(); ++dof) dofids[dof].insert(nodedofs[dof]);
+          for (unsigned dof = 0; dof < nodedofs.size(); ++dof)
+            partitioned_dofs[dof].emplace_back(nodedofs[dof]);
         }
       }
 
-      // transform sets for dof IDs into vectors and then into Epetra maps
-      for (int iset = 0; iset < NumDofPerNode(); ++iset)
+      for (const auto& dofs : partitioned_dofs)
       {
-        int nummyelements(0);
-        int* myglobalelements(nullptr);
-        std::vector<int> dofidvec;
-        if (!dofids[iset].empty())
-        {
-          dofidvec.reserve(dofids[iset].size());
-          dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
-          nummyelements = static_cast<int>(dofidvec.size());
-          myglobalelements = dofidvec.data();
-        }
-        blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
-            myglobalelements, discret_->DofRowMap()->IndexBase(), discret_->DofRowMap()->Comm()));
+#ifdef DEBUG
+        std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
+        dsassert(dof_set.size() == dofs.size(), "The dofs are not unique");
+#endif
+        blockmaps.emplace_back(Teuchos::rcp(
+            new Epetra_Map(-1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->Comm())));
       }
     }
   }
-
-  // call base class routine for other types of global system matrix
   else
     SCATRA::ScaTraTimIntImpl::BuildBlockMaps(partitioningconditions, blockmaps);
 }
