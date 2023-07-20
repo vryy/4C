@@ -88,6 +88,10 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes, DataSDyn());
+    {  // remove the unsupported quantity of status test
+      qtypes.erase(NOX::NLN::StatusTest::quantity_eas);  // EAS is removed since it is an element
+                                                         // quantity and not nodal dof
+    }
     SetStatusTestParams(
         DataSDyn().GetMutableNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
