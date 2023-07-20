@@ -29,35 +29,17 @@ namespace STR
       Generic(){};
 
       //! destructor
-      virtual ~Generic(){};
-
-      //! Setup (has to be implemented by the derived classes)
-      virtual void Setup() = 0;
-
-      //! Set state variables (derived)
-      virtual void SetState(const Epetra_Vector& x) = 0;
-
-      //! return integration factor (derived)
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
-
-      //! (derived)
-      double GetIntParam() const = 0;
+      ~Generic() override = default;
 
       //! @name Monolithic update routines
       //! @{
       //! things that should be done before updating (derived)
-      virtual void PreUpdate(){/* do nothing for now */};
-
-      //! Update configuration after time step (derived)
-      virtual void UpdateStepState() = 0;
-
-      //! Update everything on element level after time step and after output (derived)
-      virtual void UpdateStepElement() = 0;
+      void PreUpdate() override{/* do nothing for now */};
 
       virtual void OutputStepstate() { ; };
 
       //! things that should be done after updating (derived)
-      virtual void PostUpdate(){/* do nothing for now */};
+      void PostUpdate() override{/* do nothing for now */};
       //! @}
     };
   }  // namespace EXPLICIT
