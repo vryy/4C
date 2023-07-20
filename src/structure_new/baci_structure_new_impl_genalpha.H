@@ -74,9 +74,9 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
 
-      //! [derived]
+      //! access the alphaf parameter of the Generalized-\f$\alpha\f$ Method
       double GetIntParam() const override;
 
       /// access the parameter for the accelerations at \f$t_{n}\f$, i.e. alpham

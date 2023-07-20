@@ -61,7 +61,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
 
       //! (derived)
       double GetIntParam() const override;
