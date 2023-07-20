@@ -93,6 +93,9 @@ namespace STR
       //! Setup the class variables [derived]
       void Setup() override;
 
+      //! [derived]
+      void PostSetup() override;
+
       //! Reset state variables [derived]
       void SetState(const Epetra_Vector& x) override;
 
@@ -129,9 +132,6 @@ namespace STR
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
      protected:
-      //! run directly after the setup routine has been finished [derived]
-      virtual void PostSetup();
-
       //! reset the time step dependent parameters for the element evaluation [derived]
       void ResetEvalParams() override;
 

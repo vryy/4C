@@ -91,6 +91,10 @@ namespace STR
     //! Setup (has to be implemented by the derived classes)
     virtual void Setup();
 
+    //! Post setup operation (compute initial equilibrium state), should be run directly after the
+    //! setup routine has been finished
+    virtual void PostSetup() = 0;
+
     //! Set state variables
     virtual void SetState(const Epetra_Vector& x) = 0;
 

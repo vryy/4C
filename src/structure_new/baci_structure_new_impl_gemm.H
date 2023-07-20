@@ -30,6 +30,9 @@ namespace STR
       //! Setup the class variables
       void Setup() override;
 
+      //! (derived)
+      void PostSetup() override;
+
       //! Set state variables (derived)
       void SetState(const Epetra_Vector& x) override;
 

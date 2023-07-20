@@ -159,7 +159,13 @@ void STR::Integrator::EquilibrateInitialState()
    * Furthermore, we keep the update routines untouched. Actually, the only
    * thing which is necessary is the calculation of the mass matrix. So we are
    * done at this point.                                    hiermeier 06/16 */
-  if (timint_ptr_->IsRestarting()) return;
+  /* However, if we need to restart the initial state, e.g. when starting dynamics
+   * analysis from the static one, we should re-calculate the initial state
+   * for a warm start-up */
+  if (timint_ptr_->IsRestarting() && !timint_ptr_->IsRestartingInitialState())
+  {
+    return;
+  }
 
   // build the entire initial right-hand-side
   if (not ModelEval().ApplyInitialForce(*disnp_ptr, *rhs_ptr)) dserror("ApplyInitialForce failed!");
