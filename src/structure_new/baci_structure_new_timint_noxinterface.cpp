@@ -32,7 +32,7 @@ STR::TIMINT::NoxInterface::NoxInterface()
     : isinit_(false),
       issetup_(false),
       gstate_ptr_(Teuchos::null),
-      implint_ptr_(Teuchos::null),
+      int_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null)
 {
   // empty constructor
@@ -42,7 +42,7 @@ STR::TIMINT::NoxInterface::NoxInterface()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::Init(
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+    const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   // reset the setup flag
@@ -50,7 +50,7 @@ void STR::TIMINT::NoxInterface::Init(
 
   gstate_ptr_ = gstate_ptr;
   timint_ptr_ = timint_ptr;
-  implint_ptr_ = implint_ptr;
+  int_ptr_ = int_ptr;
   dbc_ptr_ = dbc_ptr;
 
   // set the initialization flag
@@ -78,10 +78,10 @@ void STR::TIMINT::NoxInterface::CheckInitSetup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::Generic& STR::TIMINT::NoxInterface::ImplInt()
+STR::Integrator& STR::TIMINT::NoxInterface::ImplInt()
 {
   CheckInitSetup();
-  return *implint_ptr_;
+  return *int_ptr_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -91,7 +91,7 @@ bool STR::TIMINT::NoxInterface::computeF(
 {
   CheckInitSetup();
 
-  if (not implint_ptr_->ApplyForce(x, F)) return false;
+  if (not int_ptr_->ApplyForce(x, F)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -110,7 +110,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   dsassert(jac_ptr != nullptr, "Dynamic cast failed.");
 
-  if (not implint_ptr_->ApplyStiff(x, *jac_ptr)) return false;
+  if (not int_ptr_->ApplyStiff(x, *jac_ptr)) return false;
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::NLN::LinearSystem::applyJacobianInverse()
@@ -130,7 +130,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
   dsassert(jac_ptr != nullptr, "Dynamic cast failed!");
 
-  if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
+  if (not int_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -159,8 +159,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
   std::vector<INPAR::STR::ModelType> constraint_models;
   FindConstraintModels(&grp, constraint_models);
 
-  if (not implint_ptr_->ApplyCorrectionSystem(type, constraint_models, x, rhs, *jac_ptr))
-    return false;
+  if (not int_ptr_->ApplyCorrectionSystem(type, constraint_models, x, rhs, *jac_ptr)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -204,7 +203,7 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(const Epetra_Vector& F,
       // remove entries specific to element technology
       gstate_ptr_->RemoveElementTechnologies(rhs_ptr);
 
-      implint_ptr_->RemoveCondensedContributionsFromRhs(*rhs_ptr);
+      int_ptr_->RemoveCondensedContributionsFromRhs(*rhs_ptr);
 
       rhsnorm = CalculateNorm(rhs_ptr, type, isscaled);
 
@@ -287,7 +286,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(const Epetra_Vecto
     case NOX::NLN::StatusTest::quantity_eas:
     case NOX::NLN::StatusTest::quantity_plasticity:
     {
-      rms = implint_ptr_->GetCondensedSolutionUpdateRMS(checkquantity);
+      rms = int_ptr_->GetCondensedSolutionUpdateRMS(checkquantity);
       break;
     }
     default:
@@ -352,11 +351,11 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(const Epetra_Vec
     case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
-      updatenorm = implint_ptr_->GetCondensedUpdateNorm(checkquantity);
+      updatenorm = int_ptr_->GetCondensedUpdateNorm(checkquantity);
       // do the scaling if desired
       if (isscaled)
       {
-        int gdofnumber = implint_ptr_->GetCondensedDofNumber(checkquantity);
+        int gdofnumber = int_ptr_->GetCondensedDofNumber(checkquantity);
         updatenorm /= static_cast<double>(gdofnumber);
       }
       break;
@@ -416,10 +415,10 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(const Epetra_V
     case NOX::NLN::StatusTest::quantity_plasticity:
     {
       // get the update norm of the condensed quantities
-      xoldnorm = implint_ptr_->GetCondensedPreviousSolNorm(checkquantity);
+      xoldnorm = int_ptr_->GetCondensedPreviousSolNorm(checkquantity);
       if (isscaled)
       {
-        int gdofnumber = implint_ptr_->GetCondensedDofNumber(checkquantity);
+        int gdofnumber = int_ptr_->GetCondensedDofNumber(checkquantity);
         xoldnorm /= static_cast<double>(gdofnumber);
       }
       break;
@@ -465,8 +464,8 @@ double STR::TIMINT::NoxInterface::GetModelValue(const Epetra_Vector& x, const Ep
     case NOX::NLN::MeritFunction::mrtfct_energy:
     {
       IO::cout(IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
-      implint_ptr_->GetTotalMidTimeStrEnergy(x);
-      omval = implint_ptr_->GetModelValue(x);
+      int_ptr_->GetTotalMidTimeStrEnergy(x);
+      omval = int_ptr_->GetModelValue(x);
 
       break;
     }
@@ -537,7 +536,7 @@ double STR::TIMINT::NoxInterface::GetLinearizedEnergyModelTerms(const NOX::Abstr
           FindConstraintModels(group, constraint_models);
 
           // assemble the force and exclude all constraint models
-          implint_ptr_->AssembleForce(str_gradient, &constraint_models);
+          int_ptr_->AssembleForce(str_gradient, &constraint_models);
           str_gradient.Dot(dir, &lin_val);
 
           IO::cout(IO::debug) << "LinEnergy   D_{d} (Energy) = " << lin_val << IO::endl;
@@ -594,7 +593,7 @@ double STR::TIMINT::NoxInterface::CalcRefNormForce()
 {
   CheckInitSetup();
   const NOX::Epetra::Vector::NormType& nox_normtype = timint_ptr_->GetDataSDyn().GetNoxNormType();
-  return implint_ptr_->CalcRefNormForce(nox_normtype);
+  return int_ptr_->CalcRefNormForce(nox_normtype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -605,7 +604,7 @@ STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
   CheckInitSetup();
   Teuchos::RCP<CORE::LINALG::SparseMatrix> scalingMatrixOpPtr =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*gstate_ptr_->DofRowMap(), 81, true, true));
-  implint_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
+  int_ptr_->ComputeJacobianContributionsFromElementLevelForPTC(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;
 }
@@ -615,7 +614,7 @@ STR::TIMINT::NoxInterface::CalcJacobianContributionsFromElementLevelForPTC()
 void STR::TIMINT::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
 {
   CheckInitSetup();
-  implint_ptr_->CreateBackupState(dir);
+  int_ptr_->CreateBackupState(dir);
 }
 
 /*----------------------------------------------------------------------------*
@@ -623,7 +622,7 @@ void STR::TIMINT::NoxInterface::CreateBackupState(const Epetra_Vector& dir)
 void STR::TIMINT::NoxInterface::RecoverFromBackupState()
 {
   CheckInitSetup();
-  implint_ptr_->RecoverFromBackupState();
+  int_ptr_->RecoverFromBackupState();
 }
 
 /*----------------------------------------------------------------------------*
@@ -632,7 +631,7 @@ bool STR::TIMINT::NoxInterface::computeElementVolumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
   CheckInitSetup();
-  return implint_ptr_->DetermineElementVolumes(x, ele_vols);
+  return int_ptr_->DetermineElementVolumes(x, ele_vols);
 }
 
 /*----------------------------------------------------------------------------*
