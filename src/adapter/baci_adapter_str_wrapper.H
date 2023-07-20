@@ -16,7 +16,10 @@
 
 namespace ADAPTER
 {
-  /// Just wrap, do nothing new, meant to be derived from
+  /// This class is a wrapper of ADAPTER::Structure. It follows the "decorator" design pattern. This
+  /// approach allows to dynamically add functionalities to an instance of ADAPTER::Structure. For
+  /// example, ADAPTER::StructureTimeLoop implements the Integrate function for sequential time
+  /// marching.
   class StructureWrapper : public Structure
   {
    public:
