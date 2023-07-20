@@ -14,6 +14,7 @@
 #include "baci_structure_new_nln_solver_fullnewton.H"
 #include "baci_structure_new_nln_solver_nox.H"
 #include "baci_structure_new_nln_solver_ptc.H"
+#include "baci_structure_new_nln_solver_singlestep.H"
 #include "baci_structure_new_nln_solver_uzawa.H"
 
 
@@ -42,6 +43,9 @@ Teuchos::RCP<STR::NLN::SOLVER::Generic> STR::NLN::SOLVER::Factory::BuildNlnSolve
       break;
     case INPAR::STR::soltech_ptc:
       nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::PseudoTransient());
+      break;
+    case INPAR::STR::soltech_singlestep:
+      nlnSolver = Teuchos::rcp(new STR::NLN::SOLVER::SingleStep());
       break;
     case INPAR::STR::soltech_newtonuzawanonlin:
     case INPAR::STR::soltech_newtonuzawalin:

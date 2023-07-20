@@ -30,12 +30,6 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::NLN::SOLVER::Nox::Nox()
-    : nlnglobaldata_(Teuchos::null),
-      problem_(Teuchos::null),
-      linsys_(Teuchos::null),
-      ostatus_(Teuchos::null),
-      istatus_(Teuchos::null),
-      nlnsolver_(Teuchos::null)
 {
   // empty constructor
 }
@@ -171,6 +165,16 @@ void STR::NLN::SOLVER::Nox::ResetParams()
     Teuchos::ParameterList& lsparams = nlnglobaldata_->GetNlnParameterList()
                                            .sublist("Direction", true)
                                            .sublist("Newton", true)
+                                           .sublist("Linear Solver", true);
+
+    // get current time step and update the parameter list entry
+    lsparams.set<int>("Current Time Step", DataGlobalState().GetStepNp());
+  }
+  else if (method == "Single Step")
+  {
+    // get the linear solver sub-sub-list
+    Teuchos::ParameterList& lsparams = nlnglobaldata_->GetNlnParameterList()
+                                           .sublist("Single Step Solver", true)
                                            .sublist("Linear Solver", true);
 
     // get current time step and update the parameter list entry

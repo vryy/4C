@@ -213,10 +213,11 @@ namespace INPAR
 
       setStringToIntegralParameter<int>("NLNSOL", "fullnewton", "Nonlinear solution technique",
           tuple<std::string>("vague", "fullnewton", "modnewton", "lsnewton", "ptc",
-              "newtonlinuzawa", "augmentedlagrange", "NoxNewtonLineSearch", "noxgeneral", "noxnln"),
+              "newtonlinuzawa", "augmentedlagrange", "NoxNewtonLineSearch", "noxgeneral", "noxnln",
+              "singlestep"),
           tuple<int>(soltech_vague, soltech_newtonfull, soltech_newtonmod, soltech_newtonls,
               soltech_ptc, soltech_newtonuzawalin, soltech_newtonuzawanonlin,
-              soltech_noxnewtonlinesearch, soltech_noxgeneral, soltech_nox_nln),
+              soltech_noxnewtonlinesearch, soltech_noxgeneral, soltech_nox_nln, soltech_singlestep),
           &sdyn);
 
       IntParameter("LSMAXITER", 30, "maximum number of line search steps", &sdyn);
