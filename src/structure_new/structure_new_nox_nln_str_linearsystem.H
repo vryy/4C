@@ -67,7 +67,7 @@ namespace NOX
             const NOX::Epetra::Vector& cloneVector);
 
         //! Destructor.
-        virtual ~LinearSystem(){};
+        ~LinearSystem() override = default;
 
         //! sets the options of the underlying solver
         void SetSolverOptions(Teuchos::ParameterList& p,

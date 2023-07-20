@@ -30,7 +30,7 @@ namespace STR
       Explicit();
 
       //! destructor
-      virtual ~Explicit(){};
+      ~Explicit() override = default;
 
       void Setup() override;
 

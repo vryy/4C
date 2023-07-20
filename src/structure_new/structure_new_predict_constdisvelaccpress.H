@@ -25,7 +25,7 @@ namespace STR
       ConstDisVelAccPress();
 
       //! destructor
-      virtual ~ConstDisVelAccPress(){};
+      ~ConstDisVelAccPress() override = default;
 
       //! setup class specific stuff
       void Setup() override;

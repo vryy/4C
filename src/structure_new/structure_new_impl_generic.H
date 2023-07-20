@@ -39,7 +39,7 @@ namespace STR
       Generic();
 
       //! destructor
-      virtual ~Generic(){};
+      ~Generic() override = default;
 
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;

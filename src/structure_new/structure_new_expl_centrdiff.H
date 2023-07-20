@@ -28,25 +28,25 @@ namespace STR
       CentrDiff(){};
 
       //! destructor
-      virtual ~CentrDiff(){};
+      ~CentrDiff() override = default;
 
       //! Setup class variables (derived)
-      virtual void Setup(){};
+      void Setup() override{};
 
       //! Set state variables (derived)
-      virtual void SetState(const Epetra_Vector& x){};
+      void SetState(const Epetra_Vector& x) override{};
 
       //! Apply the right hand side only (derived)
-      virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) { return false; };
+      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override { return false; };
 
       //! return integration factor (derived)
-      virtual double GetIntParam() const { return -1.0; }
+      double GetIntParam() const override { return -1.0; }
 
       //! Update configuration after time step (derived)
-      virtual void UpdateStepState(){};
+      void UpdateStepState() override{};
 
       //! Update everything on element level after time step and after output (derived)
-      virtual void UpdateStepElement(){};
+      void UpdateStepElement() override{};
     };
   }  // namespace EXPLICIT
 }  // namespace STR

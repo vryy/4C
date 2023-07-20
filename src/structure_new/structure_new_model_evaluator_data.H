@@ -86,7 +86,7 @@ namespace STR
       Data();
 
       //! destructor
-      virtual ~Data(){};
+      ~Data() override = default;
 
       //! initialize the stuff coming from outside
       void Init(const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);

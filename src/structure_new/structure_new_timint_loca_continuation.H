@@ -46,7 +46,7 @@ namespace STR
       LOCAContinuation();
 
       //! destructor
-      virtual ~LOCAContinuation(){};
+      ~LOCAContinuation() override = default;
 
       //! derived setup routine
       void Setup() override;

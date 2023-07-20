@@ -36,7 +36,7 @@ namespace STR
         FullNewton();
 
         //! destructor
-        virtual ~FullNewton(){};
+        ~FullNewton() override = default;
 
         //! derived from the base class
         void Setup() override;

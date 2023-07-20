@@ -39,7 +39,7 @@ namespace STR
       LagPenConstraint();
 
       //! destructor
-      virtual ~LagPenConstraint() = default;
+      ~LagPenConstraint() override = default;
 
       void Setup() override;
 
