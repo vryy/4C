@@ -514,6 +514,13 @@ namespace STR
         return finertialnp_;
       }
 
+      /// Return visco force \f$fvisco_{n}\f$
+      Teuchos::RCP<const Epetra_Vector> GetFviscoN() const
+      {
+        CheckInitSetup();
+        return fviscon_;
+      }
+
       /// Return visco force \f$fvisco_{n+1}\f$
       Teuchos::RCP<const Epetra_Vector> GetFviscoNp() const
       {
