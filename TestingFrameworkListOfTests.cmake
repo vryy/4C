@@ -1418,6 +1418,7 @@ baci_test_restartonly(solidscatra_electromecha_1wc_myocardMV_ActiveStress_tet4_h
 baci_test(sonurbs27 3 " ")
 baci_test(sosh8_cooks_nl 2 "")
 baci_test(sosh8_freeflying_ruler 2 "")
+baci_test(sosh8_freeflying_ruler_new 2 "")
 baci_test(sosh8_freeflying_ruler_sta 2 "")
 baci_test(sosh8_freeflying_ruler_sta_ab2 2 "")
 baci_test(sosh8_freeflying_ruler_sta_centrdiff 2 "")
