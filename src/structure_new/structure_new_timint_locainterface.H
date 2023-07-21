@@ -28,7 +28,7 @@ namespace STR
       LocaInterface();
 
       //! destructor
-      virtual ~LocaInterface(){};
+      ~LocaInterface() override = default;
 
       //! setup function
       void Setup() override;

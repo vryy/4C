@@ -60,7 +60,7 @@ namespace STR
         Nox();
 
         //! destructor
-        virtual ~Nox(){};
+        ~Nox() override = default;
 
         //! derived from the base class
         void Setup() override;

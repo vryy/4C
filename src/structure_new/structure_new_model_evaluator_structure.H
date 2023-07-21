@@ -39,7 +39,7 @@ namespace STR
       Structure();
 
       //! destructor
-      virtual ~Structure() = default;
+      ~Structure() override = default;
 
       void Setup() override;
 

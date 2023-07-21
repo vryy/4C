@@ -73,7 +73,7 @@ namespace STR
       Multiphysics();
 
       //! destructor
-      virtual ~Multiphysics() = default;
+      ~Multiphysics() override = default;
 
       //! initialize the class variables
       void Init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,

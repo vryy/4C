@@ -42,7 +42,7 @@ namespace STR
       ImplicitBase();
 
       /// destructor
-      virtual ~ImplicitBase(){};
+      ~ImplicitBase() override = default;
 
       /// Get type of thickness scaling for thin shell structures (derived)
       INPAR::STR::STC_Scale GetSTCAlgo() override;
