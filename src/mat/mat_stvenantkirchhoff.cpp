@@ -238,7 +238,7 @@ void MAT::StVenantKirchhoff::StrainEnergy(
  |  Evaluate for GEMM                                           ly 02/13|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+    LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
@@ -259,7 +259,6 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
   Teuchos::ParameterList params;
   LINALG::Matrix<3, 3> defgrd(true);
   Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
-  *density = Density();
   StrainEnergy(*glstrain_new, psi, gp, eleGID);
   StrainEnergy(*glstrain_old, psio, gp, eleGID);
 

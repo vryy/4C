@@ -3019,9 +3019,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    double density;
     SolidMaterial()->EvaluateGEMM(
-        &stress, &cmat, &density, &glstrainm, &glstrain, &glstraino, &rcg, &rcgo, gp, Id());
+        &stress, &cmat, &glstrainm, &glstrain, &glstraino, &rcg, &rcgo, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

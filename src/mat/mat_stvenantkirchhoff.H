@@ -125,7 +125,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
     void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,

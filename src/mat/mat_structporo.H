@@ -286,14 +286,14 @@ namespace MAT
     }
 
     void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
+        LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
         LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID) override
     {
-      mat_->EvaluateGEMM(stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new,
-          rcg_old, gp, eleGID);
+      mat_->EvaluateGEMM(
+          stress, cmat, glstrain_m, glstrain_new, glstrain_old, rcg_new, rcg_old, gp, eleGID);
     }
 
     void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
