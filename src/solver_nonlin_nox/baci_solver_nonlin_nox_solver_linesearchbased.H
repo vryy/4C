@@ -75,7 +75,7 @@ namespace NOX
         //! Returns the stopping test.
         virtual const NOX::StatusTest::Generic& GetOuterStatusTest() const;
 
-        virtual NOX::StatusTest::StatusType getStatus() const;
+        NOX::StatusTest::StatusType getStatus() const override;
 
         //! \brief Returns a pointer to one specific stopping test %T.
         /** If there is no outer test of type T, a nullptr pointer will be returned.
@@ -108,7 +108,7 @@ namespace NOX
         virtual void init(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
 
         // derived
-        virtual void printUpdate();
+        void printUpdate() override;
       };  // class LineSearchBased
     }     // namespace Solver
   }       // namespace NLN

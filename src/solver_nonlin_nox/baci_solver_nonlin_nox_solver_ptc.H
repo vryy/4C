@@ -205,7 +205,7 @@ namespace NOX
         virtual void init();
 
         //! Print the non-linear solver update
-        virtual void printUpdate();
+        void printUpdate() override;
 
         //! Compute the nodal pseudo velocity for the CFL update
         void computePseudoVelocity();
