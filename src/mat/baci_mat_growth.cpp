@@ -314,22 +314,6 @@ void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::Growth::ResetAll(const int numgp)
-{
-  for (int j = 0; j < numgp; ++j)
-  {
-    thetaold_->at(j) = 1.0;
-    theta_->at(j) = 1.0;
-  }
-
-  // overwrite history with empty data
-  std::map<int, std::vector<double>> data;
-  histdata_.Add("thetaold", data);
-
-  matelastic_->ResetAll(numgp);
-}
-
-/*----------------------------------------------------------------------------*/
 void MAT::Growth::Update()
 {
   const int numgp = theta_->size();
@@ -705,18 +689,6 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, CORE::LINALG::Matrix<6
   MAT::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
       refdir_, curdir_, F_g_hist_, growthtrig_const_, params, gp, eleGID);
-}
-
-/*----------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::ResetAll(const int numgp)
-{
-  for (int j = 0; j < numgp; ++j)
-  {
-    tr_mandel_e_->at(j) = 0.0;
-    lambda_fib_e_->at(j) = 0.0;
-  }
-
-  MAT::Growth::ResetAll(numgp);
 }
 
 /*----------------------------------------------------------------------------*/

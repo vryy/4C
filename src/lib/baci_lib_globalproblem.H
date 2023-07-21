@@ -319,10 +319,6 @@ namespace DRT
     {
       return getParameterList()->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING");
     }
-    const Teuchos::ParameterList& StatInverseAnalysisParams() const
-    {
-      return getParameterList()->sublist("STAT INVERSE ANALYSIS");
-    }
     const Teuchos::ParameterList& MortarCouplingParams() const
     {
       return getParameterList()->sublist("MORTAR COUPLING");

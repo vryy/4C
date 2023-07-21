@@ -165,7 +165,6 @@
 #include "baci_mat_maxwell_0d_acinus_Exponential.H"
 #include "baci_mat_maxwell_0d_acinus_DoubleExponential.H"
 #include "baci_mat_maxwell_0d_acinus_Ogden.H"
-#include "baci_inv_analysis_particle_data.H"
 #include "baci_beaminteraction_crosslinker_node.H"
 #include "baci_binstrategy_meshfree_multibin.H"
 #include "baci_mat_growth.H"
@@ -362,7 +361,6 @@ void DRT::ForceRegistrationOfParObjectTypes()
     << MORTAR::MortarElementType::Instance().Name() << " " << CONTACT::CoNodeType::Instance().Name()
     << " " << CONTACT::FriNodeType::Instance().Name() << " "
     << CONTACT::CoElementType::Instance().Name() << " " << MAT::ActiveFiberType::Instance().Name()
-    << INVANA::ParticleDataType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedType::Instance().Name() << " "
     << BEAMINTERACTION::BeamLinkTrussType::Instance().Name() << " "

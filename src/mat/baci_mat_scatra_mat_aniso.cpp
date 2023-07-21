@@ -37,8 +37,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMatAniso::CreateMaterial()
 
 MAT::ScatraMatAnisoType MAT::ScatraMatAnisoType::instance_;
 
-void MAT::PAR::ScatraMatAniso::OptParams(std::map<std::string, int>* pnames) {}
-
 DRT::ParObject* MAT::ScatraMatAnisoType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMatAniso* scatra_mat_aniso = new MAT::ScatraMatAniso();

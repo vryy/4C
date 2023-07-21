@@ -25,7 +25,6 @@
 #include "baci_inpar_mortar.H"
 #include "baci_inpar_elch.H"
 #include "baci_inpar_cardiac_monodomain.H"
-#include "baci_inpar_invanalysis.H"
 #include "baci_inpar_levelset.H"
 #include "baci_inpar_bio.H"
 #include "baci_inpar_cardiovascular0d.H"
@@ -1106,8 +1105,6 @@ DRT::INPUT::ValidConditions()
   INPAR::IMMERSED::SetValidConditions(condlist);
 
   INPAR::XFEM::SetValidConditions(dirichletbundcomponents, neumanncomponents, condlist);
-
-  INPAR::INVANA::SetValidConditions(condlist);
 
   INPAR::BIOFILM::SetValidConditions(condlist);
 

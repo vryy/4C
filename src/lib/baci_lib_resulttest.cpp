@@ -447,23 +447,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("TOLERANCE")
       .AddOptionalNamedString("NAME");
 
-  DRT::INPUT::LineDefinition invana;
-  invana.AddTag("INVANA")
-      .AddNamedString("DIS")
-      .AddNamedInt("ELEMENT")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
-
-  DRT::INPUT::LineDefinition invana_special;
-  invana_special.AddTag("INVANA")
-      .AddTag("SPECIAL")
-      .AddNamedString("QUANTITY")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("TOLERANCE")
-      .AddOptionalNamedString("NAME");
-
   DRT::INPUT::LineDefinition particle;
   particle.AddTag("PARTICLE")
       .AddNamedInt("ID")
@@ -541,8 +524,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(opti_ele);
   lines->Add(fsi_node);
   lines->Add(fsi_special);
-  lines->Add(invana);
-  lines->Add(invana_special);
   lines->Add(particle);
   lines->Add(particlewall_node);
   lines->Add(particlewall_special);

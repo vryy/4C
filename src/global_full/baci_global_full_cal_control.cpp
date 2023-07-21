@@ -42,7 +42,6 @@
 #include "baci_tsi_dyn.H"
 #include "baci_two_phase_flow_dyn.H"
 #include "baci_wear_dyn.H"
-#include "baci_inv_analysis_cal_drt.H"
 #include "baci_tutorial_dyn.H"
 
 /*----------------------------------------------------------------------*
@@ -200,10 +199,6 @@ void ntacal()
       break;
     case ProblemType::fluid_xfem_ls:
       fluid_xfem_ls_drt(restart);  // Exists in two_phase_flow subfolder
-      break;
-
-    case ProblemType::invana:
-      invana_cal();
       break;
 
     case ProblemType::tutorial:

@@ -193,7 +193,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/GEMM", *list);
-  reader.ReadSection("--STAT INVERSE ANALYSIS", *list);
   reader.ReadSection("--MORTAR COUPLING", *list);
   reader.ReadSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
   reader.ReadSection("--CONTACT DYNAMIC", *list);
@@ -1458,7 +1457,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
 
     case ProblemType::structure:
-    case ProblemType::invana:
     {
       switch (distype)
       {
@@ -2119,7 +2117,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       case ProblemType::fsi:
       case ProblemType::fsi_redmodels:
       case ProblemType::fsi_lung:
-      case ProblemType::invana:
       case ProblemType::scatra:
       case ProblemType::structure:
       {

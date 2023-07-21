@@ -865,13 +865,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       writer.WriteFiles();
       break;
     }
-    case ProblemType::invana:
-    {
-      PostField* field = problem.get_discretization(0);
-      InvanaFilter writer(field, problem.outname());
-      writer.WriteFiles();
-      break;
-    }
     case ProblemType::none:
     {
       // Special problem type that contains one discretization and any number

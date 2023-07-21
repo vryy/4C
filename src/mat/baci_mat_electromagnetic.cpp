@@ -41,12 +41,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ElectromagneticMat::CreateMaterial()
 
 MAT::ElectromagneticMatType MAT::ElectromagneticMatType::instance_;
 
-void MAT::PAR::ElectromagneticMat::OptParams(std::map<std::string, int> *pnames)
-{
-  pnames->insert(std::pair<std::string, int>("CONDUCTIVITY", sigma_));
-  pnames->insert(std::pair<std::string, int>("PERMITTIVITY", epsilon_));
-  pnames->insert(std::pair<std::string, int>("PERMEABILITY", mu_));
-}
 
 DRT::ParObject *MAT::ElectromagneticMatType::Create(const std::vector<char> &data)
 {

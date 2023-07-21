@@ -79,16 +79,6 @@ namespace MAT
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
-      /// for stat inverse analysis: add paramters for optimization
-      void OptParams(std::map<std::string, int>* pnames) override;
-
-      /// for stat inverse analysis: set pointer to elasthyper
-      void SetMaterialPtrSIA(MAT::ElastHyper* in) { statiaelasthyper_ = in; }
-
-     protected:
-      /// pointer to elasthyper for stat inverse analysis
-      MAT::ElastHyper* statiaelasthyper_;
-
       //@}
 
     };  // class ElastHyper
@@ -370,9 +360,6 @@ namespace MAT
     };
 
    protected:
-    /// Sat Inverse Analysis: add params of summands
-    virtual void ElastOptParams(std::map<std::string, int>* pnames);
-
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
     /// Class indicating the formulation used by the summands

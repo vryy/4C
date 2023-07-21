@@ -1436,9 +1436,6 @@ namespace MAT
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
 
-      /// given names of optimizable material parameters upon request
-      void OptParams(std::map<std::string, int>* pnames);
-
     };  // class Growth
 
   }  // namespace PAR

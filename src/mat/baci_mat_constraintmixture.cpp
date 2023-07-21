@@ -92,12 +92,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ConstraintMixture::CreateMaterial()
   return Teuchos::rcp(new MAT::ConstraintMixture(this));
 }
 
-void MAT::PAR::ConstraintMixture::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("GROWTHFAC", growthfactor));
-  pnames->insert(std::pair<std::string, int>("ELASTINFAC", elastin_survival));
-}
-
 MAT::ConstraintMixtureType MAT::ConstraintMixtureType::instance_;
 
 DRT::ParObject* MAT::ConstraintMixtureType::Create(const std::vector<char>& data)
@@ -807,28 +801,6 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       minindex_ += 1;
       history_->at(minindex_).GetTime(&temptime, &tempdt);
       Degradation(acttime - temptime, degrad);
-    }
-  }
-
-  // this is not nice, but I see no different way to make inverse analysis of prestretch work
-  // only in first time step
-  if (abs(time - dt) < eps && *params_->initstretch_ == "UpdatePrestretch")
-  {
-    if (params_->numhom_ == 1)
-    {
-      localprestretch_->at(gp).PutScalar(params_->prestretchcollagen_[0]);
-      localhomstress_->at(gp).PutScalar(params_->homstress_[0]);
-    }
-    else
-    {
-      localprestretch_->at(gp)(0) = params_->prestretchcollagen_[0];
-      localprestretch_->at(gp)(1) = params_->prestretchcollagen_[1];
-      localprestretch_->at(gp)(2) = params_->prestretchcollagen_[2];
-      localprestretch_->at(gp)(3) = params_->prestretchcollagen_[2];
-      localhomstress_->at(gp)(0) = params_->homstress_[0];
-      localhomstress_->at(gp)(1) = params_->homstress_[1];
-      localhomstress_->at(gp)(2) = params_->homstress_[2];
-      localhomstress_->at(gp)(3) = params_->homstress_[2];
     }
   }
 

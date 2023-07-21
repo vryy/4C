@@ -37,8 +37,6 @@
 #include "baci_inpar_turbulence.H"
 #include "baci_inpar_elch.H"
 #include "baci_inpar_cardiac_monodomain.H"
-#include "baci_inpar_invanalysis.H"
-#include "baci_inpar_statinvanalysis.H"
 #include "baci_inpar_searchtree.H"
 #include "baci_inpar_xfem.H"
 #include "baci_inpar_poroelast.H"
@@ -390,7 +388,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::IO_MONITOR_STRUCTURE_DBC::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTK::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTP_STRUCTURE::SetValidParameters(list);
-  INPAR::INVANA::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
   INPAR::CONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);

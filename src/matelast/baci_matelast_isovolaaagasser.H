@@ -76,8 +76,6 @@ namespace MAT
           last = xi
         };
 
-        void OptParams(std::map<std::string, int>* pnames) override;
-
         //@}
 
         /// Override this method and throw error, as the material should be created in within the

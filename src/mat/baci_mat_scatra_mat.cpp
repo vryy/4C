@@ -46,13 +46,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ScatraMat::CreateMaterial()
 MAT::ScatraMatType MAT::ScatraMatType::instance_;
 
 
-void MAT::PAR::ScatraMat::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("DIFF", diff));
-  pnames->insert(std::pair<std::string, int>("REAC", reac));
-}
-
-
 DRT::ParObject* MAT::ScatraMatType::Create(const std::vector<char>& data)
 {
   MAT::ScatraMat* scatra_mat = new MAT::ScatraMat();
