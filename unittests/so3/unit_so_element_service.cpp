@@ -8,8 +8,8 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <vector>
-#include "lib_element.H"
-#include "so3_element_service.H"
+#include "baci_lib_element.H"
+#include "baci_so3_element_service.H"
 
 namespace
 {

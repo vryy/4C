@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "inpar_structure.H"
+#include "baci_inpar_structure.H"
 
 namespace
 {

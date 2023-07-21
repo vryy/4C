@@ -13,8 +13,8 @@
 
 #include "cut_test_utils.H"
 
-#include "cut_meshintersection.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_cut_meshintersection.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 unsigned FindNextCornerPoint(const std::vector<CORE::LINALG::Matrix<3, 1>>& points,
     CORE::LINALG::Matrix<3, 1>& x1, CORE::LINALG::Matrix<3, 1>& x2, CORE::LINALG::Matrix<3, 1>& x3,

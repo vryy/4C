@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "lib_utils_reference_configuration.H"
-#include "so3_tet4.H"
-#include "so3_hex8.H"
-#include "contact_element.H"
-#include "unittest_utils_assertions.h"
+#include "baci_lib_utils_reference_configuration.H"
+#include "baci_so3_tet4.H"
+#include "baci_so3_hex8.H"
+#include "baci_contact_element.H"
+#include "baci_unittest_utils_assertions.h"
 
 #include <Epetra_SerialComm.h>
 

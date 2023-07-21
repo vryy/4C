@@ -1,0 +1,61 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Brute force sampling of the parameter space
+
+\level 3
+
+*/
+/*----------------------------------------------------------------------*/
+
+#ifndef BACI_INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H
+#define BACI_INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H
+
+#include "baci_inv_analysis_optimizer_base.H"  // base class
+
+#include <Teuchos_ParameterList.hpp>
+
+
+namespace INVANA
+{
+  /*! \class OptimizerBruteForce
+   * \brief BruteForce parameter space sampling
+   *
+   * A nice to have feature to analyse your optimization problem
+   * at hand. Of course it is not at all suited to be used in problems
+   * with high parametric dimension, e.g. dim>2. At the moment it is
+   * restricted to dim=1.
+   *
+   * Plotting the functional to be minimized at a reduced dimensional
+   * problem can help extremely in understanding what is going on.
+   *
+   * Adjust the hard coded bounds and discretization of the parameter space
+   * when using it.
+   *
+   * \author kehl \date 07/2016
+   */
+  class OptimizerBruteForce : public OptimizerBase
+  {
+   public:
+    //! constructor
+    OptimizerBruteForce(const Teuchos::ParameterList& invp);
+
+    //! destructor
+    virtual ~OptimizerBruteForce(){};
+
+    //! brute force sample the parameter space
+    virtual void Integrate();
+
+    //! read restart information
+    virtual void ReadRestart(int run);
+
+    //! write restart information
+    virtual void WriteRestart();
+
+    //! setup algorithm specific stuff
+    virtual void Setup();
+  };
+}  // namespace INVANA
+
+
+
+#endif  // INV_ANALYSIS_OPTIMIZER_BRUTEFORCE_H

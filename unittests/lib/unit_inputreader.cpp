@@ -5,7 +5,7 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "lib_inputreader.H"
+#include "baci_lib_inputreader.H"
 
 namespace
 {

@@ -12,8 +12,8 @@
 #include <Epetra_SerialComm.h>
 #include <array>
 
-#include "lib_element.H"
-#include "beam3_kirchhoff.H"
+#include "baci_lib_element.H"
+#include "baci_beam3_kirchhoff.H"
 
 const double testTolerance = 1e-14;
 

@@ -1,0 +1,42 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Input parameters for cardiac monodomain
+
+\level 2
+
+*/
+/*----------------------------------------------------------------------*/
+#ifndef BACI_INPAR_CARDIAC_MONODOMAIN_H
+#define BACI_INPAR_CARDIAC_MONODOMAIN_H
+
+
+#include "baci_inpar_parameterlist_utils.H"
+
+// forward declaration
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}  // namespace DRT
+
+namespace INPAR
+{
+  namespace EP
+  {
+    /// possible types of evaluation of reaction term
+    enum EvalType
+    {
+      ep_implicit,
+      ep_semi_implicit,
+    };
+
+    /// set the elch parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    /// set specific elch conditions
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist);
+  }  // namespace EP
+}  // namespace INPAR
+#endif  // INPAR_CARDIAC_MONODOMAIN_H

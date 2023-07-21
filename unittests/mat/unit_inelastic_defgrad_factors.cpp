@@ -8,16 +8,16 @@
 
 #include <gtest/gtest.h>
 
-#include "lib_globalproblem.H"
-#include "lib_voigt_notation.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_voigt_notation.H"
 
-#include "mat_electrode.H"
-#include "mat_inelastic_defgrad_factors.H"
-#include "mat_par_bundle.H"
+#include "baci_mat_electrode.H"
+#include "baci_mat_inelastic_defgrad_factors.H"
+#include "baci_mat_par_bundle.H"
 
-#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
