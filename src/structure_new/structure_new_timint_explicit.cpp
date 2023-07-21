@@ -46,9 +46,6 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
   // ToDo prepare contact for new time step
   // PrepareStepContact();
 
-  // things that need to be done after Predict
-  PostPredict();
-
   return;
 }
 

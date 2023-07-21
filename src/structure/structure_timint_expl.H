@@ -234,9 +234,6 @@ namespace STR
       // prepare contact for new time step
       PrepareStepContact();
 
-      // things that need to be done after Predict
-      PostPredict();
-
       return;
     }
 
@@ -270,7 +267,6 @@ namespace STR
     /// has to be renamed either here or PrintStep()
     virtual void Output(bool forced_writerestart)
     {
-      PreOutput();
       OutputStep(forced_writerestart);
       // write Gmsh output
       WriteGmshStrucOutputStep();

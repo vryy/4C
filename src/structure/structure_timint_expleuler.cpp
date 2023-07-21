@@ -237,9 +237,6 @@ int STR::TimIntExplEuler::IntegrateStep()
   dtsolve_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
 
-  // things to be done after integrating
-  PostSolve();
-
   // wassup?
   return 0;
 }

@@ -1101,10 +1101,6 @@ void STR::TimInt::PrepareStepContact()
 }
 
 /*----------------------------------------------------------------------*/
-/* things that should be done after the convergence of Newton method */
-void STR::TimInt::PostSolve() { return; }
-
-/*----------------------------------------------------------------------*/
 /* things that should be done after the actual time loop is finished */
 void STR::TimInt::PostTimeLoop()
 {

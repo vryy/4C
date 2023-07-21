@@ -30,13 +30,11 @@ int ADAPTER::StructureTimeLoop::Integrate()
     // call the predictor
     PrePredict();
     PrepareTimeStep();
-    PostPredict();
 
     // integrate time step, i.e. do corrector steps
     // after this step we hold disn_, etc
     PreSolve();
     convergencestatus = Solve();
-    PostSolve();
 
     // if everything is fine
     if (convergencestatus == INPAR::STR::conv_success)
@@ -56,7 +54,6 @@ int ADAPTER::StructureTimeLoop::Integrate()
       PostUpdate();
 
       // write output
-      PreOutput();
       Output();
       PostOutput();
 

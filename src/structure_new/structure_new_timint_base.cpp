@@ -476,7 +476,6 @@ void STR::TIMINT::Base::PrepareOutput(bool force_prepare_timestep)
 void STR::TIMINT::Base::Output(bool forced_writerestart)
 {
   CheckInitSetup();
-  PreOutput();
   OutputStep(forced_writerestart);
   // write Gmsh output
   WriteGmshStrucOutputStep();
