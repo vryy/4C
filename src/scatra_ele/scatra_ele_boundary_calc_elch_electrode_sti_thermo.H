@@ -60,6 +60,7 @@ namespace DRT
        * @param[in] test_master      master-side test function values
        * @param[in] dsqrtdetg_dd     derivatives of the square root of the determinant of the metric
        *                             tensor w.r.t. the displacement dofs
+       * @param[in] shape_spatial_derivatives  spatial derivatives of shape functions
        * @param[in] scatra_parameter_boundary  interface parameter class
        * @param[in] differentiationtype        type of variable for linearization
        * @param[in] timefacfac       time-integration factor times domain-integration factor
@@ -91,6 +92,7 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
           const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
+          const CORE::LINALG::Matrix<nsd_, nen_>& shape_spatial_derivatives,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           SCATRA::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
           double detF, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,

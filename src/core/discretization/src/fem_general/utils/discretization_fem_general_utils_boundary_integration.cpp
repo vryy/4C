@@ -107,7 +107,35 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const Epetra_SerialDenseMat
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int parent_ele_dim>
+CORE::LINALG::Matrix<parent_ele_dim, 1> CORE::DRT::UTILS::CalculateParentGPFromFaceElementData(
+    const double* faceele_xi, const ::DRT::FaceElement* faceele)
+{
+  static LINALG::Matrix<parent_ele_dim - 1, 1> xi;
+  for (int i = 0; i < parent_ele_dim - 1; ++i)
+  {
+    xi(i) = faceele_xi[i];
+  }
+  const double dummy_gp_wgt(0.0);
+  CORE::DRT::UTILS::CollectedGaussPoints intpoints;
+  intpoints.Append(xi, dummy_gp_wgt);
 
+  // get coordinates of gauss point w.r.t. local parent coordinate system
+  CORE::LINALG::SerialDenseMatrix pqxg(1, parent_ele_dim);
+  CORE::LINALG::Matrix<parent_ele_dim, parent_ele_dim> derivtrafo(true);
+  CORE::DRT::UTILS::BoundaryGPToParentGP<parent_ele_dim>(pqxg, derivtrafo, intpoints,
+      faceele->ParentElement()->Shape(), faceele->Shape(), faceele->FaceParentNumber());
+
+  CORE::LINALG::Matrix<parent_ele_dim, 1> xi_parent(true);
+  for (auto i = 0; i < parent_ele_dim; ++i)
+  {
+    xi_parent(i) = pqxg(0, i);
+  }
+
+  return xi_parent;
+}
 
 /*-----------------------------------------------------------------
 
@@ -595,3 +623,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
   DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
 }
+
+
+template CORE::LINALG::Matrix<3, 1> CORE::DRT::UTILS::CalculateParentGPFromFaceElementData<3>(
+    const double* faceele_xi, const ::DRT::FaceElement* faceele);

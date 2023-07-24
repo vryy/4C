@@ -163,7 +163,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = CORE::DRT::UTILS::getNodeCoordinates(i_node, mortar::discretization_);
+          xi_mortar_node = CORE::DRT::UTILS::GetNodeCoordinates(i_node, mortar::discretization_);
 
           // Get position and displacement of the mortar node.
           GEOMETRYPAIR::EvaluatePosition<beam>(

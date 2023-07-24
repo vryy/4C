@@ -604,6 +604,20 @@ namespace CORE::DRT::UTILS
 
   /*----------------------------------------------------------------------------------------*/
 
+  /*!
+   * @brief Calculates the parent element gauss point coordinates from a given face element gauss
+   * point coordinate
+   *
+   * @tparam parent_ele_dim  dimension of the parent element
+   * @param faceele_xi       coordinates of the face element gauss point in parameter space
+   * @param faceele          face element
+   * @return  coordinates of the parent element gauss point corresponding to the face element gauss
+   * point in parameter space
+   */
+  template <int parent_ele_dim>
+  CORE::LINALG::Matrix<parent_ele_dim, 1> CalculateParentGPFromFaceElementData(
+      const double* faceele_xi, const ::DRT::FaceElement* faceele);
+
   //! compute covariant metric tensor for surface element
   void ComputeMetricTensorForSurface(const Epetra_SerialDenseMatrix& xyze,
       const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& metrictensor,

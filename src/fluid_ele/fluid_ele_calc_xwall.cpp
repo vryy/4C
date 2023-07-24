@@ -849,7 +849,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::TauWViaGradient(DRT::ELE
     // calculate only for the wall nodes
     if (ewdist_(inode) < 1e-4)
     {
-      CORE::LINALG::Matrix<3, 1> test = CORE::DRT::UTILS::getNodeCoordinates(inode, distype);
+      CORE::LINALG::Matrix<3, 1> test = CORE::DRT::UTILS::GetNodeCoordinates(inode, distype);
       const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
       const double* gpc = gp.data();
       // evaluate shape functions and derivatives at integration point

@@ -43,32 +43,86 @@ namespace CONTACT
 
    private:
     //! data bundle of current element
+    template <int dim>
     struct ElementDataBundle;
 
     /*!
      * @brief Checks which element (master- or slave-side) is the electrode-side and bundle the data
      *
+     * @tparam dim                    dimension of the problem
      * @param[in] slave_ele           slave side mortar element
+     * @param[in] slave_xi            slave side coordinates in parameter space at current Gauss
+     *                                point
      * @param[in] slave_shape         slave side shape function evaluated at current Gauss point
      * @param[in] slave_shape_deriv   slave side shape function derivative at current Gauss point
+     * @param[in] slave_normal        slave side normal at current Gauss point
      * @param[in] d_slave_xi_dd       directional derivative of slave side Gauss point coordinates
      * @param[in] master_ele          master side mortar element
+     * @param[in] master_xi           master side coordinates in parameter space at current Gauss
+     *                                point
      * @param[in] master_shape        master side shape function evaluated at current Gauss point
      * @param[in] master_shape_deriv  master side shape function derivative at current Gauss point
+     * @param[in] master_normal       master side normal at current Gauss point
      * @param[in] d_master_xi_dd      directional derivative of master side Gauss point coordinates
      * @param[out] slave_is_electrode  flag indicating if slave-side is electrode-side
      * @param[out] electrode_data      data bundle of the electrode-side element
      * @param[out] electrolyte_data    data bundle of the electrolyte-side element
      */
-    void AssignElectrodeAndElectrolyteQuantities(MORTAR::MortarElement& slave_ele,
+    template <int dim>
+    void AssignElectrodeAndElectrolyteQuantities(MORTAR::MortarElement& slave_ele, double* slave_xi,
         const CORE::LINALG::SerialDenseVector& slave_shape,
         const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
+        const CORE::LINALG::Matrix<dim, 1>& slave_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-        MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
+        MORTAR::MortarElement& master_ele, double* master_xi,
+        const CORE::LINALG::SerialDenseVector& master_shape,
         const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
+        const CORE::LINALG::Matrix<dim, 1>& master_normal,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd,
-        bool& slave_is_electrode, ElementDataBundle& electrode_data,
-        ElementDataBundle& electrolyte_data);
+        bool& slave_is_electrode, ElementDataBundle<dim>& electrode_data,
+        ElementDataBundle<dim>& electrolyte_data);
+
+    /*!
+     * @brief calculate the determinant of the deformation gradient in the parent element at the
+     * current Gauss point
+     *
+     * @tparam dim                      dimension of the problem
+     * @param[in] electrode_quantities  data bundle of the electrode-side element
+     * @return  determinant of the deformation gradient at the current Gauss point
+     */
+    template <int dim>
+    double CalculateDetFOfParentElement(const ElementDataBundle<dim>& electrode_quantities);
+
+    /*!
+     * @brief Calculates the derivative of the determinant of the deformation gradient w.r.t. the
+     * displacement dofs
+     *
+     * @tparam dim  dimension of the problem
+     * @param[in] detF                   determinant of the deformation gradient
+     * @param[in] electrode_quantities   data bundle of the electrode-side element
+     * @param[out] d_detF_dd             derivative of the determinant of the deformation gradient
+     *                                   w.r.t. displacement
+     */
+    template <int dim>
+    void CalculateSpatialDerivativeOfDetF(double detF,
+        const ElementDataBundle<dim>& electrode_quantities,
+        CORE::GEN::pairedvector<int, double>& d_detF_dd);
+
+    /*!
+     * @brief Calculates the derivative of the determinant of the deformation gradient w.r.t. the
+     * displacement dofs
+     *
+     * @tparam distype  shape of the element
+     * @tparam dim      dimension of the problem
+     * @param[in] detF                   determinant of the deformation gradient
+     * @param[in] electrode_quantities   data bundle of the electrode-side element
+     * @param[out] d_detF_dd             derivative of the determinant of the deformation gradient
+     *                                   w.r.t. displacement
+     */
+    template <DRT::Element::DiscretizationType distype, int dim>
+    void CalculateSpatialDerivativeOfDetF(double detF,
+        const ElementDataBundle<dim>& electrode_quantities,
+        CORE::GEN::pairedvector<int, double>& d_detF_dd);
 
     /*!
      * @brief evaluate gauss point to segment forces and linearization at this gp
@@ -120,7 +174,7 @@ namespace CONTACT
      * @param[in] d_test_val_ds    derivative of quantity to be integrated w.r.t. scalar s
      */
     template <int dim>
-    void IntegrateElchTest(double fac, ElementDataBundle& ele_data_bundle, double jac,
+    void IntegrateElchTest(double fac, const ElementDataBundle<dim>& ele_data_bundle, double jac,
         const CORE::GEN::pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
         const CORE::GEN::pairedvector<int, double>& d_test_val_dd,
         const CORE::GEN::pairedvector<int, double>& d_test_val_ds);
@@ -140,27 +194,18 @@ namespace CONTACT
      * @brief integrate the scatra-structure interaction interface condition
      *
      * @tparam dim                    dimension of the problem
-     * @param[in] slave_ele           slave-side mortar contact element
-     * @param[in] slave_shape         slave-side shape function evaluated at current Gauss point
-     * @param[in] slave_shape_deriv   slave-side shape function derivative at current Gauss point
-     * @param[in] d_slave_xi_dd       slave-side directional derivative of Gauss point coordinates
-     * @param[in] master_ele          master-side mortar contact element
-     * @param[in] master_shape        master-side shape function evaluated at current Gauss point
-     * @param[in] master_shape_deriv  master-side shape function derivative at current Gauss point
-     * @param[in] d_master_xi_dd      master-side directional derivative of Gauss point coordinates
+     * @param[in] slave_is_electrode  flag indicating if slave side is electrode side
      * @param[in] jac                 Jacobian determinant of integration cell
      * @param[in] d_jac_dd            directional derivative of cell Jacobian
      * @param[in] wgt                 Gauss point weight
+     * @param[in] electrode_quantities    electrode element data bundle
+     * @param[in] electrolyte_quantities  electrolyte element data bundle
      */
     template <int dim>
-    void IntegrateSSIInterfaceCondition(MORTAR::MortarElement& slave_ele,
-        const CORE::LINALG::SerialDenseVector& slave_shape,
-        const CORE::LINALG::SerialDenseMatrix& slave_shape_deriv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& d_slave_xi_dd,
-        MORTAR::MortarElement& master_ele, const CORE::LINALG::SerialDenseVector& master_shape,
-        const CORE::LINALG::SerialDenseMatrix& master_shape_deriv,
-        const std::vector<CORE::GEN::pairedvector<int, double>>& d_master_xi_dd, double jac,
-        const CORE::GEN::pairedvector<int, double>& d_jac_dd, double wgt);
+    void IntegrateSSIInterfaceCondition(bool slave_is_electrode, double jac,
+        const CORE::GEN::pairedvector<int, double>& d_jac_dd, double wgt,
+        const ElementDataBundle<dim>& electrode_quantities,
+        const ElementDataBundle<dim>& electrolyte_quantities);
 
     /*!
      * @brief  integrate the structure residual and linearizations
@@ -206,8 +251,8 @@ namespace CONTACT
      * @param[out] d_pot_dd        derivative of Gauss point electric potential w.r.t. displacement
      */
     template <int dim>
-    void SetupGpElchProperties(ElementDataBundle& ele_data_bundle, double& gp_conc, double& gp_pot,
-        CORE::GEN::pairedvector<int, double>& d_conc_dc,
+    void SetupGpElchProperties(const ElementDataBundle<dim>& ele_data_bundle, double& gp_conc,
+        double& gp_pot, CORE::GEN::pairedvector<int, double>& d_conc_dc,
         CORE::GEN::pairedvector<int, double>& d_conc_dd,
         CORE::GEN::pairedvector<int, double>& d_pot_dpot,
         CORE::GEN::pairedvector<int, double>& d_pot_dd);

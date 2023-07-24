@@ -90,14 +90,17 @@ namespace DRT
        * @param [in] frt          Faraday/(gasconstant * temperature)
        * @param [in] j0           exchange mass flux density
        * @param [in] eta          electrode-electrolyte overpotential
-       * @param [in] timefacwgt   time-integration factor times Gauss point weight
-       * @param [out] dj_dsqrtdetg_timefacwgt  linearization of Butler-Volmer mass flux density
-       *                                       w.r.t. square root of the determinant of the metric
-       *                                       tensor times timefacwgt
+       * @param [in] depd_ddetF   derivative of equilibrium potential w.r.t. determinant of the
+       *                          deformation gradient at the current Gauss point
+       * @param [out] dj_dsqrtdetg linearization of Butler-Volmer mass flux density w.r.t. square
+       *                           root of the determinant of the metric tensor
+       * @param [out] dj_ddetF     linearization of Butler-Volmer mass flux density w.r.t.
+       *                           determinant of the deformation gradient at the current Gauss
+       *                           point
        */
       static void CalculateButlerVolmerDispLinearizations(int kineticmodel, double alphaa,
-          double alphac, double frt, double j0, double eta, double timefacwgt,
-          double& dj_dsqrtdetg_timefacwgt);
+          double alphac, double frt, double j0, double eta, double depd_ddetF, double& dj_dsqrtdetg,
+          double& dj_ddetF);
 
       /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method

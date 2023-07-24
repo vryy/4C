@@ -600,7 +600,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;  // dummy
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
     CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
@@ -760,7 +760,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
     CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 
@@ -943,7 +943,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
     CORE::LINALG::Matrix<DIM, NUMNODES> deriv;
     CORE::LINALG::Matrix<3, 1> gpa;
 
-    gpa = CORE::DRT::UTILS::getNodeCoordinates(numbering[n], mapped_dis_type);
+    gpa = CORE::DRT::UTILS::GetNodeCoordinates(numbering[n], mapped_dis_type);
 
     CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(funct, deriv, gpa, myknots, weights, nurbs_type);
 

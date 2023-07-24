@@ -619,14 +619,17 @@ namespace CORE::DRT::UTILS
       const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
-
   /*!
-  \brief Returns a vector with coordinates in reference system of the cutter element
-  \      according to the node Id for each discretization type
-  */
-  CORE::LINALG::Matrix<3, 1> getNodeCoordinates(const int nodeId,  ///< node Id
-      const ::DRT::Element::DiscretizationType distype             ///< discretization type
-  );
+   * @brief Returns the coordinates in parameter space for a given node id and discretization type
+   *
+   * @tparam probdim     dimension of the problem
+   * @param[in] nodeId   node Id
+   * @param[in] distype  discretization type
+   * @return coordinates in parameter space for a given node id and discretization type
+   */
+  template <int probdim = 3>
+  CORE::LINALG::Matrix<probdim, 1> GetNodeCoordinates(
+      const int nodeId, const ::DRT::Element::DiscretizationType distype);
 
   /*!
   \brief Returns a with coordinates in reference system of the cutter element

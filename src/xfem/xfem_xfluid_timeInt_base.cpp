@@ -1945,7 +1945,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
 
 
   for (int i = 0; i < side1->NumNode(); i++)
-    xi_1_avg.Update(1.0, CORE::DRT::UTILS::getNodeCoordinates(i, side1->Shape()), 1.0);
+    xi_1_avg.Update(1.0, CORE::DRT::UTILS::GetNodeCoordinates(i, side1->Shape()), 1.0);
 
   xi_1_avg.Scale(1.0 / side1->NumNode());
 
@@ -1959,7 +1959,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
   if (side2 != NULL)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->NumNode(); i++)
-      xi_2_avg.Update(1.0, CORE::DRT::UTILS::getNodeCoordinates(i, side2->Shape()), 1.0);
+      xi_2_avg.Update(1.0, CORE::DRT::UTILS::GetNodeCoordinates(i, side2->Shape()), 1.0);
 
     xi_2_avg.Scale(1.0 / side2->NumNode());
 
@@ -2006,7 +2006,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
     // get the side-center
     for (int i = 0; i < side->NumNode(); i++)
     {
-      local_node_coord = CORE::DRT::UTILS::getNodeCoordinates(i, side->Shape());
+      local_node_coord = CORE::DRT::UTILS::GetNodeCoordinates(i, side->Shape());
       side_center(0) += local_node_coord(0);
       side_center(1) += local_node_coord(1);
     }

@@ -2455,7 +2455,7 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
   for (int i = 0; i < numnode; ++i)
   {
     CORE::LINALG::Matrix<3, 1> loc_coor;
-    loc_coor = CORE::DRT::UTILS::getNodeCoordinates(i, Shape());
+    loc_coor = CORE::DRT::UTILS::GetNodeCoordinates(i, Shape());
 
     const double e0 = loc_coor(0);
     const double e1 = loc_coor(1);
