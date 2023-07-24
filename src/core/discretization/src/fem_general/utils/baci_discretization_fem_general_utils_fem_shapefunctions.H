@@ -3149,6 +3149,29 @@ namespace CORE::DRT::UTILS
     return;
   }
 
+  /*!
+   * @brief This method calculates the spatial derivatives of the shape function
+   *
+   * The spatial derivative always features 'probdim' entries as the spatial dimension equals the
+   * problem dimension. This method can be used if the dimension of the elements used for the
+   * discretization of the problem is smaller than the problem dimension.
+   *
+   * @tparam distype shape of the element
+   * @tparam probdim dimension of the problem
+   * @param[out] deriv_xyz  derivatives of the shape function w.r.t. spatial coordinates
+   * @param[in] deriv       derivatives of the shape function w.r.t. parameter coordinates
+   * @param[in] xyze        spatial positions of the element nodes
+   * @param[in] normal      normal vector
+   */
+  template <::DRT::Element::DiscretizationType distype, int probdim>
+  void EvaluateShapeFunctionSpatialDerivativeInProbDim(
+      CORE::LINALG::Matrix<probdim,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv_xyz,
+      const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& deriv,
+      const CORE::LINALG::Matrix<
+          CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, probdim>& xyze,
+      const CORE::LINALG::Matrix<probdim, 1>& normal);
 }  // namespace CORE::DRT::UTILS
 
-#endif  // DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
+#endif  // BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
