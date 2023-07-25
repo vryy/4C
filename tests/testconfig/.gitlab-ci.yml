@@ -29,6 +29,8 @@ variables:
   BACI_DOCKER_BUILD_IMAGES: 'False'
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
 
+before_script:
+- git config --global --add safe.directory ${CI_PROJECT_DIR}
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
@@ -299,7 +301,6 @@ checkcode:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   script:
   - echo code check
-  - cd ../baci
   - ./create-baci-python-venv
   - bash utilities/code_checks/check_format_and_header
   artifacts:
