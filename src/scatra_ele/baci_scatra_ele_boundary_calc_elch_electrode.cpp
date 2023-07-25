@@ -228,8 +228,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
       // derivative of equilibrium electric potential difference w.r.t. concentration at
       // electrode surface
-      const double epdderiv =
-          matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt, detF);
+      const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
+          eslavephiint, faraday, frt, detF);
 
       // Butler-Volmer exchange mass flux density
       const double j0 =
@@ -706,8 +706,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
         if (std::isinf(epd)) break;
 
         const double depd_ddetF =
-            matelectrode->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
-                eslavephiint, faraday, frt, detF);
+            matelectrode->ComputeDOpenCircuitPotentialDDetF(eslavephiint, faraday, frt, detF);
 
         // Butler-Volmer exchange mass flux density
         const double j0 = myelectrodeutils::IsReducedButlerVolmer(kineticmodel)

@@ -242,7 +242,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
       // equilibrium electric potential difference at electrode surface
       const double epd =
           matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
-      const double depddT = matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
+      const double depddT = matelectrode->ComputeDOpenCircuitPotentialDTemperature(
           eslavephiint, faraday, gasconstant);
 
       // skip further computation in case equilibrium electric potential difference is outside
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
           // w.r.t. concentration at electrode surface
           const double epd =
               matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
-          const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+          const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
               eslavephiint, faraday, frt, detF);
 
           // electrode-electrolyte overpotential at integration point
@@ -583,8 +583,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
           if (not std::isinf(epd))
           {
             const double depd_ddetF =
-                matelectrode->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
-                    eslavephiint, faraday, frt, detF);
+                matelectrode->ComputeDOpenCircuitPotentialDDetF(eslavephiint, faraday, frt, detF);
 
             // electrode-electrolyte overpotential at integration point
             const double eta = eslavepotint - emasterpotint - epd;
@@ -670,7 +669,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
           const double epd =
               matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF);
 
-          const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+          const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
               eslavephiint, faraday, frt, detF);
 
           const double cmax = matelectrode->CMax();

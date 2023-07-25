@@ -210,9 +210,9 @@ namespace DRT
         const double dummy_detF(1.0);
         // evaluate material
         ocp_ = matelectrode->ComputeOpenCircuitPotential(concentration, faraday, frt, dummy_detF);
-        ocpderiv_ = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+        ocpderiv_ = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
             concentration, faraday, frt, dummy_detF);
-        ocpderiv2_ = matelectrode->ComputeSecondDerivOpenCircuitPotentialConc(
+        ocpderiv2_ = matelectrode->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
             concentration, faraday, frt, dummy_detF);
       };
 

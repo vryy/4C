@@ -224,7 +224,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
             ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt, detF)
             : 0.0;
     const double epdderiv =
-        matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(eslavephiint, faraday, frt, detF);
+        matelectrode->ComputeDOpenCircuitPotentialDConcentration(eslavephiint, faraday, frt, detF);
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
