@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "cut_mesh.H"
-#include "cut_element.H"
-#include "discretization_fem_general_utils_gausspoints.H"
-#include "lib_globalproblem.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_element.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_lib_globalproblem.H"
 #include "cut_test_utils.H"
 
 #include <Teuchos_CommandLineProcessor.hpp>

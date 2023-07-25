@@ -6,8 +6,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
-#include "particle_interaction_utils.H"
+#include "baci_unittest_utils_assertions.h"
+#include "baci_particle_interaction_utils.H"
 
 namespace
 {

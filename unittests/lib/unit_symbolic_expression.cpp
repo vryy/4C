@@ -7,9 +7,9 @@
 
 #include <gtest/gtest.h>
 
-#include "lib_symbolic_expression.H"
+#include "baci_lib_symbolic_expression.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 
 namespace

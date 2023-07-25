@@ -11,9 +11,9 @@
 #include <gtest/gtest.h>
 
 #include <Epetra_SerialComm.h>
-#include "geometry_pair_element_faces.H"
-#include "geometry_pair_element.H"
-#include "geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_element_faces.H"
+#include "baci_geometry_pair_element.H"
+#include "baci_geometry_pair_scalar_types.H"
 #include "unit_geometry_pair_line_to_surface_patch_geometry.H"
 #include "unit_geometry_pair_line_to_surface_patch_results.H"
 

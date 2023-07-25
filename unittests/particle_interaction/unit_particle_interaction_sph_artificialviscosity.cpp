@@ -7,9 +7,9 @@ interactions
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
-#include "particle_interaction_sph_artificialviscosity.H"
-#include "particle_interaction_utils.H"
+#include "baci_unittest_utils_assertions.h"
+#include "baci_particle_interaction_sph_artificialviscosity.H"
+#include "baci_particle_interaction_utils.H"
 
 namespace
 {

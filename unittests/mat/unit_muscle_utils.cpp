@@ -6,8 +6,8 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "mat_muscle_utils.H"
-#include "unittest_utils_assertions.h"
+#include "baci_mat_muscle_utils.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

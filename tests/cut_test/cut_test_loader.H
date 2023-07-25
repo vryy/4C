@@ -12,7 +12,7 @@
 #include <map>
 #include <vector>
 
-#include "cut_meshintersection.H"
+#include "baci_cut_meshintersection.H"
 
 class MeshLoader
 {

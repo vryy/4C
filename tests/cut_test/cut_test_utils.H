@@ -13,9 +13,9 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
-#include "lib_element.H"
+#include "baci_lib_element.H"
 
-#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 namespace CORE::GEO
 {

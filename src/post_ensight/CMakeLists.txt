@@ -1,7 +1,7 @@
 set(OBJS_POST_ENSIGHT
     # cmake-format: sortable
-    post_ensight_writer.cpp
-    post_ensight_writer_nurbs.cpp
+    baci_post_ensight_writer.cpp
+    baci_post_ensight_writer_nurbs.cpp
     )
 
 baci_add_library(
@@ -9,6 +9,6 @@ baci_add_library(
   SOURCES
   ${OBJS_POST_ENSIGHT}
   HEADERS
-  post_ensight_writer.H
+  baci_post_ensight_writer.H
   )
 baci_add_dependency(post_ensight_lib post_common)

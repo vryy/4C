@@ -12,8 +12,8 @@
 
 #ifdef BACI_WITH_ARBORX
 
-#include "discretization_geometric_search.H"
-#include "discretization_geometric_search_utils.H"
+#include "baci_discretization_geometric_search.H"
+#include "baci_discretization_geometric_search_utils.H"
 
 const double testTolerance = 1e-14;
 

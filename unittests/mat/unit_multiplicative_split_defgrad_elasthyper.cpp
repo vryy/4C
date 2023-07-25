@@ -8,16 +8,16 @@
 
 #include <gtest/gtest.h>
 
-#include "lib_globalproblem.H"
+#include "baci_lib_globalproblem.H"
 
-#include "mat_elasthyper_service.H"
-#include "mat_par_bundle.H"
-#include "mat_par_material.H"
-#include "mat_multiplicative_split_defgrad_elasthyper.H"
+#include "baci_mat_elasthyper_service.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper.H"
 
-#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

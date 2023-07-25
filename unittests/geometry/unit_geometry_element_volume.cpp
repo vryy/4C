@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "discretization_geometry_element_volume.H"
+#include "baci_discretization_geometry_element_volume.H"
 
 namespace
 {

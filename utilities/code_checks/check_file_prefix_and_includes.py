@@ -29,7 +29,9 @@ def is_prefixed_by_module(file, module):
     """
     A valid prefix is equal to the module name followed either by an underscore or a file extension.
     """
-    return file.startswith(module + "_") or file.startswith(module + ".")
+    return file.startswith("baci_" + module + "_") or file.startswith(
+        "baci_" + module + "."
+    )
 
 
 def most_specific_module_root(file, module_roots):
