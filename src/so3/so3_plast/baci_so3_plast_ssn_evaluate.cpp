@@ -958,8 +958,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   // Static condensation EAS --> stiff ********************************
   if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
     solve_for_inverseKaa.setMatrix(KaaInv_);
     solve_for_inverseKaa.invert();
@@ -1388,8 +1388,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(
     // static condensation of inner variables
     // **************************************************************
     // inverse matrix block [k_beta beta]_ij
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_kbbinv;
     solve_for_kbbinv.setMatrix(Teuchos::rcpFromRef(KbbInv_[gp]));
     int err = solve_for_kbbinv.invert();

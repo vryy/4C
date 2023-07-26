@@ -1263,7 +1263,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     Element* aele = *eit;
     file << "  {"
          << "\n";
-    file << "  linalg_serialdensematrix.Hex" << aele->Nodes().size() << "_xyze( 3, "
+    file << "  LINALG::SerialDenseMatrix hex" << aele->Nodes().size() << "_xyze( 3, "
          << aele->Nodes().size() << " );"
          << "\n";
     file << ""

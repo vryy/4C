@@ -625,8 +625,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
       shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
   tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
 
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
   inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
   inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));
@@ -755,8 +755,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
       polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
   tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
 
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
   inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
   inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));

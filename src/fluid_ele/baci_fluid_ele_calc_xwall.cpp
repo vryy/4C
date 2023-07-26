@@ -88,8 +88,6 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
   calcoldandnewpsi_ = false;
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
-  //  std::cout << nen_ << std::endl;
-  //  std::cout << elemat1_epetra.numRows() << "  " << elemat1_epetra.numCols() << std::endl;
   GetEleProperties(ele, discretization, lm, params, mat);
 
   // non-enriched case, solve problem as usual

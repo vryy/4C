@@ -124,8 +124,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   }
 
   // conc_gp = N * conc --> conc = N^-1 * conc_gp
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
   invert.setMatrix(Teuchos::rcpFromRef(N));
   invert.invert();

@@ -942,8 +942,8 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMa
   static std::vector<std::vector<double>> dEdlambr(
       nr_rf_tot_, std::vector<double>(nr_rf_tot_, 0.0));
   static std::vector<double> E(nr_rf_tot_, 0.0);
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   static Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   // residual vector of assembled system of equation
   static CORE::LINALG::SerialDenseMatrix R(2 * nr_rf_tot_, 1);
@@ -1050,8 +1050,8 @@ void MAT::GrowthRemodel_ElastHyper::SolveFordrhodCdlambrdC(
   }
 
   // Solve
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   static Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   static CORE::LINALG::SerialDenseMatrix dsolcmat(2 * nr_rf_tot_, 6);
   solver.setMatrix(Teuchos::rcpFromRef(K_T));

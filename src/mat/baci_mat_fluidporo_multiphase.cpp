@@ -157,8 +157,8 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   // invert dof2pres_ to get conversion from dofs to pressures for the fluid phases
   if (numfluidphases_ > 0)
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
     inverse.setMatrix(dof2pres_);
     int err = inverse.invert();

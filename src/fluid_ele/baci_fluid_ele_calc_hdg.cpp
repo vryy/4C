@@ -503,8 +503,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // Creating and solving a system of the form Ax = b where
     // A is a matrix and x and b are vectors
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     // Setting A matrix
     inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
@@ -622,8 +622,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     }
 
     // Solving step, nothing fancy
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     // In this cas trVec is a proper vector and not a matrix used as multiple
@@ -917,8 +917,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
     CORE::LINALG::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
-  //  dsassert(elevec1.numRows() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not
-  //  have correct size");
+
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
@@ -1014,8 +1013,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
         Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -1034,8 +1033,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
     CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   const int numsamppoints = 5;
-  //  dsassert(elevec1.numRows() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not
-  //  have correct size");
+
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
@@ -1126,8 +1124,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
         Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -1186,8 +1184,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
       }
     }
 
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
@@ -2231,8 +2229,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
 
   // invert mass matrix. Inverse will be stored in massMat, too
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
     inverseMass.invert();

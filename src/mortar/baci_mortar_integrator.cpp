@@ -1252,7 +1252,7 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
  |  for curved interface (Paper by Puso/Wohlmuth) from given local      |
  |  coordinates sxia to sxib. The corresponding master side local       |
  |  element coordinates given by mxia and mxib                          |
- |  Output is an linalg_serialdensematrix.Holding the int. values       |
+ |  Output is an LINALG::SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>

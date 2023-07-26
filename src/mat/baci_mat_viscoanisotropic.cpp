@@ -628,32 +628,6 @@ void MAT::ViscoAnisotropic::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   double dt = params.get("delta time", -1.0);
 
 
-  /* Time integration according Holzapfel paper
-   * with some intrinsic usage of the analytic solution
-   * of the underlying ODE (exp-function) */
-  /*
-  // evaluate exp-factors
-  const double expfac_nh = exp(-dt*0.5/tau_nh);
-  const double expfac_fib = exp(-dt*0.5/tau_fib);
-
-  // evaluate current Q's
-  CORE::LINALG::SerialDenseVector Q_nh(SisoEla_nh);
-  Q_nh.Scale(beta_nh*expfac_nh);
-  CORE::LINALG::SerialDenseVector Q_fib1(SisoEla_fib1);
-  Q_fib1.Scale(beta_fib*expfac_fib);
-  CORE::LINALG::SerialDenseVector Q_fib2(SisoEla_fib2);
-  Q_fib2.Scale(beta_fib*expfac_fib);
-
-  // evaluate 'H' history summands
-  SisoEla_nh_old.Scale(-beta_nh*expfac_nh);
-  Q_nh_old.Scale(expfac_nh*expfac_nh);
-  SisoEla_fib1_old.Scale(-beta_fib*expfac_fib);
-  Q_fib1_old.Scale(expfac_fib*expfac_fib);
-  SisoEla_fib2_old.Scale(-beta_fib*expfac_fib);
-  Q_fib2_old.Scale(expfac_fib*expfac_fib);
-  */
-
-
   /* Time integration according Zien/Taylor and the viscoNeoHooke */
   const double theta = 0.5;
   const double artscalar1_nh = (tau_nh - dt + theta * dt) / tau_nh;

@@ -2749,8 +2749,8 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       }
       else
       {
-        typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-        typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+        using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+        using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
         Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
         solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
         solve_for_inverseKaa.invert();

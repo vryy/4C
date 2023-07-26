@@ -1614,13 +1614,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
 
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_, escaaf);
-    // Normalizing the gradient shouldn't be done according to the paper
-    // of Rodriguez 2013.
-    //    const double normgradphi=gradphi.Norm2();
-    //    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-    //      gradphi.Scale(1.0/normgradphi);
-    //    else
-    //      gradphi.putScalar(0.0); //This to catch the cases when gradphi \approx 0
 
     // Smoothed gradient (egradphi, should not be used!!!)
     if (fldpara_->GetSurfaceTensionApprox() ==
@@ -1642,11 +1635,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
       static CORE::LINALG::Matrix<nsd_, 1> gradphin;
       gaussescan = funct_.Dot(escaam);
       gradphin.Multiply(derxy_, escaam);
-      //    const double normgradphin=gradphin.Norm2();
-      //    if(normgradphin>1e-9) //1e-9 is set to create a reasonable scaling.
-      //      gradphin.Scale(1.0/normgradphin);
-      //    else
-      //      gradphin.putScalar(0.0); //This to catch the cases when gradphi \approx 0
 
       Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescan / epsilon));
 

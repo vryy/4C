@@ -976,7 +976,6 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
       CORE::GEO::CUT::IntegrationCell* ic = *i;
 
       const std::vector<CORE::GEO::CUT::Point*>& points = ic->Points();
-      //    CORE::LINALG::SerialDenseMatrix values( 4, points.size() );
 
       switch (ic->Shape())
       {

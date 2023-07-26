@@ -133,8 +133,8 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       }
 
       // solve for third-order coefficients for cubic spline interpolation
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
       solver.setMatrix(Teuchos::rcpFromRef(A));
       solver.setVectors(Teuchos::rcpFromRef(M), Teuchos::rcpFromRef(B));

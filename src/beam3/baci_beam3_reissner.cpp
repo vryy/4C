@@ -1418,8 +1418,8 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
   const unsigned int nnodetriad = this->NumNode();
 
   // safety check
-  if ((unsigned int)Ivar.numRows() != 6 or
-      (unsigned int) Ivar.numCols() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+  if (static_cast<unsigned int>(Ivar.numRows()) != 6 or
+      static_cast<unsigned int>(Ivar.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
     dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
         3 * vpernode * nnodecl + 3 * nnodetriad, Ivar.numRows(), Ivar.numCols());
 
@@ -1536,8 +1536,8 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   const unsigned int nnodetriad = this->NumNode();
 
   // safety check
-  if ((unsigned int)Iinc.numRows() != 6 or
-      (unsigned int) Iinc.numCols() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+  if (static_cast<unsigned int>(Iinc.numRows()) != 6 or
+      static_cast<unsigned int>(Iinc.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
     dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
         3 * vpernode * nnodecl + 3 * nnodetriad, Iinc.numRows(), Iinc.numCols());
 

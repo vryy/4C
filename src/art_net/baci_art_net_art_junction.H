@@ -123,8 +123,8 @@ namespace ART
       friend class ArtJunctionWrapper;
 
      public:
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
 
       /*!
       \brief Standard Constructor
@@ -222,7 +222,7 @@ namespace ART
       //! vector of nodes connected to the junction
       std::vector<int> nodes_;
 
-      //! An teuchos wrapper for Dense matrix solver
+      //! A Teuchos wrapper for a dense matrix solver
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solver_;
 
 

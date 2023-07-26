@@ -547,8 +547,8 @@ namespace CORE::DRT::UTILS
   class LagrangeBasisTet : public PolynomialSpaceBase<nsd_>
   {
    public:
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
 
     LagrangeBasisTet(const unsigned int degree) : legendre_(degree)
     {

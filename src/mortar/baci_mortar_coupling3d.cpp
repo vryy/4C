@@ -3251,41 +3251,6 @@ bool MORTAR::Coupling3d::CenterTriangulation(
     return true;
   }
 
-  /*
-   // clip polygon = quadrilateral
-   // no triangulation necessary -> 2 IntCells
-   else if (clipsize==4)
-   {
-   // IntCell 1 vertices = clip polygon vertices 0,1,2
-   CORE::LINALG::SerialDenseMatrix coords(3,3);
-   for (int k=0;k<3;++k)
-   {
-   coords(k,0) = Clip()[0].Coord()[k];
-   coords(k,1) = Clip()[1].Coord()[k];
-   coords(k,2) = Clip()[2].Coord()[k];
-   }
-
-   // create 1st IntCell object and push back
-   Cells().push_back(Teuchos::rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-   linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
-
-   // IntCell vertices = clip polygon vertices 2,3,0
-   for (int k=0;k<3;++k)
-   {
-   coords(k,0) = Clip()[2].Coord()[k];
-   coords(k,1) = Clip()[3].Coord()[k];
-   coords(k,2) = Clip()[0].Coord()[k];
-   }
-
-   // create 2nd IntCell object and push back
-   Cells().push_back(Teuchos::rcp(new IntCell(1,3,coords,Auxn(),DRT::Element::tri3,
-   linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
-
-   // get out of here
-   return true;
-   }
-   */
-
   //**********************************************************************
   // (2) Find center of clipping polygon (centroid formula)
   //**********************************************************************

@@ -224,8 +224,8 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
   // store boundary element and sum area into surface
   // be careful, we only set physical coordinates
   CORE::LINALG::SerialDenseMatrix dummyMat;
-  BoundaryIntCellsPerEle<GEO::BoundaryIntCells>().push_back(
-      GEO::BoundaryIntCell(distype_bc, -1, localcoord, dummyMat, coord, true));
+  BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCells>().push_back(
+      CORE::GEO::BoundaryIntCell(distype_bc, -1, localcoord, dummyMat, coord, true));
 }
 
 /*----------------------------------------------------------------------------*
@@ -537,14 +537,10 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
       DRT::ParObject::AddtoPack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
-      //      const CORE::LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
-      //      const CORE::LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
       DRT::ParObject::AddtoPack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
-      //      const CORE::LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
-      //      const CORE::LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       const CORE::LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
       DRT::ParObject::AddtoPack(dataSend, vertices_xyz);
     }
@@ -597,7 +593,7 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       // store boundary integration cells in boundaryintcelllist
       CORE::LINALG::SerialDenseMatrix dummyMat;
       intcellvector.push_back(
-          GEO::BoundaryIntCell(distype, -1, vertices_xi, dummyMat, vertices_xyz));
+          CORE::GEO::BoundaryIntCell(distype, -1, vertices_xi, dummyMat, vertices_xyz));
     }
 
     // add group of cells for this element to the map

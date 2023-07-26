@@ -103,8 +103,8 @@ namespace
     CORE::LINALG::SerialDenseMatrix shapefunctions_at_gps_copy(shapefcns_at_gps);
     if (shapefcns_at_gps.numRows() == shapefcns_at_gps.numCols())
     {
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
       matrixInverter.setMatrix(Teuchos::rcpFromRef(shapefunctions_at_gps_copy));
       int error_code = matrixInverter.invert();
@@ -131,8 +131,8 @@ namespace
         Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shapefcns_at_gps, shapefcns_at_gps, 0.0);
 
     {
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
       matrixInverter.setMatrix(Teuchos::rcpFromRef(matTmat));
       int error_code = matrixInverter.invert();

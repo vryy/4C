@@ -26,7 +26,7 @@ CORE::GEO::CUT::BoundaryCell::BoundaryCell(
   xyz_.shape(3, xyz.numCols());
 
   /* This is necessary, because it is possible, that the given
-   * linalg_serialdensematrix.Has a total row number smaller than 3 (equal the
+   * LINALG::SerialDenseMatrix has a total row number smaller than 3 (equal the
    * actual problem dimension).                              hiermeier 11/16 */
   for (unsigned c = 0; c < static_cast<unsigned>(xyz.numCols()); ++c)
   {

@@ -20,8 +20,8 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_squar
   sqr = get_square_matrix(rhs);
   unknown_.size(matri_[0].size());
 
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_GPweights;
   solve_for_GPweights.setMatrix(Teuchos::rcpFromRef(sqr));
   solve_for_GPweights.setVectors(Teuchos::rcpFromRef(unknown_), Teuchos::rcpFromRef(rhs));
@@ -32,19 +32,6 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_squar
     dserror(
         "Computation of Gauss weights failed, Ill"
         "conditioned matrix in least square");
-
-
-  /*  CORE::LINALG::SerialDenseMatrix matt(sqr.size(),sqr.size());
-    CORE::LINALG::SerialDenseVector unn(sqr.size());
-    CORE::LINALG::SerialDenseVector rrr(sqr.size());
-    for(unsigned i=0;i<sqr.size();i++)
-    {
-      for(unsigned j=0;j<sqr.size();j++)
-        matt(j,i) = sqr[i][j];
-      unn(i) = 0.0;
-      rrr(i) = rhs[i];
-    }
-    unknown_ = ConjugateGradient(sqr, rhs);*/
 
   return unknown_;
 }

@@ -284,7 +284,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
 
     // define element matrices and vectors
     CORE::LINALG::SerialDenseMatrix elemass;
-    // CORE::LINALG::SerialDenseVector elerhs;
     std::vector<CORE::LINALG::SerialDenseVector> elerhs(deg + 1);
 
     std::vector<int> lm;

@@ -2074,42 +2074,6 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   }
 
   //---------------------------------------------------------------------
-  // NURBS-specific data for parent and boundary element
-  // (currently not activated)
-  //---------------------------------------------------------------------
-  /*std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd);
-  std::vector<CORE::LINALG::SerialDenseVector> mybknots(bnsd);
-  CORE::LINALG::Matrix<piel,1> pweights;
-  CORE::LINALG::Matrix<biel,1> bweights;
-
-  // orientation of outward normal
-  double normalfac = 0.0;
-
-  // get knotvectors, node coordinates and weights for parent and boundary element
-  if (surfele->Shape() == Fluid::nurbs4 or surfele->Shape() == Fluid::nurbs9)
-  {
-    DRT::NURBS::NurbsDiscretization* nurbsdis =
-  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
-    bool zero_sized_parent =
-  knots->GetBoundaryEleAndParentKnots(mypknots,mybknots,normalfac,pid,bid);
-
-    if (zero_sized_parent) dserror("NURBS: zero-sized parent\n");
-
-    for (int inode=0; inode<biel; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint* >
-  (surfele->Nodes()[inode]); bweights(inode) = cp->W();
-    }
-
-    for (int inode=0; inode<piel; inode++)
-    {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint* >
-  (parent->Nodes()[inode]); pweights(inode) = cp->W();
-    }
-  }*/
-
-  //---------------------------------------------------------------------
   // definitions and initializations for parent and boundary element
   //---------------------------------------------------------------------
   CORE::LINALG::Matrix<nsd, 1> pxsi(true);

@@ -174,8 +174,8 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 
   // invert wTc-matrix (also done if it's only a scalar - check with Micheal
   // Gee before changing this)
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> densesolver;
   densesolver.setMatrix(invwTc_);
   int err = densesolver.invert();

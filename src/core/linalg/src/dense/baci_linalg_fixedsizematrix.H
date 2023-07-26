@@ -2907,17 +2907,6 @@ namespace CORE::LINALG
       return invert<value_type, i, j>(out.values(), in.values());
     }
 
-    //     template <class value_type, unsigned int i, unsigned int j>
-    //     inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& mat)
-    //     {
-    // #ifdef DEBUG
-    //       if (mat.numRows() != mat.numCols())
-    //         dserror("Invalid matrix sizes for inversion, inv( (%i,%i) )", mat.numRows(),
-    //         mat.numCols());
-    // #endif
-    //       return invert<value_type, i, j>(mat.values());
-    //     }
-
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {

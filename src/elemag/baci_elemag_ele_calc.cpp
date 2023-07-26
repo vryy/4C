@@ -481,8 +481,8 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
   // The integration is made by computing the matrix product
   massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
     inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -529,8 +529,8 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
       // The integration is made by computing the matrix product
       massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
       {
-        typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-        typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+        using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+        using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
         Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
         inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
         inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -691,8 +691,8 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(DRT::EL
     // The integration is made by computing the matrix product
     massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
     {
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
       inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
       inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -778,8 +778,8 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
       }
     }
 
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
@@ -877,8 +877,8 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectDirichField(
     }
   }
 
-  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
   inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
   inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
@@ -1296,8 +1296,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
   tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat, localSolver_->Cmat,
       1.0);  //(E + G) - FA^{-1}C
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
     invert.setMatrix(Teuchos::rcpFromRef(tempMat2));
     invert.invert();  //  [(E + G) - FA^{-1}C]^{-1}
@@ -1471,8 +1471,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
       // The integration is made by computing the matrix product
       tempMassMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., tempMat, tempMatW, 0.);
       {
-        typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-        typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+        using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+        using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
         Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
         inverseMass.setMatrix(Teuchos::rcpFromRef(tempMassMat));
         inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
@@ -1676,8 +1676,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeInteriorMatrices
   {  // We are creating this scope to destroy everything related to the matrix inversion
     // We are going to need both A and its inverse and therefore we are storing both
     invAmat += Amat;
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> invA;
     invA.setMatrix(Teuchos::rcpFromRef(invAmat));
     int err = invA.invert();
@@ -1801,8 +1801,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
   tempMat2.multiply(
       Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Cmat, 1.0);  // = (E + G) - F A^{-1} C
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseinW;
     inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
     int err = inverseinW.invert();
@@ -2067,8 +2067,8 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
 
   // Inverting the first part of the Y matrix
   {
-    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseinW;
     inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
     int err = inverseinW.invert();

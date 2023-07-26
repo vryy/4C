@@ -262,8 +262,8 @@ namespace DRT
       /// local solver that inverts local problem on an element and can solve with various vectors
       struct LocalSolver
       {
-        typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-        typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+        using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+        using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
 
         static const unsigned int nsd_ = FluidEleCalcHDGWeakComp<distype>::nsd_;
         static const unsigned int msd_ = (nsd_ * (nsd_ + 1.0)) / 2.0;

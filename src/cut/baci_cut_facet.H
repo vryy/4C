@@ -212,9 +212,6 @@ namespace CORE::GEO
       void NewTri3Cell(Mesh& mesh, VolumeCell* volume, const std::vector<Point*>& points,
           plain_boundarycell_set& bcells);
 
-      //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const
-      //  std::vector<CORE::LINALG::SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
-
       /*!
       \brief Create new quad4 boundary cell associated with this facet
        */

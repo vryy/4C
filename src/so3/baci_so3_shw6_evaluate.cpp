@@ -771,8 +771,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     if (eastype_ == soshw6_easpoisthick)
     {
       // we need the inverse of Kaa
-      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
-      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
       Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
       solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
       solve_for_inverseKaa.invert();
