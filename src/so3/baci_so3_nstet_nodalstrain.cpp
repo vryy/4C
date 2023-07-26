@@ -8,6 +8,9 @@
 *----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Epetra_FECrsMatrix.h>
+#include <Sacado.hpp>
 
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
@@ -16,9 +19,6 @@
 #include "baci_linalg_utils_densematrix_determinant.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
-#include <Epetra_FECrsMatrix.h>
-#include <Sacado.hpp>
 
 #include "baci_mat_service.H"
 #include "baci_mat_micromaterial.H"
@@ -187,8 +187,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
         action == "calc_struct_nlnstiff" || action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
-      stiff.LightShape(ndofperpatch, ndofperpatch);
-      force.LightSize(ndofperpatch);
+      stiff.shape(ndofperpatch, ndofperpatch);
+      force.size(ndofperpatch);
       {
         TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
         NodalIntegration(&stiff, &force, adjnode, adjele, lm, *disp, dis, nullptr, nullptr,
@@ -199,9 +199,9 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
       if (mis)
       {
         TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::MISNodalIntegration");
-        mis_stiff.LightShape(
+        mis_stiff.shape(
             mis_ndofperpatch, mis_ndofperpatch);  // put in Light once values are present
-        mis_force.LightSize(mis_ndofperpatch);    // put in Light once values are present
+        mis_force.size(mis_ndofperpatch);         // put in Light once values are present
         MISNodalIntegration(&mis_stiff, &mis_force, *mis_adjnode, *mis_adjele, *mis_weight, *mis_lm,
             *disp, dis, nullptr, nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }  // mis
@@ -792,18 +792,18 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix*
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
-    force->Multiply('T', 'N', VnodeL, bop, stress_epetra, 0.0);  // bop
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.Rows());
+    force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);  // bop
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
-        ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+        Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);
-    stiff->Multiply('T', 'N', VnodeL, bop, cb, 0.0);  // bop
+    cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
+    stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);  // bop
   }
 
   //----------------------------------------------------- geom. stiffness
@@ -1085,18 +1085,18 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatr
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
-    force->Multiply('T', 'N', VnodeL, bop, stress_epetra, 0.0);
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.Rows());
+    force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
-        ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+        Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);
-    stiff->Multiply('T', 'N', VnodeL, bop, cb, 0.0);
+    cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
+    stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);
   }
 
   //----------------------------------------------------- geom. stiffness

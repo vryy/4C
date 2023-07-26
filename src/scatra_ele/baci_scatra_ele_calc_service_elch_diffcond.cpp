@@ -121,7 +121,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTime
   // porosities, we do not fill the diffusion manager again at the element center The solution
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
-  emat.Scale(DiffManager()->GetPhasePoro(0));
+  emat.scale(DiffManager()->GetPhasePoro(0));
 }
 
 /*----------------------------------------------------------------------*
@@ -340,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     // with dt*(gamma/alpha_M) = timefac/alpha_F
     // matrix contributions are already scaled correctly with
     // timefac=dt*(gamma*alpha_F/alpha_M)
-    elevec1_epetra.Scale(rhsfac);
+    elevec1_epetra.scale(rhsfac);
   }
 
   else

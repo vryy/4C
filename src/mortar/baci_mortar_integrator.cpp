@@ -467,7 +467,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -579,7 +579,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -683,7 +683,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::InitializeGP()
 
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {

@@ -41,11 +41,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine size of each element matrix
-  CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.values(), true);
 
   // set params interface pointer
   SetParamsInterfacePtr(params);
@@ -386,7 +386,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -406,7 +406,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
       int gid = Id();
-      CORE::LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->A(), true);
+      CORE::LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->values(), true);
 
       Teuchos::RCP<Epetra_MultiVector> postthick =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("postthick", Teuchos::null);

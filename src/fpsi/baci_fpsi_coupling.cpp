@@ -251,9 +251,9 @@ void FPSI::FPSICoupling::EvaluateCouplingMatrixesRHS()
   c_fa_->Zero();
   c_pa_->Zero();
 
-  c_rhs_s_->Scale(0.0);
-  c_rhs_pf_->Scale(0.0);
-  c_rhs_f_->Scale(0.0);
+  c_rhs_s_->PutScalar(0.0);
+  c_rhs_pf_->PutScalar(0.0);
+  c_rhs_f_->PutScalar(0.0);
 
   k_pf_porofluid->Zero();
 

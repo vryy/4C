@@ -19,7 +19,6 @@
 #include "baci_lib_utils.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_elasthyper.H"
-#include <Epetra_SerialDenseSolver.h>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -919,8 +918,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     CORE::LINALG::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
     const bool spatialconfiguration)
 {
-  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.A(), true);
-  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.A(), true);
+  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.values(), true);
+  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.values(), true);
   int node_i, node_j;  // end nodes of spring
   double length;       // length of edge
   double dx, dy, dz;   // deltas in each direction
@@ -1339,7 +1338,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
   }
 
   // compute residual
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < 3 * iel; ++i)
     for (int j = 0; j < 3 * iel; ++j) residual(i, 0) += sys_mat(i, j) * displacements[j];
 
@@ -1356,7 +1355,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
 {
   const int numdof = NODDOF_ALE3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.values(), true);
   // update element geometry
   CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
@@ -1582,7 +1581,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
   const int nd = 3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
 
   //  get material using class StVenantKirchhoff
   //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
@@ -1716,7 +1715,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
       for (int j = 0; j < iel; j++) sys_mat(i * 3 + d, j * 3 + d) += tempmat(i, j);
 
   // compute residual vector
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < nd; ++i)
     for (int j = 0; j < nd; ++j) residual[i] += sys_mat(i, j) * my_dispnp[j];
 

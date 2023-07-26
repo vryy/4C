@@ -157,8 +157,8 @@ namespace CORE::GEO
 
       virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
       {
-        xyze.Reshape(3, side_->Nodes().size());
-        side_->Coordinates(xyze.A());
+        xyze.reshape(3, side_->Nodes().size());
+        side_->Coordinates(xyze.values());
       }
 
       virtual void LocalCoordinates(
@@ -197,7 +197,7 @@ namespace CORE::GEO
      public:
       virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
       {
-        xyze.Reshape(3, nodes_.size());
+        xyze.reshape(3, nodes_.size());
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
         {
           Node* n = *i;

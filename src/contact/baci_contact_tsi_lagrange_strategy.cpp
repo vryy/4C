@@ -667,7 +667,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   CORE::LINALG::SparseMatrix& ktt_new = sysmat->Matrix(1, 1);
 
   // reset rhs
-  combined_RHS->Scale(0.);
+  combined_RHS->PutScalar(0.0);
 
   // **********************************************************************
   // **********************************************************************
@@ -921,11 +921,11 @@ void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
 void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   if (fscn_ == Teuchos::null) fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-  fscn_->Scale(0.);
+  fscn_->PutScalar(0.0);
 
   if (ftcnp_ == Teuchos::null)
     ftcnp_ = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
-  ftcnp_->Scale(0.);
+  ftcnp_->PutScalar(0.0);
 
   Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   dmatrix_->Multiply(false, *z_, *tmp);

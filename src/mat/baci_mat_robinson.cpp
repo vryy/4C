@@ -766,7 +766,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
     // elastic step, no inelastic strains: strain_n^v' == 0
     // CCARAT: so3_mv6_v_zero(dvscstn);
     // --> dvstcstn == strainrate_p
-    strainrate_p.Scale(0.0);
+    strainrate_p.putScalar(0.0);
   }  // elastic
 
   //-------------------------------------------------------------------
@@ -827,7 +827,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
   {
     // so3_mv6_m_zero(kvs);
     // in case of an elastic step, no contribution to kvs
-    kvs.Scale(0.0);
+    kvs.putScalar(0.0);
   }
 
   //-------------------------------------------------------------------
@@ -869,7 +869,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(const double dt,      // (i) time st
   {
     // in case of an elastic step, no contribution to kvs
     // CCARAT: so3_mv6_m_zero(kve);
-    kve.Scale(0.0);
+    kve.putScalar(0.0);
   }  // elastic
 
   //-------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ void MAT::Robinson::CalcBEBackStressFlow(const double dt, const double tempnp,
   // CCARAT: if ( (*bckstss == so3_mat_robinson_state_elastic)
   //            || (*bckstss == so3_mat_robinson_state_inelastic) )
   //         so3_mv6_m_zero(kae);
-  kae.Scale(0.0);
+  kae.putScalar(0.0);
 
   // --------------------- derivative with respect to viscous strains
   // kav = pd(res_{n+1}^al)/pd(eps_{n+1}^v)

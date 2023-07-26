@@ -10,6 +10,8 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_sh8p8.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
@@ -20,9 +22,7 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_io_gmsh.H"
-#include <Teuchos_TimeMonitor.hpp>
 #include "baci_mat_service.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_aaaneohooke.H"
@@ -49,10 +49,10 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
-  CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_, NUMDOF_> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_, 1> elevec2(elevec2_epetra.values(), true);
   // elevec3 is not used anyway
 
   // start with "none"
@@ -378,7 +378,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
             data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-        oldfeas->Scale(0.0);
+        oldfeas->putScalar(0.0);
       }
       SolidMaterial()->Update();
     }
@@ -419,7 +419,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
             data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-        oldfeas->Scale(0.0);
+        oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();

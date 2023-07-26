@@ -210,7 +210,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
             {
               // calculate reference position of GP
               CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-              gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
+              gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
               // write coordinates in another datatype
               double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -266,7 +266,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         {
           // calculate reference position of GP
           CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-          gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
+          gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
           // write coordinates in another datatype
           double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           // need to set the minus sign here.)
           for (int node = 0; node < numnod; ++node)
             for (int dim = 0; dim < 2; dim++)
-              for (int dof = 0; dof < elevec1.M(); dof++)
+              for (int dof = 0; dof < elevec1.length(); dof++)
                 (*elemat1)(node * noddof + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
         }
 
@@ -473,7 +473,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseMatrix der_par(1, 2);
-  int err = der_par.Multiply('N', 'T', 1.0, deriv, xye, 0.0);
+  int err = der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xye, 0.0);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != NULL)
@@ -746,7 +746,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseVector mypres(numnode);
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
       {
-        (mypres)(inode, 0) = myvelpres[numdim + (inode * numdofpernode)];
+        (mypres)(inode) = myvelpres[numdim + (inode * numdofpernode)];
       }
 
       CORE::LINALG::SerialDenseMatrix pqxg;
@@ -768,14 +768,14 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         CORE::DRT::UTILS::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
 
         // pressure at integration point
-        double press = funct1D.Dot(mypres);
+        double press = funct1D.dot(mypres);
 
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
         CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
-        xjm.Multiply('N', 'T', 1.0, deriv, xcurr, 0.0);
+        xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xcurr, 0.0);
         CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
-        Jmat.Multiply('N', 'T', 1.0, deriv, xrefe, 0.0);
+        Jmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xrefe, 0.0);
 
         double det = 0.0;
         double detJ = 0.0;
@@ -814,9 +814,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
     CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector)
 {
-  if (elevector.Length() != 4)
+  if (elevector.length() != 4)
   {
-    std::cout << "Length of element Vector: " << elevector.Length() << std::endl;
+    std::cout << "Length of element Vector: " << elevector.length() << std::endl;
     dserror("That is not the right size!");
   }
   // implementation of simple analytic solution
@@ -824,7 +824,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
   elevector[1] = xscurr(1, 0) - xscurr(0, 0);
   elevector[2] = xscurr(0, 1) + xscurr(1, 1);
   elevector[3] = xscurr(1, 0) - xscurr(0, 0);
-  elevector.Scale(-0.5);
+  elevector.scale(-0.5);
   return;
 }
 
@@ -855,6 +855,6 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
   elematrix(3, 2) = 0.5;
   elematrix(3, 3) = 0.0;
 
-  elematrix.Scale(-1.0);
+  elematrix.scale(-1.0);
   return;
 }

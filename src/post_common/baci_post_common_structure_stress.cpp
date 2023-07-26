@@ -193,9 +193,9 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
           const Epetra_BlockMap& elemap = elerotation.Map();
           int lid = elemap.LID(ele.Id());
           if (lid != -1)
-            for (int i = 0; i < elecenterrot.M(); ++i)
-              for (int j = 0; j < elecenterrot.N(); ++j)
-                (*(elerotation(i * elecenterrot.M() + j)))[lid] = elecenterrot(i, j);
+            for (int i = 0; i < elecenterrot.numRows(); ++i)
+              for (int j = 0; j < elecenterrot.numCols(); ++j)
+                (*(elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
         });
 
     filter_.GetWriter().WriteElementResultStep(

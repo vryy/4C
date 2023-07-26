@@ -24,8 +24,6 @@
 #include "baci_mat_list.H"
 
 
-#include <Epetra_SerialDenseSolver.h>
-
 using namespace DRT::UTILS;
 
 

@@ -154,8 +154,8 @@ void MAT::Maxwell_0d_acinus_Ogden::Evaluate(CORE::LINALG::SerialDenseVector& epn
     double time, double dt)
 {
   // Set sysmat and rhs to zero
-  sysmat.Scale(0.0);
-  rhs.Scale(0.0);
+  sysmat.putScalar(0.0);
+  rhs.putScalar(0.0);
 
   // Get acinar volume in current timestep
   double acin_vn = params.acin_vn;

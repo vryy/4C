@@ -1519,9 +1519,9 @@ namespace DRT
               "not yet available!");
 
         Cuiui_matrices.resize(2);
-        Cuiui_matrices[0].Shape(nen_ * numstressdof_,
+        Cuiui_matrices[0].shape(nen_ * numstressdof_,
             ndof_i);  // Gsui (coupling between background elements sigma and current side!)
-        Cuiui_matrices[1].Shape(ndof_i, nen_ * numstressdof_);  // Guis
+        Cuiui_matrices[1].shape(ndof_i, nen_ * numstressdof_);  // Guis
       }
 
 
@@ -1741,7 +1741,7 @@ namespace DRT
 
         // define interface force vector w.r.t side
         CORE::LINALG::SerialDenseVector iforce;
-        iforce.Size(cutla[0].lm_.size());
+        iforce.size(cutla[0].lm_.size());
 
         // we need an instance of Nitsche-evaluation class for evaluation of
         // inflow terms and for evaluation of terms for the previous time step
@@ -2479,8 +2479,8 @@ namespace DRT
           for (int i = 0; i < 3; ++i)
           {
 #ifdef DEBUG
-            if (side_matrices[i].M() != side_matrices_extra[i].M() ||
-                side_matrices[i].N() != side_matrices_extra[i].N())
+            if (side_matrices[i].numRows() != side_matrices_extra[i].numRows() ||
+                side_matrices[i].numCols() != side_matrices_extra[i].numCols())
               dserror(
                   "Mismatch in matrix dimensions of convective stabilization matrix and MHCS/MHVS "
                   "coupling matrix");
@@ -2508,8 +2508,8 @@ namespace DRT
           if (side_matrices_extra.size() != 4)
             dserror("Obtained only %d conv. side coupling matrices. 4 required.",
                 side_matrices_extra.size());
-          if (side_matrices[2].M() != side_matrices_extra[2].M() ||
-              side_matrices[2].N() != side_matrices_extra[2].N())
+          if (side_matrices[2].numRows() != side_matrices_extra[2].numRows() ||
+              side_matrices[2].numCols() != side_matrices_extra[2].numCols())
             dserror(
                 "Mismatch in matrix dimensions of convective stabilization matrix and MHCS/MHVS "
                 "coupling matrix");
@@ -2575,7 +2575,7 @@ namespace DRT
         const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = m->second;
 
         // assemble Gsui
-        for (int ibc = 0; ibc < Cuiui_matrices[0].N(); ++ibc)
+        for (int ibc = 0; ibc < Cuiui_matrices[0].numCols(); ++ibc)
         {
           for (int ibr = 0; ibr < numstressdof_ * nen_; ++ibr)
           {
@@ -2586,7 +2586,7 @@ namespace DRT
         // assemble Guis
         for (int ibc = 0; ibc < numstressdof_ * nen_; ++ibc)
         {
-          for (int ibr = 0; ibr < Cuiui_matrices[1].M(); ++ibr)
+          for (int ibr = 0; ibr < Cuiui_matrices[1].numRows(); ++ibr)
           {
             G_uis(ibr + ipatchsizesbefore, ibc) = Cuiui_matrices[1](ibr, ibc);
           }
@@ -2599,9 +2599,9 @@ namespace DRT
               side_coupling_extra.find(coup_sid);
           const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_conv_matrices = c->second;
 
-          for (int ibc = 0; ibc < Cuiui_conv_matrices[3].N(); ++ibc)
+          for (int ibc = 0; ibc < Cuiui_conv_matrices[3].numCols(); ++ibc)
           {
-            for (int ibr = 0; ibr < Cuiui_conv_matrices[3].M(); ++ibr)
+            for (int ibr = 0; ibr < Cuiui_conv_matrices[3].numRows(); ++ibr)
             {
               Cuiui_conv(ibr + ipatchsizesbefore, ibc + ipatchsizesbefore) =
                   Cuiui_conv_matrices[3](ibr, ibc);
@@ -2609,16 +2609,16 @@ namespace DRT
           }
         }
 
-        ipatchsizesbefore += Cuiui_matrices[0].N();
+        ipatchsizesbefore += Cuiui_matrices[0].numCols();
       }
 
       CORE::LINALG::SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
 
       // G_uis * K_ss^-1
-      GuisInvKss.Multiply('N', 'N', 1.0, G_uis, InvKss, 1.0);
+      GuisInvKss.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, G_uis, InvKss, 1.0);
 
       // Cuiui <--> (-)G_uis * K_ss^-1 * G_sui
-      Cuiui.Multiply('N', 'N', 1.0, GuisInvKss, G_sui, 1.0);
+      Cuiui.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, GuisInvKss, G_sui, 1.0);
 
       if (add_conv_stab) Cuiui += Cuiui_conv;
     }
@@ -3290,7 +3290,7 @@ namespace DRT
         const size_t ndof_i = j->second.size();
 
         Cuiui_matrices.resize(1);
-        Cuiui_matrices[0].Shape(ndof_i, ndof_i);  // Cuiui
+        Cuiui_matrices[0].shape(ndof_i, ndof_i);  // Cuiui
       }
 
       //-----------------------------------------------------------------------------------
@@ -3597,7 +3597,7 @@ namespace DRT
 
         // define interface force vector w.r.t side (for XFSI)
         CORE::LINALG::SerialDenseVector iforce;
-        iforce.Size(cutla[0].lm_.size());
+        iforce.size(cutla[0].lm_.size());
 
         //---------------------------------------------------------------------------------
         // loop boundary cells w.r.t current cut side
@@ -4333,16 +4333,16 @@ namespace DRT
         // Cuiui matrices in Cuiui_mats[0]
 
         // assemble Cuiui
-        for (int ic = 0; ic < Cuiui_mats[0].N();
+        for (int ic = 0; ic < Cuiui_mats[0].numCols();
              ++ic)  // Cuiui includes only ui,ui coupling, not (ui,p) ...
         {
-          for (int ir = 0; ir < Cuiui_mats[0].M(); ++ir)
+          for (int ir = 0; ir < Cuiui_mats[0].numRows(); ++ir)
           {
             Cuiui(ir + ipatchsizesbefore, ic + ipatchsizesbefore) = Cuiui_mats[0](ir, ic);
           }
         }
 
-        ipatchsizesbefore += Cuiui_mats[0].N();
+        ipatchsizesbefore += Cuiui_mats[0].numCols();
       }
 
       return;
@@ -4394,10 +4394,10 @@ namespace DRT
             side_coupling_extra[coup_sid];
 
         side_matrices_extra.resize(4);
-        side_matrices_extra[0].Shape(patchlm.size(), nen_ * numdofpernode_);  // Cuiu
-        side_matrices_extra[1].Shape(nen_ * numdofpernode_, patchlm.size()),  // Cuui
-            side_matrices_extra[2].Shape(patchlm.size(), 1);                  // rhs_Cui
-        side_matrices_extra[3].Shape(patchlm.size(), patchlm.size());         // Cuiui
+        side_matrices_extra[0].shape(patchlm.size(), nen_ * numdofpernode_);  // Cuiu
+        side_matrices_extra[1].shape(nen_ * numdofpernode_, patchlm.size());  // Cuui
+        side_matrices_extra[2].shape(patchlm.size(), 1);                      // rhs_Cui
+        side_matrices_extra[3].shape(patchlm.size(), patchlm.size());         // Cuiui
       }
     }
 
@@ -4491,7 +4491,7 @@ namespace DRT
     )
     {
       const int master_numdof = nsd_ + 1;
-      CORE::LINALG::Matrix<master_numdof * nen_, 1> rhC_um(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<master_numdof * nen_, 1> rhC_um(elevec1_epetra.values(), true);
 
       // funct_m * timefac * fac
       CORE::LINALG::Matrix<nen_, 1> funct_m_timefacfac(funct_m);

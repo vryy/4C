@@ -386,16 +386,16 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
   zsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  zsumw_->Reshape(1, numzcoor_);
+  zsumw_->reshape(1, numzcoor_);
 
   zsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  zsump_->Reshape(1, numzcoor_);
+  zsump_->reshape(1, numzcoor_);
 
   rsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  rsumw_->Reshape(numrstatlocations_, numPosEvaluation);
+  rsumw_->reshape(numrstatlocations_, numPosEvaluation);
 
   rsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-  rsump_->Reshape(numrstatlocations_, numPosEvaluation);
+  rsump_->reshape(numrstatlocations_, numPosEvaluation);
 
 
   // set number of samples to zero
@@ -410,7 +410,6 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   if (discret_->Comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
-    ;
     std::string s2(statistics_outfilename_);
 
     //    s.append(".flow_statistics");

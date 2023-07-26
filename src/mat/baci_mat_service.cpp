@@ -34,7 +34,7 @@ void MAT::AddtoCmatHolzapfelProduct(
     CORE::LINALG::Matrix<6, 6, T>& cmat, const CORE::LINALG::Matrix<6, 1, T>& invc, const T scalar)
 {
 #ifdef DEBUG
-  if (cmat.M() != 6 or cmat.N() != 6 or invc.M() != 6)
+  if (cmat.numRows() != 6 or cmat.numCols() != 6 or invc.numRows() != 6)
     dserror("Wrong dimensions in function AddtoCmatHolzapfelProduct");
 #endif
 
@@ -115,11 +115,12 @@ void MAT::ElastSymTensorMultiplyAddSym(CORE::LINALG::Matrix<6, 6>& C, const doub
 {
 #ifdef DEBUG
   // check sizes
-  if (A.M() != A.N() || B.M() != B.N() || A.M() != 3 || B.M() != 3)
+  if (A.numRows() != A.numCols() || B.numRows() != B.numCols() || A.numRows() != 3 ||
+      B.numRows() != 3)
   {
     dserror("2nd order tensors must be 3 by 3");
   }
-  if (C.M() != C.N() || C.M() != 6) dserror("4th order tensor must be 6 by 6");
+  if (C.numRows() != C.numCols() || C.numRows() != 6) dserror("4th order tensor must be 6 by 6");
 #endif
 
   // everything in Voigt-Notation

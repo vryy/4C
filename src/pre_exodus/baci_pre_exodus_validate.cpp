@@ -253,9 +253,9 @@ int EXODUS::ValidateElementJacobian_fullgp(
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
     const CORE::LINALG::SerialDenseMatrix& deriv)
 {
-  const int iel = deriv.N();
-  const int NSD = deriv.M();
-  CORE::LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
+  const int iel = deriv.numCols();
+  const int NSD = deriv.numRows();
+  CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = mymesh.GetNode(nodes.at(inode));
@@ -268,8 +268,8 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   if (NSD == 3)
   {
     CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
-    xjm.Multiply('N', 'T', 1.0, deriv, xyze, 0.0);
-    CORE::LINALG::Matrix<3, 3> jac(xjm.A(), true);
+    xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
+    CORE::LINALG::Matrix<3, 3> jac(xjm.values(), true);
     const double det = jac.Determinant();
 
     if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f", eleid, det);
@@ -354,7 +354,7 @@ int EXODUS::EleSaneSign(
   const int NSD = 3;
   CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
 
-  CORE::LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
+  CORE::LINALG::SerialDenseMatrix xyze(deriv.numRows(), iel);
   for (int inode = 0; inode < iel; inode++)
   {
     const std::vector<double> x = nodecoords.find(nodes[inode])->second;
@@ -372,7 +372,7 @@ int EXODUS::EleSaneSign(
   {
     CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
-    xjm.Multiply('N', 'T', 1.0, deriv, xyze, 0.0);
+    xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
                        xjm(0, 2) * xjm(1, 0) * xjm(2, 1) - xjm(0, 2) * xjm(1, 1) * xjm(2, 0) -
                        xjm(0, 0) * xjm(1, 2) * xjm(2, 1) - xjm(0, 1) * xjm(1, 0) * xjm(2, 2);

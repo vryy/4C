@@ -134,7 +134,7 @@ void UTILS::Monitor::EvaluateMonitor(
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(1);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(

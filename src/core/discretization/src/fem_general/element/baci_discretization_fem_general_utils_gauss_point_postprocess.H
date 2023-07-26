@@ -71,15 +71,15 @@ namespace CORE::DRT::ELEMENTS
     int lid = elemap.LID(ele.Id());
     if (lid != -1)
     {
-      for (decltype(gp_data.N()) i = 0; i < gp_data.N(); ++i)
+      for (decltype(gp_data.numCols()) i = 0; i < gp_data.numCols(); ++i)
       {
         double& s = (*(global_data(i)))[lid];  // resolve pointer for faster access
         s = 0.;
-        for (decltype(gp_data.M()) j = 0; j < gp_data.M(); ++j)
+        for (decltype(gp_data.numRows()) j = 0; j < gp_data.numRows(); ++j)
         {
           s += gp_data(j, i);
         }
-        s *= 1.0 / gp_data.M();
+        s *= 1.0 / gp_data.numRows();
       }
     }
   }

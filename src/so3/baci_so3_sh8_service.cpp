@@ -6,11 +6,11 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_hex8.H"
 #include "baci_so3_sh8.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_io_gmsh.H"
 #include "baci_mat_viscoanisotropic.H"
 #include "baci_mat_material.H"

@@ -316,12 +316,12 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
    */
   // 6x6 Stiffness Matrix of the Truss
   CORE::LINALG::SerialDenseMatrix DummyStiffMatrix;
-  DummyStiffMatrix.Shape(6, 6);
-  DummyStiffMatrix.Scale(0);
+  DummyStiffMatrix.shape(6, 6);
+  DummyStiffMatrix.putScalar(0.0);
   // 6x6 force vector of the Truss
   CORE::LINALG::SerialDenseVector DummyForce;
-  DummyForce.Size(6);
-  DummyForce.Scale(0);
+  DummyForce.size(6);
+  DummyForce.putScalar(0.0);
   // 1x6 velocity vector
   CORE::LINALG::Matrix<1, 6> DummyVel;
   DummyVel.Clear();
@@ -374,13 +374,13 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
 
 
   // Map element level into global 12 by 12 element
-  if (force->Length() > 12)
+  if (force->length() > 12)
     dserror("Vector is larger than 12. Please use different mapping strategy!");
-  else if (force->Length() == 6)
+  else if (force->length() == 6)
   {
     for (int i = 0; i < 6; i++) (*force)(i) += DummyForce(i);
   }
-  else if (force->Length() == 12)
+  else if (force->length() == 12)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -390,14 +390,14 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
   }
 
   // Map element level into global 12 by 12 element
-  if (stiffmatrix->RowDim() > 12)
+  if (stiffmatrix->numRows() > 12)
     dserror("Matrix is larger than 12. Please use different mapping strategy!");
-  else if (stiffmatrix->RowDim() == 6)
+  else if (stiffmatrix->numRows() == 6)
   {
     for (int i = 0; i < 6; i++)
       for (int j = 0; j < 6; j++) (*stiffmatrix)(i, j) += DummyStiffMatrix(i, j);
   }
-  else if (stiffmatrix->RowDim() == 12)
+  else if (stiffmatrix->numRows() == 12)
   {
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
@@ -825,13 +825,13 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
    * %%%%%%%*/
   // 6x6 Stiffness Matrix between tangents at node 1 & node 2
   CORE::LINALG::SerialDenseMatrix TorStiffmatrixNode3;
-  TorStiffmatrixNode3.Shape(6, 6);
-  TorStiffmatrixNode3.Scale(0);
+  TorStiffmatrixNode3.shape(6, 6);
+  TorStiffmatrixNode3.putScalar(0.0);
   // 6x6 force vector between tangents at node 1 & node 2. Contributions to vector {t1, t2} in
   // respective order
   CORE::LINALG::SerialDenseVector TorForceNode3;
-  TorForceNode3.Size(6);
-  TorForceNode3.Scale(0);
+  TorForceNode3.size(6);
+  TorForceNode3.putScalar(0.0);
 
   // Calculate torsional stiffness matrices and forces between tangents at node 1 & node 2
   if (thetacurr(2) >= ThetaBoundary1 && thetacurr(2) <= ThetaBoundary2)
@@ -852,9 +852,9 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   else
     dserror("Angle out of range!");
   // Map element level into global 12 by 12 element
-  if (force->Length() != 12)
+  if (force->length() != 12)
     dserror("This element does not need torsional element!");
-  else if (force->Length() == 12)
+  else if (force->length() == 12)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -863,9 +863,9 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
     }
   }
   // Map element level into global 12 by 12 element
-  if (stiffmatrix->RowDim() != 12)
+  if (stiffmatrix->numRows() != 12)
     dserror("This element does not require torsional element!");
-  else if (stiffmatrix->RowDim() == 12)
+  else if (stiffmatrix->numRows() == 12)
   {
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)

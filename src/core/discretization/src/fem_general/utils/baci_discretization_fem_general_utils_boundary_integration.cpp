@@ -77,7 +77,7 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialD
   */
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
 
-  dxyzdrs.Multiply('N', 'T', 1.0, deriv, xyze, 0.0);
+  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
 
   /*
   |
@@ -93,7 +93,7 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialD
   |
   | the calculation of g21 is redundant since g21=g12
   */
-  metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
+  metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
 
   /*
                             +--------------+
@@ -152,7 +152,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
     const ::DRT::Element::DiscretizationType distype, const int lineid)
 {
   // resize output array
-  // pqxg.Shape(pqxg.M(),2);
+  // pqxg.Shape(pqxg.numRows(),2);
   // derivtrafo.Shape(2,2);
 
 
@@ -193,7 +193,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                0   1   2             0   1   2
 
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = -1.0;
@@ -235,7 +235,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                         +                     +
                        2                     0
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 1.0;
           pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -275,7 +275,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 
         */
 
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = -intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = 1.0;
@@ -317,7 +317,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                     +                         +
                     0                         0
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = -1.0;
           pqxg(iquad, 1) = -intpoints.Point(iquad)[0];
@@ -347,7 +347,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                0   1   2             0   1   2
 
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = -1.0;
@@ -371,7 +371,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                     +                     +
                    2                     0
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 1.0;
           pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -393,7 +393,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
 
         */
 
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = 1.0;
@@ -417,7 +417,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                  +                            +
                 0                            0
         */
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = -1.0;
           pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -453,7 +453,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
                  0        1             0       1
          */
 
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 0.5 + 0.5 * intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = 0.0;
@@ -463,7 +463,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
       case 1:
       {
         // 1-r-s=0
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 0.5 - 0.5 * intpoints.Point(iquad)[0];
           pqxg(iquad, 1) = 0.5 + 0.5 * intpoints.Point(iquad)[0];
@@ -473,7 +473,7 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
       case 2:
       {
         // r=0
-        for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+        for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
         {
           pqxg(iquad, 0) = 0.0;
           pqxg(iquad, 1) = 0.5 - 0.5 * intpoints.Point(iquad)[0];
@@ -509,8 +509,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.IP().nquad, 3);
-  if (derivtrafo.M() != 3 || derivtrafo.N() != 3) derivtrafo.Shape(3, 3);
+  pqxg.shape(intpoints.IP().nquad, 3);
+  if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
   DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
@@ -525,8 +525,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.IP().nquad, 2);
-  if (derivtrafo.M() != 2 || derivtrafo.N() != 2) derivtrafo.Shape(2, 2);
+  pqxg.shape(intpoints.IP().nquad, 2);
+  if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
   DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
   return;
@@ -541,7 +541,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.IP().nquad, 3);
+  pqxg.shape(intpoints.IP().nquad, 3);
   derivtrafo.Clear();
 
   DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
@@ -557,7 +557,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.IP().nquad, 2);
+  pqxg.shape(intpoints.IP().nquad, 2);
   derivtrafo.Clear();
 
   DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints.IP(), pdistype, distype, surfaceid);
@@ -573,8 +573,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.NumPoints(), 3);
-  if (derivtrafo.M() != 3 || derivtrafo.N() != 3) derivtrafo.Shape(3, 3);
+  pqxg.shape(intpoints.NumPoints(), 3);
+  if (derivtrafo.numRows() != 3 || derivtrafo.numCols() != 3) derivtrafo.shape(3, 3);
 
   DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
@@ -588,8 +588,8 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.NumPoints(), 2);
-  if (derivtrafo.M() != 2 || derivtrafo.N() != 2) derivtrafo.Shape(2, 2);
+  pqxg.shape(intpoints.NumPoints(), 2);
+  if (derivtrafo.numRows() != 2 || derivtrafo.numCols() != 2) derivtrafo.shape(2, 2);
 
   DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
   return;
@@ -603,7 +603,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.NumPoints(), 3);
+  pqxg.shape(intpoints.NumPoints(), 3);
   derivtrafo.Clear();
 
   DRT::UTILS::SurfaceGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);
@@ -618,7 +618,7 @@ void CORE::DRT::UTILS::BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& 
     const ::DRT::Element::DiscretizationType distype, const int surfaceid)
 {
   // resize output array
-  pqxg.LightShape(intpoints.NumPoints(), 2);
+  pqxg.shape(intpoints.NumPoints(), 2);
   derivtrafo.Clear();
 
   DRT::UTILS::LineGPToParentGP(pqxg, derivtrafo, intpoints, pdistype, distype, surfaceid);

@@ -409,7 +409,7 @@ namespace DRT
       //! integral of shape functions over the element
       void IntegrateShapeFunctions(const DRT::Element* ele,  //!< current element
           CORE::LINALG::SerialDenseVector& elevec1,          //!< result vector (to be assembled)
-          const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
+          const CORE::LINALG::IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
       );
 
       //! extrapolate from Gauss points to nodes, needed for postprocessing

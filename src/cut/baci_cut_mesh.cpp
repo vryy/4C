@@ -452,7 +452,7 @@ CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
   }
@@ -556,7 +556,7 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
   }
@@ -576,7 +576,7 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
   }
@@ -596,7 +596,7 @@ CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
   }

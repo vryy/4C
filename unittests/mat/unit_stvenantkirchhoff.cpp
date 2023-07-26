@@ -64,7 +64,7 @@ namespace
   TEST_F(StVenantKirchhoffTest, TestEvaluateEpetraSerialDenseMatrix)
   {
     // Input strain
-    const LINALG::SerialDenseVector input_glstrain(Copy, input_glstrain_.data(), 6);
+    const LINALG::SerialDenseVector input_glstrain(Teuchos::Copy, input_glstrain_.data(), 6);
 
     // Resulting material stiffness matrix
     Teuchos::RCP<LINALG::SerialDenseMatrix> result_cmat =

@@ -966,11 +966,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      elematrix2.Shape(eledim, eledim);
-      elevector2.Size(eledim);
-      elevector2a.Size(eledim);
-      elevector2b.Size(eledim);
-      elevector3.Size(1);
+      elematrix2.shape(eledim, eledim);
+      elevector2.size(eledim);
+      elevector2a.size(eledim);
+      elevector2b.size(eledim);
+      elevector3.size(1);
 
       for (int k = 0; k < eledim; k++)
       {
@@ -1006,7 +1006,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
             if (*conditiontype == "ventricle_right") colvec[0] = gindex[26];
             if (*conditiontype == "atrium_left") colvec[0] = gindex[0];
             if (*conditiontype == "atrium_right") colvec[0] = gindex[24];
-            elevector2.Scale(-1. / ts_size);
+            elevector2.scale(-1. / ts_size);
             sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
           }
           break;
@@ -1015,49 +1015,49 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
             if (*conditiontype == "ventricle_left")
             {
               colvec[0] = gindex[2];
-              elevector2.Scale(-1. / ts_size);
+              elevector2.scale(-1. / ts_size);
               sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
               colvec_a[0] = gindex[56];
-              elevector2a.Scale(-f_np[56] / V_v_l_np);
+              elevector2a.scale(-f_np[56] / V_v_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2a, lm, lmowner, colvec_a);
               colvec_b[0] = gindex[57];
-              elevector2b.Scale(-f_np[57] / V_v_l_np);
+              elevector2b.scale(-f_np[57] / V_v_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
             if (*conditiontype == "ventricle_right")
             {
               colvec[0] = gindex[26];
-              elevector2.Scale(-1. / ts_size);
+              elevector2.scale(-1. / ts_size);
               sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
               colvec_a[0] = gindex[46];
-              elevector2a.Scale(-f_np[46] / V_v_r_np);
+              elevector2a.scale(-f_np[46] / V_v_r_np);
               sysmat2->Assemble(eid, lmstride, elevector2a, lm, lmowner, colvec_a);
               colvec_b[0] = gindex[47];
-              elevector2b.Scale(-f_np[47] / V_v_r_np);
+              elevector2b.scale(-f_np[47] / V_v_r_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
             if (*conditiontype == "atrium_left")
             {
               colvec[0] = gindex[0];
-              elevector2.Scale(-1. / ts_size);
+              elevector2.scale(-1. / ts_size);
               sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
               colvec_a[0] = gindex[54];
-              elevector2a.Scale(-f_np[54] / V_at_l_np);
+              elevector2a.scale(-f_np[54] / V_at_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2a, lm, lmowner, colvec_a);
               colvec_b[0] = gindex[55];
-              elevector2b.Scale(-f_np[55] / V_at_l_np);
+              elevector2b.scale(-f_np[55] / V_at_l_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
             if (*conditiontype == "atrium_right")
             {
               colvec[0] = gindex[24];
-              elevector2.Scale(-1. / ts_size);
+              elevector2.scale(-1. / ts_size);
               sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
               colvec_a[0] = gindex[44];
-              elevector2a.Scale(-f_np[44] / V_at_r_np);
+              elevector2a.scale(-f_np[44] / V_at_r_np);
               sysmat2->Assemble(eid, lmstride, elevector2a, lm, lmowner, colvec_a);
               colvec_b[0] = gindex[45];
-              elevector2b.Scale(-f_np[45] / V_at_r_np);
+              elevector2b.scale(-f_np[45] / V_at_r_np);
               sysmat2->Assemble(eid, lmstride, elevector2b, lm, lmowner, colvec_b);
             }
           }
@@ -9124,7 +9124,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(1);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(

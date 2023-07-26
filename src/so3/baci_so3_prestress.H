@@ -83,7 +83,7 @@ namespace DRT
       inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<3, 3>& Mat,
           CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
+        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
@@ -91,7 +91,7 @@ namespace DRT
       inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<4, 3>& Mat,
           CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
+        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
       }
 
@@ -99,7 +99,7 @@ namespace DRT
       inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<3, 3>& Mat,
           const CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
+        for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
       }
 
@@ -107,7 +107,7 @@ namespace DRT
       inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<4, 3>& Mat,
           const CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
+        for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
       }
 
@@ -128,7 +128,7 @@ namespace DRT
       Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invJhist_;
 
       /// get number of gaussian points considered
-      inline int NGP() const { return Fhist_->M(); }
+      inline int NGP() const { return Fhist_->numRows(); }
 
       /// get no. of nodal points
       inline int NumNode() const { return numnode_; }

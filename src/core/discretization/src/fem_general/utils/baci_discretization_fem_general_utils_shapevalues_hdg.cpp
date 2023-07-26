@@ -30,16 +30,16 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
   CORE::LINALG::SerialDenseVector values(ndofs_);
   CORE::LINALG::SerialDenseMatrix derivs(nsd_, ndofs_);
 
-  xyzreal.Shape(nsd_, nqpoints_);
+  xyzreal.shape(nsd_, nqpoints_);
 
-  funct.Shape(nen_, nqpoints_);
-  derxy.Shape(nen_ * nsd_, nqpoints_);
+  funct.shape(nen_, nqpoints_);
+  derxy.shape(nen_ * nsd_, nqpoints_);
 
-  shfunct.Shape(ndofs_, nqpoints_);
-  shfunctAvg.Resize(ndofs_);
-  shderiv.Shape(ndofs_ * nsd_, nqpoints_);
-  shderxy.Shape(ndofs_ * nsd_, nqpoints_);
-  jfac.Resize(nqpoints_);
+  shfunct.shape(ndofs_, nqpoints_);
+  shfunctAvg.resize(ndofs_);
+  shderiv.shape(ndofs_ * nsd_, nqpoints_);
+  shderxy.shape(ndofs_ * nsd_, nqpoints_);
+  jfac.resize(nqpoints_);
 
   for (unsigned int q = 0; q < nqpoints_; ++q)
   {
@@ -56,14 +56,15 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
       for (unsigned int d = 0; d < nsd_; ++d) shderiv(i * nsd_ + d, q) = derivs(d, i);
     }
 
-    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
+    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
     CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
   }
 
   // Fill support points
-  nodexyzreal.Shape(nsd_, ndofs_);
+  nodexyzreal.shape(nsd_, ndofs_);
   polySpace_->FillUnitNodePoints(nodexyzunit);
-  dsassert(nodexyzreal.M() == nodexyzunit.M() && nodexyzreal.N() == nodexyzunit.N(),
+  dsassert(nodexyzreal.numRows() == nodexyzunit.numRows() &&
+               nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
 }
 
@@ -97,8 +98,8 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     xjm.MultiplyNT(deriv, xyze);
     jfac(q) = xji.Invert(xjm) * quadrature_->Weight(q);
 
-    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.A() + q * nen_, true);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
+    CORE::LINALG::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
 
     // compute global first derivates
@@ -132,7 +133,7 @@ void CORE::DRT::UTILS::ShapeValues<distype>::Evaluate(
     CORE::LINALG::Matrix<nen_, 1> myfunct;
     // CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
     CORE::DRT::UTILS::shape_function<distype>(xsi, myfunct);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 }
@@ -160,14 +161,14 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
       CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape, params.quadraturedegree_);
   nqpoints_ = quadrature_->NumPoints();
 
-  faceValues.LightSize(nfdofs_);
-  xyzreal.LightShape(nsd_, nqpoints_);
-  funct.LightShape(nfn_, nqpoints_);
+  faceValues.size(nfdofs_);
+  xyzreal.shape(nsd_, nqpoints_);
+  funct.shape(nfn_, nqpoints_);
 
-  shfunctNoPermute.LightShape(nfdofs_, nqpoints_);
-  shfunct.LightShape(nfdofs_, nqpoints_);
-  normals.LightShape(nsd_, nqpoints_);
-  jfac.LightResize(nqpoints_);
+  shfunctNoPermute.shape(nfdofs_, nqpoints_);
+  shfunct.shape(nfdofs_, nqpoints_);
+  normals.shape(nsd_, nqpoints_);
+  jfac.resize(nqpoints_);
 
   shfunctI.Shape(nfdofs_, nqpoints_);
 
@@ -181,7 +182,7 @@ CORE::DRT::UTILS::ShapeValuesFace<distype>::ShapeValuesFace(ShapeValuesFaceParam
     polySpace_->Evaluate(xsi, faceValues);
     for (unsigned int i = 0; i < nfdofs_; ++i) shfunctNoPermute(i, q) = faceValues(i);
 
-    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
+    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
     CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
         xsi, myfunct);
   }
@@ -213,9 +214,10 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     for (unsigned int d = 0; d < nsd_; ++d) xyze(d, i) = xyzeElement(d, faceNodeOrder[face][i]);
 
   // Fill face support points
-  nodexyzreal.LightShape(nsd_, nfdofs_);
+  nodexyzreal.shape(nsd_, nfdofs_);
   polySpace_->FillUnitNodePoints(nodexyzunit);
-  dsassert(nodexyzreal.M() == nodexyzunit.M() + 1 && nodexyzreal.N() == nodexyzunit.N(),
+  dsassert(nodexyzreal.numRows() == nodexyzunit.numRows() + 1 &&
+               nodexyzreal.numCols() == nodexyzunit.numCols(),
       "Dimension mismatch");
   for (unsigned int i = 0; i < nfdofs_; ++i)
   {
@@ -224,7 +226,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     CORE::LINALG::Matrix<nfn_, 1> myfunct;
     CORE::DRT::UTILS::shape_function<CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape>(
         xsi, myfunct);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.A() + i * nsd_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
@@ -241,8 +243,8 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::EvaluateFace(
     for (unsigned int d = 0; d < nsd_; ++d) normals(d, q) = normal(d);
     jfac(q) = jacdet * quadrature_->Weight(q);
 
-    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.A() + q * nfn_, true);
-    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.A() + q * nsd_, true);
+    CORE::LINALG::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
+    CORE::LINALG::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
     mypoint.MultiplyNN(xyze, myfunct);
   }
 
@@ -616,7 +618,7 @@ CORE::DRT::UTILS::ShapeValuesInteriorOnFaceCache<distype>::Create(ShapeValuesFac
   {
     for (int d = 0; d < nsd; ++d) xsi(d) = faceQPoints(q, d);
     polySpace->Evaluate(xsi, faceValues);
-    for (int i = 0; i < faceValues.M(); ++i)
+    for (int i = 0; i < faceValues.numRows(); ++i)
     {
       container->matrix_(i, q) = faceValues(i);
       if (std::abs(faceValues(i)) > 1e-14) container->isNonzero_[i] = true;

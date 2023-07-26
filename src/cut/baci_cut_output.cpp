@@ -199,17 +199,17 @@ void CORE::GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file,
 
   file.precision(16);
   file << "S" << elementtype << "(";
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     if (i > 0) file << ", ";
-    for (unsigned j = 0; j < static_cast<unsigned>(xyze.M()); ++j)
+    for (unsigned j = 0; j < static_cast<unsigned>(xyze.numRows()); ++j)
     {
       if (j > 0) file << ",";
       file << xyze(j, i);
     }
   }
   file << "){";
-  for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(xyze.numCols()); ++i)
   {
     if (i > 0) file << ",";
     if (value)

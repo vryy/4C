@@ -206,8 +206,8 @@ double DRT::ELEMENTS::Bele3Line::f2_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseVector der_par(iel);
-  der_par.Multiply('N', 'T', 1.0, xye, deriv, 0.0);
-  dr = der_par.Norm2();
+  der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, xye, deriv, 0.0);
+  dr = CORE::LINALG::Norm2(der_par);
   return dr;
 }
 

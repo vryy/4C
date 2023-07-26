@@ -320,9 +320,9 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
         ele->LocationVector(*discret_, la, false);
 
         // Reshaping the vectors
-        if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-          elevec1.Shape(la[0].lm_.size(), 1);
-        if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+        if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+          elevec1.size(la[0].lm_.size());
+        if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
         ele->Evaluate(
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
@@ -382,10 +382,10 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
     DRT::Element *elemagele = discret_->lColElement(el);
 
     elemagele->LocationVector(*discret_, la, false);
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, elemagele))
-      elevec2.Shape(discret_->NumDof(1, elemagele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, elemagele))
+      elevec2.size(discret_->NumDof(1, elemagele));
 
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> nodevals_phi =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
@@ -401,7 +401,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
     else
     {
       int numscatranode = scatraele->NumNode();
-      (*nodevals_phi).Resize(numscatranode);
+      (*nodevals_phi).resize(numscatranode);
       // fill nodevals with node coords and nodebased solution values
       DRT::Node **scatranodes = scatraele->Nodes();
       for (int i = 0; i < numscatranode; ++i)
@@ -541,9 +541,9 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
     ele->LocationVector(*discret_, la, false);
 
     // Reshaping the vectors
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
   }
   return;
@@ -577,9 +577,9 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
     ele->LocationVector(*discret_, la, false);
 
     // Reshaping the vectors
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
     // now fill the ele vector into the discretization
     for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -654,7 +654,7 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   Teuchos::ParameterList eleparams;
 
   // reset residual and sysmat
-  residual_->Scale(0.0);
+  residual_->PutScalar(0.0);
   sysmat_->Zero();
 
   //----------------------------------------------------------------------
@@ -716,7 +716,7 @@ void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
   eleparams.set<int>("step", step_);
   eleparams.set<bool>("resonly", true);
 
-  residual_->Scale(0.0);
+  residual_->PutScalar(0.0);
   discret_->SetState("trace", trace_);
 
   discret_->Evaluate(
@@ -868,8 +868,8 @@ namespace
       // Electric field
       // Magnetic field
       ele->LocationVector(dis, la, false);
-      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * 4 * ndim);
-      for (int i = 0; i < interpolVec.Length(); i++) interpolVec(i) = 0.0;
+      if (interpolVec.numRows() == 0) interpolVec.resize(ele->NumNode() * 4 * ndim);
+      for (int i = 0; i < interpolVec.length(); i++) interpolVec(i) = 0.0;
 
       // Interpolating hdg internal values to the node
       ele->Evaluate(params, dis, la[0].lm_, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);

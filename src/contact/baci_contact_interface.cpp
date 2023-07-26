@@ -8646,7 +8646,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
     // evaluate jump in tangential direction
     CORE::LINALG::SerialDenseMatrix jumptan(dim, 1);
-    jumptan.Multiply('N', 'N', 1, tanplane, jumpvec, 0.0);
+    jumptan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, jumpvec, 0.0);
 
     // force vector
     CORE::LINALG::SerialDenseMatrix forcevec(dim, 1);
@@ -9327,16 +9327,16 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs, const Ep
   if (conservation_data_ptr)
   {
     CORE::LINALG::SerialDenseMatrix& conservation_data = *conservation_data_ptr;
-    conservation_data.Zero();
-    if (conservation_data.M() < 18) dserror("conservation_data length is too short!");
+    conservation_data.putScalar(0.0);
+    if (conservation_data.numRows() < 18) dserror("conservation_data length is too short!");
 
-    std::copy(gresFSl, gresFSl + 3, conservation_data.A());
-    std::copy(gresFMa, gresFMa + 3, conservation_data.A() + 3);
-    std::copy(gbalF, gbalF + 3, conservation_data.A() + 6);
+    std::copy(gresFSl, gresFSl + 3, conservation_data.values());
+    std::copy(gresFMa, gresFMa + 3, conservation_data.values() + 3);
+    std::copy(gbalF, gbalF + 3, conservation_data.values() + 6);
 
-    std::copy(gresMoSl, gresMoSl + 3, conservation_data.A() + 9);
-    std::copy(gresMoMa, gresMoMa + 3, conservation_data.A() + 12);
-    std::copy(gbalMo, gbalMo + 3, conservation_data.A() + 15);
+    std::copy(gresMoSl, gresMoSl + 3, conservation_data.values() + 9);
+    std::copy(gresMoMa, gresMoMa + 3, conservation_data.values() + 12);
+    std::copy(gbalMo, gbalMo + 3, conservation_data.values() + 15);
   }
 
   ++step;

@@ -357,7 +357,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
   k_lambda_->Zero();
   k_porodisp_->Zero();
   k_porofluid_->Zero();
-  nopenetration_rhs_->Scale(0.0);
+  nopenetration_rhs_->PutScalar(0.0);
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> tmp_k_D = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(*(FluidField()->Interface()->FSICondMap()), 81, false, false));

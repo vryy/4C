@@ -1278,11 +1278,12 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     }
 
     // safety checks
-    if ((size != pointsumphi_->M()) or (size != pointsumphiphi_->M()))
-      dserror("Size mismatch: size = %d <-> M = %d", size, pointsumphi_->M());
-    if ((numscatradofpernode_ != pointsumphi_->N()) or
-        (numscatradofpernode_ != pointsumphiphi_->N()))
-      dserror("Size mismatch: numdof = %d <-> N = %d", numscatradofpernode_, pointsumphi_->N());
+    if ((size != pointsumphi_->numRows()) or (size != pointsumphiphi_->numRows()))
+      dserror("Size mismatch: size = %d <-> M = %d", size, pointsumphi_->numRows());
+    if ((numscatradofpernode_ != pointsumphi_->numCols()) or
+        (numscatradofpernode_ != pointsumphiphi_->numCols()))
+      dserror(
+          "Size mismatch: numdof = %d <-> N = %d", numscatradofpernode_, pointsumphi_->numCols());
 
     // loop all available scatra fields
     for (int k = 0; k < numscatradofpernode_; ++k)
@@ -1478,8 +1479,8 @@ void FLD::TurbulenceStatisticsCcy::ClearStatistics()
 
       // ToDo Is is a good way to initialize everything to zero??
       // Use Shape() instead???
-      pointsumphi_->Scale(0.0);
-      pointsumphiphi_->Scale(0.0);
+      pointsumphi_->putScalar(0.0);
+      pointsumphiphi_->putScalar(0.0);
     }
   }
 

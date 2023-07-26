@@ -36,7 +36,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(
           CORE::DRT::UTILS::GaussRule1D::line_5point);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -73,7 +73,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
   if (rule2d != Teuchos::null)
   {
     ngp_ = rule2d->nquad;
-    coords_.Reshape(nGP(), 2);
+    coords_.reshape(nGP(), 2);
     weights_.resize(nGP());
     for (int i = 0; i < nGP(); ++i)
     {

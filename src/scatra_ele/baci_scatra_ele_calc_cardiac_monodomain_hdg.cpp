@@ -280,9 +280,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
   double imatgpnp(0.);
   double imatgpn(0.);
 
-  ivecn.Scale(0.);
-  ivecnp.Scale(0.);
-  ivecnpderiv.Scale(0.);
+  ivecn.putScalar(0.0);
+  ivecnp.putScalar(0.0);
+  ivecnpderiv.putScalar(0.0);
 
   // polynomial space to get the value of the shape function at the material gauss points
   CORE::DRT::UTILS::PolynomialSpaceParams params(
@@ -313,11 +313,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
       gp_mat_alpha_.resize(actmat->GetNumberOfGP());
     }
 
-    if (unsigned(values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+    if (unsigned(values_mat_gp_all_[0].numRows()) != this->shapes_->ndofs_)
     {
       for (int q = 0; q < nqpoints; ++q)
       {
-        values_mat_gp_all_[q].Size(this->shapes_->ndofs_);
+        values_mat_gp_all_[q].size(this->shapes_->ndofs_);
 
         gp_mat_alpha_[q] = intpoints.IP().qwgt[q];
         // gaussian points coordinates
@@ -351,11 +351,11 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
       gp_mat_alpha_.resize(actmat->GetNumberOfGP());
     }
 
-    if (unsigned(values_mat_gp_all_[0].M()) != this->shapes_->ndofs_)
+    if (unsigned(values_mat_gp_all_[0].numRows()) != this->shapes_->ndofs_)
     {
       for (int q = 0; q < nqpoints; ++q)
       {
-        values_mat_gp_all_[q].Size(this->shapes_->ndofs_);
+        values_mat_gp_all_[q].size(this->shapes_->ndofs_);
 
         gp_mat_alpha_[q] = quadrature_->Weight(q);
         // gaussian points coordinates
@@ -615,7 +615,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     }
   }
 
-  Mmat.Multiply('N', 'T', 1.0, massPartOld, massPartOldW, 0.0);
+  Mmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPartOld, massPartOldW, 0.0);
 
   for (unsigned int q = 0; q < shapes_old->nqpoints_; ++q)
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
@@ -623,19 +623,21 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
       shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
-  tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
+  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
 
-  Epetra_SerialDenseSolver inverseMat;
-  inverseMat.SetMatrix(Mmat);
-  inverseMat.SetVectors(tempMat1, tempMat1);
-  inverseMat.FactorWithEquilibration(true);
-  int err2 = inverseMat.Factor();
-  int err = inverseMat.Solve();
+  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
+  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
+  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));
+  inverseMat.factorWithEquilibration(true);
+  int err2 = inverseMat.factor();
+  int err = inverseMat.solve();
   if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
-  tempMat2.Multiply('T', 'N', 1.0, massPart, tempMat1, 0.0);
+  tempMat2.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, massPart, tempMat1, 0.0);
 
   actmat->SetGP(shapes->nqpoints_);
   actmat->ResizeInternalStateVariables();
@@ -696,7 +698,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   for (int q = 0; q < intpoints_old.IP().nquad; ++q)
   {
-    shape_gp_old[q].Size(polySpace->Size());
+    shape_gp_old[q].size(polySpace->Size());
 
     // gaussian points coordinates
     for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
@@ -706,7 +708,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   for (int q = 0; q < intpoints.IP().nquad; ++q)
   {
-    shape_gp[q].Size(polySpace->Size());
+    shape_gp[q].size(polySpace->Size());
 
     // gaussian points coordinates
     for (int idim = 0; idim < CORE::DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
@@ -743,7 +745,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     }
   }
 
-  Mmat.Multiply('N', 'T', 1.0, massPartOld, massPartOldW, 0.0);
+  Mmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPartOld, massPartOldW, 0.0);
 
   for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
@@ -751,19 +753,21 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
       polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
-  tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
+  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
 
-  Epetra_SerialDenseSolver inverseMat;
-  inverseMat.SetMatrix(Mmat);
-  inverseMat.SetVectors(tempMat1, tempMat1);
-  inverseMat.FactorWithEquilibration(true);
-  int err2 = inverseMat.Factor();
-  int err = inverseMat.Solve();
+  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMat;
+  inverseMat.setMatrix(Teuchos::rcpFromRef(Mmat));
+  inverseMat.setVectors(Teuchos::rcpFromRef(tempMat1), Teuchos::rcpFromRef(tempMat1));
+  inverseMat.factorWithEquilibration(true);
+  int err2 = inverseMat.factor();
+  int err = inverseMat.solve();
   if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shape_gp.size(), actmat->GetNumberOfInternalStateVariables());
-  tempMat2.Multiply('T', 'N', 1.0, massPart, tempMat1, 0.0);
+  tempMat2.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, massPart, tempMat1, 0.0);
 
   actmat->SetGP(shape_gp.size());
   actmat->ResizeInternalStateVariables();

@@ -828,7 +828,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
       else
       {
 #ifdef DEBUG
-        if (MoData().DualShape()->ColDim() != 2 && MoData().DualShape()->RowDim() != 2)
+        if (MoData().DualShape()->numCols() != 2 && MoData().DualShape()->numRows() != 2)
           dserror("Dual shape functions coefficient matrix calculated in the wrong size");
 #endif
         const int nnodes = NumNode();
@@ -1150,7 +1150,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
+        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1162,8 +1162,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::quad1D_only_lin, xi, valquad, derivquad);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       // check whether this is a 1D or 2D mortar element
       int dim = 1;
@@ -1240,8 +1240,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       EvaluateShape(xi, valquad, derivquad, nnodes, true);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1315,8 +1315,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       EvaluateShape(xi, valquad, derivquad, nnodes, true);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1389,8 +1389,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       EvaluateShape(xi, valquad, derivquad, nnodes, true);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1467,7 +1467,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
+        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1479,8 +1479,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::quad2D_only_lin, xi, valquad, derivquad);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1558,7 +1558,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
+        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1570,8 +1570,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::serendipity2D_only_lin, xi, valquad, derivquad);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1648,7 +1648,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.Multiply('N', 'N', 1.0, de, invme, 0.0);
+        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1660,8 +1660,8 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::biquad2D_only_lin, xi, valquad, derivquad);
-      val.Zero();
-      deriv.Zero();
+      val.putScalar(0.0);
+      deriv.putScalar(0.0);
 
       for (int i = 0; i < nnodes; ++i)
       {
@@ -1753,7 +1753,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.Multiply('N', 'N', 1.0, de, me, 0.0);
+      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::dual1D_base_for_edge0, xi, vallin, derivlin);
@@ -1825,7 +1825,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.Multiply('N', 'N', 1.0, de, me, 0.0);
+      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::dual1D_base_for_edge1, xi, vallin, derivlin);
@@ -2040,7 +2040,8 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
           val, auxderiv, uv, Knots(), weights, nurbs9);
 
 #ifdef DEBUG
-      if (deriv.N() != 2 || deriv.M() != NumNode()) dserror("Inconsistency in EvaluateShape");
+      if (deriv.numCols() != 2 || deriv.numRows() != NumNode())
+        dserror("Inconsistency in EvaluateShape");
 #endif
 
       // copy entries for to be conform with the mortar code!
@@ -2500,7 +2501,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultConst(const INPAR::MORTAR::Shape
     const int valdim)
 {
   MORTAR::UTILS::EvaluateShape_LM_Const(lmtype, xi, val, *this, valdim);
-  deriv.Scale(0.);
+  deriv.putScalar(0.0);
 
   return true;
 }
@@ -3725,7 +3726,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.Multiply('N', 'N', 1.0, de, me, 0.0);
+      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
 
       // build linearization of ae and store in derivdual
       // (this is done according to a quite complex formula, which
@@ -3914,7 +3915,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.Multiply('N', 'N', 1.0, de, me, 0.0);
+      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
 
       // build linearization of ae and store in derivdual
       // (this is done according to a quite complex formula, which

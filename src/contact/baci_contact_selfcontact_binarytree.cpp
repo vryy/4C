@@ -317,7 +317,7 @@ void CONTACT::SelfDualEdge::CalculateCosts()
   // build parent slab for dual edge
   CORE::LINALG::SerialDenseMatrix parentslabs;
   const int n = node1_->Kdop();
-  parentslabs.Reshape(n / 2, 2);
+  parentslabs.reshape(n / 2, 2);
 
   for (int k = 0; k < n / 2; ++k)
   {
@@ -484,7 +484,7 @@ void CONTACT::SelfBinaryTree::InitInternalVariables()
       nvectors_ = 16;
 
       // setup sample vectors
-      samplevectors_.Reshape(16, 3);
+      samplevectors_.reshape(16, 3);
       samplevectors_(0, 0) = 1.0;
       samplevectors_(0, 1) = 0.0;
       samplevectors_(0, 2) = 0.0;
@@ -529,7 +529,7 @@ void CONTACT::SelfBinaryTree::InitInternalVariables()
       nvectors_ = 50;
 
       // setup sample vectors
-      samplevectors_.Reshape(50, 3);
+      samplevectors_.reshape(50, 3);
       samplevectors_(0, 0) = 0;
       samplevectors_(0, 1) = 0.0;
       samplevectors_(0, 2) = 1.0;

@@ -451,8 +451,8 @@ void CONTACT::AUG::Plot::Setup()
   if (type_ == INPAR::CONTACT::PlotType::line or type_ == INPAR::CONTACT::PlotType::scalar)
     opt_.resolution_y_ = 1;
 
-  X_.Reshape(opt_.resolution_x_, opt_.resolution_y_);
-  Y_.Reshape(opt_.resolution_x_, opt_.resolution_y_);
+  X_.reshape(opt_.resolution_x_, opt_.resolution_y_);
+  Y_.reshape(opt_.resolution_x_, opt_.resolution_y_);
   Z_.resize(std::max(static_cast<int>(type_), 0),
       CORE::LINALG::SerialDenseMatrix(opt_.resolution_x_, opt_.resolution_y_));
 
@@ -722,7 +722,8 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     }
     case INPAR::CONTACT::PlotSupportType::characteristic_element_length:
     {
-      std::fill(support_mat.A(), support_mat.A() + (support_mat.M() * support_mat.N()),
+      std::fill(support_mat.values(),
+          support_mat.values() + (support_mat.numRows() * support_mat.numCols()),
           CharacteristicInterfaceElementLength(SideType::slave));
 
       break;
@@ -731,12 +732,12 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       ComputeAnglePosition();
 
-      X_.Reshape(position_node_id_map_.size(), X_.N());
+      X_.reshape(position_node_id_map_.size(), X_.numCols());
       unsigned i = 0;
       for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
            ++an_cit, ++i)
       {
-        for (unsigned j = 0; j < static_cast<unsigned>(X_.N()); ++j) X_(i, j) = an_cit->first;
+        for (unsigned j = 0; j < static_cast<unsigned>(X_.numCols()); ++j) X_(i, j) = an_cit->first;
       }
 
       break;
@@ -745,12 +746,12 @@ void CONTACT::AUG::Plot::GetSupportPoints(
     {
       ComputeDistancePosition();
 
-      X_.Reshape(position_node_id_map_.size(), X_.N());
+      X_.reshape(position_node_id_map_.size(), X_.numCols());
       unsigned i = 0;
       for (auto an_cit = position_node_id_map_.begin(); an_cit != position_node_id_map_.end();
            ++an_cit, ++i)
       {
-        for (unsigned j = 0; j < static_cast<unsigned>(X_.N()); ++j) X_(i, j) = an_cit->first;
+        for (unsigned j = 0; j < static_cast<unsigned>(X_.numCols()); ++j) X_(i, j) = an_cit->first;
       }
 
       break;
@@ -841,12 +842,12 @@ void CONTACT::AUG::Plot::PlotLine(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 {
   IO::cout << "Start evaluation of the line data...\n";
   GetSupportPoints(x_type_, X_);
-  Y_.Reshape(X_.M(), Y_.N());
+  Y_.reshape(X_.numRows(), Y_.numCols());
 
   double norm_step = -1.0;
   Epetra_Vector step(dir.Map(), true);
 
-  for (int i = 0; i < X_.M(); ++i)
+  for (int i = 0; i < X_.numRows(); ++i)
   {
     IO::cout << "alpha = " << X_(i, 0) << IO::endl;
     ModifyStepLength(x_type_, X_(i, 0), dir, step);
@@ -882,9 +883,9 @@ void CONTACT::AUG::Plot::PlotSurface(const NOX::NLN::CONSTRAINT::Group& ref_grp,
 
   Epetra_Vector step(dir.Map(), true);
 
-  for (int i = 0; i < X_.M(); ++i)
+  for (int i = 0; i < X_.numRows(); ++i)
   {
-    for (int j = 0; j < X_.N(); ++j)
+    for (int j = 0; j < X_.numCols(); ++j)
     {
       IO::cout << "( alpha, beta ) = ( " << X_(i, j) << ", " << Y_(i, j) << " )\n";
 
@@ -1071,9 +1072,9 @@ void CONTACT::AUG::WriteColumnDataToFile(
   if (columndata.size() < 1 or columndata[0] == NULL) return;
 
   outputfile << std::setprecision(p);
-  for (unsigned i = 0; i < static_cast<unsigned>(columndata[0]->M()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(columndata[0]->numRows()); ++i)
   {
-    for (unsigned j = 0; j < static_cast<unsigned>(columndata[0]->N()); ++j)
+    for (unsigned j = 0; j < static_cast<unsigned>(columndata[0]->numCols()); ++j)
     {
       for (unsigned c = 0; c < columndata.size(); ++c)
       {
@@ -1319,7 +1320,7 @@ void CONTACT::AUG::Plot::GetEnergyDirectionGradients(
 
   for (unsigned i = 0; i < grad_vals.size(); ++i)
   {
-    curr_dir.Scale(0.0);
+    curr_dir.PutScalar(0.0);
     for (int j = 0; j < curr_dir.Map().NumMyElements(); ++j)
     {
       const int str_gid = curr_dir.Map().GID(j);
@@ -1352,7 +1353,7 @@ void CONTACT::AUG::Plot::GetWGapDirectionGradients(
 
   for (unsigned i = 0; i < wgap_dir_grads.size(); ++i)
   {
-    curr_dir.Scale(0.0);
+    curr_dir.PutScalar(0.0);
     for (int j = 0; j < curr_dir.Map().NumMyElements(); ++j)
     {
       const int slma_gid = curr_dir.Map().GID(j);
@@ -1398,9 +1399,9 @@ void CONTACT::AUG::WriteMatrixToFile(std::ofstream& outputfile, const T& mat, co
   if (not outputfile.is_open()) dserror("The file must be open!");
 
   outputfile << std::setprecision(p);
-  for (unsigned i = 0; i < static_cast<unsigned>(mat.M()); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(mat.numRows()); ++i)
   {
-    for (unsigned j = 0; j < static_cast<unsigned>(mat.N()); ++j)
+    for (unsigned j = 0; j < static_cast<unsigned>(mat.numCols()); ++j)
     {
       outputfile << std::setw(24) << std::scientific << mat(i, j);
     }

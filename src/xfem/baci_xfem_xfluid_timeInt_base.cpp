@@ -1594,7 +1594,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
         // side geometry at initial state t^0
         const int numnodes_2 = side_2->NumNode();
         DRT::Node** nodes_2 = side_2->Nodes();
-        side_xyze_2.Shape(3, numnodes_2);
+        side_xyze_2.shape(3, numnodes_2);
         for (int i = 0; i < numnodes_2; ++i)
         {
           const double* x = nodes_2[i]->X();

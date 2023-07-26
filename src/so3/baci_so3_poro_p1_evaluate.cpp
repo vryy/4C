@@ -113,11 +113,11 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
       CORE::LINALG::SerialDenseVector elevec2_sub;
       CORE::LINALG::SerialDenseVector elevec3_sub;
 
-      if (elemat1_epetra.A()) elemat1_sub.Shape(Base::numdof_, Base::numdof_);
-      if (elemat2_epetra.A()) elemat2_sub.Shape(Base::numdof_, Base::numdof_);
-      if (elevec1_epetra.A()) elevec1_sub.Resize(Base::numdof_);
-      if (elevec2_epetra.A()) elevec2_sub.Resize(Base::numdof_);
-      if (elevec3_epetra.A()) elevec3_sub.Resize(Base::numdof_);
+      if (elemat1_epetra.values()) elemat1_sub.shape(Base::numdof_, Base::numdof_);
+      if (elemat2_epetra.values()) elemat2_sub.shape(Base::numdof_, Base::numdof_);
+      if (elevec1_epetra.values()) elevec1_sub.resize(Base::numdof_);
+      if (elevec2_epetra.values()) elevec2_sub.resize(Base::numdof_);
+      if (elevec3_epetra.values()) elevec3_sub.resize(Base::numdof_);
 
       std::vector<int> lm_sub;
       for (int i = 0; i < Base::numnod_; i++)
@@ -127,7 +127,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
       so3_ele::Evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
           elevec2_sub, elevec3_sub);
 
-      if (elemat1_epetra.A())
+      if (elemat1_epetra.values())
       {
         for (int i = 0; i < Base::numnod_; i++)
         {
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
         }
       }
 
-      if (elemat2_epetra.A())
+      if (elemat2_epetra.values())
       {
         for (int i = 0; i < Base::numnod_; i++)
         {
@@ -159,21 +159,21 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
         }
       }
 
-      if (elevec1_epetra.A())
+      if (elevec1_epetra.values())
       {
         for (int i = 0; i < Base::numnod_; i++)
           for (int j = 0; j < Base::numdim_; j++)
             elevec1_epetra(i * noddof_ + j) = elevec1_sub(i * Base::noddof_ + j);
       }
 
-      if (elevec2_epetra.A())
+      if (elevec2_epetra.values())
       {
         for (int i = 0; i < Base::numnod_; i++)
           for (int j = 0; j < Base::numdim_; j++)
             elevec2_epetra(i * noddof_ + j) = elevec2_sub(i * Base::noddof_ + j);
       }
 
-      if (elevec3_epetra.A())
+      if (elevec3_epetra.values())
       {
         for (int i = 0; i < Base::numnod_; i++)
           for (int j = 0; j < Base::numdim_; j++)
@@ -241,11 +241,11 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
       if (la.Size() > 1)
       {
         // stiffness
-        CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
         // damping
-        CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.values(), true);
         // internal force vector
-        CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+        CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
         // elevec2+3 are not used anyway
 
         // build the location vector only for the structure field
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
     {
       // stiffness
       CORE::LINALG::Matrix<numdof_, (Base::numdim_ + 1) * Base::numnod_> elemat1(
-          elemat1_epetra.A(), true);
+          elemat1_epetra.values(), true);
       // elemat2,elevec1-3 are not used anyway
 
       // build the location vector only for the structure field
@@ -342,7 +342,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
     case Base::calc_struct_internalforce:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
       // elemat1+2,elevec2+3 are not used anyway
 
       // build the location vector only for the structure field

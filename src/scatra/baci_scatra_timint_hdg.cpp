@@ -320,7 +320,7 @@ namespace
     {
       DRT::Element *ele = dis.lColElement(el);
       ele->LocationVector(dis, la, false);
-      interpolVec.Size(ele->NumNode() * (2 + ndim));
+      interpolVec.size(ele->NumNode() * (2 + ndim));
 
       ele->Evaluate(eleparams, dis, la, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
@@ -532,24 +532,25 @@ void SCATRA::TimIntHDG::SetInitialField(
       {
         DRT::Element *ele = discret_->lColElement(iele);
         ele->LocationVector(*discret_, la, false);
-        if (static_cast<std::size_t>(updateVec1.M()) != la[0].lm_.size())
-          updateVec1.Shape(la[0].lm_.size(), 1);
+        if (static_cast<std::size_t>(updateVec1.numRows()) != la[0].lm_.size())
+          updateVec1.size(la[0].lm_.size());
         else
-          memset(updateVec1.Values(), 0., la[0].lm_.size() * sizeof(double));
-        if (updateVec2.M() != discret_->NumDof(nds_intvar_, ele))
-          updateVec2.Shape(discret_->NumDof(nds_intvar_, ele), 1);
+          updateVec1.putScalar(0.0);
+        if (updateVec2.numRows() != discret_->NumDof(nds_intvar_, ele))
+          updateVec2.size(discret_->NumDof(nds_intvar_, ele));
         else
-          memset(updateVec2.Values(), 0., discret_->NumDof(nds_intvar_, ele) * sizeof(double));
+          updateVec2.putScalar(0.0);
         ele->Evaluate(
             eleparams, *discret_, la, dummyMat, dummyMat, updateVec1, updateVec2, dummyVec);
 
         if (ele->Owner() == discret_->Comm().MyPID())
         {
           std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-          dsassert(localDofs.size() == static_cast<std::size_t>(updateVec2.M()), "Internal error");
+          dsassert(
+              localDofs.size() == static_cast<std::size_t>(updateVec2.numRows()), "Internal error");
           for (unsigned int i = 0; i < localDofs.size(); ++i)
             localDofs[i] = intdofrowmap->LID(localDofs[i]);
-          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.A(), localDofs.data());
+          intphinp_->ReplaceMyValues(localDofs.size(), updateVec2.values(), localDofs.data());
         }
 
         // now fill the element vector into the discretization
@@ -659,17 +660,17 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
     if (ele->Owner() != discret_->Comm().MyPID()) continue;
 
     ele->LocationVector(*discret_, la, false);
-    updateVec.Shape(discret_->NumDof(nds_intvar_, ele), 1);
+    updateVec.size(discret_->NumDof(nds_intvar_, ele));
 
     ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, updateVec, dummyVec, dummyVec);
 
     std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-    dsassert(localDofs.size() == static_cast<std::size_t>(updateVec.M()), "Internal error");
+    dsassert(localDofs.size() == static_cast<std::size_t>(updateVec.numRows()), "Internal error");
     for (unsigned int i = 0; i < localDofs.size(); ++i)
     {
       localDofs[i] = intdofrowmap->LID(localDofs[i]);
     }
-    updatevector->ReplaceMyValues(localDofs.size(), updateVec.A(), localDofs.data());
+    updatevector->ReplaceMyValues(localDofs.size(), updateVec.values(), localDofs.data());
   }
 
   discret_->ClearState(true);
@@ -806,7 +807,7 @@ void SCATRA::TimIntHDG::FDCheck()
         strategy.AssembleVector1(la[0].lm_, la[0].lmowner_);
       }
       strategy.Complete();
-      fdvec->Scale(0.0);
+      fdvec->PutScalar(0.0);
 
       // finite difference suggestion (first divide by epsilon and then subtract for better
       // conditioning)
@@ -1317,14 +1318,14 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
 
     const unsigned size = la_temp[0].lm_.size();
 
-    if (static_cast<std::size_t>(phi_ele.M()) != size)
-      phi_ele.Shape(la[0].lm_.size(), 1);
+    if (static_cast<std::size_t>(phi_ele.numRows()) != size)
+      phi_ele.size(la[0].lm_.size());
     else
-      memset(phi_ele.Values(), 0., size * sizeof(double));
-    if (intphi_ele.M() != discret_->NumDof(nds_intvar_, ele))
-      intphi_ele.Shape(discret_->NumDof(nds_intvar_, ele), 1);
+      phi_ele.putScalar(0.0);
+    if (intphi_ele.numRows() != discret_->NumDof(nds_intvar_, ele))
+      intphi_ele.size(discret_->NumDof(nds_intvar_, ele));
     else
-      memset(intphi_ele.Values(), 0., discret_->NumDof(nds_intvar_, ele) * sizeof(double));
+      intphi_ele.putScalar(0.0);
 
     // call routine on elements to project values from old to new element vector
     ele->Evaluate(eleparams, *discret_, la, dummyMat, dummyMat, phi_ele, intphi_ele, dummyVec);
@@ -1333,10 +1334,11 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(nds_intvar_, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(intphi_ele.M()), "Internal error");
+      dsassert(
+          localDofs.size() == static_cast<std::size_t>(intphi_ele.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.A(), localDofs.data());
+      (intphi_new)->ReplaceMyValues(localDofs.size(), intphi_ele.values(), localDofs.data());
     }
 
     // now fill the element vector into the new state vector for the trace values

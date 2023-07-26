@@ -1892,7 +1892,7 @@ namespace FLD
       CORE::LINALG::SerialDenseVector interpolVec;
       DRT::Element* ele = discret_->lRowElement(el);
 
-      interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
+      interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
       ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 

@@ -1388,7 +1388,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
               }
             }
           }  // block Fluid_Fluid
-          else if (block == "NeumannIntegration" and elemat1 != Teuchos::null)
+          else if (block == "NeumannIntegration")
           {
             if (discretization.Name() == "fluid")
             {
@@ -2095,7 +2095,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 
   // calculate normal
   CORE::LINALG::SerialDenseVector normal;
-  normal.Size(lm.size());
+  normal.size(lm.size());
 
   // gauss point loop
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
@@ -2319,7 +2319,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
 
   // calculate normal
   CORE::LINALG::SerialDenseVector normal;
-  normal.Size(lm.size());
+  normal.size(lm.size());
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {

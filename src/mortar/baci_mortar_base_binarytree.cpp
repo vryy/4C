@@ -40,7 +40,7 @@ void MORTAR::BaseBinaryTree::Init()
       kdop_ = 8;
 
       // setup normals for DOP
-      dopnormals_.Reshape(4, 3);
+      dopnormals_.reshape(4, 3);
       dopnormals_(0, 0) = 1;
       dopnormals_(0, 1) = 0;
       dopnormals_(0, 2) = 0;
@@ -61,7 +61,7 @@ void MORTAR::BaseBinaryTree::Init()
       kdop_ = 18;
 
       // setup normals for DOP
-      dopnormals_.Reshape(9, 3);
+      dopnormals_.reshape(9, 3);
       dopnormals_(0, 0) = 1;
       dopnormals_(0, 1) = 0;
       dopnormals_(0, 2) = 0;
@@ -119,7 +119,7 @@ MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(DRT::Discretization& discret,
     case 2:
     case 3:
     {
-      slabs_.Reshape(kdop_ / 2, 2);
+      slabs_.reshape(kdop_ / 2, 2);
     }
     break;
     default:
@@ -242,7 +242,7 @@ void MORTAR::BaseBinaryTreeNode::PrintSlabs()
             << "************************************************************";
   PrintType();
   std::cout << "slabs:";
-  for (int i = 0; i < slabs_.M(); ++i)
+  for (int i = 0; i < slabs_.numRows(); ++i)
     std::cout << "\nslab: " << i << " min: " << slabs_.operator()(i, 0)
               << " max: " << slabs_.operator()(i, 1);
   std::cout << "\n**********************************************************\n";

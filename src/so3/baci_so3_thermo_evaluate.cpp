@@ -199,7 +199,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     case calc_struct_internalforce:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         if (so3_ele::KinematicType() == INPAR::STR::kinem_nonlinearTotLag)
         {
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
-              elemat1_epetra.A(), true);
+              elemat1_epetra.values(), true);
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -292,7 +292,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     case calc_struct_nlnstiff:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
       // elemat2, elevec2+3 are not used anyway
       // elemat1 only for geometrically nonlinear analysis
 
@@ -332,7 +332,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         {
           // stiffness
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
-              elemat1_epetra.A(), true);
+              elemat1_epetra.values(), true);
 
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* matptr = NULL;
           if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -388,7 +388,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     case calc_struct_nlnstifflmass:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
       // elevec2+3 and elemat2 are not used anyway,
       // elemat1 only for geometrically nonlinear analysis
 
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         {
           // stiffness
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
-              elemat1_epetra.A(), true);
+              elemat1_epetra.values(), true);
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -714,7 +714,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     case calc_struct_stifftemp:
     {
       // mechanical-thermal system matrix
-      CORE::LINALG::Matrix<numdofperelement_, nen_> stiffmatrix_kdT(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdofperelement_, nen_> stiffmatrix_kdT(elemat1_epetra.values(), true);
       // elemat2,elevec1-3 are not used anyway
       // need current displacement and residual/incremental displacements
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
@@ -1682,7 +1682,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       // Green-Lagrange strains(F_bar) matrix E = 0.5 . (Cauchygreen(F_bar) - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
       CORE::LINALG::SerialDenseVector glstrain_bar_epetra(numstr_);
-      CORE::LINALG::Matrix<numstr_, 1> glstrain_bar(glstrain_bar_epetra.A(), true);
+      CORE::LINALG::Matrix<numstr_, 1> glstrain_bar(glstrain_bar_epetra.values(), true);
       glstrain_bar(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
       glstrain_bar(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
       glstrain_bar(2) = 0.5 * (cauchygreen_bar(2, 2) - 1.0);

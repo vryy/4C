@@ -89,7 +89,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
   if (act == FLD::xwall_l2_projection) calcoldandnewpsi_ = true;
   //  std::cout << nen_ << std::endl;
-  //  std::cout << elemat1_epetra.M() << "  " << elemat1_epetra.N() << std::endl;
+  //  std::cout << elemat1_epetra.numRows() << "  " << elemat1_epetra.numCols() << std::endl;
   GetEleProperties(ele, discretization, lm, params, mat);
 
   // non-enriched case, solve problem as usual
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvaluateService(DRT::ELE
         ele, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
 
     // for some EvaluateService actions, elevec1 is not necessary
-    if (elevec1.Length() != 0 && act != FLD::tauw_via_gradient && act != FLD::calc_div_u &&
+    if (elevec1.length() != 0 && act != FLD::tauw_via_gradient && act != FLD::calc_div_u &&
         act != FLD::calc_dt_via_cfl && act != FLD::xwall_calc_mk &&
         act != FLD::calc_mass_flow_periodic_hill)
     {
@@ -947,10 +947,10 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
 
   CORE::LINALG::SerialDenseMatrix elemat_epetra1;
   CORE::LINALG::SerialDenseMatrix elemat_epetra2;
-  elemat_epetra1.Shape(nen_, nen_);
-  elemat_epetra2.Shape(nen_, nen_);
-  CORE::LINALG::Matrix<nen_, nen_> Amat(elemat_epetra1.A(), true);
-  CORE::LINALG::Matrix<nen_, nen_> Bmat(elemat_epetra2.A(), true);
+  elemat_epetra1.shape(nen_, nen_);
+  elemat_epetra2.shape(nen_, nen_);
+  CORE::LINALG::Matrix<nen_, nen_> Amat(elemat_epetra1.values(), true);
+  CORE::LINALG::Matrix<nen_, nen_> Bmat(elemat_epetra2.values(), true);
 
   double vol = 0.0;
   //------------------------------------------------------------------

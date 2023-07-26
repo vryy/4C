@@ -199,11 +199,11 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     {
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
-        if (elevec1.M() != 1)
+        if (elevec1.numRows() != 1)
           dserror(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
-              elevec1.M());
+              elevec1.numRows());
 
         elevec1(0) = Eint_;
       }

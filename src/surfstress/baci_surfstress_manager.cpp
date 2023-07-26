@@ -269,7 +269,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, co
     curvefac =
         DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
 
-  double ndof = Adiff->Length();
+  double ndof = Adiff->length();
 
   for (int i = 0; i < ndof; ++i)
   {

@@ -564,8 +564,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // resize and clear derivative vectors
-  d_conc_dc.resize(shape_func.Length());
-  d_pot_dpot.resize(shape_func.Length());
+  d_conc_dc.resize(shape_func.length());
+  d_pot_dpot.resize(shape_func.length());
   d_conc_dc.clear();
   d_pot_dpot.clear();
   std::size_t deriv_size = 0;
@@ -576,8 +576,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   d_pot_dd.clear();
 
   // calculate the nodal concentrations, potentials and derivatives w.r.t electrochemistry dofs
-  CORE::LINALG::SerialDenseVector ele_conc(shape_func.Length());
-  CORE::LINALG::SerialDenseVector ele_pot(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_conc(shape_func.length());
+  CORE::LINALG::SerialDenseVector ele_pot(shape_func.length());
   for (int i = 0; i < ele.NumNode(); ++i)
   {
     const int iparent = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
@@ -593,8 +593,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   }
 
   // calculate the Gauss point concentration and potential
-  gp_conc = shape_func.Dot(ele_conc);
-  gp_pot = shape_func.Dot(ele_pot);
+  gp_conc = shape_func.dot(ele_conc);
+  gp_pot = shape_func.dot(ele_pot);
 
   // calculate the nodal concentrations, potentials and derivatives w.r.t displacement dofs
   for (int i = 0; i < dim - 1; ++i)

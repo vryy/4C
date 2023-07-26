@@ -195,7 +195,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
 
       // vector of values of Hesse-Normalform of nodes of elements
       CORE::LINALG::SerialDenseVector axbycz;
-      axbycz.Resize(element->NumPoint());
+      axbycz.resize(element->NumPoint());
 
       for (int k = 0; k < element->NumPoint(); ++k)
       {

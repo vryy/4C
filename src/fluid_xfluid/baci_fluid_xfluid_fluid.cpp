@@ -863,7 +863,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
 
   for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms_emb)(i) = 0.0;
   mc_xff_->GetCondDis()->Comm().SumAll(
-      cpu_dom_norms_emb.Values(), glob_dom_norms_emb->Values(), num_dom_norms);
+      cpu_dom_norms_emb.values(), glob_dom_norms_emb->values(), num_dom_norms);
 
   // standard domain errors bg-dis
   double dom_bg_err_vel_L2 =

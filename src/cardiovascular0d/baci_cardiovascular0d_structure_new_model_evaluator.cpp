@@ -80,7 +80,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Reset(const Epetra_Vector& x)
   // update the structural displacement vector
   disnp_ptr_ = GState().GetDisNp();
 
-  fstructcardio_np_ptr_->Scale(0.0);
+  fstructcardio_np_ptr_->PutScalar(0.0);
   stiff_cardio_ptr_->Zero();
 
   return;

@@ -354,7 +354,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       const double dj_dpot_master_timefacfac = -dj_dpot_slave_timefacfac;
 
       // calculate RHS and linearizations of master and slave-side residuals
-      if (k_ss.M() and k_sm.M() and r_s.Length())
+      if (k_ss.numRows() and k_sm.numRows() and r_s.length())
       {
         for (int vi = 0; vi < nen_; ++vi)
         {
@@ -397,10 +397,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           if ((*onoff)[1] == 1) r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
         }
       }
-      else if (k_ss.M() or k_sm.M() or r_s.Length())
+      else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
         dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
-      if (k_ms.M() and k_mm.M() and r_m.Length())
+      if (k_ms.numRows() and k_mm.numRows() and r_m.length())
       {
         for (int vi = 0; vi < nen_master; ++vi)
         {
@@ -442,7 +442,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           if ((*onoff)[1] == 1) r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
         }
       }
-      else if (k_ms.M() or k_mm.M() or r_m.Length())
+      else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
         dserror("Must provide both master-side matrices and master-side vector or none of them!");
 
       break;
@@ -1018,7 +1018,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   const double dj_dpot_master_timefacfac = pseudo_contact_fac * dj_dpot_master * timefacfac;
 
   // assemble slave side element rhs and linearizations
-  if (k_ss.M() and k_sm.M() and r_s.Length())
+  if (k_ss.numRows() and k_sm.numRows() and r_s.length())
   {
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -1055,11 +1055,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       r_s[row_pot] -= numelectrons * test_slave(vi) * jtimefacrhsfac;
     }
   }
-  else if (k_ss.M() or k_sm.M() or r_s.Length())
+  else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
     dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
   // assemble master side element rhs and linearizations
-  if (k_ms.M() and k_mm.M() and r_m.Length())
+  if (k_ms.numRows() and k_mm.numRows() and r_m.length())
   {
     for (int vi = 0; vi < nen_master; ++vi)
     {
@@ -1096,7 +1096,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       r_m[row_pot] += numelectrons * test_master(vi) * jtimefacrhsfac;
     }
   }
-  else if (k_ms.M() or k_mm.M() or r_m.Length())
+  else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
     dserror("Must provide both master-side matrices and master-side vector or none of them!");
 }
 
@@ -1121,7 +1121,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   const double djC_dpot_slave_timefacfac = pseudo_contact_fac * djC_dpot_slave * timefacfac;
 
   // assemble slave side element rhs and linearizations
-  if (k_ss.M() and k_ms.M() and r_s.Length() and r_m.Length())
+  if (k_ss.numRows() and k_ms.numRows() and r_s.length() and r_m.length())
   {
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -1160,7 +1160,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       r_m[row_pot] += numelectrons * test_master(vi) * jCtimefacrhsfac;
     }
   }
-  else if (k_ss.M() or k_ms.M() or r_s.Length() or r_m.Length())
+  else if (k_ss.numRows() or k_ms.numRows() or r_s.length() or r_m.length())
     dserror("You did not provide the correct set of matrices and vectors!");
 }
 

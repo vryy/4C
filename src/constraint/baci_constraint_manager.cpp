@@ -531,8 +531,8 @@ void UTILS::ConstrManager::BuildMoniType()
   }
 
   // do the area in 3D
-  dummymonredundant->Scale(0.0);
-  dummymondist->Scale(0.0);
+  dummymonredundant->PutScalar(0.0);
+  dummymondist->PutScalar(0.0);
   areamonitor3d_->Evaluate(p1, dummymonredundant);
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);
@@ -544,8 +544,8 @@ void UTILS::ConstrManager::BuildMoniType()
   }
 
   // do the area in 2D
-  dummymonredundant->Scale(0.0);
-  dummymondist->Scale(0.0);
+  dummymonredundant->PutScalar(0.0);
+  dummymondist->PutScalar(0.0);
   areamonitor2d_->Evaluate(p1, dummymonredundant);
   // Export redundant vector into distributed one
   dummymondist->Export(*dummymonredundant, *monimpo_, Add);

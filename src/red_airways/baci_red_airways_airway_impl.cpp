@@ -183,8 +183,8 @@ namespace
       exit(1);
     }
 
-    rhs.Scale(0.0);
-    sysmat.Scale(0.0);
+    rhs.putScalar(0.0);
+    sysmat.putScalar(0.0);
 
     // Calculate the length of airway element
     const double L = GetElementLength<distype>(ele);
@@ -597,7 +597,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
-  const int elemVecdim = elevec1_epetra.Length();
+  const int elemVecdim = elevec1_epetra.length();
 
   std::vector<int>::iterator it_vcr;
 

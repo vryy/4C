@@ -66,7 +66,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -82,7 +82,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -98,7 +98,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -114,7 +114,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -130,7 +130,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -149,7 +149,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -166,7 +166,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -183,7 +183,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -200,7 +200,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -217,7 +217,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -234,7 +234,7 @@ void CORE::VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -707,7 +707,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 2);
+      coords_.reshape(ngp_, 2);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -723,7 +723,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -740,7 +740,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -757,7 +757,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -774,7 +774,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -791,7 +791,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {
@@ -808,7 +808,7 @@ void CORE::VOLMORTAR::VolMortarIntegrator<distypeS, distypeM>::InitializeGP(
 
       const ::CORE::DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(ngp_, 3);
+      coords_.reshape(ngp_, 3);
       weights_.resize(ngp_);
       for (int i = 0; i < ngp_; ++i)
       {

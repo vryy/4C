@@ -992,7 +992,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
 
   for (int idim = 0; idim < nsd_; idim++)
   {
-    center[idim] = masscenter_and_volume->Values()[idim] / (masscenter_and_volume->Values()[nsd_]);
+    center[idim] = masscenter_and_volume->values()[idim] / (masscenter_and_volume->values()[nsd_]);
   }
 
   if (nsd_ != 3)

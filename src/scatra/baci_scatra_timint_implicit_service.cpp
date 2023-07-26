@@ -148,8 +148,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
         "action", SCATRA::Action::integrate_shape_functions, params);
 
     // integrate shape functions
-    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
-    memset(dofids.A(), 1, dofids.Length() * sizeof(int));  // integrate shape functions for all dofs
+    Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> dofids =
+        Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector(NumDofPerNode()));
+    dofids->putScalar(1);  // integrate shape functions for all dofs
     params.set("dofids", dofids);
     discret_->Evaluate(
         params, Teuchos::null, Teuchos::null, integratedshapefcts, Teuchos::null, Teuchos::null);
@@ -673,7 +674,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed
-  trueresidual_->Scale(0.);
+  trueresidual_->PutScalar(0.0);
 
   // restore history vector as explained above
   hist_ = hist;
@@ -3159,7 +3160,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
         meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
       }
     }
-    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->Length() - 1];
+    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->length() - 1];
   }
 }
 

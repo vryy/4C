@@ -135,23 +135,24 @@ namespace CORE::GEO
         side_ptr_ = NULL;
         options_ptr_ = options;
 
-        if (static_cast<unsigned>(xyze_lineElement.M()) != ProbDim() or
-            static_cast<unsigned>(xyze_lineElement.N()) != NumNodesEdge())
+        if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim() or
+            static_cast<unsigned>(xyze_lineElement.numCols()) != NumNodesEdge())
           dserror(
               "Dimension mismatch of xyze_lineElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              ProbDim(), NumNodesEdge(), xyze_lineElement.M(), xyze_lineElement.N());
+              ProbDim(), NumNodesEdge(), xyze_lineElement.numRows(), xyze_lineElement.numCols());
 
-        if (static_cast<unsigned>(xyze_surfaceElement.M()) != ProbDim() or
-            static_cast<unsigned>(xyze_surfaceElement.N()) != NumNodesSide())
+        if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != ProbDim() or
+            static_cast<unsigned>(xyze_surfaceElement.numCols()) != NumNodesSide())
           dserror(
               "Dimension mismatch of xyze_surfaceElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              ProbDim(), NumNodesSide(), xyze_surfaceElement.M(), xyze_surfaceElement.N());
+              ProbDim(), NumNodesSide(), xyze_surfaceElement.numRows(),
+              xyze_surfaceElement.numCols());
 
-        SetCoordinates(xyze_surfaceElement.A(), xyze_lineElement.A());
+        SetCoordinates(xyze_surfaceElement.values(), xyze_lineElement.values());
         ScaleAndShift();
 
         isinit_ = true;

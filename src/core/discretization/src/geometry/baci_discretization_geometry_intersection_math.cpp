@@ -105,11 +105,11 @@ void CORE::GEO::svdcmpSerialDense(CORE::LINALG::SerialDenseMatrix& A,
     CORE::LINALG::SerialDenseMatrix& W, CORE::LINALG::SerialDenseMatrix& V)
 {
   // Dimensionen der Matrix A herausfinden
-  const int n = A.N();
-  const int m = A.M();
+  const int n = A.numCols();
+  const int m = A.numRows();
 
   // Pruefen ob die W und V entsprechend richtige Dimension haben
-  if (!((W.M() == n) && (V.M() == n && V.N() == n)))
+  if (!((W.numRows() == n) && (V.numRows() == n && V.numCols() == n)))
     dserror("Dimensionen der Matrizen nicht korrekt");
 
   CORE::LINALG::SerialDenseMatrix rv1(n, 1);

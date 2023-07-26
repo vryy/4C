@@ -93,16 +93,17 @@ namespace DRT
     void ExtractMyValues(const Epetra_Vector& global, matrix& local, const std::vector<int>& lm)
     {
       // safety check
-      if ((unsigned)(local.M() * local.N()) != lm.size()) dserror("Received matrix of wrong size!");
+      if ((unsigned)(local.numRows() * local.numCols()) != lm.size())
+        dserror("Received matrix of wrong size!");
 
-      // loop over all columns of local matrix
-      for (unsigned icol = 0; icol < local.N(); ++icol)
+      // loop over all columns of cal matrix
+      for (unsigned icol = 0; icol < local.numCols(); ++icol)
       {
         // loop over all rows of local matrix
-        for (unsigned irow = 0; irow < local.M(); ++irow)
+        for (unsigned irow = 0; irow < local.numRows(); ++irow)
         {
           // extract local ID of current dof
-          const unsigned index = icol * local.M() + irow;
+          const unsigned index = icol * local.numRows() + irow;
           const int lid = global.Map().LID(lm[index]);
 
           // safety check
@@ -166,8 +167,8 @@ namespace DRT
       if (nsd > global->NumVectors())
         dserror("Requested %d of %d available columns", nsd, global->NumVectors());
       const int iel = ele->NumNode();  // number of nodes
-      if (((int)localmatrix.N()) != iel) dserror("local matrix has wrong number of columns");
-      if (((int)localmatrix.M()) != nsd) dserror("local matrix has wrong number of rows");
+      if (((int)localmatrix.numCols()) != iel) dserror("local matrix has wrong number of columns");
+      if (((int)localmatrix.numRows()) != nsd) dserror("local matrix has wrong number of rows");
 
       for (int i = 0; i < nsd; i++)
       {

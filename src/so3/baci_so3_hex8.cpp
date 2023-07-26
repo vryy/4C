@@ -174,7 +174,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   for (int i = 0; i < (int)invJ_.size(); ++i)
   {
     // can this size be anything but NUMDIM_SOH8 x NUMDIM_SOH8?
-    // invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
+    // invJ_[i].Shape(old.invJ_[i].numRows(),old.invJ_[i].numCols());
     invJ_[i] = old.invJ_[i];
   }
 

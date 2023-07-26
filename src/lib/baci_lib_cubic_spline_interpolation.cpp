@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include <utility>
 
 #include "baci_lib_cubic_spline_interpolation.H"
@@ -140,12 +140,14 @@ void DRT::UTILS::CubicSplineInterpolation::SolveLinearSystem(CORE::LINALG::Seria
     CORE::LINALG::SerialDenseVector &c, CORE::LINALG::SerialDenseVector &b) const
 {
   // solve for third-order coefficients for cubic spline interpolation
-  Epetra_SerialDenseSolver solver;
-  solver.SetMatrix(A);
-  solver.SetVectors(c, b);
-  solver.FactorWithEquilibration(true);
-  solver.SolveToRefinedSolution(true);
-  if (solver.Factor() or solver.Solve()) dserror("Solution of linear system of equations failed!");
+  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
+  solver.setMatrix(Teuchos::rcpFromRef(A));
+  solver.setVectors(Teuchos::rcpFromRef(c), Teuchos::rcpFromRef(b));
+  solver.factorWithEquilibration(true);
+  solver.solveToRefinedSolution(true);
+  if (solver.factor() or solver.solve()) dserror("Solution of linear system of equations failed!");
 }
 
 /*----------------------------------------------------------------------*/

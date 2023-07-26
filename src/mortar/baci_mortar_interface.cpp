@@ -2791,7 +2791,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     kdop = 8;
 
     // setup normals for DOP
-    dopnormals.Reshape(4, 3);
+    dopnormals.reshape(4, 3);
     dopnormals(0, 0) = 1;
     dopnormals(0, 1) = 0;
     dopnormals(0, 2) = 0;
@@ -2810,7 +2810,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     kdop = 18;
 
     // setup normals for DOP
-    dopnormals.Reshape(9, 3);
+    dopnormals.reshape(9, 3);
     dopnormals(0, 0) = 1;
     dopnormals(0, 1) = 0;
     dopnormals(0, 2) = 0;

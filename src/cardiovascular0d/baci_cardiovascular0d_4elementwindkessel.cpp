@@ -211,9 +211,9 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      elematrix2.Shape(eledim, eledim);
-      elevector2.Size(eledim);
-      elevector3.Size(numdof_per_cond);
+      elematrix2.shape(eledim, eledim);
+      elevector2.size(eledim);
+      elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
@@ -230,7 +230,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Evaluate(Teuchos::ParameterList&
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0] = gindex[1];
-        elevector2.Scale(-1. / ts_size);
+        elevector2.scale(-1. / ts_size);
         sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
 
@@ -326,7 +326,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::Initialize(Teuchos::ParameterLis
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(numdof_per_cond);
+      elevector3.size(numdof_per_cond);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(

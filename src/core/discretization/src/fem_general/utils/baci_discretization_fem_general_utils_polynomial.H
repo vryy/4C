@@ -15,7 +15,7 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 namespace CORE::DRT::UTILS
 {
@@ -547,6 +547,9 @@ namespace CORE::DRT::UTILS
   class LagrangeBasisTet : public PolynomialSpaceBase<nsd_>
   {
    public:
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+
     LagrangeBasisTet(const unsigned int degree) : legendre_(degree)
     {
       FillFeketePoints(degree);
@@ -602,7 +605,7 @@ namespace CORE::DRT::UTILS
     void ComputeVandermondeMatrices(const unsigned int degree);
 
     CORE::LINALG::SerialDenseMatrix vandermonde_;
-    mutable Epetra_SerialDenseSolver vandermondeFactor_;
+    mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermondeFactor_;
     mutable CORE::LINALG::SerialDenseMatrix evaluateVec_;
     CORE::LINALG::SerialDenseMatrix feketePoints_;
     LegendreBasis<nsd_> legendre_;

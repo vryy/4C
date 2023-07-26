@@ -185,11 +185,11 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
     {
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
-        if (elevec1.M() != 1)
+        if (elevec1.numRows() != 1)
           dserror(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
-              elevec1.M());
+              elevec1.numRows());
         elevec1(0) = Eint_;
       }
       else if (IsParamsInterface())  // new structural time integration
@@ -551,7 +551,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     // (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later. so we apply inverse factor here because the
     // correct prefactors for linearization of displacement/velocity/acceleration dependent terms
     // have been applied automatically by FAD
-    massmatrix->Scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
+    massmatrix->scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
   }
 }
 

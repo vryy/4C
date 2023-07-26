@@ -271,8 +271,8 @@ template <int fnnode, int ndim, int dof>  // number of nodes, number of dimensio
 int DRT::ELEMENTS::Truss3CL::EvaluatePTC(
     Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
-  for (int i = 0; i < elemat1.RowDim(); i++)
-    for (int j = 0; j < elemat1.ColDim(); j++)
+  for (int i = 0; i < elemat1.numRows(); i++)
+    for (int j = 0; j < elemat1.numCols(); j++)
       if (i == j) elemat1(i, j) += params.get<double>("crotptc", 0.0) * 0.5 * lrefe_ / 2;
 
 
@@ -497,12 +497,12 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
 
   // 12x12 Stiffness Matrix of the beam described by the two fictitious nodes
   CORE::LINALG::SerialDenseMatrix fstiffmatrix;
-  fstiffmatrix.Shape(3 * fnnode, 3 * fnnode);
-  fstiffmatrix.Scale(0);
+  fstiffmatrix.shape(3 * fnnode, 3 * fnnode);
+  fstiffmatrix.putScalar(0.0);
   // 12x1 force vector of the beam described by the two fictitious nodes
   CORE::LINALG::SerialDenseVector fforce;
-  fforce.Size(3 * fnnode);
-  fforce.Scale(0);
+  fforce.size(3 * fnnode);
+  fforce.putScalar(0.0);
 
   switch (kintype_)
   {
@@ -788,10 +788,10 @@ void DRT::ELEMENTS::Truss3CL::t3_lumpmass(CORE::LINALG::SerialDenseMatrix* emass
   if (emass != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;

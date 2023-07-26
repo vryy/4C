@@ -437,8 +437,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     {
       // cont derivatives + 1 artery pressure derivative
       diamderivs_ = std::vector<double>(numdof_cont_ + 1, 0.0);
-      diam_stiffmat11_ = new CORE::LINALG::SerialDenseMatrix();
-      diam_stiffmat12_ = new CORE::LINALG::SerialDenseMatrix();
+      diam_stiffmat11_.shape(0, 0);
+      diam_stiffmat12_.shape(0, 0);
     }
   }
 
@@ -897,13 +897,13 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->Size(dim1_);
-  if (forcevec2 != NULL) forcevec2->Size(dim2_);
+  if (forcevec1 != NULL) forcevec1->size(dim1_);
+  if (forcevec2 != NULL) forcevec2->size(dim2_);
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1_, dim1_);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1_, dim2_);
-  if (stiffmat21 != NULL) stiffmat21->Shape(dim2_, dim1_);
-  if (stiffmat22 != NULL) stiffmat22->Shape(dim2_, dim2_);
+  if (stiffmat11 != NULL) stiffmat11->shape(dim1_, dim1_);
+  if (stiffmat12 != NULL) stiffmat12->shape(dim1_, dim2_);
+  if (stiffmat21 != NULL) stiffmat21->shape(dim2_, dim1_);
+  if (stiffmat22 != NULL) stiffmat22->shape(dim2_, dim2_);
 
   if (arterymat_->IsCollapsed()) return 0.0;
 
@@ -977,8 +977,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1_, dim1_);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1_, dim2_);
+  if (stiffmat11 != NULL) stiffmat11->shape(dim1_, dim1_);
+  if (stiffmat12 != NULL) stiffmat12->shape(dim1_, dim2_);
 
   // do not evaluate if element is collapsed
   if (arterymat_->IsCollapsed()) return;
@@ -989,8 +989,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // TODO: for viscosity law blood, viscosity depends on diameter, this linearization is still
   // missing
 
-  stiffmat11->Update(prefac, diam_stiffmat11_, 0.0);
-  stiffmat12->Update(prefac, diam_stiffmat12_, 0.0);
+  CORE::LINALG::Update(prefac, diam_stiffmat11_, 0.0, *stiffmat11);
+  CORE::LINALG::Update(prefac, diam_stiffmat12_, 0.0, *stiffmat12);
 }
 
 /*------------------------------------------------------------------------*
@@ -1270,10 +1270,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (!constant_part_evaluated_)
     {
-      GPTS_NTP_stiffmat11_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat12_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat21_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat22_ = new CORE::LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat11_.shape(0, 0);
+      GPTS_NTP_stiffmat12_.shape(0, 0);
+      GPTS_NTP_stiffmat21_.shape(0, 0);
+      GPTS_NTP_stiffmat22_.shape(0, 0);
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1286,10 +1286,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_NTP_stiffmat11_.Shape(dim1_, dim1_);
-      GPTS_NTP_stiffmat12_.Shape(dim1_, dim2_);
-      GPTS_NTP_stiffmat21_.Shape(dim2_, dim1_);
-      GPTS_NTP_stiffmat22_.Shape(dim2_, dim2_);
+      GPTS_NTP_stiffmat11_.shape(dim1_, dim1_);
+      GPTS_NTP_stiffmat12_.shape(dim1_, dim2_);
+      GPTS_NTP_stiffmat21_.shape(dim2_, dim1_);
+      GPTS_NTP_stiffmat22_.shape(dim2_, dim2_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1331,10 +1331,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   {
     if (!constant_part_evaluated_)
     {
-      GPTS_NTP_stiffmat11_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat12_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat21_ = new CORE::LINALG::SerialDenseMatrix();
-      GPTS_NTP_stiffmat22_ = new CORE::LINALG::SerialDenseMatrix();
+      GPTS_NTP_stiffmat11_.shape(0, 0);
+      GPTS_NTP_stiffmat12_.shape(0, 0);
+      GPTS_NTP_stiffmat21_.shape(0, 0);
+      GPTS_NTP_stiffmat22_.shape(0, 0);
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1347,10 +1347,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_NTP_stiffmat11_.Shape(dim1_, dim1_);
-      GPTS_NTP_stiffmat12_.Shape(dim1_, dim2_);
-      GPTS_NTP_stiffmat21_.Shape(dim2_, dim1_);
-      GPTS_NTP_stiffmat22_.Shape(dim2_, dim2_);
+      GPTS_NTP_stiffmat11_.shape(dim1_, dim1_);
+      GPTS_NTP_stiffmat12_.shape(dim1_, dim2_);
+      GPTS_NTP_stiffmat21_.shape(dim2_, dim1_);
+      GPTS_NTP_stiffmat22_.shape(dim2_, dim2_);
 
 
       // Get constant values from projection
@@ -1384,17 +1384,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     CORE::LINALG::SerialDenseMatrix* D_ele, CORE::LINALG::SerialDenseMatrix* M_ele,
     CORE::LINALG::SerialDenseVector* Kappa_ele)
 {
-  if (D_ele != NULL) D_ele->Shape(dim1_, dim1_);
-  if (M_ele != NULL) M_ele->Shape(dim1_, dim2_);
-  if (Kappa_ele != NULL) Kappa_ele->Size(dim1_);
+  if (D_ele != NULL) D_ele->shape(dim1_, dim1_);
+  if (M_ele != NULL) M_ele->shape(dim1_, dim2_);
+  if (Kappa_ele != NULL) Kappa_ele->size(dim1_);
 
   if (numcoupleddofs_ > 0)
   {
     // initialize
     if (!constant_part_evaluated_)
     {
-      D_ = new CORE::LINALG::SerialDenseMatrix();
-      M_ = new CORE::LINALG::SerialDenseMatrix();
+      D_.shape(0, 0);
+      M_.shape(0, 0);
     }
     // we only have to this once if evaluated in reference configuration
     if (!constant_part_evaluated_ or !evaluate_in_ref_config_)
@@ -1406,9 +1406,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       static CORE::LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static CORE::LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      D_.Shape(dim1_, dim1_);
-      M_.Shape(dim1_, dim2_);
-      Kappa_.Size(dim1_);
+      D_.shape(dim1_, dim1_);
+      M_.shape(dim1_, dim2_);
+      Kappa_.size(dim1_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1465,8 +1465,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   if (diam_funct_active_ && coupltype_ == type_porofluid)
   {
     integrated_diam = 0.0;
-    diam_stiffmat11_.Shape(dim1_, dim1_);
-    diam_stiffmat12_.Shape(dim1_, dim2_);
+    diam_stiffmat11_.shape(dim1_, dim1_);
+    diam_stiffmat12_.shape(dim1_, dim2_);
   }
 
   for (int i_gp = 0; i_gp < n_gp_; i_gp++)
@@ -1776,10 +1776,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
     CORE::LINALG::SerialDenseMatrix& stiffmat22)
 {
-  stiffmat11.Update(1.0, GPTS_NTP_stiffmat11_, 0.0);
-  stiffmat12.Update(1.0, GPTS_NTP_stiffmat12_, 0.0);
-  stiffmat21.Update(1.0, GPTS_NTP_stiffmat21_, 0.0);
-  stiffmat22.Update(1.0, GPTS_NTP_stiffmat22_, 0.0);
+  stiffmat11.assign(GPTS_NTP_stiffmat11_);
+  stiffmat12.assign(GPTS_NTP_stiffmat12_);
+  stiffmat21.assign(GPTS_NTP_stiffmat21_);
+  stiffmat22.assign(GPTS_NTP_stiffmat22_);
 }
 
 
@@ -1838,9 +1838,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     dim>::UpdateDMKappa(CORE::LINALG::SerialDenseMatrix& D_ele,
     CORE::LINALG::SerialDenseMatrix& M_ele, CORE::LINALG::SerialDenseVector& Kappa_ele)
 {
-  D_ele.Update(1.0, D_, 0.0);
-  M_ele.Update(1.0, M_, 0.0);
-  Kappa_ele.Update(1.0, Kappa_, 0.0);
+  D_ele.assign(D_);
+  M_ele.assign(M_);
+  Kappa_ele.assign(Kappa_);
 
   for (int idof = 0; idof < numcoupleddofs_; idof++)
   {

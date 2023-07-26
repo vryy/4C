@@ -1209,7 +1209,7 @@ namespace FLD
       DRT::Element* ele = discret_->lRowElement(el);
 
       CORE::LINALG::SerialDenseVector interpolVec;
-      interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
+      interpolVec.resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
       ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 
@@ -1253,9 +1253,9 @@ namespace FLD
 
       // 2nd evaluate
       ele->LocationVector(*discret_, la, false);
-      if (elevec1.M() != discret_->NumDof(1, ele)) elevec1.Shape(discret_->NumDof(1, ele), 1);
-      if (static_cast<std::size_t>(elevec3.M()) != la[0].lm_.size())
-        elevec3.Shape(la[0].lm_.size(), 1);
+      if (elevec1.numRows() != discret_->NumDof(1, ele)) elevec1.size(discret_->NumDof(1, ele));
+      if (static_cast<std::size_t>(elevec3.numRows()) != la[0].lm_.size())
+        elevec3.size(la[0].lm_.size());
 
       ele->Evaluate(
           initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, interpolVec, elevec3);
@@ -1263,10 +1263,10 @@ namespace FLD
       if (ele->Owner() == discret_->Comm().MyPID())
       {
         std::vector<int> localDofs = discret_->Dof(1, ele);
-        dsassert(localDofs.size() == static_cast<std::size_t>(elevec1.M()), "Internal error");
+        dsassert(localDofs.size() == static_cast<std::size_t>(elevec1.numRows()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
           localDofs[i] = intdofrowmap->LID(localDofs[i]);
-        intvelnp_->ReplaceMyValues(localDofs.size(), elevec1.A(), localDofs.data());
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec1.values(), localDofs.data());
       }
 
       // now fill the ele vector into the discretization

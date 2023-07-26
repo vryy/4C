@@ -162,17 +162,17 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
 
       if (assemblemat)
       {
-        if (elemass.M() != eledim or elemass.N() != eledim)
-          elemass.Shape(eledim, eledim);
+        if (elemass.numRows() != eledim or elemass.numCols() != eledim)
+          elemass.shape(eledim, eledim);
         else
-          memset(elemass.A(), 0, eledim * eledim * sizeof(double));
+          elemass.putScalar(0.0);
       }
       if (assemblevec)
       {
-        if (elerhs.Length() != eledim)
-          elerhs.Size(eledim);
+        if (elerhs.length() != eledim)
+          elerhs.size(eledim);
         else
-          memset(elerhs.Values(), 0, eledim * sizeof(double));
+          elerhs.putScalar(0.0);
       }
 
       {
@@ -338,7 +338,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 initialval(rr) =
                     DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                        .Evaluate(position.Values(), 0.0, rr);
+                        .Evaluate(position.values(), 0.0, rr);
               }
 
 
@@ -467,7 +467,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
                 initialval(rr) =
                     DRT::Problem::Instance()
                         ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                        .Evaluate(position.Values(), 0.0, rr);
+                        .Evaluate(position.values(), 0.0, rr);
               }
 
               // check for degenerated elements

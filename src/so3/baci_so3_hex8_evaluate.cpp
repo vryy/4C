@@ -9,7 +9,8 @@
 *----------------------------------------------------------------------*/
 
 #include <Epetra_MultiVector.h>
-#include <CORE::LINALG::SerialDenseMatrix.h>
+#include <Teuchos_SerialDenseSolver.hpp>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "baci_so3_element_service.H"
 #include "baci_so3_hex8.H"
@@ -22,7 +23,6 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_mat_so3_material.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_growthremodel_elasthyper.H"
@@ -75,11 +75,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -695,7 +695,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
             data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-        oldfeas->Scale(0.0);
+        oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
@@ -923,7 +923,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // EAS technology: "enhance the strains"  ----------------------------- EAS
         if (eastype_ != soh8_easnone)
         {
-          M.LightShape(MAT::NUM_STRESS_3D, neas_);
+          M.shape(MAT::NUM_STRESS_3D, neas_);
           // map local M to global, also enhancement is referred to element origin
           // M = detJ0/detJ T0^{-T} . M
           // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
@@ -932,21 +932,22 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           {
             case DRT::ELEMENTS::So_hex8::soh8_easfull:
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                  soh8_easfull>(M.A(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+                  soh8_easfull>(M.values(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).values());
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easfull, 1>(
-                  1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+                  1.0, glstrain.A(), 1.0, M.values(), alpha->values());
               break;
             case DRT::ELEMENTS::So_hex8::soh8_easmild:
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                  soh8_easmild>(M.A(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+                  soh8_easmild>(M.values(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).values());
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easmild, 1>(
-                  1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+                  1.0, glstrain.A(), 1.0, M.values(), alpha->values());
               break;
             case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                  soh8_eassosh8>(M.A(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).A());
+                  soh8_eassosh8>(
+                  M.values(), detJ0 / detJ_[gp], T0invT.A(), (M_GP->at(gp)).values());
               CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
-                  1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+                  1.0, glstrain.A(), 1.0, M.values(), alpha->values());
               break;
             case DRT::ELEMENTS::So_hex8::soh8_easnone:
               break;
@@ -985,7 +986,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -1005,7 +1006,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
-      if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 3) dserror("The given result vector is too short.");
 
       // not yet implemented for EAS case
       if (eastype_ != soh8_easnone) dserror("Error norms not yet implemented for EAS.");
@@ -1451,7 +1452,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         int gid = Id();
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
             Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstress->Shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
+        gpstress->shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (unsigned i = 0; i < NUMGPT_SOH8; i++)
@@ -1465,7 +1466,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // strains
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
             Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstrain->Shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
+        gpstrain->shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (unsigned i = 0; i < NUMGPT_SOH8; i++)
@@ -1783,12 +1784,12 @@ void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
   // --- EAS default update ---------------------------
   CORE::LINALG::SerialDenseMatrix eashelp(neas_, 1);
   /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
-  oldKda->Multiply(false, res_d_eas, eashelp);
+  eashelp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKda, res_d_eas, 0.0);
   /*---------------------------------------- add old Rtilde to eashelp */
   eashelp += *oldfeas;
   /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
-  oldKaainv->Multiply(false, eashelp, *eas_inc);
-  eas_inc->Scale(-1.0);
+  eas_inc->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKaainv, eashelp, 0.0);
+  eas_inc->scale(-1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1989,10 +1990,10 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       {
         double alpha_ls = params.get<double>("alpha_ls");
         // undo step
-        eas_inc->Scale(-1.);
+        eas_inc->scale(-1.);
         alpha->operator+=(*eas_inc);
         // scale increment
-        eas_inc->Scale(-1. * alpha_ls);
+        eas_inc->scale(-1. * alpha_ls);
         // add reduced increment
         alpha->operator+=(*eas_inc);
       }
@@ -2037,13 +2038,13 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    feas.Size(neas_);
+    feas.size(neas_);
 
     // EAS matrix K_{alpha alpha}, also called Dtilde
-    Kaa.Shape(neas_, neas_);
+    Kaa.shape(neas_, neas_);
 
     // EAS matrix K_{d alpha}
-    Kda.Shape(neas_, NUMDOF_SOH8);
+    Kda.shape(neas_, NUMDOF_SOH8);
 
 
     /* evaluation of EAS variables (which are constant for the following):
@@ -2187,7 +2188,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
 
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
     if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
@@ -2211,7 +2212,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
-      M.LightShape(MAT::NUM_STRESS_3D, neas_);
+      M.shape(MAT::NUM_STRESS_3D, neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
@@ -2220,21 +2221,21 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_easfull>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_easfull>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easfull, 1>(
-              1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_easmild>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_easmild>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easmild, 1>(
-              1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_eassosh8>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
-              1.0, glstrain.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone:
           break;
@@ -2590,33 +2591,33 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
         {
           case DRT::ELEMENTS::So_hex8::soh8_easfull:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                soh8_easfull>(cM.A(), cmat.A(), M.A());
+                soh8_easfull>(cM.values(), cmat.A(), M.values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easfull, MAT::NUM_STRESS_3D,
                 soh8_easfull>(1.0, Kaa, detJ_w, M, cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easfull, MAT::NUM_STRESS_3D,
-                NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+                NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easfull, MAT::NUM_STRESS_3D, 1>(
-                1.0, feas.A(), detJ_w, M.A(), stress.A());
+                1.0, feas.values(), detJ_w, M.values(), stress.A());
             break;
           case DRT::ELEMENTS::So_hex8::soh8_easmild:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                soh8_easmild>(cM.A(), cmat.A(), M.A());
+                soh8_easmild>(cM.values(), cmat.A(), M.values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easmild, MAT::NUM_STRESS_3D,
                 soh8_easmild>(1.0, Kaa, detJ_w, M, cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easmild, MAT::NUM_STRESS_3D,
-                NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+                NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_easmild, MAT::NUM_STRESS_3D, 1>(
-                1.0, feas.A(), detJ_w, M.A(), stress.A());
+                1.0, feas.values(), detJ_w, M.values(), stress.A());
             break;
           case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-                soh8_eassosh8>(cM.A(), cmat.A(), M.A());
+                soh8_eassosh8>(cM.values(), cmat.A(), M.values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
                 soh8_eassosh8>(1.0, Kaa, detJ_w, M, cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
-                NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+                NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D, 1>(
-                1.0, feas.A(), detJ_w, M.A(), stress.A());
+                1.0, feas.values(), detJ_w, M.values(), stress.A());
             break;
           case DRT::ELEMENTS::So_hex8::soh8_easnone:
             break;
@@ -2730,7 +2731,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   if (eastype_ != soh8_easnone && split_res && force != nullptr)
     // only add for row-map elements
     if (params.get<int>("MyPID") == Owner())
-      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(), 2.);
+      params.get<double>("cond_rhs_norm") += pow(CORE::LINALG::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -2739,17 +2740,20 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     if (eastype_ != soh8_easnone)
     {
       // we need the inverse of Kaa. Catch Inf/NaN case
-      const double norm1 = Kaa.OneNorm();
+      const double norm1 = Kaa.normOne();
       if (std::isnan(norm1) || std::isinf(norm1) || norm1 == 0.)
       {
-        for (int i = 0; i < Kaa.N(); ++i)
-          for (int j = 0; j < Kaa.M(); ++j) Kaa(j, i) = std::numeric_limits<double>::quiet_NaN();
+        for (int i = 0; i < Kaa.numCols(); ++i)
+          for (int j = 0; j < Kaa.numRows(); ++j)
+            Kaa(j, i) = std::numeric_limits<double>::quiet_NaN();
       }
       else
       {
-        Epetra_SerialDenseSolver solve_for_inverseKaa;
-        solve_for_inverseKaa.SetMatrix(Kaa);
-        solve_for_inverseKaa.Invert();
+        typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+        typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+        Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
+        solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
+        solve_for_inverseKaa.invert();
       }
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
@@ -2762,25 +2766,25 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDOF_SOH8, soh8_easfull, soh8_easfull>(
               KdaKaa, Kda, Kaa);
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_easfull, NUMDOF_SOH8>(
-              1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+              1.0, stiffmatrix->A(), -1.0, KdaKaa.values(), Kda.values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_easfull, 1>(
-              1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+              1.0, force->A(), -1.0, KdaKaa.values(), feas.values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDOF_SOH8, soh8_easmild, soh8_easmild>(
               KdaKaa, Kda, Kaa);
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_easmild, NUMDOF_SOH8>(
-              1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+              1.0, stiffmatrix->A(), -1.0, KdaKaa.values(), Kda.values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_easmild, 1>(
-              1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+              1.0, force->A(), -1.0, KdaKaa.values(), feas.values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
           CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, NUMDOF_SOH8, soh8_eassosh8,
               soh8_eassosh8>(KdaKaa, Kda, Kaa);
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
-              1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kda.A());
+              1.0, stiffmatrix->A(), -1.0, KdaKaa.values(), Kda.values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
-              1.0, force->A(), -1.0, KdaKaa.A(), feas.A());
+              1.0, force->A(), -1.0, KdaKaa.values(), feas.values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone:
           break;
@@ -2883,9 +2887,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
     CORE::LINALG::SerialDenseVector glstrain_epetrao(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstraino(glstrain_epetrao.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstraino(glstrain_epetrao.values(), true);
     glstrain(0) = 0.5 * (rcg(0, 0) - 1.0);
     glstrain(1) = 0.5 * (rcg(1, 1) - 1.0);
     glstrain(2) = 0.5 * (rcg(2, 2) - 1.0);
@@ -3025,7 +3029,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     // mid-strain GL vector
     // E_m = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_n
     CORE::LINALG::SerialDenseVector glstrain_epetram(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrainm(glstrain_epetram.A(), true);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrainm(glstrain_epetram.values(), true);
     glstrainm.Update(1.0 - gemmalphaf + gemmxi, glstrain, gemmalphaf - gemmxi, glstraino);
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -3159,10 +3163,10 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH8, NUM
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -3461,7 +3465,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     // reset EAS internal force
     CORE::LINALG::SerialDenseMatrix* oldfeas =
         data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldfeas->Scale(0.0);
+    oldfeas->putScalar(0.0);
   }
   SolidMaterial()->Update();
 
@@ -3685,7 +3689,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
     if (eastype_ != soh8_easnone)
     {
       dserror("be careful ! fdcheck has not been tested with EAS, yet! ");
-      M.LightShape(MAT::NUM_STRESS_3D, neas_);
+      M.shape(MAT::NUM_STRESS_3D, neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
@@ -3694,21 +3698,21 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
       {
         case DRT::ELEMENTS::So_hex8::soh8_easfull:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_easfull>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_easfull>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easfull, 1>(
-              1.0, glstrain_fd.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain_fd.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easmild:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_easmild>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_easmild>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_easmild, 1>(
-              1.0, glstrain_fd.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain_fd.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-              soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).A());
+              soh8_eassosh8>(M.values(), detJ0 / detJ, T0invT.A(), (M_GP->at(gp)).values());
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
-              1.0, glstrain_fd.A(), 1.0, M.A(), alpha->A());
+              1.0, glstrain_fd.A(), 1.0, M.values(), alpha->values());
           break;
         case DRT::ELEMENTS::So_hex8::soh8_easnone:
           break;
@@ -3893,32 +3897,32 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d_cauchyndir_dd)
   {
-    d_cauchyndir_dd->Reshape(NUMDOF_SOH8, 1);
-    CORE::LINALG::Matrix<NUMDOF_SOH8, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->A(), true);
+    d_cauchyndir_dd->reshape(NUMDOF_SOH8, 1);
+    CORE::LINALG::Matrix<NUMDOF_SOH8, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->values(), true);
     d_cauchyndir_dd_mat.MultiplyTN(1.0, d_F_dd, d_cauchyndir_dF, 0.0);
   }
 
   if (d2_cauchyndir_dd_dn)
   {
-    d2_cauchyndir_dd_dn->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    d2_cauchyndir_dd_dn->reshape(NUMDOF_SOH8, NUMDIM_SOH8);
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dn_mat(
-        d2_cauchyndir_dd_dn->A(), true);
+        d2_cauchyndir_dd_dn->values(), true);
     d2_cauchyndir_dd_dn_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_dn, 0.0);
   }
 
   if (d2_cauchyndir_dd_ddir)
   {
-    d2_cauchyndir_dd_ddir->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    d2_cauchyndir_dd_ddir->reshape(NUMDOF_SOH8, NUMDIM_SOH8);
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_ddir_mat(
-        d2_cauchyndir_dd_ddir->A(), true);
+        d2_cauchyndir_dd_ddir->values(), true);
     d2_cauchyndir_dd_ddir_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_ddir, 0.0);
   }
 
   if (d2_cauchyndir_dd2)
   {
-    d2_cauchyndir_dd2->Reshape(NUMDOF_SOH8, NUMDOF_SOH8);
+    d2_cauchyndir_dd2->reshape(NUMDOF_SOH8, NUMDOF_SOH8);
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> d2_cauchyndir_dd2_mat(
-        d2_cauchyndir_dd2->A(), true);
+        d2_cauchyndir_dd2->values(), true);
     static CORE::LINALG::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF2_d_F_dd(true);
     d2_cauchyndir_dF2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
     d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
@@ -3965,9 +3969,9 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d2_cauchyndir_dd_dxi)
   {
-    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    d2_cauchyndir_dd_dxi->reshape(NUMDOF_SOH8, NUMDIM_SOH8);
     CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
-        d2_cauchyndir_dd_dxi->A(), true);
+        d2_cauchyndir_dd_dxi->values(), true);
 
     static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMNOD_SOH8>

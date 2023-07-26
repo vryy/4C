@@ -4414,7 +4414,7 @@ void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     }
     else
     {
-      wincr_->Scale(0.0);
+      wincr_->PutScalar(0.0);
     }
     // wear rhs  for inactive/stick nodes
     Teuchos::RCP<Epetra_Vector> wrhsexp = Teuchos::rcp(new Epetra_Vector(*gsdofnrowmap_));

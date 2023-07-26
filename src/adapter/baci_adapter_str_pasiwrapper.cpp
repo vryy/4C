@@ -32,7 +32,7 @@ ADAPTER::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
 
 void ADAPTER::PASIStructureWrapper::ApplyInterfaceForce(Teuchos::RCP<const Epetra_Vector> intfforce)
 {
-  PASIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
+  PASIModelEvaluator()->GetInterfaceForceNpPtr()->PutScalar(0.0);
 
   if (intfforce != Teuchos::null)
     interface_->AddPASICondVector(intfforce, PASIModelEvaluator()->GetInterfaceForceNpPtr());

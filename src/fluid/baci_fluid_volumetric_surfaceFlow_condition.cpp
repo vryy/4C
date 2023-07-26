@@ -1003,7 +1003,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
 {
-  cond_traction_vel_->Scale(0.0);
+  cond_traction_vel_->PutScalar(0.0);
 }
 
 

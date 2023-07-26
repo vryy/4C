@@ -486,7 +486,7 @@ namespace XFEM
         if (normgradphi > 1e-9)  // 1e-9 is set to create a reasonable scaling.
           gradphi.Scale(1.0 / normgradphi);
         else
-          gradphi.Scale(0.0);  // This to catch the cases when gradphi \approx 0
+          gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
 
         // normal_comb = alpha_n * normal + (1-alpha)*gradphi
         CORE::LINALG::Matrix<nsd, 1> normal_comb(true);
@@ -505,7 +505,7 @@ namespace XFEM
       if (normgradphi > 1e-9)  // 1e-9 is set to create a reasonable scaling.
         gradphi.Scale(1.0 / normgradphi);
       else
-        gradphi.Scale(0.0);  // This to catch the cases when gradphi \approx 0
+        gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
 
       SetupProjectionMatrix(projection_matrix, gradphi);
 
@@ -704,7 +704,8 @@ namespace XFEM
         // check norm of normal gradient
         if (fabs(grad_phi_norm) < 1.0E-5)  // 'ngradnorm' == 0.0
         {
-          std::cout << "grad phi is small -> set to 1.0E12" << grad_phi_norm << std::endl;
+          std::cout << "grad phi is small (norm = " << grad_phi_norm << ") -> set to 1.0E12"
+                    << std::endl;
           // phi gradient too small -> there must be a local max or min in the level-set field
           // set curvature to a large value (it will be cut off based on the element size)
           icurvature = 1.0E12;
@@ -913,7 +914,7 @@ namespace XFEM
       }
       else
       {
-        // itraction_jump_matrix.Scale(0.0);
+        // itraction_jump_matrix.putScalar(0.0);
 
         // P = (\delta_{ij} - n_{i}n{j})
         // Calculations for evaluation with Laplace-Beltrami operator

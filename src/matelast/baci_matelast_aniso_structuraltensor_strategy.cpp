@@ -272,7 +272,7 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
 
   // zero out small entries
   const double tol = GetResidualTol();
-  for (unsigned i = 0; i < structural_tensor_stress.M(); ++i)
+  for (unsigned i = 0; i < structural_tensor_stress.numRows(); ++i)
     if (abs(structural_tensor_stress(i)) < tol) structural_tensor_stress(i) = 0.0;
 
   // scale whole structural tensor with its trace, because

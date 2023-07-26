@@ -68,7 +68,7 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildSubMapBezierToLagrange(
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildMapLagrange20ToBezier27()
 {
-  map_q_.Scale(0.0);
+  map_q_.putScalar(0.0);
 
   const double block_template[4][4] = {
       {1.0, 1.0, 0.0, 0.0}, {0.0, 1.0, 1.0, 0.0}, {0.0, 0.0, 1.0, 1.0}, {1.0, 0.0, 0.0, 1.0}};

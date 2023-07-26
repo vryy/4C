@@ -18,7 +18,6 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_mat_newtonianfluid.H"
 
 
@@ -224,12 +223,12 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
-      metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
+      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
       // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
-      const double dotprodc = funct.Dot(c);
+      const double dotprodc = funct.dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc * detA * intpoints.qwgt[gpid];
     }
@@ -252,8 +251,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
 
   // initialize
   V = 0.0;
-  Vdiff1->Size(ndof);
-  if (Vdiff2 != Teuchos::null) Vdiff2->Shape(ndof, ndof);
+  Vdiff1->size(ndof);
+  if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
@@ -299,11 +298,11 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
-      metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
+      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
-      const double dotprodc = funct.Dot(c);
+      const double dotprodc = funct.dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc * detA * intpoints.qwgt[gpid];
 

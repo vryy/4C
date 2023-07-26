@@ -464,7 +464,7 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
   int *pivot;
   pivot = new int[2 * nodes_.size()];
 
-  while (f.Norm2() > 0.000001)
+  while (CORE::LINALG::Norm2(f) > 0.000001)
   {
     //--------------------------------------------------------------------
     // Fill the Jacobian matrix
@@ -474,11 +474,11 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
     //--------------------------------------------------------------------
     // Solve for dx
     //--------------------------------------------------------------------
-    solver_.SetMatrix(Jacobian);
-    solver_.SetVectors(dx, f);
-    solver_.FactorWithEquilibration(true);
-    int err2 = solver_.Factor();
-    int err = solver_.Solve();
+    solver_.setMatrix(Teuchos::rcpFromRef(Jacobian));
+    solver_.setVectors(Teuchos::rcpFromRef(dx), Teuchos::rcpFromRef(f));
+    solver_.factorWithEquilibration(true);
+    int err2 = solver_.factor();
+    int err = solver_.solve();
 
     if (err != 0 || err2 != 0)
     {
@@ -594,7 +594,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // initialize the residual
-  f = CORE::LINALG::SerialDenseVector(f.Length());
+  f = CORE::LINALG::SerialDenseVector(f.length());
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
@@ -635,7 +635,7 @@ void ART::UTILS::ArtJunctionBc::Update_Result(
   }
 #endif
 
-  for (int i = 0; i < xn.Length(); i++)
+  for (int i = 0; i < xn.length(); i++)
   {
     xn[i] -= dx[i];
   }

@@ -259,7 +259,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
           }
 
           // compute matrix contributions associated with master-side residuals if necessary
-          if (k_ms.M())
+          if (k_ms.numRows())
           {
             for (int vi = 0; vi < nen_master; ++vi)
             {

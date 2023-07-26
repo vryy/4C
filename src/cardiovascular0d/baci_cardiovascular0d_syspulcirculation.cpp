@@ -637,9 +637,9 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      elematrix2.Shape(eledim, eledim);
-      elevector2.Size(eledim);
-      elevector3.Size(1);
+      elematrix2.shape(eledim, eledim);
+      elevector2.size(eledim);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(
@@ -658,7 +658,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Evaluate(Teuchos::ParameterList& 
         if (*conditiontype == "ventricle_right") colvec[0] = gindex[10];
         if (*conditiontype == "atrium_left") colvec[0] = gindex[0];
         if (*conditiontype == "atrium_right") colvec[0] = gindex[8];
-        elevector2.Scale(-1. / ts_size);
+        elevector2.scale(-1. / ts_size);
         sysmat2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
 
@@ -788,7 +788,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::Initialize(Teuchos::ParameterList
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(1);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(

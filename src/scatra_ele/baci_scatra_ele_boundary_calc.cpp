@@ -1214,7 +1214,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
             pseudo_contact_fac * timefacfac * (*permeabilities)[k];
         const double dN_dc_master_timefacfac = -dN_dc_slave_timefacfac;
 
-        if (k_ss.M() and k_sm.M() and r_s.Length())
+        if (k_ss.numRows() and k_sm.numRows() and r_s.length())
         {
           for (int vi = 0; vi < nen_; ++vi)
           {
@@ -1231,10 +1231,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
             r_s[fvi] -= test_slave(vi) * N_timefacrhsfac;
           }
         }
-        else if (k_ss.M() or k_sm.M() or r_s.Length())
+        else if (k_ss.numRows() or k_sm.numRows() or r_s.length())
           dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
 
-        if (k_ms.M() and k_mm.M() and r_m.Length())
+        if (k_ms.numRows() and k_mm.numRows() and r_m.length())
         {
           for (int vi = 0; vi < nen_master; ++vi)
           {
@@ -1251,7 +1251,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateS2ICoupling
             r_m[fvi] += test_master(vi) * N_timefacrhsfac;
           }
         }
-        else if (k_ms.M() or k_mm.M() or r_m.Length())
+        else if (k_ms.numRows() or k_mm.numRows() or r_m.length())
           dserror("Must provide both master-side matrices and master-side vector or none of them!");
 
         break;
@@ -2172,10 +2172,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::WeakDirichlet(DRT::
   // preliminary definitions for integration loop
   //------------------------------------------------------------------------
   // reshape element matrices and vectors and init to zero, construct views
-  elemat_epetra.Shape(pnen, pnen);
-  elevec_epetra.Size(pnen);
-  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
+  elemat_epetra.shape(pnen, pnen);
+  elevec_epetra.size(pnen);
+  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.values(), true);
 
   // (boundary) element local node coordinates
   CORE::LINALG::Matrix<pnsd, bnen> bxyze(true);
@@ -2853,10 +2853,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ReinitCharacteristi
   // preliminary definitions for integration loop
   //------------------------------------------------------------------------
   // reshape element matrices and vectors and init to zero, construct views
-  elemat_epetra.Shape(pnen, pnen);
-  elevec_epetra.Size(pnen);
-  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.A(), true);
+  elemat_epetra.shape(pnen, pnen);
+  elevec_epetra.size(pnen);
+  CORE::LINALG::Matrix<pnen, pnen> emat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<pnen, 1> erhs(elevec_epetra.values(), true);
 
   // (boundary) element local node coordinates
   CORE::LINALG::Matrix<pnsd, bnen> bxyze(true);

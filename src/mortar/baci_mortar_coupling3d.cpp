@@ -4394,7 +4394,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
   // in case of no overlap just return, as there is no integration area
   // and therefore the consistent dual shape functions are not defined.
   // This doesn't matter, as there is no associated integration domain anyway
-  if (me.Det_long() == 0) return;
+  if (CORE::LINALG::Det_long(me) == 0) return;
 
   // declare dual shape functions coefficient matrix
   CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
@@ -4438,7 +4438,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
       dserror("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
-    ae.Multiply('N', 'N', 1.0, de, meinv, 0.0);
+    ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, meinv, 0.0);
   }
   // compute matrix A_e for all other cases
   else

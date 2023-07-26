@@ -205,7 +205,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 {
   // --------------------------------------------------
   // construct views
-  CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.A(), true);
+  CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.values(), true);
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -3068,7 +3068,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   elevec1_epetra(4) = cauchystress(1, 2);
   elevec1_epetra(5) = cauchystress(0, 2);
 
-  if (elevec1_epetra.M() == 7)
+  if (elevec1_epetra.numRows() == 7)
   {
     elevec1_epetra(6) = -pressint(0, 0);
   }
@@ -3717,7 +3717,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
     // fill the local element vector with the global values
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epre, "velnp");
 
-    if (elevec1.Length() != 2) dserror("velnp is set, there must be a vel as well");
+    if (elevec1.length() != 2) dserror("velnp is set, there must be a vel as well");
 
     elevec1[1] = funct_.Dot(epre);
   }

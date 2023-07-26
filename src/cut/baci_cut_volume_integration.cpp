@@ -56,7 +56,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
 
     if (fnc == 1)
     {
-      if (rhs_mom.InfNorm() > 1e-5 && rhs_mom(0) < 0.0)
+      if (rhs_mom.normInf() > 1e-5 && rhs_mom(0) < 0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
   }
@@ -801,7 +801,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
       }*/
 
       LeastSquares least(moment_matrix, rhs_moment);
-      weights.Size(moment_matrix[0].size());
+      weights.size(moment_matrix[0].size());
       weights = least.linear_least_square();
     }
     else  // the considered volumecell has negligible volume and can be eliminated
@@ -812,7 +812,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
       zer[1] = 0.0;
       zer[2] = 0.0;
       gaus_pts_.push_back(zer);
-      weights.Size(1);
+      weights.size(1);
       weights(0) = 0.0;
       break;
     }
@@ -831,7 +831,7 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weigh
         err(i) = err(i) - rhs_moment(i);
     }
 
-    const double maxError = err.InfNorm();
+    const double maxError = err.normInf();
 #ifdef DEBUGCUTLIBRARY
     std::cout << "max error = " << maxError << "\n";
 #endif
@@ -867,7 +867,7 @@ void CORE::GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(
   unsigned int i = mat.size(), kk = mat[0].size();
   // no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of
   // monomials=3=>(x,y,z)
-  rhs.Resize(i + 3);
+  rhs.resize(i + 3);
   mat.resize(i + 3, std::vector<double>(kk));
   unsigned int ibegin = 1, iend = 3;  // the row numbers that contain the first order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -886,7 +886,7 @@ void CORE::GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 15);
+  rhs.resize(i + 15);
   mat.resize(i + 15, std::vector<double>(kk));
   unsigned int ibegin = 4, iend = 9;  // the row numbers that contain the second order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -905,7 +905,7 @@ void CORE::GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 45);
+  rhs.resize(i + 45);
   mat.resize(i + 45, std::vector<double>(kk));
   unsigned int ibegin = 10, iend = 19;  // the row numbers that contain the third order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -923,7 +923,7 @@ void CORE::GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 105);
+  rhs.resize(i + 105);
   mat.resize(i + 105, std::vector<double>(kk));
   unsigned int ibegin = 20, iend = 34;  // the row numbers that contain the fourth order terms in
                                         // rhs
@@ -942,7 +942,7 @@ void CORE::GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 210);
+  rhs.resize(i + 210);
   mat.resize(i + 210, std::vector<double>(kk));
   unsigned int ibegin = 35, iend = 55;  // the row numbers that contain the fifth order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -960,7 +960,7 @@ void CORE::GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(
     std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 561);
+  rhs.resize(i + 561);
   mat.resize(i + 561, std::vector<double>(kk));
   unsigned int ibegin = 56, iend = 83;  // the row numbers that contain the fifth order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)

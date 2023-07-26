@@ -9,12 +9,12 @@
 /*---------------------------------------------------------------------------*/
 
 
+#include <iterator>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_w1_poro.H"
 
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include <Epetra_SerialDenseSolver.h>
-#include <iterator>
 
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
@@ -211,11 +211,11 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_calc_nlnstiff:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
       // damping
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.values(), true);
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
 
       // elevec2+3 are not used anyway
 
@@ -278,9 +278,9 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_calc_nlnstiffmass:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
 
       // elemat2,elevec2+3 are not used anyway
 
@@ -345,7 +345,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_poro_calc_fluidcoupling:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_> elemat1(elemat1_epetra.values(), true);
 
       // elemat2,elevec1-3 are not used anyway
 
@@ -405,7 +405,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
     case ELEMENTS::struct_calc_internalforce:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
 
       // elemat1+2,elevec2+3 are not used anyway
 
@@ -2209,9 +2209,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vect
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
   {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(pressderiv);
-    int err = inverse.Invert();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
+    inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
+    int err = inverse.invert();
     if (err != 0)
       dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
   }
@@ -2221,7 +2223,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vect
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-  satderiv.Multiply('N', 'N', 1.0, helpderiv, pressderiv, 0.0);
+  satderiv.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, helpderiv, pressderiv, 0.0);
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
   for (int iphase = 0; iphase < numfluidphases; iphase++)

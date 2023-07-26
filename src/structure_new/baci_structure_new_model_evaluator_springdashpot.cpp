@@ -85,7 +85,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
   // update the structural displacement vector
   velnp_ptr_ = GState().GetVelNp();
 
-  fspring_np_ptr_->Scale(0.0);
+  fspring_np_ptr_->PutScalar(0.0);
   stiff_spring_ptr_->Zero();
 }
 

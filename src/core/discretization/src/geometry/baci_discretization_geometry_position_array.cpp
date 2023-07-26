@@ -39,7 +39,7 @@ void CORE::GEO::InitialPositionArray(
     CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
-  xyze.Shape(3, numnode);
+  xyze.shape(3, numnode);
   const ::DRT::Node* const* nodes = ele->Nodes();
   if (nodes == NULL)
   {

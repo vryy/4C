@@ -301,9 +301,9 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   /*----------------------------------- perform matrix multiplications ---*/
 
 
-  int err = A.Multiply('T', 'N', 1, R, C, 0);  // A = R^t * C
+  int err = A.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, R, C, 0.0);  // A = R^t * C
   if (err != 0) dserror("Multiply failed");
-  err = k_torsion->Multiply('N', 'N', 1, A, R, 0);  // stiff = A * R
+  err = k_torsion->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, R, 0.0);  // stiff = A * R
   if (err != 0) dserror("Multiply failed");
 }
 
@@ -557,7 +557,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(CORE::LINALG::SerialDenseMatrix* sys_
   }
 
   // compute residual vector
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < 2 * iel; ++i)
     for (int j = 0; j < 2 * iel; ++j) residual[i] += (*sys_mat)(i, j) * displacements[j];
 
@@ -578,25 +578,25 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   // general arrays
   CORE::LINALG::SerialDenseVector funct(numnode);
   CORE::LINALG::SerialDenseMatrix deriv;
-  deriv.Shape(2, numnode);
+  deriv.shape(2, numnode);
   CORE::LINALG::SerialDenseMatrix xjm;
-  xjm.Shape(2, 2);
+  xjm.shape(2, 2);
   CORE::LINALG::SerialDenseMatrix boplin;
-  boplin.Shape(4, 2 * numnode);
+  boplin.shape(4, 2 * numnode);
   CORE::LINALG::SerialDenseVector F;
-  F.Size(4);
+  F.size(4);
   CORE::LINALG::SerialDenseVector strain;
-  strain.Size(4);
+  strain.size(4);
   double det;
   CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
   CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
   CORE::LINALG::SerialDenseMatrix b_cure;
-  b_cure.Shape(numeps, nd);
+  b_cure.shape(numeps, nd);
   CORE::LINALG::SerialDenseMatrix stress;
-  stress.Shape(4, 4);
+  stress.shape(4, 4);
   CORE::LINALG::SerialDenseMatrix C;
-  C.Shape(4, 4);
+  C.shape(4, 4);
 
 
   /*------- get integration data ---------------------------------------- */
@@ -691,10 +691,10 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
   if (pseudolinear and force)
   {
     CORE::LINALG::SerialDenseVector displacements;
-    displacements.Resize(nd);
+    displacements.resize(nd);
     for (int i = 0; i < nd; ++i) displacements(i) = disp[i];
 
-    stiffmatrix->Multiply(false, displacements, *force);
+    force->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *stiffmatrix, displacements, 0.0);
   }
 
   return;
@@ -888,7 +888,7 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis, std::vecto
     }
   }
 
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < 2 * iel; ++i)
     for (int j = 0; j < 2 * iel; ++j) residual[i] += (*sys_mat)(i, j) * displacements[j];
 
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::Ale2::JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& 
     const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
-  memset(xjm.A(), 0, xjm.N() * xjm.M() * sizeof(double));
+  xjm.putScalar(0.0);
 
   for (int k = 0; k < iel; k++)
   {
@@ -973,7 +973,7 @@ void DRT::ELEMENTS::Ale2::DefGrad(CORE::LINALG::SerialDenseVector& F,
         |      Uy,X  |
   */
 
-  memset(F.A(), 0, F.N() * F.M() * sizeof(double));
+  F.putScalar(0.0);
 
   F[0] = 1;
   F[1] = 1;
@@ -1033,7 +1033,7 @@ void DRT::ELEMENTS::Ale2::Fint(const CORE::LINALG::SerialDenseMatrix& stress,
 
 {
   CORE::LINALG::SerialDenseVector st;
-  st.Size(4);
+  st.size(4);
 
   st[0] = fac * stress(0, 0);
   st[1] = fac * stress(1, 1);
@@ -1098,7 +1098,7 @@ void DRT::ELEMENTS::Ale2::CallMatGeoNonl(
       /*------------------ Summenschleife -> += (2.PK stored as vector) ------*/
 
       CORE::LINALG::SerialDenseVector svector;
-      svector.Size(3);
+      svector.size(3);
 
       for (int k = 0; k < 3; k++)
       {
@@ -1153,7 +1153,7 @@ void DRT::ELEMENTS::Ale2::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatri
   // we have plain strain
 
   // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
-  memset(stress.A(), 0, stress.M() * stress.N() * sizeof(double));     // zerofy
+  stress.putScalar(0.0);                                               // zerofy
   stress(0, 0) = stress(3, 3) = pk2(0);                                // S_{11}
   stress(1, 1) = stress(2, 2) = pk2(1);                                // S_{22}
   stress(0, 2) = stress(1, 3) = stress(3, 1) = stress(2, 0) = pk2(3);  // S_{12}
@@ -1219,7 +1219,7 @@ void DRT::ELEMENTS::Ale2::BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
     const int numeps, const int nd)
 {
   CORE::LINALG::SerialDenseMatrix Fmatrix;
-  Fmatrix.Shape(4, 4);
+  Fmatrix.shape(4, 4);
 
 
   /*---------------------------write Vector F as a matrix Fmatrix*/
@@ -1238,7 +1238,7 @@ void DRT::ELEMENTS::Ale2::BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
   Fmatrix(3, 3) = 0.5 * F[1];
 
   /*-------------------------------------------------int_b_cure operator*/
-  memset(b_cure.A(), 0, b_cure.N() * b_cure.M() * sizeof(double));
+  b_cure.putScalar(0.0);
   for (int i = 0; i < numeps; i++)
     for (int j = 0; j < nd; j++)
       for (int k = 0; k < numeps; k++) b_cure(i, j) += Fmatrix(k, i) * boplin(k, j);
@@ -1258,9 +1258,9 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(CORE::LINALG::SerialDenseVector& eleve
   // general arrays
   CORE::LINALG::SerialDenseVector funct(numnode);
   CORE::LINALG::SerialDenseMatrix deriv;
-  deriv.Shape(2, numnode);
+  deriv.shape(2, numnode);
   CORE::LINALG::SerialDenseMatrix xjm;
-  xjm.Shape(2, 2);
+  xjm.shape(2, 2);
   double det;
   double qm = 0.0;
   CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);

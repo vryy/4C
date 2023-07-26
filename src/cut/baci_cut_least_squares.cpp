@@ -18,14 +18,16 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_squar
   CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
   CORE::LINALG::SerialDenseVector rhs(matri_[0].size());
   sqr = get_square_matrix(rhs);
-  unknown_.Size(matri_[0].size());
+  unknown_.size(matri_[0].size());
 
-  Epetra_SerialDenseSolver solve_for_GPweights;
-  solve_for_GPweights.SetMatrix(sqr);
-  solve_for_GPweights.SetVectors(unknown_, rhs);
-  solve_for_GPweights.FactorWithEquilibration(true);
-  int err2 = solve_for_GPweights.Factor();
-  int err = solve_for_GPweights.Solve();
+  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_GPweights;
+  solve_for_GPweights.setMatrix(Teuchos::rcpFromRef(sqr));
+  solve_for_GPweights.setVectors(Teuchos::rcpFromRef(unknown_), Teuchos::rcpFromRef(rhs));
+  solve_for_GPweights.factorWithEquilibration(true);
+  int err2 = solve_for_GPweights.factor();
+  int err = solve_for_GPweights.solve();
   if ((err != 0) && (err2 != 0))
     dserror(
         "Computation of Gauss weights failed, Ill"

@@ -1118,7 +1118,7 @@ SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Con
   discret_->Comm().MaxAll(&procid, &ownerid, 1);
 
   // broadcast results from processor owning conditioned node to all other processors
-  discret_->Comm().Broadcast(scalars->Values(), numscalars, ownerid);
+  discret_->Comm().Broadcast(scalars->values(), numscalars, ownerid);
 
   return scalars;
 }
@@ -2672,17 +2672,17 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
       // initialize element matrix
       const int size = (int)la[0].lm_.size();
       CORE::LINALG::SerialDenseMatrix elematrix;
-      if (elematrix.M() != size)
-        elematrix.Shape(size, size);
+      if (elematrix.numRows() != size)
+        elematrix.shape(size, size);
       else
-        memset(elematrix.A(), 0, size * size * sizeof(double));
+        elematrix.putScalar(0.0);
 
       // initialize element right-hand side vector
       CORE::LINALG::SerialDenseVector elevector;
-      if (elevector.Length() != size)
-        elevector.Size(size);
+      if (elevector.length() != size)
+        elevector.size(size);
       else
-        memset(elevector.Values(), 0, size * sizeof(double));
+        elevector.putScalar(0.0);
 
       // dummy matrix and right-hand side vector
       CORE::LINALG::SerialDenseMatrix elematrix_dummy;

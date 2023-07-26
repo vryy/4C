@@ -254,12 +254,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
 
   if (d_cauchyndir_ds != nullptr)
   {
-    d_cauchyndir_ds->Shape(numnod_, 1);
+    d_cauchyndir_ds->shape(numnod_, 1);
     // get the shape functions
     CORE::LINALG::Matrix<numnod_, 1> shapefunct(true);
     CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
     // calculate DsntDs
-    CORE::LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->A(), true)
+    CORE::LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->values(), true)
         .Update(d_cauchyndir_ds_gp, shapefunct, 1.0);
   }
 }

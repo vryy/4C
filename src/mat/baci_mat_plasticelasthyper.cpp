@@ -16,12 +16,12 @@ rY_13 0.7
 
 /*----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_lib_voigt_notation.H"
 
 /*----------------------------------------------------------------------*/
@@ -207,7 +207,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, (int)tsi);
   bool tsi_eas = dHepDissdTeas_ != Teuchos::null;
   AddtoPack(data, (int)tsi_eas);
-  if (tsi) AddtoPack(data, (int)dHepDissdd_->at(0).M());
+  if (tsi) AddtoPack(data, (int)dHepDissdd_->at(0).numRows());
 
   // dissipation mode
   AddtoPack(data, (int)DisMode());

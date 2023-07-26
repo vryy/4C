@@ -17,13 +17,13 @@ void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
     const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele)
 {
-  for (int gp = 0; gp < gp_data.M(); ++gp)
+  for (int gp = 0; gp < gp_data.numRows(); ++gp)
   {
     const Epetra_BlockMap& elemap = global_data[gp]->Map();
     int lid = elemap.LID(ele->Id());
     if (lid != -1)
     {
-      for (int i = 0; i < gp_data.N(); ++i)
+      for (int i = 0; i < gp_data.numCols(); ++i)
       {
         (*((*global_data[gp])(i)))[lid] += gp_data(gp, i);
       }

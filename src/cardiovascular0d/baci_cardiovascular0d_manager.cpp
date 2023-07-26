@@ -653,16 +653,16 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       curr->second->LocationVector(*actdisc_, lm, lmowner, lmstride);
-      elevector.Size((int)lm.size());
+      elevector.size((int)lm.size());
 
       const int size = (int)lm.size();
-      if (elematrix.M() != size)
-        elematrix.Shape(size, size);
+      if (elematrix.numRows() != size)
+        elematrix.shape(size, size);
       else
-        memset(elematrix.A(), 0, size * size * sizeof(double));
+        elematrix.putScalar(0.0);
       curr->second->EvaluateNeumann(params, *actdisc_, *coupcond, lm, elevector, &elematrix);
       // minus sign here since we sum into fint_ !!
-      elevector.Scale(-1.0);
+      elevector.scale(-1.0);
       if (assvec) CORE::LINALG::Assemble(*systemvector, elevector, lm, lmowner);
       // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus
       // puts a minus infront of the load linearization matrix !!

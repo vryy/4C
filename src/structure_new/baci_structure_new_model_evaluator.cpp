@@ -689,7 +689,7 @@ void STR::ModelEvaluator::UpdateStepState(const double& timefac_n)
   CheckInitSetup();
   /* Reset old structural right hand side.
    * It will be filled within the model evaluators */
-  gstate_ptr_->GetMutableFstructureOld()->Scale(0.0);
+  gstate_ptr_->GetMutableFstructureOld()->PutScalar(0.0);
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
     (*me_iter)->UpdateStepState(timefac_n);

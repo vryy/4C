@@ -115,11 +115,11 @@ void MAT::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
     CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // safety check
-  if ((int)diffpresCoeffs_->size() != dofmat.N())
+  if ((int)diffpresCoeffs_->size() != dofmat.numCols())
     dserror(
         "Number of phases given by the poro singlephase material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.N());
+        phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.numCols());
 
   // fill pressure coefficients into matrix
   for (size_t i = 0; i < diffpresCoeffs_->size(); i++)
@@ -320,11 +320,11 @@ void MAT::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
   const std::vector<int>* presIDs = phaselaw_->PresIds();
 
   // safety check
-  if ((int)presIDs->size() != dofmat.N())
+  if ((int)presIDs->size() != dofmat.numCols())
     dserror(
         "Number of phases given by the poro phase law material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), presIDs->size(), dofmat.N());
+        phaselaw_->Id(), presIDs->size(), dofmat.numCols());
 
   // fill pressure coefficients of phase law into matrix
   for (size_t i = 0; i < presIDs->size(); i++)

@@ -184,7 +184,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
     // with dt*(gamma/alpha_M) = timefac/alpha_F
     // matrix contributions are already scaled correctly with
     // timefac=dt*(gamma*alpha_F/alpha_M)
-    elevec1_epetra.Scale(rhsfac);
+    elevec1_epetra.scale(rhsfac);
   }
   else
   {
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
   }  // loop over integration points
 
   // safety check
-  if (scalars.Length() != 2)
+  if (scalars.length() != 2)
     dserror("Result vector for cell voltage computation has invalid length!");
 
   // write results for electric potential and domain integrals into result vector

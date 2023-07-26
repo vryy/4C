@@ -625,7 +625,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
 
       initParams.set<unsigned int>(
           "faceconsider", static_cast<unsigned int>(faceele->FaceMasterNumber()));
-      if (static_cast<unsigned int>(elevec1.M()) != dofperface) elevec1.Shape(dofperface, 1);
+      if (static_cast<unsigned int>(elevec1.numRows()) != dofperface) elevec1.shape(dofperface, 1);
       std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
 
       bool do_evaluate = false;

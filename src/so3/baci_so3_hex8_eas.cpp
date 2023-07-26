@@ -5,6 +5,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_hex8.H"
 #include "baci_so3_sh8p8.H"
 #include "baci_lib_discret.H"
@@ -13,7 +14,6 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 
 
 /*----------------------------------------------------------------------*
@@ -99,14 +99,14 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
   if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
-  alpha->Reshape(neas_, 1);
-  alphao->Reshape(neas_, 1);
-  feas->Reshape(neas_, 1);
-  Kaainv->Reshape(neas_, neas_);
-  Kaainvo->Reshape(neas_, neas_);
-  Kda->Reshape(neas_, NUMDOF_SOH8);
-  Kdao->Reshape(neas_, NUMDOF_SOH8);
-  eas_inc->Reshape(neas_, 1);
+  alpha->reshape(neas_, 1);
+  alphao->reshape(neas_, 1);
+  feas->reshape(neas_, 1);
+  Kaainv->reshape(neas_, neas_);
+  Kaainvo->reshape(neas_, neas_);
+  Kda->reshape(neas_, NUMDOF_SOH8);
+  Kdao->reshape(neas_, NUMDOF_SOH8);
+  eas_inc->reshape(neas_, 1);
 
   return;
 }
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_mild[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_mild[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_mild[i](0, 0) = r[i];
         M_mild[i](1, 1) = s[i];
         M_mild[i](2, 2) = t[i];
@@ -256,7 +256,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_full[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_full[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_full[i](0, 0) = r[i];
         M_full[i](0, 15) = r[i] * s[i];
         M_full[i](0, 16) = r[i] * t[i];
@@ -308,7 +308,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_sosh8[i](0, 0) = r[i];
         M_sosh8[i](1, 1) = s[i];
         M_sosh8[i](2, 2) = t[i];
@@ -344,7 +344,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
         int e = 0;
         M_sosh8[i](2, e++) = t[i] * t[i] * t[i];
 

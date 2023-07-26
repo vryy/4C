@@ -13,6 +13,7 @@
 /*----------------------------------------------------------------------*/
 // headers
 #include <Teuchos_BLAS.hpp>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 #include "baci_w1.H"
 #include "baci_lib_discret.H"
@@ -26,7 +27,6 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_lib_globalproblem.H"
 #include "baci_contact_analytical.H"
 #include "baci_mat_stvenantkirchhoff.H"
@@ -320,8 +320,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseMatrix* alphao =
             data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
-        blas.COPY(
-            (*alphao).M() * (*alphao).N(), (*alpha).A(), 1, (*alphao).A(), 1);  // alphao := alpha
+        blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alpha).values(), 1,
+            (*alphao).values(),
+            1);  // alphao := alpha
       }
       SolidMaterial()->Update();
       break;
@@ -337,8 +338,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         CORE::LINALG::SerialDenseMatrix* alphao =
             data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
-        blas.COPY(
-            (*alphao).M() * (*alphao).N(), (*alphao).A(), 1, (*alpha).A(), 1);  // alpha := alphao
+        blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alphao).values(), 1,
+            (*alpha).values(),
+            1);  // alpha := alphao
       }
       break;
     }
@@ -447,7 +449,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
-      if (elevec1.Length() < 3) dserror("The given result vector is too short.");
+      if (elevec1.length() < 3) dserror("The given result vector is too short.");
 
       // check material law
       Teuchos::RCP<MAT::Material> mat = Material();
@@ -468,19 +470,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         const int nd = numnode * numdf;
         const int numeps = 4;
         CORE::LINALG::SerialDenseMatrix xjm;
-        xjm.Shape(2, 2);
+        xjm.shape(2, 2);
         double det = 0.0;
         CORE::LINALG::SerialDenseMatrix boplin;
-        boplin.Shape(numeps, nd);
+        boplin.shape(numeps, nd);
         CORE::LINALG::SerialDenseVector F;
-        F.Size(numeps);
+        F.size(numeps);
         CORE::LINALG::SerialDenseVector strain;
-        strain.Size(numeps);
+        strain.size(numeps);
 
         // shape functions, derivatives and integration rule
         CORE::LINALG::SerialDenseVector funct(numnode);
         CORE::LINALG::SerialDenseMatrix deriv;
-        deriv.Shape(2, numnode);
+        deriv.shape(2, numnode);
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
         // get displacements and extract values of this element
@@ -656,9 +658,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
           // compute stress vector and constitutive matrix
           CORE::LINALG::SerialDenseMatrix C;
-          C.Shape(4, 4);
+          C.shape(4, 4);
           CORE::LINALG::SerialDenseMatrix tempstress;
-          tempstress.Shape(4, 4);
+          tempstress.shape(4, 4);
           CORE::LINALG::SerialDenseVector tempstrainerror(4);
           tempstrainerror[0] = strainerror(0, 0);
           tempstrainerror[1] = strainerror(1, 0);
@@ -698,7 +700,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_mass_volume:
     {
       // check length of elevec1
-      if (elevec1.Length() < 6) dserror("The given result vector is too short.");
+      if (elevec1.length() < 6) dserror("The given result vector is too short.");
 
       // declaration of variables
       double volume_ref = 0.0;
@@ -715,8 +717,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
       CORE::LINALG::SerialDenseMatrix xjm;
       CORE::LINALG::SerialDenseMatrix xjmmat;
-      xjm.Shape(2, 2);
-      xjmmat.Shape(2, 2);
+      xjm.shape(2, 2);
+      xjmmat.shape(2, 2);
       double det = 0.0;
       double detmat = 0.0;
       double detcur = 0.0;
@@ -725,7 +727,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // shape functions, derivatives and integration rule
       CORE::LINALG::SerialDenseVector funct(numnode);
       CORE::LINALG::SerialDenseMatrix deriv;
-      deriv.Shape(2, numnode);
+      deriv.shape(2, numnode);
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
       // get displacements and extract values of this element
@@ -747,11 +749,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
       CORE::LINALG::SerialDenseMatrix xmat(2, numnode);
       CORE::LINALG::SerialDenseVector strain;
-      strain.Size(4);
+      strain.size(4);
       CORE::LINALG::SerialDenseMatrix boplin;
-      boplin.Shape(4, 2 * numnode);
+      boplin.shape(4, 2 * numnode);
       CORE::LINALG::SerialDenseVector F;
-      F.Size(4);
+      F.size(4);
 
       for (int k = 0; k < numnode; ++k)
       {
@@ -1061,7 +1063,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
       {
         // calculate reference position of GP
         CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim_);
-        gp_coord.Multiply('T', 'T', 1.0, shapefcts, xrefe, 0.0);
+        gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xrefe, 0.0);
 
         // write coordinates in another datatype
         double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -1142,9 +1144,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).Multiply('T', 'N', 1.0, (*oldKda), res_d, 1.0);
+      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).Multiply('N', 'N', -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
     }  // if (iseas)
   }    // if (*isdefault_step_ptr_)
   /* if it is no default step, we can correct the update and the current eas
@@ -1198,25 +1200,25 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   // general arrays
   CORE::LINALG::SerialDenseVector funct(numnode);
   CORE::LINALG::SerialDenseMatrix deriv;
-  deriv.Shape(2, numnode);
+  deriv.shape(2, numnode);
   CORE::LINALG::SerialDenseMatrix xjm;
-  xjm.Shape(2, 2);
+  xjm.shape(2, 2);
   CORE::LINALG::SerialDenseMatrix boplin;
-  boplin.Shape(4, 2 * numnode);
+  boplin.shape(4, 2 * numnode);
   CORE::LINALG::SerialDenseVector F;
-  F.Size(4);
+  F.size(4);
   CORE::LINALG::SerialDenseVector strain;
-  strain.Size(4);
+  strain.size(4);
   double det;
   CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
   CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
   CORE::LINALG::SerialDenseMatrix b_cure;
-  b_cure.Shape(numeps, nd);
+  b_cure.shape(numeps, nd);
   CORE::LINALG::SerialDenseMatrix stress;
-  stress.Shape(4, 4);
+  stress.shape(4, 4);
   CORE::LINALG::SerialDenseMatrix C;
-  C.Shape(4, 4);
+  C.shape(4, 4);
 
   // for EAS, in any case declare variables, sizes etc. only in eascase
   CORE::LINALG::SerialDenseMatrix* alpha = NULL;      // EAS alphas
@@ -1248,11 +1250,11 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   if (structale_ == true)
   {
-    xmat.Shape(2, numnode);
-    xjmmat.Shape(2, 2);
-    boplinmat.Shape(4, 2 * numnode);
-    Fmat.Size(4);
-    FFmatinv.Size(4);
+    xmat.shape(2, numnode);
+    xjmmat.shape(2, 2);
+    boplinmat.shape(4, 2 * numnode);
+    Fmat.size(4);
+    FFmatinv.size(4);
   }
 
   // ------------------------------------ check calculation of mass matrix
@@ -1296,19 +1298,19 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   if (iseas_)
   {
     // allocate EAS quantities
-    F_enh.Shape(4, 1);
-    F_tot.Shape(4, 3);
-    p_stress.Shape(4, 1);
-    xjm0.Shape(2, 2);
-    F0.Size(4);
-    boplin0.Shape(4, 2 * numnode);
-    W0.Shape(4, 2 * numnode);
-    G.Shape(4, Wall1::neas_);
-    Z.Shape(2 * numnode, Wall1::neas_);
-    FCF.Shape(4, 4);
-    Kda.Shape(2 * numnode, Wall1::neas_);
-    Kaa.Shape(Wall1::neas_, Wall1::neas_);
-    feas.Size(Wall1::neas_);
+    F_enh.shape(4, 1);
+    F_tot.shape(4, 3);
+    p_stress.shape(4, 1);
+    xjm0.shape(2, 2);
+    F0.size(4);
+    boplin0.shape(4, 2 * numnode);
+    W0.shape(4, 2 * numnode);
+    G.shape(4, Wall1::neas_);
+    Z.shape(2 * numnode, Wall1::neas_);
+    FCF.shape(4, 4);
+    Kda.shape(2 * numnode, Wall1::neas_);
+    Kaa.shape(Wall1::neas_, Wall1::neas_);
+    feas.size(Wall1::neas_);
 
     /*
     ** EAS Update of alphas:
@@ -1336,9 +1338,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).Multiply('T', 'N', 1.0, (*oldKda), res_d, 1.0);
+      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).Multiply('N', 'N', -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
     }  // if (not IsInterface())
     /* end of EAS Update ******************/
 
@@ -1564,21 +1566,24 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     if (iseas_ == true)
     {
       // we need the inverse of Kaa
-      Epetra_SerialDenseSolver solve_for_inverseKaa;
-      solve_for_inverseKaa.SetMatrix(Kaa);
-      solve_for_inverseKaa.Invert();
+      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
+      solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
+      solve_for_inverseKaa.invert();
 
 
       CORE::LINALG::SerialDenseMatrix KdaKaa(
           2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
-      KdaKaa.Multiply('N', 'N', 1.0, Kda, Kaa, 1.0);
+      KdaKaa.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Kda, Kaa, 1.0);
 
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      if (stiffmatrix) (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, Kda, 1.0);
+      if (stiffmatrix)
+        (*stiffmatrix).multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, KdaKaa, Kda, 1.0);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      if (force) (*force).Multiply('N', 'N', -1.0, KdaKaa, feas, 1.0);
+      if (force) (*force).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, KdaKaa, feas, 1.0);
 
       // store current EAS data in history
       for (int i = 0; i < Wall1::neas_; ++i)
@@ -1616,25 +1621,25 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   // general arrays
   CORE::LINALG::SerialDenseVector funct(numnode);
   CORE::LINALG::SerialDenseMatrix deriv;
-  deriv.Shape(2, numnode);
+  deriv.shape(2, numnode);
   CORE::LINALG::SerialDenseMatrix xjm;
-  xjm.Shape(2, 2);
+  xjm.shape(2, 2);
   CORE::LINALG::SerialDenseMatrix boplin;
-  boplin.Shape(4, 2 * numnode);
+  boplin.shape(4, 2 * numnode);
   CORE::LINALG::SerialDenseVector F;
-  F.Size(4);
+  F.size(4);
   CORE::LINALG::SerialDenseVector strain;
-  strain.Size(4);
+  strain.size(4);
   double det;
   CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
   CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
   CORE::LINALG::SerialDenseMatrix b_cure;
-  b_cure.Shape(numeps, nd);
+  b_cure.shape(numeps, nd);
   CORE::LINALG::SerialDenseMatrix stress;
-  stress.Shape(4, 4);
+  stress.shape(4, 4);
   CORE::LINALG::SerialDenseMatrix C;
-  C.Shape(4, 4);
+  C.shape(4, 4);
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
@@ -1792,7 +1797,7 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(const CORE::LINALG::SerialDenseMatr
     const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
-  memset(xjm.A(), 0, xjm.N() * xjm.M() * sizeof(double));
+  xjm.putScalar(0.0);
 
   for (int k = 0; k < iel; k++)
   {
@@ -1867,7 +1872,7 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(CORE::LINALG::SerialDenseVector& F,
         |      Uy,X  |
   */
 
-  memset(F.A(), 0, F.N() * F.M() * sizeof(double));
+  F.putScalar(0.0);
 
   F[0] = 1;
   F[1] = 1;
@@ -1916,7 +1921,7 @@ void DRT::ELEMENTS::Wall1::w1_defgradmat(CORE::LINALG::SerialDenseVector& F,
         |      Uy,X  |
   */
 
-  memset(Fmat.A(), 0, Fmat.N() * Fmat.M() * sizeof(double));
+  Fmat.putScalar(0.0);
 
   Fmat[0] = 1;
   Fmat[1] = 1;
@@ -1933,7 +1938,7 @@ void DRT::ELEMENTS::Wall1::w1_defgradmat(CORE::LINALG::SerialDenseVector& F,
   double detFmat = Fmat[0] * Fmat[1] - Fmat[2] * Fmat[3];
 
   CORE::LINALG::SerialDenseVector Fmatinv;
-  Fmatinv.Size(4);
+  Fmatinv.size(4);
 
   // inverse of Fmat
   Fmatinv[0] = 1 / detFmat * Fmat[1];
@@ -1968,7 +1973,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cur
     const int numeps, const int nd)
 {
   CORE::LINALG::SerialDenseMatrix Fmatrix;
-  Fmatrix.Shape(4, 4);
+  Fmatrix.shape(4, 4);
 
 
   /*---------------------------write Vector F as a matrix Fmatrix*/
@@ -1987,7 +1992,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cur
   Fmatrix(3, 3) = 0.5 * F[1];
 
   /*-------------------------------------------------int_b_cure operator*/
-  memset(b_cure.A(), 0, b_cure.N() * b_cure.M() * sizeof(double));
+  b_cure.putScalar(0.0);
   for (int i = 0; i < numeps; i++)
     for (int j = 0; j < nd; j++)
       for (int k = 0; k < numeps; k++) b_cure(i, j) += Fmatrix(k, i) * boplin(k, j);
@@ -2068,7 +2073,7 @@ void DRT::ELEMENTS::Wall1::w1_fint(const CORE::LINALG::SerialDenseMatrix& stress
 
 {
   CORE::LINALG::SerialDenseVector st;
-  st.Size(4);
+  st.size(4);
 
   st[0] = fac * stress(0, 0);
   st[1] = fac * stress(1, 1);
@@ -2091,10 +2096,10 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
   if (emass != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -2129,11 +2134,11 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
 
   // PK1 stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix pk1stress(2, 2);
-  pk1stress.Multiply('N', 'T', 1.0 / detf, pk2stress, defgrad, 0.0);
+  pk1stress.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0 / detf, pk2stress, defgrad, 0.0);
 
   // Cauchy stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix cauchystress(2, 2);
-  cauchystress.Multiply('N', 'N', 1.0, defgrad, pk1stress, 0.0);
+  cauchystress.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, defgrad, pk1stress, 0.0);
 
   // copy results to array for output
   (*elestress)(ip, 0) = cauchystress(0, 0);
@@ -2204,14 +2209,14 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   if (iseas_)
   {
     // allocate EAS quantities
-    Fenhv.Shape(4, 1);
-    Fm.Shape(4, 3);
-    Xjm0.Shape(2, 2);
-    Fuv0.Size(4);
-    boplin0.Shape(4, edof);
-    W0.Shape(4, edof);
-    G.Shape(4, Wall1::neas_);
-    Z.Shape(edof, Wall1::neas_);
+    Fenhv.shape(4, 1);
+    Fm.shape(4, 3);
+    Xjm0.shape(2, 2);
+    Fuv0.size(4);
+    boplin0.shape(4, edof);
+    W0.shape(4, edof);
+    G.shape(4, Wall1::neas_);
+    Z.shape(edof, Wall1::neas_);
 
     // get alpha of last converged state
     alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");
@@ -2277,7 +2282,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   else if (energies)  // old structural time integration
   {
     // check length of elevec1
-    if ((*energies).Length() < 1) dserror("The given result vector is too short.");
+    if ((*energies).length() < 1) dserror("The given result vector is too short.");
 
     (*energies)(0) += internal_energy;
   }

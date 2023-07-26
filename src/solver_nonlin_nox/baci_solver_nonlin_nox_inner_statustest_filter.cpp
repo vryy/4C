@@ -85,8 +85,8 @@ NOX::NLN::INNER::StatusTest::Filter::Filter(const FilterParams& fparams, const N
 
   Point::setMarginSafetyFactors();
 
-  model_lin_terms_.Resize(Point::num_coords_);
-  model_mixed_terms_.Resize(Point::num_coords_);
+  model_lin_terms_.resize(Point::num_coords_);
+  model_mixed_terms_.resize(Point::num_coords_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -124,15 +124,16 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers()
   else
     std::fill(isvalid_scaling_.begin(), isvalid_scaling_.end(), false);
 
-  scale_.LightResize(num_coords_);
+  scale_.resize(num_coords_);
 
   // initialize the scale_ vector
-  std::fill(scale_.A(), scale_.A() + num_coords_, 1.0);
+  std::fill(scale_.values(), scale_.values() + num_coords_, 1.0);
 
   const unsigned num_theta = num_coords_ - num_obj_coords_;
-  global_scaled_max_thetas_.LightResize(num_theta);
+  global_scaled_max_thetas_.resize(num_theta);
 
-  std::fill(global_scaled_max_thetas_.A(), global_scaled_max_thetas_.A() + num_theta, 0.0);
+  std::fill(
+      global_scaled_max_thetas_.values(), global_scaled_max_thetas_.values() + num_theta, 0.0);
 
   clearFilterPointRegister();
 }
@@ -146,11 +147,12 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::resetStaticMembers(const unsign
   num_obj_coords_ = num_obj_coords;
   num_coords_ = num_theta_coords + num_obj_coords;
 
-  weights_.LightResize(num_coords_);
+  weights_.resize(num_coords_);
 
   // initialize the weights vector
-  std::fill(weights_.A(), weights_.A() + num_obj_coords_, weight_objective_func);
-  std::fill(weights_.A() + num_obj_coords_, weights_.A() + num_coords_, weight_infeasibility_func);
+  std::fill(weights_.values(), weights_.values() + num_obj_coords_, weight_objective_func);
+  std::fill(weights_.values() + num_obj_coords_, weights_.values() + num_coords_,
+      weight_infeasibility_func);
 
   global_init_max_theta_scale_ = init_max_theta_scale;
 
@@ -170,9 +172,9 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::reinitFilter(
   Teuchos::RCP<Point> point_ptr = Teuchos::rcp(new Point);
   Point& point = *point_ptr;
 
-  const unsigned num_thetas = global_scaled_max_thetas_.Length();
-  std::copy(global_scaled_max_thetas_.A(), global_scaled_max_thetas_.A() + num_thetas,
-      point.coords_.A() + num_obj_coords_);
+  const unsigned num_thetas = global_scaled_max_thetas_.length();
+  std::copy(global_scaled_max_thetas_.values(), global_scaled_max_thetas_.values() + num_thetas,
+      point.coords_.values() + num_obj_coords_);
 
   point.max_theta_id_ = infeasibility_func.findMaxThetaId(point.A() + Point::num_obj_coords_);
 
@@ -252,7 +254,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::scaleCoordinateOfAllRegisteredF
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Filter::Point::scaleMaxThetaValues(const double& fac)
 {
-  const unsigned length = static_cast<unsigned>(global_scaled_max_thetas_.Length());
+  const unsigned length = static_cast<unsigned>(global_scaled_max_thetas_.length());
   for (unsigned i = 0; i < length; ++i) global_scaled_max_thetas_(i) *= fac;
 }
 
@@ -275,7 +277,7 @@ void NOX::NLN::INNER::StatusTest::Filter::Point::setInitialScaledMaxThetaValue(
  *----------------------------------------------------------------------------*/
 void NOX::NLN::INNER::StatusTest::Filter::Point::scale()
 {
-  for (int i = 0; i < coords_.Length(); ++i)
+  for (int i = 0; i < coords_.length(); ++i)
   {
     if (coords_(i) != 0.0)
     {
@@ -343,7 +345,7 @@ bool NOX::NLN::INNER::StatusTest::Filter::Point::IsSufficientlyReducedComparedTo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::INNER::StatusTest::Filter::Point::setNorm() { norm_ = coords_.Norm2(); }
+void NOX::NLN::INNER::StatusTest::Filter::Point::setNorm() { norm_ = CORE::LINALG::Norm2(coords_); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1123,7 +1125,7 @@ unsigned NOX::NLN::INNER::StatusTest::Filter::Prefiltering(const Point& trial_fp
    * thereon. */
   static bool skip_prefiltering = false;
   const double* min_coord =
-      std::min_element(trial_fp.coords_.A(), trial_fp.coords_.A() + trial_fp.num_coords_);
+      std::min_element(trial_fp.coords_.values(), trial_fp.coords_.values() + trial_fp.num_coords_);
   if (!skip_prefiltering and *min_coord < 0.0)
   {
     skip_prefiltering = true;
@@ -1215,8 +1217,8 @@ void NOX::NLN::INNER::StatusTest::Filter::SetupModelTerms(const NOX::Abstract::V
   else
     dserror("Currently unsupported merit function type: \"%s\"", merit_func.name().c_str());
 
-  theta_.computeSlope(dir, grp, model_lin_terms_.A() + Point::num_obj_coords_);
-  theta_.computeMixed2ndOrderTerms(dir, grp, model_mixed_terms_.A() + Point::num_obj_coords_);
+  theta_.computeSlope(dir, grp, model_lin_terms_.values() + Point::num_obj_coords_);
+  theta_.computeMixed2ndOrderTerms(dir, grp, model_mixed_terms_.values() + Point::num_obj_coords_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1230,7 +1232,7 @@ void NOX::NLN::INNER::StatusTest::Filter::ComputeMinimalStepLengthEstimates()
   /* compute minimal step length estimate based on the 2nd constraint violation
    * filter acceptability check */
   amin_theta_ = theta_.minimalStepLengthEstimate(curr_points_.first->A() + Point::num_obj_coords_,
-      model_lin_terms_.A() + Point::num_obj_coords_);
+      model_lin_terms_.values() + Point::num_obj_coords_);
 
   /* compute minimal step length estimate based on the f-type switching condition */
   amin_ftype_ = 1.0;
@@ -1618,7 +1620,7 @@ std::ostream& NOX::NLN::INNER::StatusTest::Filter::Print(std::ostream& stream, i
   }
   stream << " };\n";
   stream << par_indent << "Global Max Theta = { ";
-  for (int i = 0; i < Point::global_scaled_max_thetas_.Length(); ++i)
+  for (int i = 0; i < Point::global_scaled_max_thetas_.length(); ++i)
   {
     if (i != 0) stream << ", ";
     stream << NOX::Utils::sciformat(Point::global_scaled_max_thetas_(i), OUTPUT_PRECISION);

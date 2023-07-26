@@ -142,10 +142,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot2(true);
 
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->Shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->Shape(dim2, dim2);
+  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
 
 
   // compute the values for element residual vectors ('force') and linearizations ('stiff')
@@ -181,13 +181,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   // resize variables and fill with pre-computed values
   if (forcevec1 != NULL)
   {
-    forcevec1->Size(dim1);
+    forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
       (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(force_pot1(i));
   }
   if (forcevec2 != NULL)
   {
-    forcevec2->Size(dim2);
+    forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
       (*forcevec2)(i) = CORE::FADUTILS::CastToDouble(force_pot2(i));
   }
@@ -3383,10 +3383,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     CORE::LINALG::SerialDenseMatrix& stiffmat11, CORE::LINALG::SerialDenseMatrix& stiffmat12,
     CORE::LINALG::SerialDenseMatrix& stiffmat21, CORE::LINALG::SerialDenseMatrix& stiffmat22) const
 {
-  stiffmat11.Scale(scalefactor);
-  stiffmat12.Scale(scalefactor);
-  stiffmat21.Scale(scalefactor);
-  stiffmat22.Scale(scalefactor);
+  stiffmat11.scale(scalefactor);
+  stiffmat12.scale(scalefactor);
+  stiffmat21.scale(scalefactor);
+  stiffmat22.scale(scalefactor);
 }
 
 /*-----------------------------------------------------------------------------------------------*

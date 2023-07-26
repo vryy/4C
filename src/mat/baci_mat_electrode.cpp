@@ -14,7 +14,7 @@
 
 #include "baci_lib_globalproblem.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -133,12 +133,14 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       }
 
       // solve for third-order coefficients for cubic spline interpolation
-      Epetra_SerialDenseSolver solver;
-      solver.SetMatrix(A);
-      solver.SetVectors(M, B);
-      solver.FactorWithEquilibration(true);
-      solver.SolveToRefinedSolution(true);
-      if (solver.Factor() or solver.Solve())
+      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
+      solver.setMatrix(Teuchos::rcpFromRef(A));
+      solver.setVectors(Teuchos::rcpFromRef(M), Teuchos::rcpFromRef(B));
+      solver.factorWithEquilibration(true);
+      solver.solveToRefinedSolution(true);
+      if (solver.factor() or solver.solve())
         dserror("Solution of linear system of equations failed!");
 
       // fill coefficient vectors

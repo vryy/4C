@@ -117,7 +117,7 @@ namespace CORE::GEO
       std::copy(x, x + dim, &xyze(0, inode));
       // fill the remaining entries of the column with zeros, if the given matrix has
       // the wrong row dimension (this is primarily for safety reasons)
-      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.M(), 0.0);
+      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.numRows(), 0.0);
     }
     return;
   }

@@ -22,19 +22,9 @@
 #include "baci_mat_fluid_murnaghantait.H"
 
 #include <Teuchos_BLAS.hpp>
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_LAPACK.hpp>
 
-
-
-namespace
-{
-  void zeroMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
-  {
-    // Fills a certain memory space (MxN) with zeros
-    std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
-  }
-}  // namespace
 
 
 /*----------------------------------------------------------------------*
@@ -161,8 +151,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     UpdateSecondarySolution(*ele, discretization, localSolver_->gUpd, localSolver_->upUpd);
   }
 
-  zeroMatrix(elemat1);
-  zeroMatrix(elevec1);
+  elemat1.putScalar(0.0);
+  elevec1.putScalar(0.0);
   localSolver_->ComputeInteriorResidual(mat, interiorVal_, interiorAcc_, traceVal_[0], ebofoaf_,
       interiorebofoaf_, elevec1, interiorecorrectionterm_, interiorebodyforce_);
   localSolver_->ComputeInteriorMatrices(mat, updateLocally);
@@ -178,7 +168,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
   localSolver_->CondenseLocalPart(elemat1, elevec1);
 
   if (not localSolver_->fldparatimint_->IsStationary())
-    elevec1.Scale(1. / localSolver_->fldparatimint_->AlphaF());
+    elevec1.scale(1. / localSolver_->fldparatimint_->AlphaF());
 
   return 0;
 }
@@ -215,7 +205,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
-  dsassert(localDofs.size() == static_cast<std::size_t>(updateG.Length() + updateUp.Length()),
+  dsassert(localDofs.size() == static_cast<std::size_t>(updateG.length() + updateUp.length()),
       "Internal error");
 
   // update vector content by making the vector writeable (need to adjust in calling site before
@@ -414,8 +404,9 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   shapes_->Evaluate(*ele);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.M() == 0 ||
-               elevec2.M() == static_cast<int>((nsd_ * nsd_ + nsd_ + 1) * shapes_->ndofs_ + 1),
+  dsassert(
+      elevec2.numRows() == 0 ||
+          elevec2.numRows() == static_cast<int>((nsd_ * nsd_ + nsd_ + 1) * shapes_->ndofs_ + 1),
       "Wrong size in project vector 2");
 
   // get initial function and current time
@@ -426,13 +417,13 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   // AVeraGePREssure is used to sum all the contributions of every point to the
   // pressure and VOLume is used to compute the volume size
   double avgpre = 0., vol = 0.;
-  if (elevec2.M() > 0)
+  if (elevec2.numRows() > 0)
   {
     // Create the local matrix from starting at the addres where elevec2 is with the right shape
     CORE::LINALG::SerialDenseMatrix localMat(
-        View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
+        Teuchos::View, elevec2.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
     // Initialize matrix to zeros
-    zeroMatrix(localMat);
+    localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     // nqpoints_ is the number of quadrature points
@@ -506,21 +497,23 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // Instead of computing the integral of the product here we are multiplying
     // the previously compute part of the integral to give the same result
     // In this way we avoid a cycle through the shape functions
-    localSolver_->massMat.Multiply(
-        'N', 'T', 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    localSolver_->massMat.multiply(
+        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
 
     // Creating and solving a system of the form Ax = b where
     // A is a matrix and x and b are vectors
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    Epetra_SerialDenseSolver inverseMass;
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
     // Setting A matrix
-    inverseMass.SetMatrix(localSolver_->massMat);
+    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
     // localMat is, in this case, used both as the RHS and as the unknown vector
     // localMat is placed in the memory where elevec2 was and therefore it takes
     // its place as result vector
-    inverseMass.SetVectors(localMat, localMat);
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
     // Solving
-    inverseMass.Solve();
+    inverseMass.solve();
   }
 
   // Here we have the projection of the field on the trace
@@ -531,8 +524,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
-  dsassert(elevec1.M() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
-               elevec1.M() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
+  dsassert(elevec1.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
+               elevec1.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   const unsigned int* faceConsider = params.getPtr<unsigned int>("faceconsider");
@@ -562,8 +555,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // It is necessary to create a matrix and a trVec for each face because the
     // dimensions of each face can differ from the previous one and the jacobian
     // contains the dimension of the face in it.
-    zeroMatrix(mass);
-    zeroMatrix(trVec);
+    mass.putScalar(0.0);
+    trVec.putScalar(0.0);
 
     // For each quadrature point we evaluate the velocity value and the shape functions
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
@@ -629,12 +622,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     }
 
     // Solving step, nothing fancy
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(mass);
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     // In this cas trVec is a proper vector and not a matrix used as multiple
     // RHS vectors
-    inverseMass.SetVectors(trVec, trVec);
-    inverseMass.Solve();
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.solve();
 
     // In this case we fill elevec1 with the values of trVec because we have not
     // defined trVec as a matrix beginning where elevec1 begins
@@ -666,7 +661,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 {
   InitializeShapes(ele);
   // Check if the vector has the correct size
-  dsassert(elevec1.M() == (int)nen_ * (2 * nsd_ + 1) + 1, "Vector does not have correct size");
+  dsassert(
+      elevec1.numRows() == (int)nen_ * (2 * nsd_ + 1) + 1, "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
@@ -698,7 +694,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
     solvalues[i] = (*matrix_state)[lid];
   }
 
-  elevec1.Scale(0.);
+  elevec1.putScalar(0.0);
 
   // EVALUATE SHAPE POLYNOMIALS IN NODE
   // In hdg we can have several more points inside the element than in the
@@ -856,7 +852,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze);
 
   const int numsamppoints = 5;
-  dsassert(elevec1.M() == numsamppoints * numsamppoints * numsamppoints * 6,
+  dsassert(elevec1.numRows() == numsamppoints * numsamppoints * numsamppoints * 6,
       "Vector does not have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
@@ -921,14 +917,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
     CORE::LINALG::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
-  //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
-  //  correct size");
+  //  dsassert(elevec1.numRows() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not
+  //  have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
 #ifdef DEBUG
-  locations.Shape(3, 125);
+  locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
     for (int j = 0; j < numsamppoints; j++)
@@ -966,11 +962,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   shapes_->Evaluate(*ele);
 
 
-  if (elevec1.M() > 0)
+  if (elevec1.numRows() > 0)
   {
     CORE::LINALG::SerialDenseMatrix localMat(
-        View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
-    zeroMatrix(localMat);
+        Teuchos::View, elevec1.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
+    localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1014,14 +1010,16 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    localSolver_->massMat.Multiply(
-        'N', 'T', 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    localSolver_->massMat.multiply(
+        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(localSolver_->massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.solve();
   }
 
   return 0;
@@ -1036,14 +1034,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
     CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   const int numsamppoints = 5;
-  //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
-  //  correct size");
+  //  dsassert(elevec1.numRows() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not
+  //  have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   CORE::LINALG::SerialDenseMatrix locations;
 #ifdef DEBUG
-  locations.Shape(3, 125);
+  locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
     for (int j = 0; j < numsamppoints; j++)
@@ -1076,11 +1074,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   shapes_->Evaluate(*ele);
 
 
-  if (elevec1.M() > 0)
+  if (elevec1.numRows() > 0)
   {
     CORE::LINALG::SerialDenseMatrix localMat(
-        View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
-    zeroMatrix(localMat);
+        Teuchos::View, elevec1.values(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1);
+    localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -1124,28 +1122,30 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    localSolver_->massMat.Multiply(
-        'N', 'T', 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    localSolver_->massMat.multiply(
+        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(localSolver_->massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.solve();
   }
 
   // traces
   CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
-  dsassert(elevec3.M() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
-               elevec3.M() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
+  dsassert(elevec3.numRows() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
+               elevec3.numRows() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
     shapesface_->EvaluateFace(*ele, face);
-    zeroMatrix(mass);
-    zeroMatrix(trVec);
+    mass.putScalar(0.0);
+    trVec.putScalar(0.0);
 
     CORE::LINALG::Matrix<nsd_, nsd_> trafo;
     CORE::LINALG::SerialDenseMatrix faceQPoints;
@@ -1186,10 +1186,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
       }
     }
 
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(mass);
-    inverseMass.SetVectors(trVec, trVec);
-    inverseMass.Solve();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.solve();
 
 
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -1383,10 +1385,10 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
       shapes_(shapeValues),
       shapesface_(shapeValuesFace)
 {
-  uuMat.Shape((nsd_ + 1) * ndofs_ + 1, (nsd_ + 1) * ndofs_ + 1);
-  uuMatFinal.Shape((nsd_ + 1) * ndofs_ + 1, (nsd_ + 1) * ndofs_ + 1);
-  guMat.Shape(nsd_ * ndofs_, ndofs_);
-  ugMat.Shape(nsd_ * ndofs_, ndofs_);
+  uuMat.shape((nsd_ + 1) * ndofs_ + 1, (nsd_ + 1) * ndofs_ + 1);
+  uuMatFinal.shape((nsd_ + 1) * ndofs_ + 1, (nsd_ + 1) * ndofs_ + 1);
+  guMat.shape(nsd_ * ndofs_, ndofs_);
+  ugMat.shape(nsd_ * ndofs_, ndofs_);
 
   int onfdofs = 0;
   for (unsigned int i = 0; i < nfaces_; ++i)
@@ -1396,31 +1398,31 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(const DRT::ELE
   }
   onfdofs *= nsd_;
 
-  gfMat.Shape(nsd_ * nsd_ * ndofs_, 1 + onfdofs);
-  fgMat.Shape(gfMat.N(), gfMat.M());
-  ufMat.Shape((nsd_ + 1) * ndofs_ + 1, 1 + onfdofs);
-  fuMat.Shape(ufMat.N(), ufMat.M());
+  gfMat.shape(nsd_ * nsd_ * ndofs_, 1 + onfdofs);
+  fgMat.shape(gfMat.numCols(), gfMat.numRows());
+  ufMat.shape((nsd_ + 1) * ndofs_ + 1, 1 + onfdofs);
+  fuMat.shape(ufMat.numCols(), ufMat.numRows());
 
-  massPart.Shape(ndofs_, shapes_.nqpoints_);
-  massPartW.Shape(ndofs_, shapes_.nqpoints_);
-  gradPart.Shape(nsd_ * ndofs_, shapes_.nqpoints_);
-  uPart.Shape(ndofs_ * nsd_, shapes_.nqpoints_);
+  massPart.shape(ndofs_, shapes_.nqpoints_);
+  massPartW.shape(ndofs_, shapes_.nqpoints_);
+  gradPart.shape(nsd_ * ndofs_, shapes_.nqpoints_);
+  uPart.shape(ndofs_ * nsd_, shapes_.nqpoints_);
 
-  massMat.Shape(ndofs_, ndofs_);
-  uuconv.Shape(ndofs_ * nsd_, ndofs_ * nsd_);
-  tmpMat.Shape(ndofs_ * nsd_, ndofs_ * nsd_);
-  tmpMatGrad.Shape(nsd_ * ndofs_, ndofs_);
+  massMat.shape(ndofs_, ndofs_);
+  uuconv.shape(ndofs_ * nsd_, ndofs_ * nsd_);
+  tmpMat.shape(ndofs_ * nsd_, ndofs_ * nsd_);
+  tmpMatGrad.shape(nsd_ * ndofs_, ndofs_);
 
-  velnp.Shape(nsd_, shapes_.nqpoints_);
+  velnp.shape(nsd_, shapes_.nqpoints_);
 
-  uucomp.Shape(ndofs_, (nsd_ + 1) * ndofs_);
-  presnp.Resize(shapes_.nqpoints_);
-  gradpresnp.Shape(nsd_, shapes_.nqpoints_);
+  uucomp.shape(ndofs_, (nsd_ + 1) * ndofs_);
+  presnp.resize(shapes_.nqpoints_);
+  gradpresnp.shape(nsd_, shapes_.nqpoints_);
 
-  gRes.Resize(nsd_ * nsd_ * ndofs_);
-  upRes.Resize((nsd_ + 1) * ndofs_ + 1);
-  gUpd.Resize(nsd_ * nsd_ * ndofs_);
-  upUpd.Resize((nsd_ + 1) * ndofs_ + 1);
+  gRes.resize(nsd_ * nsd_ * ndofs_);
+  upRes.resize((nsd_ + 1) * ndofs_ + 1);
+  gUpd.resize(nsd_ * nsd_ * ndofs_);
+  upUpd.resize((nsd_ + 1) * ndofs_ + 1);
 
   // pointer to class FluidEleParameter (access to the general parameter)
   fldparatimint_ = Teuchos::rcp(DRT::ELEMENTS::FluidEleParameterTimInt::Instance(), false);
@@ -1445,8 +1447,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
   weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
                         physicaltype == INPAR::FLUID::weakly_compressible_stokes);
 
-  zeroMatrix(gRes);
-  zeroMatrix(upRes);
+  gRes.putScalar(0.0);
+  upRes.putScalar(0.0);
 
   // extract lambda_np
   double lambdanp = val[(nsd_ * nsd_ + nsd_ + 1) * ndofs_];
@@ -1664,26 +1666,25 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
   // Decide if the stokes part has to be inverted
   if (stokes)
     // Only invert the convective part
-    zeroMatrix(uuconv);
+    uuconv.putScalar(0.0);
 
   // the matrix must be reset in order to not sum the contributions twice from the 2nd iteration on
-  zeroMatrix(uucomp);
+  uucomp.putScalar(0.0);
 
   // The whole convective par thas to be recalculated
   if (!evaluateOnlyNonlinear)
   {
-    zeroMatrix(fgMat);
-    zeroMatrix(gfMat);
-    zeroMatrix(uuMat);
-    zeroMatrix(fuMat);
-    zeroMatrix(ufMat);
+    fgMat.putScalar(0.0);
+    gfMat.putScalar(0.0);
+    uuMat.putScalar(0.0);
+    fuMat.putScalar(0.0);
+    ufMat.putScalar(0.0);
   }
   // If only the convective part has to be recalculated do this
   else
   {
-    std::memset(
-        fuMat.A(), 0, sizeof(double) * fuMat.M() * ndofs_ * nsd_);  // clear only velocity part
-    for (int f = 0; f < ufMat.N(); ++f)
+    CORE::LINALG::Zero(fuMat, fuMat.numRows() * ndofs_ * nsd_);  // clear only velocity part
+    for (int f = 0; f < ufMat.numCols(); ++f)
       for (unsigned int i = 0; i < nsd_ * ndofs_; ++i) ufMat(i, f) = 0.;
   }
 
@@ -1837,18 +1838,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
   if (!evaluateOnlyNonlinear)
   {
     // multiplication of the shapes functions times the shapes functions weighted
-    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
     // multiplication of the shapes functions derivatices
     // times the shapes functions weighted
-    guMat.Multiply('N', 'T', 1., gradPart, massPartW, 0.);
+    guMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., gradPart, massPartW, 0.);
     ugMat = guMat;
     // scalar multiplication of the matrix times the viscosity
-    ugMat.Scale(viscosity);
+    ugMat.scale(viscosity);
   }
   if (!stokes)
   {
     // this matrix is the nonlinear part of the problem
-    uuconv.Multiply('N', 'T', 1., gradPart, uPart, 0.);
+    uuconv.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., gradPart, uPart, 0.);
 
     // compute convection: Need to add diagonal part and transpose off-diagonal blocks
     // (same trick as done when eliminating the velocity gradient)
@@ -1932,8 +1933,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
   }
   velnorm = std::sqrt(velnorm / vol);
 
-  fvelnp.Shape(nsd_, shapesface_.nqpoints_);
-  ifpresnp.Resize(shapesface_.nqpoints_);
+  fvelnp.shape(nsd_, shapesface_.nqpoints_);
+  ifpresnp.resize(shapesface_.nqpoints_);
 
   // interpolate the boundary values onto face quadrature points
   for (unsigned int q = 0; q < shapesface_.nqpoints_; ++q)
@@ -2067,8 +2068,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
   weaklycompressible = (physicaltype == INPAR::FLUID::weakly_compressible ||
                         physicaltype == INPAR::FLUID::weakly_compressible_stokes);
 
-  trMat.Shape(ndofs_ * nsd_, shapesface_.nfdofs_);
-  trMatAvg.Shape(ndofs_ * nsd_, shapesface_.nfdofs_);
+  trMat.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
+  trMatAvg.shape(ndofs_ * nsd_, shapesface_.nfdofs_);
 
   if (mat->MaterialType() != INPAR::MAT::m_fluid and
       mat->MaterialType() != INPAR::MAT::m_fluid_murnaghantait)
@@ -2230,16 +2231,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
 
   // invert mass matrix. Inverse will be stored in massMat, too
   {
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(massMat);
-    inverseMass.Invert();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+    inverseMass.invert();
   }
 
   // add contribution of mass matrix to velocity/pressure part
   // create UG * diag(M^{-1}) * GU,
 
   // compute UG * M^{-1}, store result in tmpMatGrad
-  tmpMatGrad.Multiply('N', 'N', 1.0, ugMat, massMat, 0.);
+  tmpMatGrad.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, ugMat, massMat, 0.);
 
   // GU and UG are not fully generated, instead, only three different blocks are kept
   // to compute UG * M^{-1} * GU, therefore compute the product of reduced matrices
@@ -2250,7 +2253,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
   // diagonal blocks.
 
   // compute (UG * M^{-1}) * GU
-  tmpMat.Multiply('N', 'T', 1., tmpMatGrad, guMat, 0.);
+  tmpMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., tmpMatGrad, guMat, 0.);
   for (unsigned int i = 0; i < ndofs_; ++i)
     for (unsigned int j = 0; j < ndofs_; ++j)
     {
@@ -2334,17 +2337,18 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
   // factorize uuMatFinal and solve. do not use CORE::LINALG::FixedSizeSerialDenseSolver because
   // we want to solve twice and reuse the factorization
   Teuchos::LAPACK<int, double> lapack;
-  const int size = uuMatFinal.M();
+  const int size = uuMatFinal.numRows();
   pivots.resize(size);
   int errnum;
-  lapack.GETRF(size, size, uuMatFinal.A(), size, pivots.data(), &errnum);
+  lapack.GETRF(size, size, uuMatFinal.values(), size, pivots.data(), &errnum);
   if (errnum > 0)
   {
-    uuMatFinal.Print(std::cout);
-    uuMat.Print(std::cout);
+    uuMatFinal.print(std::cout);
+    uuMat.print(std::cout);
   }
   dsassert(errnum == 0, "Factorization failed");
-  lapack.GETRS('N', size, 1, uuMatFinal.A(), size, pivots.data(), upUpd.A(), size, &errnum);
+  lapack.GETRS(
+      'N', size, 1, uuMatFinal.values(), size, pivots.data(), upUpd.values(), size, &errnum);
   dsassert(errnum == 0, "Substitution failed");
 
   // compute Rg - GU * upUpd
@@ -2417,7 +2421,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
     // [ x y z             ]   [ x     y     z     ]
     // [       x y z       ] + [   x     y     z   ]
     // [             x y z ]   [     x     y     z ]
-    const double* tmpPtr = tmpMatGrad.A();
+    const double* tmpPtr = tmpMatGrad.values();
     for (unsigned int i = 0; i < ndofs_; ++i)
     {
       double sum1 = 0;
@@ -2443,19 +2447,21 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   // solve for velocity matrix
   Teuchos::LAPACK<int, double> lapack;
   int errnum;
-  dsassert(pivots.size() == static_cast<unsigned int>(uuMatFinal.M()) && pivots[0] + pivots[1] > 0,
+  dsassert(
+      pivots.size() == static_cast<unsigned int>(uuMatFinal.numRows()) && pivots[0] + pivots[1] > 0,
       "Matrix seems to not have been factorized");
-  lapack.GETRS('N', uuMatFinal.M(), ufMat.N(), uuMatFinal.A(), uuMatFinal.M(), pivots.data(),
-      ufMat.A(), ufMat.M(), &errnum);
+  lapack.GETRS('N', uuMatFinal.numRows(), ufMat.numCols(), uuMatFinal.values(),
+      uuMatFinal.numRows(), pivots.data(), ufMat.values(), ufMat.numRows(), &errnum);
   dsassert(errnum == 0, "Substitution failed");
 
   // put velocity/pressure part into element matrix
-  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fuMat.M(), ufMat.N(), fuMat.N(), -1., fuMat.A(),
-      fuMat.M(), ufMat.A(), ufMat.M(), 1., eleMat.A(), eleMat.M());
+  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fuMat.numRows(), ufMat.numCols(), fuMat.numCols(),
+      -1., fuMat.values(), fuMat.numRows(), ufMat.values(), ufMat.numRows(), 1., eleMat.values(),
+      eleMat.numRows());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
   CORE::LINALG::SerialDenseVector gAux;
-  gAux.Resize(nsd_ * nsd_ * ndofs_);
+  gAux.resize(nsd_ * nsd_ * ndofs_);
   for (unsigned int f = 1; f < 1 + nfaces_ * shapesface_.nfdofs_ * nsd_; ++f)
   {
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -2484,8 +2490,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
   }
 
   // compute FG * (M^{-1} GF)
-  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fgMat.M(), gfMat.N(), fgMat.N(), -1., fgMat.A(),
-      fgMat.M(), gfMat.A(), gfMat.M(), 1., eleMat.A(), eleMat.M());
+  blas.GEMM(Teuchos::NO_TRANS, Teuchos::NO_TRANS, fgMat.numRows(), gfMat.numCols(), fgMat.numCols(),
+      -1., fgMat.values(), fgMat.numRows(), gfMat.values(), gfMat.numRows(), 1., eleMat.values(),
+      eleMat.numRows());
 }
 
 template <DRT::Element::DiscretizationType distype>

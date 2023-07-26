@@ -40,11 +40,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     case calc_struct_energy:
     {
       // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
       // initialization of internal energy
       double intenergy = 0.0;
@@ -505,7 +505,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         int gid = Id();
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
             Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstress->Shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
+        gpstress->shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_WEG6; i++)
@@ -519,7 +519,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         // strains
         Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
             Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
-        gpstrain->Shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
+        gpstrain->shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_WEG6; i++)
@@ -1154,10 +1154,10 @@ void DRT::ELEMENTS::So_weg6::sow6_lumpmass(CORE::LINALG::Matrix<NUMDOF_WEG6, NUM
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;

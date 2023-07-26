@@ -17,7 +17,7 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_io.H"
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 
@@ -123,6 +123,9 @@ namespace ART
       friend class ArtJunctionWrapper;
 
      public:
+      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+
       /*!
       \brief Standard Constructor
      */
@@ -219,8 +222,8 @@ namespace ART
       //! vector of nodes connected to the junction
       std::vector<int> nodes_;
 
-      //! An epetra wrapper for Dense matrix solver
-      Epetra_SerialDenseSolver solver_;
+      //! An teuchos wrapper for Dense matrix solver
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solver_;
 
 
     };  // class ArtJunctionBc

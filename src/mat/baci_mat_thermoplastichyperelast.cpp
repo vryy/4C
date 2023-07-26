@@ -548,11 +548,11 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
     // elastic load --> values are zero
     mechdiss_->at(gp) = 0.0;
     mechdiss_kTT_->at(gp) = 0.0;
-    mechdiss_kTd_->at(gp).Scale(0.0);
-    Cmat_kdT_->at(gp).Scale(0.0);
+    mechdiss_kTd_->at(gp).putScalar(0.0);
+    Cmat_kdT_->at(gp).putScalar(0.0);
     thrplheat_->at(gp) = 0.0;
     thrplheat_kTT_->at(gp) = 0.0;
-    thrplheat_kTd_->at(gp).Scale(0.0);
+    thrplheat_kTd_->at(gp).putScalar(0.0);
   }  // end if (Phi_trial <= 0.0), i.e. elastic step
 
   //-------------------------------------------------------------------
@@ -659,7 +659,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       // pull-back of the spatial flow vector n to N
       // N = F^{-1} . n . F^{-T}
       CORE::LINALG::Matrix<3, 3> N(false);
-      tmp.Scale(0.0);  // reuse tmp, but reset first
+      tmp.putScalar(0.0);  // reuse tmp, but reset first
       tmp.Multiply(invdefgrdcurr, n);
       N.MultiplyNT(tmp, invdefgrdcurr);
 
@@ -671,7 +671,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
       for (int i = 0; i < 3; i++) devnsquare(i, i) -= 1.0 / 3.0 * tracensquare;
       // dev (N^2) = F^{-1} . dev(n^2) . F^{-T}
       CORE::LINALG::Matrix<3, 3> devNsquare(false);
-      tmp.Scale(0.0);  // reuse tmp, but reset first
+      tmp.putScalar(0.0);  // reuse tmp, but reset first
       tmp.Multiply(invdefgrdcurr, devnsquare);
       devNsquare.MultiplyNT(tmp, invdefgrdcurr);
 
@@ -880,7 +880,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   // transform Kirchhoff stress to 2.PK-stress
   // PK2 = F^{-1} . tau . F^{-T}
   CORE::LINALG::Matrix<3, 3> PK2;
-  tmp.Scale(0.0);  // reuse tmp, but reset first
+  tmp.putScalar(0.0);  // reuse tmp, but reset first
   tmp.Multiply(invdefgrdcurr, tau);
   PK2.MultiplyNT(tmp, invdefgrdcurr);
 
@@ -965,7 +965,7 @@ void MAT::ThermoPlasticHyperElast::SetupCmatElastoPlastic(
 
   // pull-back of dev(n^2)
   CORE::LINALG::Matrix<3, 3> devNsquare(false);
-  tmp.Scale(0.0);  // reuse tmp, but reset first
+  tmp.putScalar(0.0);  // reuse tmp, but reset first
   tmp.Multiply(invdefgrdcurr, devnsquare);
   devNsquare.MultiplyNT(tmp, invdefgrdcurr);
 

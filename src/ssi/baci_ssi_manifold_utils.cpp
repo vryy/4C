@@ -659,7 +659,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
     scatra_->ScaTraField()->Discretization()->EvaluateScalars(
         condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
 
-    domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->Values()[0]));
+    domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->values()[0]));
   }
 }
 
@@ -684,8 +684,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
   scatra_->ScaTraField()->Discretization()->EvaluateScalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
 
-  for (int i = 0; i < inflow_cond->Length(); ++i)
-    inflow_.at(kineticsID).at(i) += inflow_cond->Values()[i];
+  for (int i = 0; i < inflow_cond->length(); ++i)
+    inflow_.at(kineticsID).at(i) += inflow_cond->values()[i];
 }
 
 /*----------------------------------------------------------------------*

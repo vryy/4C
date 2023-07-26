@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemblePosi
 
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_pos[i_beam].M(), gid_pos[i_beam].A(),
+      force_vector->SumIntoGlobalValues(gid_pos[i_beam].numRows(), gid_pos[i_beam].A(),
           CORE::FADUTILS::CastToDouble(force_element[i_beam]).A());
   }
 
@@ -261,7 +261,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     }
 
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_rot[i_beam].M(), gid_rot[i_beam].A(),
+      force_vector->SumIntoGlobalValues(gid_rot[i_beam].numRows(), gid_rot[i_beam].A(),
           CORE::FADUTILS::CastToDouble(moment_nodal_load[i_beam]).A());
   }
 

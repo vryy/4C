@@ -53,7 +53,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       CalErrorComparedToAnalytSolution(ele, ephizero, params, elevec1_epetra);
 

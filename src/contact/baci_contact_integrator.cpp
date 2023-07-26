@@ -339,7 +339,7 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -453,7 +453,7 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -557,7 +557,7 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
       ngp_ = intpoints.nquad;
-      coords_.Reshape(nGP(), 2);
+      coords_.reshape(nGP(), 2);
       weights_.resize(nGP());
       for (int i = 0; i < nGP(); ++i)
       {
@@ -5948,7 +5948,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
 
       // weighted gap
       GP_2D_wGap(sele, sval, lmval, &gap, jac, wgt);
-      for (int j = 0; j < sval.M(); ++j)
+      for (int j = 0; j < sval.numRows(); ++j)
         GP_2D_G_Lin(j, sele, mele, sval, mval, lmval, sderiv, lmderiv, gap, normal, jac, wgt,
             deriv_gap, derivjac, derivsxi, dualmap);
 
@@ -5964,7 +5964,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       else
       {
         // D/M linearization
-        for (int j = 0; j < sval.M(); ++j)
+        for (int j = 0; j < sval.numRows(); ++j)
         {
           GP_2D_DM_Lin(j, bound, linlm, sele, mele, sval, mval, lmval, sderiv, mderiv, lmderiv, jac,
               wgt, derivsxi, derivmxi, derivjac, dualmap);
@@ -8672,7 +8672,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
       // (2) Lin(Phi) - slave GP coordinates --> 0
 
       // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt * lmval(iter, 0) * mderiv(k, 0) * dxdsxi;
+      fac = wgt * lmval[iter] * mderiv(k, 0) * dxdsxi;
       for (_CI p = dmxigp.begin(); p != dmxigp.end(); ++p)
       {
         dmmap_jk[p->first] += fac * (p->second);
@@ -8947,7 +8947,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
         }
 
         // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt * lmval(iter, 0) * mderiv(k, 0) * jac;
+        fac = wgt * lmval[iter] * mderiv(k, 0) * jac;
 
         for (_CI p = dmxigp[0].begin(); p != dmxigp[0].end(); ++p)
         {

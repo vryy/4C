@@ -60,9 +60,9 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
   CORE::LINALG::SerialDenseMatrix xyze_eptra;
   if (rdim > probdim)
   {
-    xyze_eptra.Shape(probdim, num_nodes_ele);
+    xyze_eptra.shape(probdim, num_nodes_ele);
     FixMatrixShape(xyze, xyze_eptra);
-    xyze_ptr = xyze_eptra.A();
+    xyze_ptr = xyze_eptra.values();
   }
 
   if (rdim_2 < probdim)
@@ -86,28 +86,29 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
   const unsigned probdim = factory.ProbDim();
   const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
-  if (static_cast<unsigned>(xyze.M()) < probdim or static_cast<unsigned>(xyze.N()) != num_nodes_ele)
+  if (static_cast<unsigned>(xyze.numRows()) < probdim or
+      static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
     dserror(
         "Dimension mismatch of xyze! \n"
         "expected input: %d x %d (rows x cols)\n"
         "received input : %d x %d (rows x cols)",
-        probdim, num_nodes_ele, xyze.M(), xyze.N());
+        probdim, num_nodes_ele, xyze.numRows(), xyze.numCols());
 
-  const double* xyze_ptr = xyze.A();
+  const double* xyze_ptr = xyze.values();
   CORE::LINALG::SerialDenseMatrix xyze_eptra;
-  if (static_cast<unsigned>(xyze.M()) > probdim)
+  if (static_cast<unsigned>(xyze.numRows()) > probdim)
   {
-    xyze_eptra.Shape(probdim, num_nodes_ele);
+    xyze_eptra.shape(probdim, num_nodes_ele);
     FixMatrixShape(xyze, xyze_eptra);
-    xyze_ptr = xyze_eptra.A();
+    xyze_ptr = xyze_eptra.values();
   }
 
-  if (xyz.M() < probdim)
+  if (xyz.numRows() < probdim)
     dserror(
         "Dimension mismatch of xyz! \n"
         "expected input: %d x 1 (rows x cols)\n"
         "received input : %d x 1 (rows x cols)",
-        probdim, xyz.M());
+        probdim, xyz.numRows());
 
   return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
 }

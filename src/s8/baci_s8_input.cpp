@@ -149,8 +149,8 @@ bool DRT::ELEMENTS::Shell8::ReadElement(
 
   CORE::LINALG::SerialDenseMatrix Dtildinv;
   CORE::LINALG::SerialDenseMatrix Lt;
-  Dtildinv.Shape(nhyb_, nhyb_);
-  Lt.Shape(nhyb_, NumNode() * 6);
+  Dtildinv.shape(nhyb_, nhyb_);
+  Lt.shape(nhyb_, NumNode() * 6);
 
   data_.Add("alfa", alfa);
   data_.Add("alfao", alfao);

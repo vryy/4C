@@ -616,7 +616,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     {
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
       my::GetLaplacianStrongForm(diff);
-      diff.Scale(0.0);
+      diff.putScalar(0.0);
     }
 
     // get history data (or acceleration)
@@ -1187,7 +1187,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
     const CORE::GEO::BoundaryIntCell& cell)
 {
   // get the cut position ( local parent element coordinates )
-  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().A(), true);
+  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().values(), true);
 
   // --------------------------------------------------------------------------
   // evaluate shape functions at the cut position

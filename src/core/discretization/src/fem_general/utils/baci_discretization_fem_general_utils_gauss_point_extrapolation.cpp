@@ -6,8 +6,8 @@
 \level 2
 
 *----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_linalg_serialdensevector.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
@@ -101,11 +101,13 @@ namespace
       const CORE::LINALG::SerialDenseMatrix& shapefcns_at_gps)
   {
     CORE::LINALG::SerialDenseMatrix shapefunctions_at_gps_copy(shapefcns_at_gps);
-    if (shapefcns_at_gps.M() == shapefcns_at_gps.N())
+    if (shapefcns_at_gps.numRows() == shapefcns_at_gps.numCols())
     {
-      Epetra_SerialDenseSolver matrixInverter;
-      matrixInverter.SetMatrix(shapefunctions_at_gps_copy);
-      int error_code = matrixInverter.Invert();
+      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
+      matrixInverter.setMatrix(Teuchos::rcpFromRef(shapefunctions_at_gps_copy));
+      int error_code = matrixInverter.invert();
 
       if (error_code != 0)
       {
@@ -116,7 +118,7 @@ namespace
             error_code);
       }
 
-      dsassert(shapefunctions_at_gps_copy.A() == matrixInverter.AF(),
+      dsassert(shapefunctions_at_gps_copy.values() == matrixInverter.getFactoredMatrix()->values(),
           "Inverse of the matrix was not computed in place, but we expect that. Unfortunately, the "
           "Trilinos documentation is ambiguous here.");
 
@@ -124,13 +126,16 @@ namespace
     }
 
     // solve least square algorithm
-    CORE::LINALG::SerialDenseMatrix matTmat(shapefcns_at_gps.N(), shapefcns_at_gps.N());
-    matTmat.Multiply('T', 'N', 1.0, shapefcns_at_gps, shapefcns_at_gps, 0.0);
+    CORE::LINALG::SerialDenseMatrix matTmat(shapefcns_at_gps.numCols(), shapefcns_at_gps.numCols());
+    matTmat.multiply(
+        Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shapefcns_at_gps, shapefcns_at_gps, 0.0);
 
     {
-      Epetra_SerialDenseSolver matrixInverter;
-      matrixInverter.SetMatrix(matTmat);
-      int error_code = matrixInverter.Invert();
+      typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+      typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> matrixInverter;
+      matrixInverter.setMatrix(Teuchos::rcpFromRef(matTmat));
+      int error_code = matrixInverter.invert();
 
       if (error_code != 0)
       {
@@ -141,13 +146,15 @@ namespace
             error_code);
       }
 
-      dsassert(matTmat.A() == matrixInverter.AF(),
+      dsassert(matTmat.values() == matrixInverter.getFactoredMatrix()->values(),
           "Inverse of the matrix was not computed in place, but we expect that. Unfortunately, the "
           "Trilinos documentation is ambiguous here.");
     }
 
-    CORE::LINALG::SerialDenseMatrix matrix_gp_to_base(shapefcns_at_gps.N(), shapefcns_at_gps.M());
-    matrix_gp_to_base.Multiply('N', 'T', 1.0, matTmat, shapefunctions_at_gps_copy, 0.0);
+    CORE::LINALG::SerialDenseMatrix matrix_gp_to_base(
+        shapefcns_at_gps.numCols(), shapefcns_at_gps.numRows());
+    matrix_gp_to_base.multiply(
+        Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, matTmat, shapefunctions_at_gps_copy, 0.0);
 
     return matrix_gp_to_base;
   }
@@ -206,10 +213,11 @@ namespace
 
     CORE::LINALG::SerialDenseMatrix matrix_gp_to_nodes(
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        matrix_gp_to_base.N());
+        matrix_gp_to_base.numCols());
 
     // extend matrix from base_distype to distype
-    matrix_gp_to_nodes.Multiply('N', 'N', 1.0, matrix_base_to_dis, matrix_gp_to_base, 0.0);
+    matrix_gp_to_nodes.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, matrix_base_to_dis, matrix_gp_to_base, 0.0);
 
     return matrix_gp_to_nodes;
   }
@@ -218,13 +226,13 @@ namespace
   void AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data, const T& nodal_data,
       const DRT::Element& ele, bool nodal_average)
   {
-    for (decltype(nodal_data.M()) i = 0; i < nodal_data.M(); ++i)
+    for (decltype(nodal_data.numRows()) i = 0; i < nodal_data.numRows(); ++i)
     {
       const int lid = global_data.Map().LID(ele.NodeIds()[i]);
       if (lid >= 0)  // rownode
       {
         const double invmyadjele = (nodal_average) ? 1.0 / ele.Nodes()[i]->NumElement() : 1.0;
-        for (decltype(nodal_data.N()) j = 0; j < nodal_data.N(); ++j)
+        for (decltype(nodal_data.numCols()) j = 0; j < nodal_data.numCols(); ++j)
         {
           (*(global_data(j)))[lid] += nodal_data(i, j) * invmyadjele;
         }
@@ -338,8 +346,8 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
     bool nodal_average, const GaussIntegration& integration)
 {
   CORE::LINALG::SerialDenseMatrix nodal_quantity(
-      ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.N());
-  nodal_quantity.Multiply('N', 'N', 1.0,
+      ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
+  nodal_quantity.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0,
       EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data, 0.0);
 
   AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);

@@ -31,7 +31,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
     if (cut_mesh.WithinBB(xyz))
     {
       int numnode = nids.size();
-      if (numnode != xyz.N())
+      if (numnode != xyz.numCols())
       {
         throw std::runtime_error("node coordiante number mismatch");
       }
@@ -74,7 +74,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid
   Mesh& cut_mesh = CutMesh(mi);
 
   int numnode = nids.size();
-  if (numnode != xyz.N())
+  if (numnode != xyz.numCols())
   {
     throw std::runtime_error("node coordiante number mismatch");
   }

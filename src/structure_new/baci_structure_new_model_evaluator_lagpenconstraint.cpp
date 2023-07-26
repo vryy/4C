@@ -90,7 +90,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::Reset(const Epetra_Vector& x)
   // update the structural displacement vector
   disnp_ptr_ = GState().GetDisNp();
 
-  fstrconstr_np_ptr_->Scale(0.0);
+  fstrconstr_np_ptr_->PutScalar(0.0);
   stiff_constr_ptr_->Zero();
 
   return;

@@ -146,9 +146,9 @@ template <class DebugPolicy, unsigned probdim, DRT::Element::DiscretizationType 
     DRT::Element::DiscretizationType tar_type>
 void CONTACT::AUG::Projector<DebugPolicy, probdim, ref_type, tar_type>::Setup()
 {
-  ref_val_.Scale(0.0);
-  x_ref_.Scale(0.0);
-  n_ref_.Scale(0.0);
+  ref_val_.putScalar(0.0);
+  x_ref_.putScalar(0.0);
+  n_ref_.putScalar(0.0);
   iter_ = 0;
 }
 

@@ -223,8 +223,9 @@ void SCATRA::LEVELSET::Intersection::AddToBoundaryIntCellsPerEle(
 
   // store boundary element and sum area into surface
   // be careful, we only set physical coordinates
-  BoundaryIntCellsPerEle<CORE::GEO::BoundaryIntCells>().push_back(
-      CORE::GEO::BoundaryIntCell(distype_bc, -1, localcoord, Teuchos::null, coord, true));
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  BoundaryIntCellsPerEle<GEO::BoundaryIntCells>().push_back(
+      GEO::BoundaryIntCell(distype_bc, -1, localcoord, dummyMat, coord, true));
 }
 
 /*----------------------------------------------------------------------------*
@@ -298,7 +299,7 @@ void SCATRA::LEVELSET::Intersection::PrepareCut(const DRT::Element* ele,
   unsigned numnode = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
   const unsigned probdim = DRT::Problem::Instance()->NDim();
 
-  xyze.Shape(3, numnode);
+  xyze.shape(3, numnode);
   switch (distype)
   {
     case DRT::Element::hex8:
@@ -361,7 +362,7 @@ CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
   {
     std::cerr << "\n--- failed to cut element ---\n"
               << "coordinates:\n";
-    xyze.Print(std::cerr);
+    std::cerr << xyze;
     std::cerr << "g-function values:\n" << std::setprecision(16);
     std::copy(phi_nodes.begin(), phi_nodes.end(), std::ostream_iterator<double>(std::cerr, ", "));
     std::cerr << "\n";
@@ -594,8 +595,9 @@ void SCATRA::LEVELSET::Intersection::unpackBoundaryIntCells(
       DRT::ParObject::ExtractfromPack(posingroup, data, vertices_xyz);
 
       // store boundary integration cells in boundaryintcelllist
+      CORE::LINALG::SerialDenseMatrix dummyMat;
       intcellvector.push_back(
-          CORE::GEO::BoundaryIntCell(distype, -1, vertices_xi, Teuchos::null, vertices_xyz));
+          GEO::BoundaryIntCell(distype, -1, vertices_xi, dummyMat, vertices_xyz));
     }
 
     // add group of cells for this element to the map

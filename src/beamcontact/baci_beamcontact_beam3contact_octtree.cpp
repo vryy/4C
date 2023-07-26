@@ -312,7 +312,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
   std::vector<std::vector<int>> octants;
   octants.clear();
   // get the octants for two bounding boxe (element) GIDs adjacent to each given node LID
-  for (int i = 0; i < nodeLID.M(); i++)
+  for (int i = 0; i < nodeLID.numRows(); i++)
     octants.push_back(
         InWhichOctantLies(searchdis_.lColNode((int)nodeLID(i, 0))->Elements()[0]->Id()));
 
@@ -337,7 +337,7 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
             bool sharednode = false;
             for (int j = 0; j < searchdis_.gElement(bboxinoct[0])->NumNode(); j++)
             {
-              for (int k = 0; k < (int)nodeLID.M(); k++)
+              for (int k = 0; k < (int)nodeLID.numRows(); k++)
               {
                 if (searchdis_.NodeColMap()->LID(searchdis_.gElement(bboxinoct[0])->NodeIds()[j]) ==
                     (int)nodeLID(k, 0))
@@ -423,19 +423,20 @@ void Beam3ContactOctTree::OctreeOutput(
       std::stringstream myfile;
       for (int u = 0; u < (int)octreelimits_.size(); u++)
       {
-        for (int v = 0; v < (int)octreelimits_[u].M(); v++)
+        for (int v = 0; v < (int)octreelimits_[u].numRows(); v++)
           myfile << std::scientific << octreelimits_[u](v) << " ";
         myfile << std::endl;
       }
       // root box
-      for (int u = 0; u < (int)rootbox_.M(); u++) myfile << std::scientific << rootbox_(u) << " ";
+      for (int u = 0; u < (int)rootbox_.numRows(); u++)
+        myfile << std::scientific << rootbox_(u) << " ";
       myfile << std::endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
 
 #ifdef OCTREEDEBUG
       for (int u = 0; u < (int)octreelimits_.size(); u++)
-        for (int v = 0; v < (int)octreelimits_[u].M(); v++)
+        for (int v = 0; v < (int)octreelimits_[u].numRows(); v++)
           if (v % 2 == 0 && octreelimits_[u](v) < rootbox_(v) &&
               fabs(octreelimits_[u](v) - rootbox_(v)) > 1e-8)
             dserror("Octant minimum %4.10f below root box minimum %4.10f", octreelimits_[u](v),
@@ -685,7 +686,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
 
   // directional vector (of the non-interrupted bounding box/ beam element
   CORE::LINALG::Matrix<3, 1> dir;
-  for (int dof = 0; dof < (int)dir.M(); dof++) dir(dof) = coord(dof, 1) - coord(dof, 0);
+  for (int dof = 0; dof < (int)dir.numRows(); dof++) dir(dof) = coord(dof, 1) - coord(dof, 0);
 
   // extrude bounding box in axial direction
   if (additiveextrusion_)
@@ -694,7 +695,7 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
     dir.Scale(extrusionvalue);
 
   // extrude coords
-  for (int dof = 0; dof < coord.M(); dof++)
+  for (int dof = 0; dof < coord.numRows(); dof++)
   {
     double tmpcoord = coord(dof, 1);
     coord(dof, 1) = coord(dof, 0) + dir(dof);
@@ -704,11 +705,11 @@ void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, con
   // first bounding box (independent of periodicBC_)
   // Calculate Center Point of AABB
   CORE::LINALG::Matrix<3, 1> midpoint;
-  for (int i = 0; i < (int)midpoint.M(); i++) midpoint(i) = 0.5 * (coord(i, 0) + coord(i, 1));
+  for (int i = 0; i < (int)midpoint.numRows(); i++) midpoint(i) = 0.5 * (coord(i, 0) + coord(i, 1));
 
   // Calculate edgelength of AABB, select max value
   double maxedgelength = -1.0;
-  for (int i = 0; i < (int)midpoint.M(); i++)
+  for (int i = 0; i < (int)midpoint.numRows(); i++)
     if (fabs(coord(i, 1) - coord(i, 0)) > maxedgelength)
       maxedgelength = fabs(coord(i, 1) - coord(i, 0));
   // Check for edgelength of AABB
@@ -788,7 +789,7 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
 
   // directional vector (of the non-interrupted bounding box/ beam element
   CORE::LINALG::Matrix<3, 1> dir;
-  for (int dof = 0; dof < (int)dir.M(); dof++) dir(dof) = coord(dof, 1) - coord(dof, 0);
+  for (int dof = 0; dof < (int)dir.numRows(); dof++) dir(dof) = coord(dof, 1) - coord(dof, 0);
 
   // extrude bounding box in axial direction
   if (additiveextrusion_)
@@ -801,10 +802,10 @@ void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, con
     dir.Scale(extrusionvalue);
 
   CORE::LINALG::Matrix<3, 1> midpoint;
-  for (int i = 0; i < (int)midpoint.M(); i++) midpoint(i) = 0.5 * (coord(i, 0) + coord(i, 1));
+  for (int i = 0; i < (int)midpoint.numRows(); i++) midpoint(i) = 0.5 * (coord(i, 0) + coord(i, 1));
 
   // First bounding box is the untreated set of coordinates!
-  for (int dof = 0; dof < coord.M(); dof++)
+  for (int dof = 0; dof < coord.numRows(); dof++)
   {
     (*allbboxes_)[dof][elecolid] = midpoint(dof) - 0.5 * dir(dof);
     (*allbboxes_)[dof + 3][elecolid] = midpoint(dof) + 0.5 * dir(dof);
@@ -895,7 +896,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
 
   if (BEAMCONTACT::BeamElement(*element))
   {
-    if (coord.M() == 3 and coord.N() == 2)
+    if (coord.numRows() == 3 and coord.numCols() == 2)
     {
       diameter = sqrt((coord(0, 0) - coord(0, 1)) * (coord(0, 0) - coord(0, 1)) +
                       (coord(1, 0) - coord(1, 1)) * (coord(1, 0) - coord(1, 1)) +
@@ -910,7 +911,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   }
   else
   {
-    if (coord.M() == 3 and coord.N() == 2)
+    if (coord.numRows() == 3 and coord.numCols() == 2)
     {
       diameter = sqrt((coord(0, 0) - coord(0, 1)) * (coord(0, 0) - coord(0, 1)) +
                       (coord(1, 0) - coord(1, 1)) * (coord(1, 0) - coord(1, 1)) +
@@ -927,16 +928,16 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
     (*diameter_)[elecolid] = diameter * extrusionvalue;
 
   // first bounding box
-  for (int dof = 0; dof < coord.M(); dof++)
+  for (int dof = 0; dof < coord.numRows(); dof++)
     (*allbboxes_)[dof][elecolid] = 0.5 * (coord(dof, 0) + coord(dof, 1));
 
   bool periodicbbox = false;
   int shift = 0;
   if (numshifts > 0)
   {
-    for (int dof = 0; dof < coord.M(); dof++)
+    for (int dof = 0; dof < coord.numRows(); dof++)
     {
-      for (int pos = 0; pos < coord.N(); pos++)
+      for (int pos = 0; pos < coord.numCols(); pos++)
       {
         if (coord(dof, pos) >= (*periodlength_)[dof] - 0.5 * (*diameter_)[elecolid] ||
             coord(dof, pos) <= 0.5 * (*diameter_)[elecolid])
@@ -1329,7 +1330,7 @@ void Beam3ContactOctTree::CreateSubOctants(CORE::LINALG::Matrix<6, 1>& parentoct
   // Center of parent octant
   CORE::LINALG::Matrix<3, 1> parentcenter;
 
-  for (int i = 0; i < (int)parentcenter.M(); i++)
+  for (int i = 0; i < (int)parentcenter.numRows(); i++)
   {
     parentcenter(i) = 0.5 * (parentoctlimits(2 * i) + parentoctlimits(2 * i + 1));
     suboctedgelength(i) = 0.5 * fabs(parentoctlimits(2 * i + 1) - (parentoctlimits)(2 * i));
@@ -1423,7 +1424,7 @@ bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
 
     // find shortest distance to face planes
     CORE::LINALG::Matrix<3, 1> lambda;
-    for (int k = 0; k < (int)lambda.M(); k++)
+    for (int k = 0; k < (int)lambda.numRows(); k++)
     {
       double normal = 0.0;
       if (bboxendpoint(k) > octcenter(k))
@@ -1448,14 +1449,14 @@ bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
   // Criterion II: some part between the two given end points of the bbox may lie within the octant
   // determine unit ofrientation for line equation
   CORE::LINALG::Matrix<3, 1> bboxorient;
-  for (int k = 0; k < (int)bboxorient.M(); k++)
+  for (int k = 0; k < (int)bboxorient.numRows(); k++)
     bboxorient(k) = bboxcoords[6 * shift + k + 3] - bboxcoords[6 * shift + k];
   double bboxlength = bboxorient.Norm2();
   //    std::cout<<"bboxlentgth = "<<bboxlength<<std::endl;
   bboxorient.Scale(1.0 / bboxorient.Norm2());
   // component-wise check if the intersection point of the line lies outside or inside the octant
   // (using an outward-facing normal)
-  for (int k = 0; k < (int)bboxorient.M(); k++)
+  for (int k = 0; k < (int)bboxorient.numRows(); k++)
   {
     // no intersection will occur since bbox is not slanted towards the face
     if (bboxorient(k) == 0.0) continue;
@@ -1477,7 +1478,7 @@ bool Beam3ContactOctTree::COBBIsInThisOctant(CORE::LINALG::Matrix<3, 1>& octcent
     if (lambda_k > -boxradius && lambda_k < bboxlength + boxradius)
     {
       CORE::LINALG::Matrix<3, 1> dist;
-      for (int l = 0; l < (int)dist.M(); l++)
+      for (int l = 0; l < (int)dist.numRows(); l++)
         dist(l) = bboxcoords[6 * shift + l] + lambda_k * bboxorient(l) - octcenter(l);
       // bbox is in octant if one intersection point lies on the octant surface.
       if (dist.Norm2() <= 0.5 * newedgelength(k) * sqrt(3.0) + boxradius)
@@ -1782,7 +1783,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
   {
     for (int j = 0; j < numshifts_bbox1 + 1; j++)
     {
-      for (int k = 0; k < (int)r1_a.M(); k++)
+      for (int k = 0; k < (int)r1_a.numRows(); k++)
       {
         // first bbox
         r1_a(k) = (*allbboxes_)[6 * i + k][bboxid0];
@@ -1970,10 +1971,11 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
 void Beam3ContactOctTree::UndoEffectOfPeriodicBoundaryCondition(
     CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
 {
-  if (coord.M() != 3 || coord.N() != 2) dserror("coord must have the dimension M()==3, N()==2!");
+  if (coord.numRows() != 3 || coord.numCols() != 2)
+    dserror("coord must have the dimension M()==3, N()==2!");
   if ((int)cut.size() != 3) dserror("cut is of wrong size %i!", (int)cut.size());
   // By definition, we shift the second position!
-  for (int dof = 0; dof < coord.M(); dof++)
+  for (int dof = 0; dof < coord.numRows(); dof++)
   {
     if (fabs(coord(dof, 1) - periodlength_->at(dof) - coord(dof, 0)) <
         fabs(coord(dof, 1) - coord(dof, 0)))

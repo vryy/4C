@@ -205,8 +205,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     // set views
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
-        elemat1_epetra.A(), true);                                                   // view only!
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+        elemat1_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(
+        elevec1_epetra.values(), true);  // view only!
     // ecapa, efext, efcap not needed for this action
     // econd: conductivity matrix
     // etang: tangent of thermal problem.
@@ -219,7 +220,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_fint)
   {
     // set views
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(
+        elevec1_epetra.values(), true);  // view only!
     // etang, ecapa, efext, efcap not needed for this action
 
     EvaluateTangCapaFint(ele, time, discretization, la, nullptr, nullptr, nullptr, &efint, params);
@@ -232,8 +234,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     // set views
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
-        elemat2_epetra.A(), true);                                                   // view only!
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+        elemat2_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(
+        elevec1_epetra.values(), true);  // view only!
     // etang, efext, efcap not needed for this action
 
     EvaluateTangCapaFint(ele, time, discretization, la, nullptr, &ecapa, nullptr, &efint, params);
@@ -278,10 +281,12 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     // set views
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
-        elemat1_epetra.A(), true);  // view only!
+        elemat1_epetra.values(), true);  // view only!
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(true);
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(elevec3_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(
+        elevec1_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efcap(
+        elevec3_epetra.values(), true);  // view only!
 
     // etang: effective dynamic tangent of thermal problem
     // --> etang == k_{T,effdyn}^{(e)} = timefac_capa ecapa + timefac_cond econd
@@ -305,10 +310,10 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     }
 
     // explicitly insert capacity matrix into corresponding Epetra matrix if existing
-    if (elemat2_epetra.A() != nullptr)
+    if (elemat2_epetra.values() != nullptr)
     {
       CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa_export(
-          elemat2_epetra.A(), true);  // view only!
+          elemat2_epetra.values(), true);  // view only!
       ecapa_export.Update(ecapa);
     }
 
@@ -446,10 +451,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   {
     // set views
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> etang(
-        elemat1_epetra.A(), true);  // view only!
+        elemat1_epetra.values(), true);  // view only!
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * numdofpernode_> ecapa(
-        elemat2_epetra.A(), true);                                                   // view only!
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
+        elemat2_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(
+        elevec1_epetra.values(), true);  // view only!
     // efext, efcap not needed for this action
 
     const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpheatfluxmap =
@@ -458,7 +464,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     std::string heatfluxtype = params.get<std::string>("heatfluxtype", "ndxyz");
     const int gid = ele->Id();
     CORE::LINALG::Matrix<nquad_, nsd_> gpheatflux(
-        ((*gpheatfluxmap)[gid])->A(), true);  // view only!
+        ((*gpheatfluxmap)[gid])->values(), true);  // view only!
 
     // set views to components
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efluxx(elevec1_epetra, true);  // view only!
@@ -512,8 +518,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::integrate_shape_functions)
   {
     // calculate integral of shape functions
-    const Epetra_IntSerialDenseVector dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-    IntegrateShapeFunctions(ele, elevec1_epetra, dofids);
+    const auto dofids = params.get<Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>>("dofids");
+    IntegrateShapeFunctions(ele, elevec1_epetra, *dofids);
   }
 
   //============================================================================
@@ -545,7 +551,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_energy)
   {
     // check length of elevec1
-    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+    if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
     // get node coordinates
     CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(
@@ -587,7 +593,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   else if (action == THR::calc_thermo_coupltang)
   {
     CORE::LINALG::Matrix<nen_ * numdofpernode_, nen_ * nsd_ * numdofpernode_> etangcoupl(
-        elemat1_epetra.A(), true);
+        elemat1_epetra.values(), true);
 
     // if it's a TSI problem and there are the current displacements/velocities
     EvaluateCoupledTang(ele, discretization, la, &etangcoupl, params);
@@ -596,7 +602,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
   //============================================================================
   else if (action == THR::calc_thermo_error)
   {
-    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> evector(elevec1_epetra.A(), true);  // view only!
+    CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> evector(
+        elevec1_epetra.values(), true);  // view only!
 
     ComputeError(ele, evector, params);
   }
@@ -1520,7 +1527,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearThermoDispContribution(
         econd->MultiplyNT((-fac_ * dHeDT), funct_, funct_, 1.0);
         if (plmat->dHepDTeas() != Teuchos::null)
           CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nen_>(
-              1., econd->A(), -fac_, funct_.A(), plmat->dHepDTeas()->at(iquad).A());
+              1., econd->A(), -fac_, funct_.A(), plmat->dHepDTeas()->at(iquad).values());
       }
       else
         econd->MultiplyNT((-fac_ * ctempCdot), funct_, funct_, 1.0);
@@ -1837,7 +1844,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::NonlinearCoupledTang(
         Teuchos::RCP<MAT::PlasticElastHyper> plmat =
             Teuchos::rcp_dynamic_cast<MAT::PlasticElastHyper>(structmat, true);
         CORE::LINALG::DENSEFUNCTIONS::multiplyNT<double, nen_, 1, nsd_ * nen_>(
-            1., etangcoupl->A(), -fac_, funct_.A(), plmat->dHepDissDd(iquad).A());
+            1., etangcoupl->A(), -fac_, funct_.A(), plmat->dHepDissDd(iquad).values());
       }
       // other materials do specific computations here
       else
@@ -2885,7 +2892,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
-    CORE::LINALG::SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
+    CORE::LINALG::SerialDenseVector& elevec1, const CORE::LINALG::IntSerialDenseVector& dofids)
 {
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);

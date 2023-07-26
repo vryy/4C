@@ -28,7 +28,7 @@ namespace CORE::DRT::UTILS
     // shape function
     void Shape(int numrows, int numcols)
     {
-      matrix_.LightShape(numrows, numcols);
+      matrix_.shape(numrows, numcols);
       isNonzero_.resize(numrows);
       return;
     }

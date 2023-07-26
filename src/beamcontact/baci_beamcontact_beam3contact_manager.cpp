@@ -1210,7 +1210,7 @@ void CONTACT::Beam3cmanager::SetState(
     // temporary matrices to store nodal coordinates of each element
     CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
     std::vector<CORE::LINALG::SerialDenseMatrix> ele2pos(numele2);
-    for (int e = 0; e < numele2; e++) ele2pos[e].Shape(3, numnodessol);
+    for (int e = 0; e < numele2; e++) ele2pos[e].shape(3, numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
     {
@@ -3552,7 +3552,7 @@ void CONTACT::Beam3cmanager::TransformAngleToTriad(
   ComputeSpin(spin, theta);
 
   // nompute norm of theta
-  double theta_abs = theta.Norm2();
+  double theta_abs = CORE::LINALG::Norm2(theta);
 
   // build an identity matrix
   CORE::LINALG::SerialDenseMatrix identity(3, 3);
@@ -3582,7 +3582,7 @@ void CONTACT::Beam3cmanager::ComputeSpin(
 {
   // initialization
   const double spinscale = 1.0;
-  for (int i = 0; i < rotationangle.Length(); ++i) rotationangle[i] *= spinscale;
+  for (int i = 0; i < rotationangle.length(); ++i) rotationangle[i] *= spinscale;
 
   // initialize spin with zeros
   for (int i = 0; i < 3; i++)
@@ -4248,9 +4248,9 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
 #endif
 
   // compute three dimensional angle theta
-  for (int j = 0; j < theta.Length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-  double norm_axis = axis.Norm2();
-  for (int j = 0; j < axis.Length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+  for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
+  double norm_axis = CORE::LINALG::Norm2(axis);
+  for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
   // Compute rotation matirx R
   TransformAngleToTriad(theta, R);
@@ -4283,18 +4283,18 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   // get first point on surface for node1 and node2
   for (int j = 0; j < 3; ++j)
   {
-    prism(j, 1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
-    prism(j, 4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+    prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+    prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
   }
 
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-  radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+  radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
   // get second point on surface for node1 and node2
   for (int j = 0; j < 3; j++)
   {
-    prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-    prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+    prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+    prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
   }
 
   // now first prism is built -> put coordinates into filecontent-stream
@@ -4334,13 +4334,13 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-      prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
     }
 
     // put coordinates into filecontent-stream
@@ -4444,9 +4444,9 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     }
 
     // compute three dimensional angle theta
-    for (int j = 0; j < theta.Length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-    double norm_axis = axis.Norm2();
-    for (int j = 0; j < axis.Length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+    for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
+    double norm_axis = CORE::LINALG::Norm2(axis);
+    for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
     TransformAngleToTriad(theta, R);
@@ -4479,18 +4479,18 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
-      prism(j, 4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-      prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -4530,13 +4530,13 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-        prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream
@@ -4646,9 +4646,9 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     }
 
     // compute three dimensional angle theta
-    for (int j = 0; j < theta.Length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
-    double norm_axis = axis.Norm2();
-    for (int j = 0; j < axis.Length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
+    for (int j = 0; j < theta.length(); ++j) axis[j] = coord(j, 1) - coord(j, 0);
+    double norm_axis = CORE::LINALG::Norm2(axis);
+    for (int j = 0; j < axis.length(); ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
     TransformAngleToTriad(theta, R);
@@ -4681,18 +4681,18 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
-      prism(j, 4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-      prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -4732,13 +4732,13 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-        prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream
@@ -4859,7 +4859,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
     // compute three dimensional angle theta
     for (int j = 0; j < 3; ++j) axis[j] = coord(j, 1) - coord(j, 0);
 
-    double norm_axis = axis.Norm2();
+    double norm_axis = CORE::LINALG::Norm2(axis);
     for (int j = 0; j < 3; ++j) theta[j] = axis[j] / norm_axis * 2 * M_PI / n;
 
     // Compute rotation matrix R
@@ -4893,18 +4893,18 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
     // get first point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
     {
-      prism(j, 1) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
-      prism(j, 4) += radiusvec1[j] / radiusvec1.Norm2() * eleradius;
+      prism(j, 1) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
+      prism(j, 4) += radiusvec1[j] / CORE::LINALG::Norm2(radiusvec1) * eleradius;
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
     {
-      prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-      prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+      prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+      prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
     }
 
     // now first prism is built -> put coordinates into filecontent-stream
@@ -4944,13 +4944,13 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.Multiply('N', 'N', 1, R, radiusvec1, 0);
+      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
       {
-        prism(j, 2) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
-        prism(j, 5) += radiusvec2[j] / radiusvec2.Norm2() * eleradius;
+        prism(j, 2) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
+        prism(j, 5) += radiusvec2[j] / CORE::LINALG::Norm2(radiusvec2) * eleradius;
       }
 
       // put coordinates into filecontent-stream

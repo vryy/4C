@@ -313,7 +313,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     p.set("delta time", dt_);
     // set vector values needed by elements
     discret_->ClearState();
-    disi_->Scale(0.0);
+    disi_->PutScalar(0.0);
     discret_->SetState("residual displacement", disi_);
     discret_->SetState("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
@@ -1014,7 +1014,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
   // vector format
   // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
-  stress->Scale(0.);
+  stress->PutScalar(0.0);
 
   for (int i = 0; i < 3; ++i)
   {

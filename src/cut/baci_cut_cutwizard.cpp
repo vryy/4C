@@ -499,7 +499,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
         if (conds[cidx]->ContainsNode(element->Nodes()[0]->Id()))
         {
           offset = conds[cidx]->GetDouble("xoffset");
-          if (xyze.N() != 8 || xyze.M() != 3)
+          if (xyze.numCols() != 8 || xyze.numRows() != 3)
             dserror("Please implement here for other element type than hex8!");
           else
           {
@@ -536,7 +536,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
   const int numnode = element->NumNode();
   const ::DRT::Node* const* nodes = element->Nodes();
 
-  xyze.Shape(3, numnode);
+  xyze.shape(3, numnode);
   for (int i = 0; i < numnode; ++i)
   {
     const ::DRT::Node& node = *nodes[i];
@@ -960,9 +960,9 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
     CORE::GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
     if (!sh) dserror("couldn't get sidehandle!");
 
-    if (xyze.N() == 4 && sh->Shape() == ::DRT::Element::quad4)
+    if (xyze.numCols() == 4 && sh->Shape() == ::DRT::Element::quad4)
     {
-      CORE::LINALG::Matrix<3, 4> XYZE(xyze.A(), true);
+      CORE::LINALG::Matrix<3, 4> XYZE(xyze.values(), true);
 
       CORE::GEO::CUT::plain_side_set sides;
       sh->CollectSides(sides);

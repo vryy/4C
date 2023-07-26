@@ -137,8 +137,8 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Evaluate(CORE::LINALG::SerialDenseVector
     double time, double dt)
 {
   // Set sysmat and rhs to zero
-  sysmat.Scale(0.0);
-  rhs.Scale(0.0);
+  sysmat.putScalar(0.0);
+  rhs.putScalar(0.0);
 
   // Get acini pressure and beginning and end of acinus element
   double p1n = epn(0);

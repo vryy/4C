@@ -6,8 +6,6 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Epetra_SerialDenseSolver.h>
-
 #include "baci_constraint_element2.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_exporter.H"
@@ -173,7 +171,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const CORE::LINALG
   elevector[4] = normal(0, 0) / normal.Norm2();
 
   elevector[5] = normal(1, 0) / normal.Norm2();
-  elevector.Scale(-1.0);
+  elevector.scale(-1.0);
   return;
 }
 
@@ -190,8 +188,8 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivAngle(
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1normsquare = pow(vec1.Norm2(), 2);
-  const double vec2normsquare = pow(vec2.Norm2(), 2);
+  const double vec1normsquare = pow(CORE::LINALG::Norm2(vec1), 2);
+  const double vec2normsquare = pow(CORE::LINALG::Norm2(vec2), 2);
 
   elevector[0] = -((vec2[1] / sqrt(vec1normsquare * vec2normsquare) -
                        (vec2normsquare * vec1[1] *
@@ -457,7 +455,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const CORE::LINAL
   elematrix(5, 5) = 0;
   return;
 
-  elematrix.Scale(-1.0);
+  elematrix.scale(-1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -473,8 +471,8 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle(
   vec2[0] = -xc(1, 0) + xc(2, 0);
   vec2[1] = -xc(1, 1) + xc(2, 1);
 
-  const double vec1sq = pow(vec1.Norm2(), 2);
-  const double vec2sq = pow(vec2.Norm2(), 2);
+  const double vec1sq = pow(CORE::LINALG::Norm2(vec1), 2);
+  const double vec2sq = pow(CORE::LINALG::Norm2(vec2), 2);
 
   elematrix(0, 0) =
       -(((-2 * vec2sq * vec1[1] * vec2[1]) / pow(vec1sq * vec2sq, 1.5) -
@@ -1745,5 +1743,5 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle(
                             (vec1sq * vec2sq),
                     1.5));
 
-  elematrix.Scale(-1.0);
+  elematrix.scale(-1.0);
 }

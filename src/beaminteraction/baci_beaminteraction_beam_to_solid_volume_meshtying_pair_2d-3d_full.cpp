@@ -266,7 +266,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)
-    force_vector->SumIntoGlobalValues(gid_pair.M(), gid_pair.A(), force_pair.A());
+    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.A(), force_pair.A());
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)

@@ -2077,7 +2077,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcInitialTimeDerivative()
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed
-  trueresidual_->Scale(0.);
+  trueresidual_->PutScalar(0.0);
 
   double maxval = 0.0;
   phidtnp_->MaxValue(&maxval);

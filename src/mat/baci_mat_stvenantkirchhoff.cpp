@@ -194,9 +194,9 @@ void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::SerialDenseVector* gls
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface
-  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
-  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
-  CORE::LINALG::Matrix<6, 1> stress(stress_e->A(), true);
+  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->values(), true);
+  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->values(), true);
+  CORE::LINALG::Matrix<6, 1> stress(stress_e->values(), true);
 
   SetupCmat(cmat);
   // evaluate stresses

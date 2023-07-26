@@ -836,7 +836,7 @@ void MORTAR::MortarElement::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coor
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
   if (!mynodes) dserror("GetNodalCoords: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoords: Dimensions!");
+  if (coord.numRows() != 3 || coord.numCols() != nnodes) dserror("GetNodalCoords: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -858,7 +858,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& c
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
   if (!mynodes) dserror("GetNodalCoordsOld: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoordsOld: Dimensions!");
+  if (coord.numRows() != 3 || coord.numCols() != nnodes) dserror("GetNodalCoordsOld: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -881,7 +881,8 @@ void MORTAR::MortarElement::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lag
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("GetNodalLagMult: Null pointer!");
-  if (lagmult.M() != 3 || lagmult.N() != nnodes) dserror("GetNodalLagMult: Dimensions!");
+  if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
+    dserror("GetNodalLagMult: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {

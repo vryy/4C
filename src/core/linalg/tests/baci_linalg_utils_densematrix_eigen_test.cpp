@@ -64,7 +64,7 @@ namespace
     {
       CORE::LINALG::SerialDenseMatrix v(length, 1, false);
       for (std::size_t j = 0; j < length; ++j) v(j, 0) = eigenvectors(j, i);
-      A_result.Multiply('N', 'T', eigenvalues(i), v, v, 1.0);
+      A_result.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, eigenvalues(i), v, v, 1.0);
     }
 
     BACI_EXPECT_NEAR(A, A_result, 1e-9);

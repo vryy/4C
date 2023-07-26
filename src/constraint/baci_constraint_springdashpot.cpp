@@ -166,10 +166,10 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
         CORE::LINALG::SerialDenseVector elevector2;
         CORE::LINALG::SerialDenseVector elevector3;
 
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(eledim);
-        elematrix1.Shape(eledim, eledim);
+        elevector1.size(eledim);
+        elevector2.size(eledim);
+        elevector3.size(eledim);
+        elematrix1.shape(eledim, eledim);
 
         int err = curr.second->Evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
@@ -783,7 +783,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
     CORE::LINALG::SerialDenseVector dumvec(0);
     CORE::LINALG::SerialDenseVector elevector;
     const int eledim = (int)lm.size();
-    elevector.Size(eledim);
+    elevector.size(eledim);
 
     eparams.set("action", "calc_struct_area");
     eparams.set("area", 0.0);

@@ -32,7 +32,7 @@ namespace
   {
     CORE::LINALG::SerialDenseMatrix MHM(M.RowDim(), M.ColDim(), false);
 
-    MHM.Multiply('T', 'N', 1.0, M, M, 0.0);
+    MHM.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, M, 0.0);
 
     for (int i = 0; i < M.RowDim(); ++i)
       for (int j = 0; j < M.ColDim(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
@@ -76,8 +76,8 @@ namespace
     // check whether SVD fulfills: A = Q * S * VT
     CORE::LINALG::SerialDenseMatrix QS(rows, cols, false);
     CORE::LINALG::SerialDenseMatrix A_result(rows, cols, false);
-    QS.Multiply('N', 'N', 1.0, Q, S, 0.0);
-    A_result.Multiply('N', 'N', 1.0, QS, VT, 0.0);
+    QS.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Q, S, 0.0);
+    A_result.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, QS, VT, 0.0);
 
     BACI_EXPECT_NEAR(A, A_result, 1e-9);
 

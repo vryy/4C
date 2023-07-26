@@ -177,8 +177,8 @@ void MAT::Maxwell_0d_acinus_DoubleExponential::Evaluate(CORE::LINALG::SerialDens
     double time, double dt)
 {
   // Set sysmat and rhs to zero
-  sysmat.Scale(0.0);
-  rhs.Scale(0.0);
+  sysmat.putScalar(0.0);
+  rhs.putScalar(0.0);
 
   // Get acinar volume in next and current timestep
   double acin_vnp = params.acin_vnp;

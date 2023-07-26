@@ -141,7 +141,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial
     sysmat(1, 0) = -1.0 / (N1);
     sysmat(1, 1) = 1.0 / (N1);
   }
-  rhs.Scale(0.0);
+  rhs.putScalar(0.0);
 }
 
 

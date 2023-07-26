@@ -191,8 +191,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       auto intpoints = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule_);
 
       // computing forcevec and stiffmat
-      forcevec.Scale(0.0);
-      stiffmat.Scale(0.0);
+      forcevec.putScalar(0.0);
+      stiffmat.putScalar(0.0);
       for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
         const double dx_dxi = lrefe_ / 2.0;

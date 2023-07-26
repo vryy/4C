@@ -459,7 +459,7 @@ namespace IMMERSED
 
     targetele.Evaluate(params, *targetdis, targetla, dummy1, dummy2, *normal_at_targetpoint,
         *targetxi_dense, dummy3);
-    normal_at_targetpoint->Scale(1.0 / (normal_at_targetpoint->Norm2()));
+    normal_at_targetpoint->scale(1.0 / (CORE::LINALG::Norm2(*normal_at_targetpoint)));
     normal_vec[0] = (*normal_at_targetpoint)(0);
     normal_vec[1] = (*normal_at_targetpoint)(1);
     normal_vec[2] = (*normal_at_targetpoint)(2);
@@ -489,7 +489,7 @@ namespace IMMERSED
     // owner of given point
     int owner = myrank;
     // length of vectofill
-    int datalength = (int)vectofill->Length();
+    int datalength = (int)vectofill->length();
 
     // get possible elements being intersected by immersed structure
     DRT::Condition* searchbox = sourcedis->GetCondition("ImmersedSearchbox");
@@ -706,7 +706,7 @@ namespace IMMERSED
               (*vector)(0) = x[0] - xvec[0];
               (*vector)(1) = x[1] - xvec[1];
               (*vector)(2) = x[2] - xvec[2];
-              vector->Scale(vector->Norm2());
+              vector->scale(CORE::LINALG::Norm2(*vector));
 
               // build scalar product between normal and vector
               scalarproduct = (*vector)(0) * normal_vec[0] + (*vector)(1) * normal_vec[1] +
@@ -804,7 +804,7 @@ namespace IMMERSED
           {
             data.AddtoPack(matched);
             data.AddtoPack(owner);
-            data.AddtoPack((int)vectofill->Length());
+            data.AddtoPack((int)vectofill->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
@@ -814,7 +814,7 @@ namespace IMMERSED
 
             if (matched == 1)
             {
-              for (int dim = 0; dim < (int)vectofill->Length(); ++dim)
+              for (int dim = 0; dim < (int)vectofill->length(); ++dim)
               {
                 data.AddtoPack((*vectofill)(dim));
               }
@@ -995,7 +995,7 @@ namespace IMMERSED
     // owner of given point
     int owner = myrank;
     // length of vectofill
-    int datalength = (int)vectofill->Length();
+    int datalength = (int)vectofill->length();
 
     for (int irobin = 0; irobin < numproc; ++irobin)
     {
@@ -1139,7 +1139,7 @@ namespace IMMERSED
           {
             data.AddtoPack(matched);
             data.AddtoPack(owner);
-            data.AddtoPack((int)vectofill->Length());
+            data.AddtoPack((int)vectofill->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
@@ -1149,7 +1149,7 @@ namespace IMMERSED
 
             if (matched == 1)
             {
-              for (int dim = 0; dim < (int)vectofill->Length(); ++dim)
+              for (int dim = 0; dim < (int)vectofill->length(); ++dim)
               {
                 data.AddtoPack((*vectofill)(dim));
               }
@@ -1340,7 +1340,7 @@ namespace IMMERSED
     // owner of given point
     int owner = myrank;
     // length of velnp_at_struct_point
-    int datalength = (int)velnp_at_struct_point->Length();
+    int datalength = (int)velnp_at_struct_point->length();
 
     // loop over all procs
     for (int irobin = 0; irobin < numproc; ++irobin)
@@ -1546,7 +1546,7 @@ namespace IMMERSED
           {
             data.AddtoPack(matched);
             data.AddtoPack(owner);
-            data.AddtoPack((int)velnp_at_struct_point->Length());
+            data.AddtoPack((int)velnp_at_struct_point->length());
 
             // point coordinate
             for (int dim = 0; dim < globdim; ++dim)
@@ -1556,7 +1556,7 @@ namespace IMMERSED
 
             if (matched == 1)
             {
-              for (int dim = 0; dim < (int)velnp_at_struct_point->Length(); ++dim)
+              for (int dim = 0; dim < (int)velnp_at_struct_point->length(); ++dim)
               {
                 data.AddtoPack((*velnp_at_struct_point)(dim));
               }

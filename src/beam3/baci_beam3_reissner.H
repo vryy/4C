@@ -294,14 +294,14 @@ namespace DRT
         const unsigned int nnodetriad = this->NumNode();
 
         // safety check
-        if ((unsigned int)stiffmat.M() != 3 * vpernode * nnodecl + 3 * nnodetriad or
-            (unsigned int) stiffmat.N() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+        if ((unsigned int)stiffmat.numRows() != 3 * vpernode * nnodecl + 3 * nnodetriad or
+            (unsigned int) stiffmat.numCols() != 3 * vpernode * nnodecl + 3 * nnodetriad)
           dserror("size mismatch! expected %dx%d matrix and got %dx%d",
               3 * vpernode * nnodecl + 3 * nnodetriad, 3 * vpernode * nnodecl + 3 * nnodetriad,
-              stiffmat.M(), stiffmat.N());
+              stiffmat.numRows(), stiffmat.numCols());
 
         // nothing to do here since this term vanishes for Beam3r
-        stiffmat.Zero();
+        stiffmat.putScalar(0.0);
       }
 
       /** \brief get generalized interpolation matrix which yields the increments of the position

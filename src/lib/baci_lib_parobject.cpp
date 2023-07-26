@@ -18,11 +18,11 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj) { obj->Pa
 
 void DRT::ParObject::AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff)
 {
-  int m = stuff.M();
-  int n = stuff.N();
+  int m = stuff.numRows();
+  int n = stuff.numCols();
   AddtoPack(data, m);
   AddtoPack(data, n);
-  double* A = stuff.A();
+  double* A = stuff.values();
   AddtoPack(data, A, n * m * sizeof(double));
 }
 
@@ -30,7 +30,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDense
 {
   int m = stuff.length();
   AddtoPack(data, m);
-  double* A = stuff.Values();
+  double* A = stuff.values();
   AddtoPack(data, A, m * sizeof(double));
 }
 
@@ -48,8 +48,8 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position,
   ExtractfromPack(position, data, m);
   int n = 0;
   ExtractfromPack(position, data, n);
-  stuff.Reshape(m, n);
-  double* a = stuff.A();
+  stuff.reshape(m, n);
+  double* a = stuff.values();
   if (m * n > 0) ExtractfromPack(position, data, a, n * m * sizeof(double));
 }
 

@@ -194,8 +194,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         ele, xyze_);
 
     // set views, here we assemble on the boundary dofs only!
-    CORE::LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.A(), true);  // view only!
-    CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.A(), true);     // view only!
+    CORE::LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.values(), true);     // view only!
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -318,7 +318,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     {
       // set views, here we assemble on the boundary dofs only!
       CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
-          elemat2_epetra.A(), true);  // view only!
+          elemat2_epetra.values(), true);  // view only!
 
       // and now get the current displacements/velocities
       if (discretization.HasState(1, "displacement"))
@@ -410,7 +410,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         // set views, here we assemble on the boundary dofs only!
         CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
-            elemat1_epetra.A(), true);  // view only!
+            elemat1_epetra.values(), true);  // view only!
 
         // get current condition
         Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");

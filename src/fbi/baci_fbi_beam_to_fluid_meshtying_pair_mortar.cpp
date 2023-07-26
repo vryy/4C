@@ -55,9 +55,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
   if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for local mortar matrices.
-  local_D.Shape(mortar::n_dof_, beam::n_dof_);
-  local_M.Shape(mortar::n_dof_, fluid::n_dof_);
-  local_kappa.Shape(mortar::n_dof_, 1);
+  local_D.shape(mortar::n_dof_, beam::n_dof_);
+  local_M.shape(mortar::n_dof_, fluid::n_dof_);
+  local_kappa.size(mortar::n_dof_);
 
 
   // Initialize variables for shape function values.

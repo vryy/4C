@@ -96,9 +96,10 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  CORE::LINALG::SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix vol_red_sd(
+      Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
   CORE::LINALG::SerialDenseMatrix surf_red_sd(
-      ::View, surf_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
 
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
@@ -351,9 +352,9 @@ void DRT::ELEMENTS::StructuralSurface::SubspaceProjector(
   if (dim != 3) dserror("this should be 3D");
 
   CORE::LINALG::Matrix<3, 1> c;
-  for (int r = 0; r < (int)xcurr.M(); ++r)
-    for (int d = 0; d < (int)xcurr.N(); ++d) c(d) += xcurr(r, d);
-  c.Scale(1. / xcurr.M());
+  for (int r = 0; r < (int)xcurr.numRows(); ++r)
+    for (int d = 0; d < (int)xcurr.numCols(); ++d) c(d) += xcurr(r, d);
+  c.Scale(1. / xcurr.numRows());
 
   CORE::LINALG::Matrix<dim, 1> r[3];
   for (int i = 0; i < 3; ++i) r[i](i) = 1.;
@@ -491,9 +492,10 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  CORE::LINALG::SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix vol_red_sd(
+      Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
   CORE::LINALG::SerialDenseMatrix surf_red_sd(
-      ::View, surf_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
 
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }

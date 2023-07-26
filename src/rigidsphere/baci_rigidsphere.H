@@ -325,7 +325,7 @@ namespace DRT
           const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const
       {
         // nothing to do here
-        stiffmat.Zero();
+        stiffmat.putScalar(0.0);
       }
 
       /*!

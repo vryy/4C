@@ -73,7 +73,7 @@ void STR::Dbc::Setup()
   discret_ptr_->EvaluateDirichlet(
       p, zeros_ptr_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmap_ptr_);
   // clear the system vector of possibly inserted non-zero DBC values
-  zeros_ptr_->Scale(0.0);
+  zeros_ptr_->PutScalar(0.0);
 
   // ---------------------------------------------------------------------------
   // Create local coordinate system manager

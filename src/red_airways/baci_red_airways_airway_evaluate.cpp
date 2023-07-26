@@ -22,7 +22,7 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_list.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 using namespace DRT::UTILS;
 

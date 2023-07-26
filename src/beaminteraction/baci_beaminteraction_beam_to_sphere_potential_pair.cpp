@@ -173,41 +173,41 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   // resize variables and fill with pre-computed values
   if (forcevec1 != NULL)
   {
-    forcevec1->Size(dim1);
+    forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
       (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(fpot1_(i));
   }
   if (forcevec2 != NULL)
   {
-    forcevec2->Size(dim2);
+    forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
       (*forcevec2)(i) = CORE::FADUTILS::CastToDouble(fpot2_(i));
   }
 
   if (stiffmat11 != NULL)
   {
-    stiffmat11->Shape(dim1, dim1);
+    stiffmat11->shape(dim1, dim1);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
         (*stiffmat11)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, icol));
   }
   if (stiffmat12 != NULL)
   {
-    stiffmat12->Shape(dim1, dim2);
+    stiffmat12->shape(dim1, dim2);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
         (*stiffmat12)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
   }
   if (stiffmat21 != NULL)
   {
-    stiffmat21->Shape(dim2, dim1);
+    stiffmat21->shape(dim2, dim1);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
         (*stiffmat21)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, icol));
   }
   if (stiffmat22 != NULL)
   {
-    stiffmat22->Shape(dim2, dim2);
+    stiffmat22->shape(dim2, dim2);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
         (*stiffmat22)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, dim1 + icol));

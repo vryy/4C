@@ -190,7 +190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
   }  // loop over integration points
 
   // safety check
-  if (not my::scatrapara_->IsAle() and scalars.Length() != 3)
+  if (not my::scatrapara_->IsAle() and scalars.length() != 3)
     dserror(
         "Result vector for electrode state of charge and C rate computation has invalid length!");
 
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     }  // loop over integration points
 
     // safety check
-    if (scalars.Length() != 6)
+    if (scalars.length() != 6)
       dserror(
           "Result vector for electrode state of charge and C rate computation has invalid length!");
 

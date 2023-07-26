@@ -612,9 +612,10 @@ void CONTACT::CoIntegratorNitsche::BuildAdjointTest(MORTAR::MortarElement& moEle
   }
 
   CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
-  CORE::LINALG::SerialDenseMatrix deriv_trafo(::View, derivtravo_slave.A(), derivtravo_slave.Rows(),
-      derivtravo_slave.Rows(), derivtravo_slave.Columns());
-  if (tmp.Multiply('N', 'N', 1., d2sntDdDpxi, deriv_trafo, 0.)) dserror("multiply failed");
+  CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
+      derivtravo_slave.Rows(), derivtravo_slave.Rows(), derivtravo_slave.Columns());
+  if (tmp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., d2sntDdDpxi, deriv_trafo, 0.))
+    dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (const auto& p : boundary_gpcoord_lin[d])
@@ -636,29 +637,29 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(const double fac, const 
 {
   if (abs(fac) < 1.e-16) return;
 
-  CORE::LINALG::SerialDenseVector(
-      View, moEle.GetNitscheContainer().Rhs(), moEle.MoData().ParentDof().size())
-      .Update(fac * jac * wgt * test, adjoint_test, 1.0);
+  CORE::LINALG::SerialDenseVector Tmp(
+      Teuchos::View, moEle.GetNitscheContainer().Rhs(), moEle.MoData().ParentDof().size());
+  CORE::LINALG::Update(fac * jac * wgt * test, adjoint_test, 1.0, Tmp);
 
   for (const auto& p : deriv_adjoint_test)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * test, p.second, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * jac * wgt * test, p.second, 1.0, Tmp);
   }
 
   for (const auto& p : jacintcellmap)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * p.second * wgt * test, adjoint_test, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * p.second * wgt * test, adjoint_test, 1.0, Tmp);
   }
 
   for (const auto& p : deriv_test)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * p.second, adjoint_test, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * jac * wgt * p.second, adjoint_test, 1.0, Tmp);
   }
 }
 

@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
-#include <Epetra_SerialDenseSolver.h>
 
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_stvenantkirchhoff.H"
@@ -139,9 +139,9 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector& elevec2_epetra,
     CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  CORE::LINALG::Matrix<15, 15> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<15, 15> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<15, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<15, 15> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<15, 15> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<15, 1> elevec1(elevec1_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::NStet5::ActionType act = NStet5::none;
@@ -762,10 +762,10 @@ void DRT::ELEMENTS::NStet5::nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass)
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -783,10 +783,10 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
     CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
-  CORE::LINALG::SerialDenseVector stress_e(::View, stress.A(), stress.Rows());
+  CORE::LINALG::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.Rows());
   CORE::LINALG::SerialDenseMatrix cmat_e(
-      ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
-  const CORE::LINALG::SerialDenseVector glstrain_e(::View, glstrain.A(), glstrain.Rows());
+      Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+  const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.Rows());
 
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())

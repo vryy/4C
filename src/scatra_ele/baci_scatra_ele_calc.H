@@ -12,8 +12,6 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include <Epetra_IntSerialDenseVector.h>
-
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_interface.H"
@@ -260,7 +258,7 @@ namespace DRT
       //!  integrate shape functions over domain
       void IntegrateShapeFunctions(const DRT::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseVector& elevec1,          //!< rhs vector
-          const Epetra_IntSerialDenseVector& dofids          //!< index of current scalar
+          const CORE::LINALG::IntSerialDenseVector& dofids   //!< index of current scalar
       );
 
       //!  calculate weighted mass flux (no reactive flux so far)

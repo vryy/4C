@@ -17,7 +17,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
@@ -51,7 +51,7 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
 
   //  matrix holding the conversion from pressures and dofs
   // reset
-  dof2pres_->Scale(0.0);
+  dof2pres_->putScalar(0.0);
 
   // get number of volume fractions
   numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_) / 2);
@@ -157,9 +157,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   // invert dof2pres_ to get conversion from dofs to pressures for the fluid phases
   if (numfluidphases_ > 0)
   {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(*dof2pres_);
-    int err = inverse.Invert();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
+    inverse.setMatrix(dof2pres_);
+    int err = inverse.invert();
     if (err != 0)
       dserror(
           "Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs "

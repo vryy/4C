@@ -361,8 +361,8 @@ bool WEAR::Partitioned::ConvergenceCheck(int iter)
   if (abs(Wincr) < 1e-8 and abs(ALEincr) < 1e-8)
   {
     // reset vectors
-    ale_i_->Scale(0.0);
-    delta_ale_->Scale(0.0);
+    ale_i_->PutScalar(0.0);
+    delta_ale_->PutScalar(0.0);
 
     return true;
   }

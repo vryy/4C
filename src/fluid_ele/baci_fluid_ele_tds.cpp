@@ -21,9 +21,9 @@ FLD::TDSEleDataType FLD::TDSEleDataType::instance_;
  *----------------------------------------------------------------------*/
 FLD::TDSEleData::TDSEleData()
 {
-  saccn_.Shape(0, 0);
-  svelnp_.Shape(0, 0);
-  sveln_.Shape(0, 0);
+  saccn_.shape(0, 0);
+  svelnp_.shape(0, 0);
+  sveln_.shape(0, 0);
 
   return;
 }
@@ -55,14 +55,14 @@ void FLD::TDSEleData::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
 
   // history variables
-  AddtoPack(data, saccn_.M());
-  AddtoPack(data, saccn_.N());
+  AddtoPack(data, saccn_.numRows());
+  AddtoPack(data, saccn_.numCols());
 
-  int size = saccn_.M() * saccn_.N() * sizeof(double);
+  int size = saccn_.numRows() * saccn_.numCols() * sizeof(double);
 
-  AddtoPack(data, saccn_.A(), size);
-  AddtoPack(data, svelnp_.A(), size);
-  AddtoPack(data, sveln_.A(), size);
+  AddtoPack(data, saccn_.values(), size);
+  AddtoPack(data, svelnp_.values(), size);
+  AddtoPack(data, sveln_.values(), size);
 
   return;
 }
@@ -88,16 +88,16 @@ void FLD::TDSEleData::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, secondim);
 
 
-    saccn_.Shape(firstdim, secondim);
-    svelnp_.Shape(firstdim, secondim);
-    sveln_.Shape(firstdim, secondim);
+    saccn_.shape(firstdim, secondim);
+    svelnp_.shape(firstdim, secondim);
+    sveln_.shape(firstdim, secondim);
 
 
     int size = firstdim * secondim * sizeof(double);
 
-    ExtractfromPack(position, data, saccn_.A(), size);
-    ExtractfromPack(position, data, svelnp_.A(), size);
-    ExtractfromPack(position, data, sveln_.A(), size);
+    ExtractfromPack(position, data, saccn_.values(), size);
+    ExtractfromPack(position, data, svelnp_.values(), size);
+    ExtractfromPack(position, data, sveln_.values(), size);
   }
 
   if (position != data.size())
@@ -117,21 +117,16 @@ FLD::TDSEleData::~TDSEleData() { return; }
 void FLD::TDSEleData::ActivateTDS(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
-  if (saccn_.M() != nsd || saccn_.N() != nquad)
+  if (saccn_.numRows() != nsd || saccn_.numCols() != nquad)
   {
-    saccn_.Shape(nsd, nquad);
-    memset(saccn_.A(), 0, nsd * nquad * sizeof(double));
-
-    sveln_.Shape(nsd, nquad);
-    memset(sveln_.A(), 0, nsd * nquad * sizeof(double));
-
-    svelnp_.Shape(nsd, nquad);
-    memset(svelnp_.A(), 0, nsd * nquad * sizeof(double));
+    saccn_.shape(nsd, nquad);
+    sveln_.shape(nsd, nquad);
+    svelnp_.shape(nsd, nquad);
   }
   // for what's this exactly?
-  if (saccn != NULL) *saccn = saccn_.A();
-  if (sveln != NULL) *sveln = sveln_.A();
-  if (svelnp != NULL) *svelnp = svelnp_.A();
+  if (saccn != NULL) *saccn = saccn_.values();
+  if (sveln != NULL) *sveln = sveln_.values();
+  if (svelnp != NULL) *svelnp = svelnp_.values();
 }
 
 
@@ -196,10 +191,10 @@ void FLD::TDSEleData::Update(const double dt, const double gamma)
    */
 
   // variable in space dimensions
-  const int nsd = saccn_.M();  // does this always hold?
+  const int nsd = saccn_.numRows();  // does this always hold?
   for (int rr = 0; rr < nsd; ++rr)
   {
-    for (int mm = 0; mm < svelnp_.N(); ++mm)
+    for (int mm = 0; mm < svelnp_.numCols(); ++mm)
     {
       saccn_(rr, mm) = (svelnp_(rr, mm) - sveln_(rr, mm)) / (gamma * dt) -
                        saccn_(rr, mm) * (1.0 - gamma) / gamma;
@@ -215,7 +210,7 @@ void FLD::TDSEleData::Update(const double dt, const double gamma)
   // variable in space dimensions
   for (int rr = 0; rr < nsd; ++rr)
   {
-    for (int mm = 0; mm < svelnp_.N(); ++mm)
+    for (int mm = 0; mm < svelnp_.numCols(); ++mm)
     {
       sveln_(rr, mm) = svelnp_(rr, mm);
     }

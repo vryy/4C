@@ -614,10 +614,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
     // reshape element matrices and vectors and init to zero, construct views
     const int peledim = (nsd + 1) * piel;
-    elemat_epetra.Shape(peledim, peledim);
-    elevec_epetra.Size(peledim);
-    CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.A(), true);
-    CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.A(), true);
+    elemat_epetra.shape(peledim, peledim);
+    elevec_epetra.size(peledim);
+    CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+    CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
     // get local node coordinates
     CORE::LINALG::Matrix<nsd, piel> pxyze(true);
@@ -1273,10 +1273,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
-  elemat_epetra.Shape(peledim, peledim);
-  elevec_epetra.Size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.A(), true);
+  elemat_epetra.shape(peledim, peledim);
+  elevec_epetra.size(peledim);
+  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, piel> pxyze(true);
@@ -1604,10 +1604,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
-  elemat_epetra.Shape(peledim, peledim);
-  elevec_epetra.Size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.A(), true);
+  elemat_epetra.shape(peledim, peledim);
+  elevec_epetra.size(peledim);
+  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, piel> pxyze(true);
@@ -1942,10 +1942,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
-  elemat_epetra.Shape(peledim, peledim);
-  elevec_epetra.Size(peledim);
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.A(), true);
+  elemat_epetra.shape(peledim, peledim);
+  elevec_epetra.size(peledim);
+  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, piel> pxyze(true);
@@ -3784,10 +3784,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
 
   // reshape element matrices and vectors and init to zero, construct views
   const int peledim = nsd * piel;
-  elemat_epetra1.Shape(peledim, peledim);
-  elemat_epetra2.Shape(peledim, peledim);
-  CORE::LINALG::Matrix<peledim, peledim> Amat(elemat_epetra1.A(), true);
-  CORE::LINALG::Matrix<peledim, peledim> Bmat(elemat_epetra2.A(), true);
+  elemat_epetra1.shape(peledim, peledim);
+  elemat_epetra2.shape(peledim, peledim);
+  CORE::LINALG::Matrix<peledim, peledim> Amat(elemat_epetra1.values(), true);
+  CORE::LINALG::Matrix<peledim, peledim> Bmat(elemat_epetra2.values(), true);
 
   // get local node coordinates
   CORE::LINALG::Matrix<nsd, piel> pxyze(true);
@@ -4371,11 +4371,11 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   // Reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd + 1) * piel;
 
-  elemat_epetra.Shape(peledim, peledim);
-  elevec_epetra.Size(peledim);
+  elemat_epetra.shape(peledim, peledim);
+  elevec_epetra.size(peledim);
 
-  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.A(), true);
-  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.A(), true);
+  CORE::LINALG::Matrix<peledim, peledim> elemat(elemat_epetra.values(), true);
+  CORE::LINALG::Matrix<peledim, 1> elevec(elevec_epetra.values(), true);
 
   //--------------------------------------------------
   // get the condition information

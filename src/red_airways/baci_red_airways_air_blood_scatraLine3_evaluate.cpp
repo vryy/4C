@@ -23,7 +23,7 @@ the routines called during the possible actions is contained in red_air_blood_sc
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_list.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 using namespace DRT::UTILS;
 

@@ -18,17 +18,7 @@
 #include "baci_fluid_functions.H"
 #include "baci_mat_fluid_weakly_compressible.H"
 
-#include <Epetra_SerialDenseSolver.h>
-
-
-
-namespace
-{
-  void zeroMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
-  {
-    std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
-  }
-}  // namespace
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 
@@ -138,7 +128,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
   localSolver_->CondenseLocalMatrix(elemat1);
 
   // divide rhs by alpha_f
-  elevec1.Scale(1.0 / localSolver_->fldparatimint_->AlphaF());
+  elevec1.scale(1.0 / localSolver_->fldparatimint_->AlphaF());
 
   return 0;
 }
@@ -309,18 +299,20 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
   // compute local solver vector
   CORE::LINALG::SerialDenseVector LocalSolverVec((msd_ + 1 + nsd_) * shapes_->ndofs_);
-  LocalSolverVec.Multiply('N', 'N', 1.0, localSolver_->KlocallocalInv, localSolver_->Rlocal, 0.0);
+  LocalSolverVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->KlocallocalInv,
+      localSolver_->Rlocal, 0.0);
 
   // compute local solver matrix
   CORE::LINALG::SerialDenseMatrix LocalSolverMat(
       (msd_ + 1 + nsd_) * shapes_->ndofs_, nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
-  LocalSolverMat.Multiply(
-      'N', 'N', -1.0, localSolver_->KlocallocalInv, localSolver_->Klocalglobal, 0.0);
+  LocalSolverMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->KlocallocalInv,
+      localSolver_->Klocalglobal, 0.0);
 
   // compute local increments
-  interiorinc.Shape((msd_ + 1 + nsd_) * shapes_->ndofs_, 1);
+  interiorinc.size((msd_ + 1 + nsd_) * shapes_->ndofs_);
   interiorinc = LocalSolverVec;
-  interiorinc.Multiply('N', 'N', 1.0, LocalSolverMat, localtraceinc, 1.0);
+  interiorinc.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, LocalSolverMat, localtraceinc, 1.0);
 
   return 0;
 }
@@ -388,9 +380,9 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
   for (unsigned int q = 0; q < nqpoints; ++q)
   {
     // clear vectors
-    Leg.Shape(msd_, 1);
-    reg.Shape(1, 1);
-    weg.Shape(nsd_, 1);
+    Leg.size(msd_);
+    reg.size(1);
+    weg.size(nsd_);
 
     // interpolate values on gauss points
     for (unsigned int i = 0; i < ndofs; ++i)
@@ -455,7 +447,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   shapes_->Evaluate(*ele, aleDis_);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.M() == 0 || elevec2.M() == static_cast<int>((msd_ + 1 + nsd_) * shapes_->ndofs_),
+  dsassert(elevec2.numRows() == 0 ||
+               elevec2.numRows() == static_cast<int>((msd_ + 1 + nsd_) * shapes_->ndofs_),
       "Wrong size in project vector 2");
 
   // get initial function and current time
@@ -463,13 +456,13 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   const int* startfunc = params.getPtr<int>("startfuncno");
   double* time = params.getPtr<double>("time");
 
-  if (elevec2.M() > 0)
+  if (elevec2.numRows() > 0)
   {
     // Create the local matrix from starting at the addres where elevec2 is with the right shape
     CORE::LINALG::SerialDenseMatrix localMat(
-        View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, msd_ + 1 + nsd_, false);
+        Teuchos::View, elevec2.values(), shapes_->ndofs_, shapes_->ndofs_, msd_ + 1 + nsd_);
     // Initialize matrix to zeros
-    zeroMatrix(localMat);
+    localMat.putScalar(0.0);
 
     // create mass matrix for interior by looping over quadrature points
     for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -511,20 +504,22 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       }
     }
     // The integration is made by computing the matrix product
-    localSolver_->massMat.Multiply(
-        'N', 'T', 1., localSolver_->massPart, localSolver_->massPartW, 0.);
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(localSolver_->massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
+    localSolver_->massMat.multiply(
+        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(localSolver_->massMat));
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.solve();
   }
 
   // Here we have the projection of the field on the trace
   CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // trVec is the vector of the trace values
   CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, 1 + nsd_);
-  dsassert(elevec1.M() == static_cast<int>((1 + nsd_) * shapesface_->nfdofs_) ||
-               elevec1.M() == static_cast<int>(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_),
+  dsassert(elevec1.numRows() == static_cast<int>((1 + nsd_) * shapesface_->nfdofs_) ||
+               elevec1.numRows() == static_cast<int>(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
 
   const unsigned int* faceConsider = params.getPtr<unsigned int>("faceconsider");
@@ -548,8 +543,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
     shapesface_->EvaluateFace(*ele, face, aleDis_);
 
     // Initializing the matrices
-    zeroMatrix(mass);
-    zeroMatrix(trVec);
+    mass.putScalar(0.0);
+    trVec.putScalar(0.0);
 
     // For each quadrature point we evaluate the trace values and the shape functions
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
@@ -614,12 +609,14 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
     }
 
     // Solving step, nothing fancy
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(mass);
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
     // In this cas trVec is a proper vector and not a matrix used as multiple
     // RHS vectors
-    inverseMass.SetVectors(trVec, trVec);
-    inverseMass.Solve();
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.solve();
 
     // In this case we fill elevec1 with the values of trVec because we have not
     // defined trVec as a matrix beginning where elevec1 begins
@@ -655,8 +652,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
   InitializeShapes(ele);
   // Check if the vector has the correct size
-  dsassert(
-      elevec1.M() == (int)nen_ * (msd_ + 1 + nsd_ + 1 + nsd_), "Vector does not have correct size");
+  dsassert(elevec1.numRows() == (int)nen_ * (msd_ + 1 + nsd_ + 1 + nsd_),
+      "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
@@ -687,7 +684,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
     // Saving the value of the "localDofs[i]" in the "solvalues" vector
     solvalues[i] = (*matrix_state)[lid];
   }
-  elevec1.Scale(0.);
+  elevec1.putScalar(0.0);
 
   // EVALUATE SHAPE POLYNOMIALS IN NODE
   // In hdg we can have several more points inside the element than in the
@@ -757,7 +754,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
     const int lid = matrix_state->Map().LID(localDofs[i]);
     solvalues[i] = (*matrix_state)[lid];
   }
-  for (int i = (msd_ + 1 + nsd_) * nen_; i < elevec1.M(); ++i) elevec1(i) = 0.0;
+  for (int i = (msd_ + 1 + nsd_) * nen_; i < elevec1.numRows(); ++i) elevec1(i) = 0.0;
 
   CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -917,56 +914,56 @@ DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
   tau_w = 0.0;
 
   // initialize auxiliary matrices
-  massPart.Shape(ndofs_, shapes_.nqpoints_);
-  massPartW.Shape(ndofs_, shapes_.nqpoints_);
-  massMat.Shape(ndofs_, ndofs_);
+  massPart.shape(ndofs_, shapes_.nqpoints_);
+  massPartW.shape(ndofs_, shapes_.nqpoints_);
+  massMat.shape(ndofs_, ndofs_);
 
   // initialize unknowns
-  Leg.Shape(msd_, shapes_.nqpoints_);
-  reg.Shape(shapes_.nqpoints_, 1);
-  weg.Shape(nsd_, shapes_.nqpoints_);
+  Leg.shape(msd_, shapes_.nqpoints_);
+  reg.size(shapes_.nqpoints_);
+  weg.shape(nsd_, shapes_.nqpoints_);
 
   // initialize ALE variables
-  aeg.Shape(nsd_, shapes_.nqpoints_);
-  dadxyzeg.Shape(nsd_ * nsd_, shapes_.nqpoints_);
+  aeg.shape(nsd_, shapes_.nqpoints_);
+  dadxyzeg.shape(nsd_ * nsd_, shapes_.nqpoints_);
 
   // initialize matrices
-  ALL.Shape(msd_ * ndofs_, msd_ * ndofs_);
-  ALr.Shape(msd_ * ndofs_, 1 * ndofs_);
-  ALw.Shape(msd_ * ndofs_, nsd_ * ndofs_);
-  ALR.Shape(msd_ * ndofs_, 1 * ndofsfaces_);
-  ALW.Shape(msd_ * ndofs_, nsd_ * ndofsfaces_);
-  Arr.Shape(1 * ndofs_, 1 * ndofs_);
-  Arw.Shape(1 * ndofs_, nsd_ * ndofs_);
-  ArR.Shape(1 * ndofs_, 1 * ndofsfaces_);
-  ArW.Shape(1 * ndofs_, nsd_ * ndofsfaces_);
-  AwL.Shape(nsd_ * ndofs_, msd_ * ndofs_);
-  Awr.Shape(nsd_ * ndofs_, 1 * ndofs_);
-  Aww.Shape(nsd_ * ndofs_, nsd_ * ndofs_);
-  AwR.Shape(nsd_ * ndofs_, 1 * ndofsfaces_);
-  AwW.Shape(nsd_ * ndofs_, nsd_ * ndofsfaces_);
-  ARr.Shape(1 * ndofsfaces_, 1 * ndofs_);
-  ARR.Shape(1 * ndofsfaces_, 1 * ndofsfaces_);
-  AWL.Shape(nsd_ * ndofsfaces_, msd_ * ndofs_);
-  AWw.Shape(nsd_ * ndofsfaces_, nsd_ * ndofs_);
-  AWR.Shape(nsd_ * ndofsfaces_, 1 * ndofsfaces_);
-  AWW.Shape(nsd_ * ndofsfaces_, nsd_ * ndofsfaces_);
+  ALL.shape(msd_ * ndofs_, msd_ * ndofs_);
+  ALr.shape(msd_ * ndofs_, 1 * ndofs_);
+  ALw.shape(msd_ * ndofs_, nsd_ * ndofs_);
+  ALR.shape(msd_ * ndofs_, 1 * ndofsfaces_);
+  ALW.shape(msd_ * ndofs_, nsd_ * ndofsfaces_);
+  Arr.shape(1 * ndofs_, 1 * ndofs_);
+  Arw.shape(1 * ndofs_, nsd_ * ndofs_);
+  ArR.shape(1 * ndofs_, 1 * ndofsfaces_);
+  ArW.shape(1 * ndofs_, nsd_ * ndofsfaces_);
+  AwL.shape(nsd_ * ndofs_, msd_ * ndofs_);
+  Awr.shape(nsd_ * ndofs_, 1 * ndofs_);
+  Aww.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  AwR.shape(nsd_ * ndofs_, 1 * ndofsfaces_);
+  AwW.shape(nsd_ * ndofs_, nsd_ * ndofsfaces_);
+  ARr.shape(1 * ndofsfaces_, 1 * ndofs_);
+  ARR.shape(1 * ndofsfaces_, 1 * ndofsfaces_);
+  AWL.shape(nsd_ * ndofsfaces_, msd_ * ndofs_);
+  AWw.shape(nsd_ * ndofsfaces_, nsd_ * ndofs_);
+  AWR.shape(nsd_ * ndofsfaces_, 1 * ndofsfaces_);
+  AWW.shape(nsd_ * ndofsfaces_, nsd_ * ndofsfaces_);
 
   // initialize residuals
-  RL.Shape(msd_ * ndofs_, 1);
-  Rr.Shape(1 * ndofs_, 1);
-  Rw.Shape(nsd_ * ndofs_, 1);
-  RR.Shape(1 * ndofsfaces_, 1);
-  RW.Shape(nsd_ * ndofsfaces_, 1);
+  RL.size(msd_ * ndofs_);
+  Rr.size(1 * ndofs_);
+  Rw.size(nsd_ * ndofs_);
+  RR.size(1 * ndofsfaces_);
+  RW.size(nsd_ * ndofsfaces_);
 
   // initialize local/global matrices/vectors
-  Klocallocal.Shape((msd_ + 1 + nsd_) * ndofs_, (msd_ + 1 + nsd_) * ndofs_);
-  Klocalglobal.Shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
-  Kgloballocal.Shape((1 + nsd_) * ndofsfaces_, (msd_ + 1 + nsd_) * ndofs_);
-  Kglobalglobal.Shape((1 + nsd_) * ndofsfaces_, (1 + nsd_) * ndofsfaces_);
-  Rlocal.Shape((msd_ + 1 + nsd_) * ndofs_, 1);
-  Rglobal.Shape((1 + nsd_) * ndofsfaces_, 1);
-  KlocallocalInv.Shape((msd_ + 1 + nsd_) * ndofs_, (msd_ + 1 + nsd_) * ndofs_);
+  Klocallocal.shape((msd_ + 1 + nsd_) * ndofs_, (msd_ + 1 + nsd_) * ndofs_);
+  Klocalglobal.shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
+  Kgloballocal.shape((1 + nsd_) * ndofsfaces_, (msd_ + 1 + nsd_) * ndofs_);
+  Kglobalglobal.shape((1 + nsd_) * ndofsfaces_, (1 + nsd_) * ndofsfaces_);
+  Rlocal.size((msd_ + 1 + nsd_) * ndofs_);
+  Rglobal.size((1 + nsd_) * ndofsfaces_);
+  KlocallocalInv.shape((msd_ + 1 + nsd_) * ndofs_, (msd_ + 1 + nsd_) * ndofs_);
 
   // pair of indices in Voigt notation
   int s = 0;
@@ -991,51 +988,51 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll()
 {
   // initialize unknowns
-  zeroMatrix(Leg);
-  zeroMatrix(reg);
-  zeroMatrix(weg);
+  Leg.putScalar(0.0);
+  reg.putScalar(0.0);
+  weg.putScalar(0.0);
 
   // initialize ALE variables
-  zeroMatrix(aeg);
-  zeroMatrix(dadxyzeg);
+  aeg.putScalar(0.0);
+  dadxyzeg.putScalar(0.0);
 
   // initialize matrices
-  zeroMatrix(ALL);
-  zeroMatrix(ALr);
-  zeroMatrix(ALw);
-  zeroMatrix(ALR);
-  zeroMatrix(ALW);
-  zeroMatrix(Arr);
-  zeroMatrix(Arw);
-  zeroMatrix(ArR);
-  zeroMatrix(ArW);
-  zeroMatrix(AwL);
-  zeroMatrix(Awr);
-  zeroMatrix(Aww);
-  zeroMatrix(AwR);
-  zeroMatrix(AwW);
-  zeroMatrix(ARr);
-  zeroMatrix(ARR);
-  zeroMatrix(AWL);
-  zeroMatrix(AWw);
-  zeroMatrix(AWR);
-  zeroMatrix(AWW);
+  ALL.putScalar(0.0);
+  ALr.putScalar(0.0);
+  ALw.putScalar(0.0);
+  ALR.putScalar(0.0);
+  ALW.putScalar(0.0);
+  Arr.putScalar(0.0);
+  Arw.putScalar(0.0);
+  ArR.putScalar(0.0);
+  ArW.putScalar(0.0);
+  AwL.putScalar(0.0);
+  Awr.putScalar(0.0);
+  Aww.putScalar(0.0);
+  AwR.putScalar(0.0);
+  AwW.putScalar(0.0);
+  ARr.putScalar(0.0);
+  ARR.putScalar(0.0);
+  AWL.putScalar(0.0);
+  AWw.putScalar(0.0);
+  AWR.putScalar(0.0);
+  AWW.putScalar(0.0);
 
   // initialize residuals
-  zeroMatrix(RL);
-  zeroMatrix(Rr);
-  zeroMatrix(Rw);
-  zeroMatrix(RR);
-  zeroMatrix(RW);
+  RL.putScalar(0.0);
+  Rr.putScalar(0.0);
+  Rw.putScalar(0.0);
+  RR.putScalar(0.0);
+  RW.putScalar(0.0);
 
   // initialize local/global matrices/vectors
-  zeroMatrix(Klocallocal);
-  zeroMatrix(Klocalglobal);
-  zeroMatrix(Kgloballocal);
-  zeroMatrix(Kglobalglobal);
-  zeroMatrix(Rlocal);
-  zeroMatrix(Rglobal);
-  zeroMatrix(KlocallocalInv);
+  Klocallocal.putScalar(0.0);
+  Klocalglobal.putScalar(0.0);
+  Kgloballocal.putScalar(0.0);
+  Kglobalglobal.putScalar(0.0);
+  Rlocal.putScalar(0.0);
+  Rglobal.putScalar(0.0);
+  KlocallocalInv.putScalar(0.0);
 }
 
 
@@ -1046,8 +1043,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
     CORE::LINALG::SerialDenseMatrix& DL, CORE::LINALG::SerialDenseMatrix& Dw)
 {
   // initialize DL and Dw
-  DL.Shape(msd_, msd_);
-  Dw.Shape(msd_, msd_);
+  DL.shape(msd_, msd_);
+  Dw.shape(msd_, msd_);
 
   // evaluate D_fac
   CORE::LINALG::SerialDenseMatrix D_fac(msd_, msd_);
@@ -1075,7 +1072,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
       Dw(nsd_ + s, nsd_ + s) = std::pow(mu, 1.0 / 2.0);
 
     // evaluate DL
-    DL.Multiply('N', 'N', 1., Dw, D_fac, 0.);
+    DL.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., Dw, D_fac, 0.);
   }
   else  // variable viscosity
   {
@@ -1542,9 +1539,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   CORE::LINALG::SerialDenseVector phatefg(nfqpoints);
   CORE::LINALG::SerialDenseMatrix DLefg(msd_, msd_);
   CORE::LINALG::SerialDenseMatrix Dwefg(msd_, msd_);
-  rhatefg.Shape(nfqpoints, 1);
-  whatefg.Shape(nsd_, nfqpoints);
-  aefg.Shape(nsd_, nfqpoints);
+  rhatefg.size(nfqpoints);
+  whatefg.shape(nsd_, nfqpoints);
+  aefg.shape(nsd_, nfqpoints);
 
   // loop over quadrature points
   for (unsigned int q = 0; q < nfqpoints; ++q)
@@ -2036,8 +2033,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLocalMatrix()
 {
   KlocallocalInv = Klocallocal;
-  KlocallocalInvSolver.SetMatrix(KlocallocalInv);
-  int err = KlocallocalInvSolver.Invert();
+  KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv));
+  int err = KlocallocalInvSolver.invert();
   if (err != 0) dserror("Inversion of local-local matrix failed with errorcode %d", err);
 }
 
@@ -2048,16 +2045,16 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
     CORE::LINALG::SerialDenseVector& eleVec)
 {
   // initialize element vector
-  eleVec.Shape((1 + nsd_) * ndofsfaces_, 1);
+  eleVec.size((1 + nsd_) * ndofsfaces_);
 
   // create auxiliary vector
   CORE::LINALG::SerialDenseVector eleVecAux;
-  eleVecAux.Shape((msd_ + 1 + nsd_) * ndofs_, 1);
+  eleVecAux.size((msd_ + 1 + nsd_) * ndofs_);
 
   // compute element vector
-  eleVecAux.Multiply('N', 'N', 1.0, KlocallocalInv, Rlocal, 0.0);
+  eleVecAux.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, KlocallocalInv, Rlocal, 0.0);
   eleVec = Rglobal;
-  eleVec.Multiply('N', 'N', -1.0, Kgloballocal, eleVecAux, 1.0);
+  eleVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Kgloballocal, eleVecAux, 1.0);
 }
 
 
@@ -2067,16 +2064,16 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
     CORE::LINALG::SerialDenseMatrix& eleMat)
 {
   // initialize element matrix
-  eleMat.Shape((1 + nsd_) * ndofsfaces_, (1 + nsd_) * ndofsfaces_);
+  eleMat.shape((1 + nsd_) * ndofsfaces_, (1 + nsd_) * ndofsfaces_);
 
   // create auxiliary matrix
   CORE::LINALG::SerialDenseMatrix eleMatAux;
-  eleMatAux.Shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
+  eleMatAux.shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
 
   // compute element matrix
-  eleMatAux.Multiply('N', 'N', 1.0, KlocallocalInv, Klocalglobal, 0.0);
+  eleMatAux.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, KlocallocalInv, Klocalglobal, 0.0);
   eleMat = Kglobalglobal;
-  eleMat.Multiply('N', 'N', -1.0, Kgloballocal, eleMatAux, 1.0);
+  eleMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Kgloballocal, eleMatAux, 1.0);
 }
 
 
@@ -2091,79 +2088,79 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::PrintMatrices
 
   // matrices
   std::cout << "\n\n ALL = \n\n";
-  ALL.Print(std::cout);
+  ALL.print(std::cout);
   std::cout << "\n\n ALr = \n\n";
-  ALr.Print(std::cout);
+  ALr.print(std::cout);
   std::cout << "\n\n ALw = \n\n";
-  ALw.Print(std::cout);
+  ALw.print(std::cout);
   std::cout << "\n\n ALR = \n\n";
-  ALR.Print(std::cout);
+  ALR.print(std::cout);
   std::cout << "\n\n ALW = \n\n";
-  ALW.Print(std::cout);
+  ALW.print(std::cout);
   std::cout << "\n\n Arr = \n\n";
-  Arr.Print(std::cout);
+  Arr.print(std::cout);
   std::cout << "\n\n Arw = \n\n";
-  Arw.Print(std::cout);
+  Arw.print(std::cout);
   std::cout << "\n\n ArR = \n\n";
-  ArR.Print(std::cout);
+  ArR.print(std::cout);
   std::cout << "\n\n ArW = \n\n";
-  ArW.Print(std::cout);
+  ArW.print(std::cout);
   std::cout << "\n\n AwL = \n\n";
-  AwL.Print(std::cout);
+  AwL.print(std::cout);
   std::cout << "\n\n Awr = \n\n";
-  Awr.Print(std::cout);
+  Awr.print(std::cout);
   std::cout << "\n\n Aww = \n\n";
-  Aww.Print(std::cout);
+  Aww.print(std::cout);
   std::cout << "\n\n AwR = \n\n";
-  AwR.Print(std::cout);
+  AwR.print(std::cout);
   std::cout << "\n\n AwW = \n\n";
-  AwW.Print(std::cout);
+  AwW.print(std::cout);
   std::cout << "\n\n ARr = \n\n";
-  ARr.Print(std::cout);
+  ARr.print(std::cout);
   std::cout << "\n\n ARR = \n\n";
-  ARR.Print(std::cout);
+  ARR.print(std::cout);
   std::cout << "\n\n AWL = \n\n";
-  AWL.Print(std::cout);
+  AWL.print(std::cout);
   std::cout << "\n\n AWw = \n\n";
-  AWw.Print(std::cout);
+  AWw.print(std::cout);
   std::cout << "\n\n AWR = \n\n";
-  AWR.Print(std::cout);
+  AWR.print(std::cout);
   std::cout << "\n\n AWW = \n\n";
-  AWW.Print(std::cout);
+  AWW.print(std::cout);
 
   // residuals
   std::cout << "\n\n RL = \n\n";
-  RL.Print(std::cout);
+  RL.print(std::cout);
   std::cout << "\n\n Rr = \n\n";
-  Rr.Print(std::cout);
+  Rr.print(std::cout);
   std::cout << "\n\n Rw = \n\n";
-  Rw.Print(std::cout);
+  Rw.print(std::cout);
   std::cout << "\n\n RR = \n\n";
-  RR.Print(std::cout);
+  RR.print(std::cout);
   std::cout << "\n\n RW = \n\n";
-  RW.Print(std::cout);
+  RW.print(std::cout);
 
   // local/global matrices/vectors
   std::cout << "\n\n Klocallocal = \n\n";
-  Klocallocal.Print(std::cout);
+  Klocallocal.print(std::cout);
   std::cout << "\n\n Klocalglobal = \n\n";
-  Klocalglobal.Print(std::cout);
+  Klocalglobal.print(std::cout);
   std::cout << "\n\n Kgloballocal = \n\n";
-  Kgloballocal.Print(std::cout);
+  Kgloballocal.print(std::cout);
   std::cout << "\n\n Kglobalglobal = \n\n";
-  Kglobalglobal.Print(std::cout);
+  Kglobalglobal.print(std::cout);
   std::cout << "\n\n Rlocal = \n\n";
-  Rlocal.Print(std::cout);
+  Rlocal.print(std::cout);
   std::cout << "\n\n Rglobal = \n\n";
-  Rglobal.Print(std::cout);
+  Rglobal.print(std::cout);
   std::cout << "\n\n KlocallocalInv = \n\n";
-  KlocallocalInv.Print(std::cout);
+  KlocallocalInv.print(std::cout);
 
   // element vector and matrix
   std::cout << "\n\n eleVec = \n\n";
-  eleVec.Print(std::cout);
+  eleVec.print(std::cout);
   std::cout << "\n\n eleMat = \n\n";
-  eleMat.Print(std::cout);
+  eleMat.print(std::cout);
 }
 
 

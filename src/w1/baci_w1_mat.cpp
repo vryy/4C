@@ -12,6 +12,7 @@
 
 /*----------------------------------------------------------------------*/
 // headers
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
 #include "baci_utils_exceptions.H"
@@ -20,7 +21,6 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_elasthyper.H"
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
 
       CORE::LINALG::SerialDenseVector svector;
-      svector.Size(3);
+      svector.size(3);
 
       for (int k = 0; k < 3; k++)
       {
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatr
   }
 
   // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
-  memset(stress.A(), 0, stress.M() * stress.N() * sizeof(double));     // zerofy
+  stress.putScalar(0.0);                                               // zerofy
   stress(0, 0) = stress(3, 3) = pk2(0);                                // S_{11}
   stress(1, 1) = stress(2, 2) = pk2(1);                                // S_{22}
   stress(0, 2) = stress(1, 3) = stress(3, 1) = stress(2, 0) = pk2(3);  // S_{12}
@@ -369,7 +369,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
       Sv(0) = Sm(0, 0);
       Sv(1) = Sm(1, 1);
       Sv(2) = Sv(3) = Sm(0, 2);
-      return 0.5 * Sv.Dot(Ev);
+      return 0.5 * Sv.dot(Ev);
     }
     break;
     case INPAR::MAT::m_elasthyper:

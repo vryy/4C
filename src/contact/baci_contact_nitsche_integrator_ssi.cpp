@@ -305,17 +305,17 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
     CORE::GEN::pairedvector<int, double>& d_conc_dc,
     CORE::GEN::pairedvector<int, double>& d_conc_dd)
 {
-  CORE::LINALG::SerialDenseVector ele_conc(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_conc(shape_func.length());
   for (int i = 0; i < ele.NumNode(); ++i)
     ele_conc(i) =
         ele.MoData().ParentScalar().at(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
             ele.ParentElement()->Shape(), ele.FaceParentNumber(), i));
 
   // calculate gp concentration
-  gp_conc = shape_func.Dot(ele_conc);
+  gp_conc = shape_func.dot(ele_conc);
 
   // calculate derivative of concentration w.r.t. concentration
-  d_conc_dc.resize(shape_func.Length());
+  d_conc_dc.resize(shape_func.length());
   d_conc_dc.clear();
   for (int i = 0; i < ele.NumNode(); ++i)
     d_conc_dc[ele.MoData().ParentScalarDof().at(

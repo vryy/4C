@@ -417,11 +417,11 @@ void UTILS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      elematrix1.Shape(eledim, eledim);
-      elematrix2.Shape(eledim, eledim);
-      elevector1.Size(eledim);
-      elevector2.Size(eledim);
-      elevector3.Size(1);
+      elematrix1.shape(eledim, eledim);
+      elematrix2.shape(eledim, eledim);
+      elevector1.size(eledim);
+      elevector2.size(eledim);
+      elevector3.size(1);
       params.set("ConditionID", eid);
 
       // call the element evaluate method
@@ -432,19 +432,19 @@ void UTILS::MPConstraint3::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       if (assemblemat1)
       {
         // scale with time integrator dependent value
-        elematrix1.Scale(scStiff * lagraval);
+        elematrix1.scale(scStiff * lagraval);
         systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
       }
       if (assemblemat2)
       {
         std::vector<int> colvec(1);
         colvec[0] = gindex;
-        elevector2.Scale(scConMat);
+        elevector2.scale(scConMat);
         systemmatrix2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
       if (assemblevec1)
       {
-        elevector1.Scale(lagraval);
+        elevector1.scale(lagraval);
         CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)
@@ -513,11 +513,11 @@ void UTILS::MPConstraint3::InitializeConstraint(Teuchos::RCP<DRT::Discretization
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    elematrix1.Shape(eledim, eledim);
-    elematrix2.Shape(eledim, eledim);
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
-    elevector3.Size(1);
+    elematrix1.shape(eledim, eledim);
+    elematrix2.shape(eledim, eledim);
+    elevector1.size(eledim);
+    elevector2.size(eledim);
+    elevector3.size(1);
     // call the element evaluate method
     int err = actele->Evaluate(
         params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);

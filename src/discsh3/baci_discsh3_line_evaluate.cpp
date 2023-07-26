@@ -499,7 +499,7 @@ void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
 
   for (int b = 0; b < numblocks; b++)
   {
-    int err = elemat_blocks[b].Shape(
+    int err = elemat_blocks[b].shape(
         numnodeinpatch, numnodeinpatch);  // new shape and init values to zero
 
     if (err != 0) dserror("element matrix Shape not successful");
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
 
   for (int b = 0; b < NODDOF_DISCSH3; b++)
   {
-    int err = elevec_blocks[b].Size(numnodeinpatch);  // new size and init values to zero
+    int err = elevec_blocks[b].size(numnodeinpatch);  // new size and init values to zero
 
     if (err != 0) dserror("element matrix Shape not successful");
   }

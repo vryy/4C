@@ -132,7 +132,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(const DRT::ELEMENTS::So_hex20& old)
   for (int i = 0; i < (int)invJ_.size(); ++i)
   {
     // can this size be anything but NUMDIM_SOH20 x NUMDIM_SOH20?
-    // invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
+    // invJ_[i].Shape(old.invJ_[i].numRows(),old.invJ_[i].numCols());
     invJ_[i] = old.invJ_[i];
   }
 

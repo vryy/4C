@@ -130,11 +130,11 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     {
       if (elevec1 != Teuchos::null)  // old structural time integration
       {
-        if (elevec1.M() != 1)
+        if (elevec1.numRows() != 1)
           dserror(
               "energy vector of invalid size %i, expected row dimension 1 (total elastic energy of "
               "element)!",
-              elevec1.M());
+              elevec1.numRows());
         elevec1(0) = Eint_;
       }
       else if (IsParamsInterface())  // new structural time integration
@@ -1546,7 +1546,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   // (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later. so we apply inverse factor here because the
   // correct prefactors for displacement/velocity/acceleration dependent terms have been applied
   // individually above
-  if (massmatrix != NULL) massmatrix->Scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
+  if (massmatrix != NULL) massmatrix->scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
 }
 
 /*----------------------------------------------------------------------------*
@@ -2144,10 +2144,10 @@ void DRT::ELEMENTS::Beam3r::lumpmass(CORE::LINALG::SerialDenseMatrix* massmatrix
   if (massmatrix != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*massmatrix).N(); ++c)  // parse columns
+    for (int c = 0; c < (*massmatrix).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (int r = 0; r < (*massmatrix).M(); ++r)  // parse rows
+      for (int r = 0; r < (*massmatrix).numRows(); ++r)  // parse rows
       {
         d += (*massmatrix)(r, c);  // accumulate row entries
         (*massmatrix)(r, c) = 0.0;

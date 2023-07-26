@@ -82,8 +82,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
 
 
       // Fixme
-      eleforce[0].Scale(-1.0);
-      eleforce[1].Scale(-1.0);
+      eleforce[0].scale(-1.0);
+      eleforce[1].scale(-1.0);
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes

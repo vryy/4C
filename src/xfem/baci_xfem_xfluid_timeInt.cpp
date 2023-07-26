@@ -121,13 +121,13 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
   int nummethods = INPAR::XFEM::Xf_TimeInt_undefined +
                    1;  // has to be larger than the maximum of the enum INPAR::XFEM::XFluidTimeInt
 
-  CORE::LINALG::SerialDenseVector cpu_methods(nummethods);
-  CORE::LINALG::SerialDenseVector glob_methods(nummethods);
+  std::vector<int> cpu_methods(nummethods);
+  std::vector<int> glob_methods(nummethods);
 
   for (int i = 0; i < nummethods; ++i)
   {
-    cpu_methods(i) = 0.0;
-    glob_methods(i) = 0.0;
+    cpu_methods[i] = 0;
+    glob_methods[i] = 0;
   }
 
   for (std::map<INPAR::XFEM::XFluidTimeInt, int>::iterator reconstrMethod =
@@ -135,11 +135,11 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
        reconstrMethod != reconstr_counts_.end(); reconstrMethod++)
   {
     int index = (int)(reconstrMethod->first);
-    cpu_methods(index) = reconstrMethod->second;
+    cpu_methods[index] = reconstrMethod->second;
   }
 
   // reduce and sum over all procs
-  dis_->Comm().SumAll(cpu_methods.Values(), glob_methods.Values(), nummethods);
+  dis_->Comm().SumAll(cpu_methods.data(), glob_methods.data(), nummethods);
 
   if (screenout)
   {
@@ -150,7 +150,7 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
     {
       printf("\n%s:\t #dofsets(P%i/allprocs):\t(%i/%i)",
           MapMethodEnumToString(INPAR::XFEM::XFluidTimeInt(method_idx)).c_str(), myrank_,
-          (int)cpu_methods(method_idx), (int)glob_methods(method_idx));
+          cpu_methods[method_idx], glob_methods[method_idx]);
     }
     IO::cout << "\n+-------------------------------------------------------+\n" << IO::endl;
   }

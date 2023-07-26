@@ -79,8 +79,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::integrate_shape_functions:
     {
       // calculate integral of shape functions
-      const Epetra_IntSerialDenseVector& dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-      IntegrateShapeFunctions(ele, elevec1_epetra, dofids);
+      const auto dofids = params.get<Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>>("dofids");
+      IntegrateShapeFunctions(ele, elevec1_epetra, *dofids);
 
       break;
     }
@@ -551,7 +551,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -1422,7 +1422,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
   // scale element matrix appropriately to be consistent with scaling of global residual vector
   // computed by AssembleMatAndRHS() routine (see CalcInitialTimeDerivative() routine on time
   // integrator level)
-  emat.Scale(scatraparatimint_->TimeFacRhs());
+  emat.scale(scatraparatimint_->TimeFacRhs());
 }  // ScaTraEleCalc::CalcInitialTimeDerivative()
 
 
@@ -1448,14 +1448,15 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CorrectRHSFromCalcRHSLinMas
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
     const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
-    const Epetra_IntSerialDenseVector& dofids)
+    const CORE::LINALG::IntSerialDenseVector& dofids)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
-  if (dofids.M() < numdofpernode_) dserror("Dofids vector is too short. Received not enough flags");
+  if (dofids.numRows() < numdofpernode_)
+    dserror("Dofids vector is too short. Received not enough flags");
 
   // loop over integration points
   // this order is not efficient since the integration of the shape functions is always the same for
@@ -1853,9 +1854,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
       unsigned col = inode * numdofpernode_ + idof;
 
       // clear element matrix and vectors for perturbed state
-      emat_dummy.Scale(0.0);
-      erhs_perturbed.Scale(0.0);
-      subgrdiff_dummy.Scale(0.0);
+      emat_dummy.putScalar(0.0);
+      erhs_perturbed.putScalar(0.0);
+      subgrdiff_dummy.putScalar(0.0);
 
       // fill state vectors with original state variables
       for (int k = 0; k < numscal_; ++k)

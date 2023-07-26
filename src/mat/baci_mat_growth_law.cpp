@@ -130,27 +130,27 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
       thetatemp = theta + omega * residual / thetaquer;
 
       // calculate growth part F_g of the deformation gradient F
-      F_g.Scale(0.0);
+      F_g.putScalar(0.0);
       CalcFg(thetatemp, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
       // calculate F_g^(-1)
-      F_ginv.Scale(0.0);
+      F_ginv.putScalar(0.0);
       F_ginv.Invert(F_g);
       // elastic deformation gradient F_e = F * F_g^(-1)
-      defgrddach.Scale(0.0);
+      defgrddach.putScalar(0.0);
       defgrddach.MultiplyNN(*defgrd, F_ginv);
       // elastic right Cauchy-Green tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
-      Cdach.Scale(0.0);
+      Cdach.putScalar(0.0);
       Cdach.MultiplyTN(defgrddach, defgrddach);
 
       // transform Cdach into a vector
-      Cdachvec.Scale(0.0);
+      Cdachvec.putScalar(0.0);
       UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
       glstraindachvec = Cdachvec;
       glstraindachvec -= Id;
       glstraindachvec.Scale(0.5);
-      cmatdach.Scale(0.0);
-      Sdachvec.Scale(0.0);
+      cmatdach.putScalar(0.0);
+      Sdachvec.putScalar(0.0);
       matgrowth.EvaluateElastic(
           &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
@@ -1423,7 +1423,7 @@ void MAT::GrowthLawConst::Evaluate(double* theta, const double& thetaold,
   *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate, eleGID) * dt;
   //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 
-  dthetadC->Scale(0.0);
+  dthetadC->putScalar(0.0);
 }
 
 /*----------------------------------------------------------------------------*/

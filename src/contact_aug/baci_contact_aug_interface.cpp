@@ -458,7 +458,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 
       // fill nodal matrix
       const CORE::LINALG::SerialDenseMatrix& n_i = *normals_i;
-      std::copy(n_i.A(), n_i.A() + 3, cnode.MoData().n());
+      std::copy(n_i.values(), n_i.values() + 3, cnode.MoData().n());
     }
   }
 
@@ -1090,9 +1090,9 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
 
     const int numdof = cnode->NumDof();
 
-    if (vals.Length() != numdof)
+    if (vals.length() != numdof)
     {
-      vals.Resize(numdof);
+      vals.resize(numdof);
       rowIds.resize(numdof, -1);
       rowner.resize(numdof, -1);
     }
@@ -1101,7 +1101,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     vals(0) = cn_inv_scale * augA;
 
     // tangential directions
-    std::fill(vals.A() + 1, vals.A() + numdof, ct_inv * augA);
+    std::fill(vals.values() + 1, vals.values() + numdof, ct_inv * augA);
 
     // copy dof ids
     std::copy(cnode->Dofs(), cnode->Dofs() + numdof, rowIds.data());

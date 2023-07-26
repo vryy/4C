@@ -165,7 +165,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base
     dserror("wrong size of (potentially resized) local matrix!");
 
   // copy local to normal....
-  std::copy(local_vector.begin(), local_vector.begin() + (nsd * numnode), element_vector.A());
+  CORE::LINALG::copy(local_vector.data(), element_vector);
 }
 
 
@@ -183,5 +183,5 @@ void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& e
   if (local_vector.size() != nsd) dserror("wrong size of (potentially resized) local matrix!");
 
   // copy local to nvec....
-  std::copy(local_vector.begin(), local_vector.begin() + nsd, element_vector.A());
+  CORE::LINALG::copy(local_vector.data(), element_vector);
 }

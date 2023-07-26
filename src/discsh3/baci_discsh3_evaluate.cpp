@@ -15,7 +15,6 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_lib_globalproblem.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
@@ -2486,9 +2485,9 @@ void DRT::ELEMENTS::DiscSh3::sh3_lumpmass(
   if (massmatrix != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*massmatrix).N(); c++)  // parse columns
+    for (int c = 0; c < (*massmatrix).numCols(); c++)  // parse columns
     {
-      for (int r = 0; r < (*massmatrix).M(); r++)  // parse rows
+      for (int r = 0; r < (*massmatrix).numRows(); r++)  // parse rows
       {
         if (r == c)
         {

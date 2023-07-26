@@ -428,8 +428,8 @@ void DRT::Element::NodalConnectivity(
   double weight = EvaluationCost();
 
   int numnode = NumNode();
-  nodeweights.Size(numnode);
-  edgeweights.Shape(numnode, numnode);
+  nodeweights.size(numnode);
+  edgeweights.shape(numnode, numnode);
 
   // initialize weights
   for (int n = 0; n < numnode; ++n)

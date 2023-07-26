@@ -243,7 +243,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         std::vector<int> lmowner;
         std::vector<int> lmstride;
         ele->LocationVector(*this, lm, lmowner, lmstride);
-        elevector.Size((int)lm.size());
+        elevector.size((int)lm.size());
         if (!assemblemat)
         {
           ele->EvaluateNeumann(params, *this, *cond, lm, elevector);
@@ -252,10 +252,10 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         else
         {
           const int size = lm.size();
-          if (elematrix.M() != size)
-            elematrix.Shape(size, size);
+          if (elematrix.numRows() != size)
+            elematrix.shape(size, size);
           else
-            memset(elematrix.A(), 0, size * size * sizeof(double));
+            elematrix.putScalar(0.0);
           ele->EvaluateNeumann(params, *this, *cond, lm, elevector, &elematrix);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(ele->Id(), lmstride, elematrix, lm, lmowner);
@@ -301,7 +301,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
       // get information from location
       currele->LocationVector(*this, lm, lmowner, lmstride);
       const int size = (int)lm.size();
-      elevector.Size(size);
+      elevector.size(size);
 
       // evaluate linearized point moment conditions and assemble f_ext and f_ext_lin into global
       // matrix
@@ -309,10 +309,10 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
       if (assemblemat)
       {
         // resize f_ext_lin matrix
-        if (elematrix.M() != size)
-          elematrix.Shape(size, size);
+        if (elematrix.numRows() != size)
+          elematrix.shape(size, size);
         else
-          memset(elematrix.A(), 0, size * size * sizeof(double));
+          elematrix.putScalar(0.0);
         // evaluate linearized point moment conditions and assemble matrices
         currele->EvaluateNeumann(params, *this, *cond, lm, elevector, &elematrix);
         systemmatrix->Assemble(currele->Id(), lmstride, elematrix, lm, lmowner);
@@ -465,7 +465,7 @@ void DRT::Discretization::EvaluateScalars(
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // number of scalars
-  const int numscalars = scalars->Length();
+  const int numscalars = scalars->length();
   if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
   // intermediate sum of each scalar on each processor
   CORE::LINALG::SerialDenseVector cpuscalars(numscalars);
@@ -500,7 +500,7 @@ void DRT::Discretization::EvaluateScalars(
 
   // reduce
   for (int i = 0; i < numscalars; ++i) (*scalars)(i) = 0.0;
-  Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
+  Comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
 }  // DRT::Discretization::EvaluateScalars
 
 
@@ -519,7 +519,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() has not been called on discretization!");
 
   // determine number of scalar quantities to be computed
-  const int numscalars = scalars->Length();
+  const int numscalars = scalars->length();
 
   // safety check
   if (numscalars <= 0)
@@ -583,7 +583,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
   }          // loop over conditions
 
   // communicate results across all processors
-  Comm().SumAll(cpuscalars.Values(), scalars->Values(), numscalars);
+  Comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
 }  // DRT::Discretization::EvaluateScalars
 
 

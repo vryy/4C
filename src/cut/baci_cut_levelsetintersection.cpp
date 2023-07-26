@@ -47,7 +47,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
     const bool& check_lsv)
 {
   int numnode = nids.size();
-  if (numnode != xyz.N()) dserror("node coordinate number mismatch");
+  if (numnode != xyz.numCols()) dserror("node coordinate number mismatch");
 
   bool ltz = false;
   bool gtz = false;

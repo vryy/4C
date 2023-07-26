@@ -354,7 +354,7 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material, std::vector<dou
   //--------------------------------------------------------------- integrate
   int ngauss = 0;
   CORE::LINALG::SerialDenseMatrix gp_stress;
-  gp_stress.Shape(nir * nis, 18);
+  gp_stress.shape(nir * nis, 18);
   ARRAY C_a;
   double** C = (double**)amdef((char*)"C", &C_a, 6, 6, (char*)"DA");
   for (int lr = 0; lr < nir; ++lr)
@@ -681,8 +681,8 @@ bool DRT::ELEMENTS::Shell8::VisData(const std::string& name, std::vector<double>
   if (!gp_stress) return false;  // no stresses present, do nothing
 
   // Need to average the values of the gaussian point
-  const int ngauss = gp_stress->M();  // first dimension is # gaussian point
-  const int nforce = gp_stress->N();  // second dimension is # of forces and moments
+  const int ngauss = gp_stress->numRows();  // first dimension is # gaussian point
+  const int nforce = gp_stress->numCols();  // second dimension is # of forces and moments
 
   CORE::LINALG::SerialDenseMatrix centervalues(nforce, 1);
   for (int i = 0; i < nforce; ++i)
@@ -1087,11 +1087,11 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
   // general arrays
   std::vector<double> funct(numnode);
   CORE::LINALG::SerialDenseMatrix deriv;
-  deriv.Shape(2, numnode);
+  deriv.shape(2, numnode);
   CORE::LINALG::SerialDenseMatrix bop;
-  bop.Shape(12, nd);
+  bop.shape(12, nd);
   CORE::LINALG::SerialDenseVector intforce;
-  intforce.Size(nd);
+  intforce.size(nd);
   double D[12][12];  // mid surface material tensor
   double stress[6];
   double strain[6];
@@ -1202,12 +1202,12 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
   if (nhyb_)
   {
     // init to zero
-    P.Shape(12, nhyb_);
-    transP.Shape(12, nhyb_);
-    T.Shape(12, 12);
-    Lt.Shape(nhyb_, nd);
-    Dtild.Shape(nhyb_, nhyb_);
-    Dtildinv.Shape(nhyb_, nhyb_);
+    P.shape(12, nhyb_);
+    transP.shape(12, nhyb_);
+    T.shape(12, 12);
+    Lt.shape(nhyb_, nd);
+    Dtild.shape(nhyb_, nhyb_);
+    Dtildinv.shape(nhyb_, nhyb_);
     Rtild.resize(nhyb_);
     for (int i = 0; i < nhyb_; ++i) Rtild[i] = 0.0;
 
@@ -1285,8 +1285,8 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
     {
       funct1q[i].resize(iel);
       funct2q[i].resize(iel);
-      deriv1q[i].Shape(2, iel);
-      deriv2q[i].Shape(2, iel);
+      deriv1q[i].shape(2, iel);
+      deriv2q[i].shape(2, iel);
     }
     s8_ans_colloquationpoints(nsansq, iel, ans_, xr1, xs1, xr2, xs2, funct1q, deriv1q, funct2q,
         deriv2q, xrefe, a3r, xcure, a3c, akovr1q, akonr1q, amkovr1q, amkonr1q, a3kvpr1q, akovc1q,
@@ -1432,7 +1432,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
         /*  Dtilde(nhyb,nhyb) = Mtrans(nhyb,12) * D(12,12) * M(12,nhyb) */
         /*==========================================================*/
         /*-------------------------------------------------DM = D*M */
-        workeas.Shape(12, nhyb_);
+        workeas.shape(12, nhyb_);
         s8matmatdense(workeas, D, transP, 12, 12, nhyb_, 0, 0.0);
         /*------------------------------------------ Dtilde = Mt*DM */
         s8mattrnmatdense(Dtild, transP, workeas, nhyb_, 12, nhyb_, 1, weight);
@@ -1504,10 +1504,10 @@ void DRT::ELEMENTS::Shell8::s8_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
   if (emass != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -3347,9 +3347,9 @@ void DRT::ELEMENTS::Shell8::s8_YpluseqAx(CORE::LINALG::SerialDenseVector& y,
     const CORE::LINALG::SerialDenseMatrix& A, const std::vector<double>& x, const double factor,
     const bool init)
 {
-  const int rdim = (int)y.Length();
+  const int rdim = (int)y.length();
   const int ddim = (int)x.size();
-  if (A.M() < rdim || A.N() < ddim) dserror("Mismatch in dimensions");
+  if (A.numRows() < rdim || A.numCols() < ddim) dserror("Mismatch in dimensions");
 
   if (init)
     for (int i = 0; i < rdim; ++i) y[i] = 0.0;
@@ -3374,7 +3374,7 @@ void DRT::ELEMENTS::Shell8::s8_YpluseqAx(std::vector<double>& y,
 {
   const int rdim = (int)y.size();
   const int ddim = (int)x.size();
-  if (A.M() < rdim || A.N() < ddim) dserror("Mismatch in dimensions");
+  if (A.numRows() < rdim || A.numCols() < ddim) dserror("Mismatch in dimensions");
 
   if (init)
     for (int i = 0; i < rdim; ++i) y[i] = 0.0;
@@ -3896,7 +3896,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
 
     std::vector<double> funct(numnode);
     CORE::LINALG::SerialDenseMatrix deriv;
-    deriv.Shape(2, numnode);
+    deriv.shape(2, numnode);
 
     for (int i = 0; i < numnode; ++i)
     {
@@ -3930,7 +3930,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
     //------------------------------------------ allocate an array for forces
     {
       CORE::LINALG::SerialDenseMatrix forces;
-      forces.Shape(18, actele->ngp_[0] * actele->ngp_[1]);  // 18 forces on upto 9 gaussian points
+      forces.shape(18, actele->ngp_[0] * actele->ngp_[1]);  // 18 forces on upto 9 gaussian points
       actele->data_.Add("forces", forces);
     }
   }  // for (int i=0; i<dis.NumMyColElements(); ++i)

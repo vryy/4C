@@ -622,7 +622,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
       for (int k = 0; k < nnodeslin; ++k) meinv(j, k) = melin(j, k);
 
     // get solution matrix with dual parameters
-    ae.Multiply('N', 'N', 1.0, de, meinv, 0.0);
+    ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, meinv, 0.0);
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else

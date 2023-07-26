@@ -108,7 +108,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int, double>& V)
       curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
 
       // reshape element matrices and vectors and init to zero
-      elevector3.Size(1);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,

@@ -455,7 +455,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     const int eledim = (int)lm.size();
 
     // Reshape element matrices and vectors and initialize to zero
-    elevector1.Size(eledim);
+    elevector1.size(eledim);
 
     // set action in order to calculate the integrated divergence operator via an Evaluate()-call
     Teuchos::ParameterList params;

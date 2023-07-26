@@ -75,8 +75,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Evaluate(Artery* ele,
   std::vector<int>::iterator it_vcr;
 
   // construct views
-  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.values(), true);
   // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------
@@ -201,8 +201,8 @@ int DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraEvaluate(Artery* ele,
   std::vector<int>::iterator it_vcr;
 
   // construct views
-  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<2 * my::iel_, 1> elevec1(elevec1_epetra.values(), true);
   // elemat2, elevec2, and elevec3 are never used anyway
 
   //----------------------------------------------------------------------

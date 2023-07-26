@@ -386,11 +386,11 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
-  if (conservation_data.M() < 18) dserror("The conservation_data has insufficient size!");
+  if (conservation_data.numRows() < 18) dserror("The conservation_data has insufficient size!");
 
   of << std::setw(24) << nln_iter << std::setw(24) << interface_id;
   of << std::setprecision(16);
-  for (int i = 0; i < conservation_data.M(); ++i)
+  for (int i = 0; i < conservation_data.numRows(); ++i)
   {
     of << std::setw(24) << std::setw(24) << std::scientific << conservation_data(i, 0);
   }

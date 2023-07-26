@@ -55,7 +55,7 @@ namespace DRT
 
         //! ctor
         SlaveElementRepresentation(CORE::LINALG::SerialDenseMatrix::Base& slave_xyze)
-            : slave_xyze_(slave_xyze.A(), true)
+            : slave_xyze_(slave_xyze.values(), true)
         {
           SlaveElementInterface<distype>::DefineStateNames(
               slave_distype, disp_statename_, vel_statename_, veln_statename_);
@@ -937,11 +937,11 @@ namespace DRT
                                                  ///< Nitsche's adjoint viscous term
             )
             : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyz),
-              C_usum_(C_usum.A(), true),
-              C_umus_(C_umus.A(), true),
-              rhC_us_(rhC_us.A(), true),
-              G_sus_(G_s_us.A(), true),
-              G_uss_(G_us_s.A(), true),
+              C_usum_(C_usum.values(), true),
+              C_umus_(C_umus.values(), true),
+              rhC_us_(rhC_us.values(), true),
+              G_sus_(G_s_us.values(), true),
+              G_uss_(G_us_s.values(), true),
               adj_visc_scale_(isViscAdjointSymmetric ? 1.0 : -1.0)
         {
         }

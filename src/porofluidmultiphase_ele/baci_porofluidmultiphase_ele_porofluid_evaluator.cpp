@@ -1219,7 +1219,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::EvaluateMatrixA
                                      phasemanager.DynViscosity(curphase, abspressgrad));
     }
     else
-      diffflux_relpermeability.Scale(0.0);
+      diffflux_relpermeability.putScalar(0.0);
 
     //----------------------------------------------------------------
     // diffusive term and linearization of relative permeability w.r.t. dof
@@ -1255,7 +1255,7 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDiff<nsd, nen>::EvaluateMatrixA
     {
       // derivative of abspressgrad w.r.t. pressure gradient
       static CORE::LINALG::Matrix<nsd, 1> dabspressgraddpresgradp(true);
-      dabspressgraddpresgradp.Scale(0.0);
+      dabspressgraddpresgradp.putScalar(0.0);
       // avoid division by zero
       if (abspressgrad > 1.0e-12)
         for (int i = 0; i < nsd; i++) dabspressgraddpresgradp(i) = gradpres(i) / abspressgrad;

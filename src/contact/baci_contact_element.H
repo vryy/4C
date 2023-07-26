@@ -208,7 +208,8 @@ namespace CONTACT
     template <unsigned elenumnode>
     inline void DJacDXi(double* djacdxi, double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv)
     {
-      CORE::LINALG::SerialDenseMatrix sdm_secderiv(View, secderiv.A(), elenumnode, elenumnode, 3);
+      CORE::LINALG::SerialDenseMatrix sdm_secderiv(
+          Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
       DJacDXi(djacdxi, xi, sdm_secderiv);
     }
 

@@ -186,7 +186,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
     case SCATRA::Action::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -443,7 +443,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
     // with dt*(gamma/alpha_M) = timefac/alpha_F
     // matrix contributions are already scaled correctly with
     // timefac=dt*(gamma*alpha_F/alpha_M)
-    elevec1_epetra.Scale(rhsfac);
+    elevec1_epetra.scale(rhsfac);
   }
   else
   {
@@ -709,9 +709,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
       int col = inode * my::numdofpernode_ + idof;
 
       // clear element matrix and vectors for perturbed state
-      emat_dummy.Scale(0.0);
-      erhs_perturbed.Scale(0.0);
-      subgrdiff_dummy.Scale(0.0);
+      emat_dummy.putScalar(0.0);
+      erhs_perturbed.putScalar(0.0);
+      subgrdiff_dummy.putScalar(0.0);
 
       // fill state vectors with original state variables
       for (int k = 0; k < my::numdofpernode_; ++k)

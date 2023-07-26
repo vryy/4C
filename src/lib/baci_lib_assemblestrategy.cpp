@@ -146,38 +146,38 @@ void DRT::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 {
   if (Assemblemat1())
   {
-    if (elematrix1_.M() != rdim or elematrix1_.N() != cdim)
-      elematrix1_.Shape(rdim, cdim);
+    if (elematrix1_.numRows() != rdim or elematrix1_.numCols() != cdim)
+      elematrix1_.shape(rdim, cdim);
     else
-      memset(elematrix1_.A(), 0, rdim * cdim * sizeof(double));
+      elematrix1_.putScalar(0.0);
   }
   if (Assemblemat2())
   {
-    if (elematrix2_.M() != rdim or elematrix2_.N() != cdim)
-      elematrix2_.Shape(rdim, cdim);
+    if (elematrix2_.numRows() != rdim or elematrix2_.numCols() != cdim)
+      elematrix2_.shape(rdim, cdim);
     else
-      memset(elematrix2_.A(), 0, rdim * cdim * sizeof(double));
+      elematrix2_.putScalar(0.0);
   }
   if (Assemblevec1())
   {
-    if (elevector1_.Length() != rdim)
-      elevector1_.Size(rdim);
+    if (elevector1_.length() != rdim)
+      elevector1_.size(rdim);
     else
-      memset(elevector1_.Values(), 0, rdim * sizeof(double));
+      elevector1_.putScalar(0.0);
   }
   if (Assemblevec2())
   {
-    if (elevector2_.Length() != rdim)
-      elevector2_.Size(rdim);
+    if (elevector2_.length() != rdim)
+      elevector2_.size(rdim);
     else
-      memset(elevector2_.Values(), 0, rdim * sizeof(double));
+      elevector2_.putScalar(0.0);
   }
   if (Assemblevec3())
   {
-    if (elevector3_.Length() != rdim)
-      elevector3_.Size(rdim);
+    if (elevector3_.length() != rdim)
+      elevector3_.size(rdim);
     else
-      memset(elevector3_.Values(), 0, rdim * sizeof(double));
+      elevector3_.putScalar(0.0);
   }
 }
 

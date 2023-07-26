@@ -1154,9 +1154,9 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
                 // no coupling for pressure in stress based method, but the coupling matrices
                 // include entries for pressure coupling
-                couplingmatrices[0].Shape(ndof_i, ndof);  // C_sf = C_uiu
-                couplingmatrices[1].Shape(ndof, ndof_i);  // C_fs = C_uui
-                couplingmatrices[2].Shape(ndof_i, 1);     // rhC_s = rhs_ui
+                couplingmatrices[0].shape(ndof_i, ndof);  // C_sf = C_uiu
+                couplingmatrices[1].shape(ndof, ndof_i);  // C_fs = C_uui
+                couplingmatrices[2].shape(ndof_i, 1);     // rhC_s = rhs_ui
               }                                           // IsCoupling
             }                                             // loop bcs
 
@@ -1216,7 +1216,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
               // assemble rhC_s_col = rhC_ui_col
               CORE::LINALG::SerialDenseVector rhC_s_eptvec(
-                  ::View, couplingmatrices[2].A(), patchlm.size());
+                  Teuchos::View, couplingmatrices[2].values(), patchlm.size());
               CORE::LINALG::Assemble(
                   *(coup_state->rhC_s_col_), rhC_s_eptvec, patchlm, mypatchlmowner);
             }
@@ -1941,9 +1941,9 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
     Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms)
 {
   // number of norms that have to be calculated
-  const int num_dom_norms = glob_dom_norms->Length();
-  const int num_interf_norms = glob_interf_norms->Length();
-  const int num_stab_norms = glob_stab_norms->Length();
+  const int num_dom_norms = glob_dom_norms->length();
+  const int num_interf_norms = glob_interf_norms->length();
+  const int num_stab_norms = glob_stab_norms->length();
 
   CORE::LINALG::SerialDenseVector cpu_dom_norms(num_dom_norms);
   CORE::LINALG::SerialDenseVector cpu_interf_norms(num_interf_norms);
@@ -2090,10 +2090,10 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
   //--------------------------------------------------------
   // reduce and sum over all procs
   for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_dom_norms.Values(), glob_dom_norms->Values(), num_dom_norms);
+  discret_->Comm().SumAll(cpu_dom_norms.values(), glob_dom_norms->values(), num_dom_norms);
 
   for (int i = 0; i < num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
+  discret_->Comm().SumAll(cpu_interf_norms.values(), glob_interf_norms->values(), num_interf_norms);
 
 
   //--------------------------------------------------------

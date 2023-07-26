@@ -223,7 +223,7 @@ namespace CONTACT
     const CORE::LINALG::SerialDenseVector GetX1()
     {
       CORE::LINALG::SerialDenseVector r1;
-      r1.Resize(3);
+      r1.resize(3);
       for (int i = 0; i < 3; i++) r1(i) = CORE::FADUTILS::CastToDouble(x1_(i));
 
       return r1;
@@ -232,7 +232,7 @@ namespace CONTACT
     const CORE::LINALG::SerialDenseVector GetX2()
     {
       CORE::LINALG::SerialDenseVector r2;
-      r2.Resize(3);
+      r2.resize(3);
       for (int i = 0; i < 3; i++) r2(i) = CORE::FADUTILS::CastToDouble(x2_(i));
 
       return r2;

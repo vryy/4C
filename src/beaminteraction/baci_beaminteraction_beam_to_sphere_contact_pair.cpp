@@ -124,13 +124,13 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   unsigned int dim2 = 3;
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->Size(dim1);
-  if (forcevec2 != NULL) forcevec2->Size(dim2);
+  if (forcevec1 != NULL) forcevec1->size(dim1);
+  if (forcevec2 != NULL) forcevec2->size(dim2);
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->Shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->Shape(dim2, dim2);
+  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
 
   //**********************************************************************
   // Evaluation of contact forces and stiffness

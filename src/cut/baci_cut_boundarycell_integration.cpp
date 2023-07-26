@@ -82,12 +82,12 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     CORE::LINALG::SerialDenseVector rhs_bcell(num_func_ - deleteRowNos.size());
     if (deleteRowNos.size() == 0)
     {
-      for (int m = 0; m < rhs_bcell_temp.Length(); m++) rhs_bcell(m) = rhs_bcell_temp(m);
+      for (int m = 0; m < rhs_bcell_temp.length(); m++) rhs_bcell(m) = rhs_bcell_temp(m);
     }
     else
     {
       int rowno = 0, rhsno = 0;
-      for (int m = 0; m < rhs_bcell_temp.Length(); m++)
+      for (int m = 0; m < rhs_bcell_temp.length(); m++)
       {
         int deleteNo = deleteRowNos[rowno];
         if (m == deleteNo)
@@ -104,7 +104,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     }
 
     LeastSquares least(moment_matbc, rhs_bcell);
-    Bcellweights.Size(moment_matbc[0].size());
+    Bcellweights.size(moment_matbc[0].size());
     Bcellweights = least.linear_least_square();
 
     CORE::LINALG::SerialDenseVector err(num_func_);
@@ -122,7 +122,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
         err(i) = err(i) - rhs_bcell_temp(i);
     }
 
-    double maxerr = err.InfNorm();
+    double maxerr = err.normInf();
 
     if (maxerr < 1e-10 || ptsEachLine > 25)
       break;

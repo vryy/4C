@@ -360,19 +360,19 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
 
       if (assemblemat)
       {
-        if (elemass.M() != eledim or elemass.N() != eledim)
-          elemass.Shape(eledim, eledim);
+        if (elemass.numRows() != eledim or elemass.numCols() != eledim)
+          elemass.shape(eledim, eledim);
         else
-          memset(elemass.A(), 0, eledim * eledim * sizeof(double));
+          elemass.putScalar(0.0);
       }
       if (assemblevec)
       {
         for (unsigned i = 0; i < deg + 1; ++i)
         {
-          if (elerhs[i].Length() != eledim)
-            elerhs[i].Size(eledim);
+          if (elerhs[i].length() != eledim)
+            elerhs[i].size(eledim);
           else
-            memset(elerhs[i].Values(), 0, eledim * sizeof(double));
+            elerhs[i].putScalar(0.0);
         }
       }
 
@@ -605,7 +605,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
+                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -755,11 +755,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
+                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
 
         functfac = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                       .Evaluate(position.Values(), time, rr);
+                       .Evaluate(position.values(), time, rr);
       }
 
       // apply factors to Dirichlet value

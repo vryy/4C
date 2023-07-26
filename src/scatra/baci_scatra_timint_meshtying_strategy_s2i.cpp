@@ -4733,7 +4733,7 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
       {
         if (Teuchos::rcp_dynamic_cast<Epetra_FEVector>(systemvector)
                 ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),
-                    la_master[nds_rows_].lm_.data(), cellvector.A()))
+                    la_master[nds_rows_].lm_.data(), cellvector.values()))
           dserror("Assembly into master-side system vector not successful!");
       }
 
@@ -4790,14 +4790,14 @@ void SCATRA::MortarCellAssemblyStrategy::InitCellMatrix(CORE::LINALG::SerialDens
                                                         : la_master[nds_cols_].Size();
 
   // reshape cell matrix if necessary
-  if (cellmatrix.M() != nrows or cellmatrix.N() != ncols)
+  if (cellmatrix.numRows() != nrows or cellmatrix.numCols() != ncols)
   {
-    cellmatrix.Shape(nrows, ncols);
+    cellmatrix.shape(nrows, ncols);
   }
 
   // simply zero out otherwise
   else
-    memset(cellmatrix.A(), 0., nrows * ncols * sizeof(double));
+    cellmatrix.putScalar(0.0);
 }
 
 
@@ -4812,14 +4812,14 @@ void SCATRA::MortarCellAssemblyStrategy::InitCellVector(CORE::LINALG::SerialDens
       side == INPAR::S2I::side_slave ? la_slave[nds_rows_].Size() : la_master[nds_rows_].Size();
 
   // reshape cell vector if necessary
-  if (cellvector.Length() != ndofs)
+  if (cellvector.length() != ndofs)
   {
-    cellvector.Size(ndofs);
+    cellvector.size(ndofs);
 
     // simply zero out otherwise
   }
   else
-    memset(cellvector.Values(), 0., ndofs * sizeof(double));
+    cellvector.putScalar(0.0);
 }
 
 

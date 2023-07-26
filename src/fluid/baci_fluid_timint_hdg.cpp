@@ -366,9 +366,9 @@ void FLD::TimIntHDG::SetInitialFlowField(
       DRT::Element* ele = discret_->lColElement(el);
 
       ele->LocationVector(*discret_, la, false);
-      if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-        elevec1.Shape(la[0].lm_.size(), 1);
-      if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+      if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+        elevec1.size(la[0].lm_.size());
+      if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
       ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -388,12 +388,12 @@ void FLD::TimIntHDG::SetInitialFlowField(
       if (ele->Owner() == discret_->Comm().MyPID())
       {
         std::vector<int> localDofs = discret_->Dof(1, ele);
-        dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
+        dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
         for (unsigned int i = 0; i < localDofs.size(); ++i)
           localDofs[i] = intdofrowmap->LID(localDofs[i]);
-        intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
-        intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
-        intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+        intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
+        intveln_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
+        intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
       }
     }
     double globerror = 0;
@@ -488,7 +488,7 @@ namespace
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
       DRT::Element* ele = dis.lColElement(el);
-      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * (2 * ndim + 1) + 1);
+      if (interpolVec.numRows() == 0) interpolVec.resize(ele->NumNode() * (2 * ndim + 1) + 1);
 
       ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 

@@ -113,12 +113,12 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 
   /* --- reset external forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * Scale(0.0), because of possible NaN and inf values! */
+   * putScalar(0.0), because of possible NaN and inf values! */
   FextNp().PutScalar(0.0);
 
   /* --- reset internal forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * Scale(0.0), because of possible NaN and inf values! */
+   * putScalar(0.0), because of possible NaN and inf values! */
   FintNp().PutScalar(0.0);
 
   // reset stiffness matrix
@@ -1357,7 +1357,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
   fstructold_ptr->Update(-timefac_n, FextNp(), 1.0);
 
   // set the displacement increment back to zero
-  dis_incr_ptr_->Scale(0.0);
+  dis_incr_ptr_->PutScalar(0.0);
 }
 
 
@@ -1653,7 +1653,7 @@ bool STR::MODELEVALUATOR::Structure::DetermineElementVolumes(
 
     const int rele_lid = relemap->LID(rele->Id());
     (*ele_vols)[rele_lid] = ele_vol(2);
-    ele_vol.Zero();
+    ele_vol.putScalar(0.0);
   }
 
   Discret().ClearState();

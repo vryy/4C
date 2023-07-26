@@ -141,14 +141,14 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
     CORE::LINALG::SerialDenseVector X_A(nsd);
     CORE::LINALG::SerialDenseVector X_B(nsd);
 
-    std::copy(node_A->X(), node_A->X() + nsd, X_A.A());
-    std::copy(node_B->X(), node_B->X() + nsd, X_B.A());
+    std::copy(node_A->X(), node_A->X() + nsd, X_A.values());
+    std::copy(node_B->X(), node_B->X() + nsd, X_B.values());
 
     CORE::LINALG::SerialDenseVector diff(X_A);
-    diff.Scale(-1.0);
+    diff.scale(-1.0);
     diff += X_B;
 
-    if (diff.Norm2() > 1e-14) return false;
+    if (CORE::LINALG::Norm2(diff) > 1e-14) return false;
   }
 
   return true;
@@ -1762,7 +1762,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
       }
 
       // possible change in normal direction compared to phi-gradient
-      nvec.Scale(normal_orientation_);
+      nvec.scale(normal_orientation_);
     }
 
     //------------------------
@@ -1827,9 +1827,9 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
         INPAR::TWOPHASE::transport_dir_normal)  // OPTION 2: just the normal part (u*n^ij)*n^ij
                                                 // (OPTION 2)
     {
-      const double normal_vel = flvelconv.Dot(nvec);
+      const double normal_vel = flvelconv.dot(nvec);
       flvelconv = nvec;
-      flvelconv.Scale(normal_vel);
+      flvelconv.scale(normal_vel);
     }
     else if (transport_direction_ == INPAR::TWOPHASE::transport_dir_all)
     {
@@ -1872,7 +1872,7 @@ void XFEM::LevelSetCouplingTwoPhase::ComputeRelativeTransportVelocity(
     CORE::LINALG::SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
     const CORE::LINALG::SerialDenseVector& nvec, const double& curv)
 {
-  flvelrel.Scale(0.0);
+  flvelrel.putScalar(0.0);
 }
 
 
@@ -1882,11 +1882,11 @@ void XFEM::LevelSetCouplingTwoPhase::ComputeRelativeTransportVelocity(
 bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(CORE::LINALG::SerialDenseVector& normal)
 {
   // compute norm of smoothed normal vector
-  const double gradphi_norm = normal.Norm2();
+  const double gradphi_norm = CORE::LINALG::Norm2(normal);
 
   if (gradphi_norm > 1.0E-12)  // the standard case of non-vanishing normal
   {
-    normal.Scale(1.0 / gradphi_norm);  // scale it norm 1
+    normal.scale(1.0 / gradphi_norm);  // scale it norm 1
     return true;
   }
   else  // 'ngradnorm' == 0.0
@@ -1899,7 +1899,7 @@ bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(CORE::LINALG::SerialDenseVect
     //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal
     //    vector.
     // get the global id for current node
-    normal.Scale(0.0);
+    normal.putScalar(0.0);
     return false;
   }
 }
@@ -2395,7 +2395,7 @@ void XFEM::LevelSetCouplingCombustion::ComputeRelativeTransportVelocity(
   // compute the relative flame velocity at this node
   //-----------------------------------------------
   flvelrel = nvec;
-  flvelrel.Scale(-wallfac * speedfac);
+  flvelrel.scale(-wallfac * speedfac);
 
   if (transport_curvature_) dserror("how to account for curvature here?");
 }

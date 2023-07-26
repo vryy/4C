@@ -2205,7 +2205,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     std::vector<int> modeids = projector_->Modes();
 
     // initialize dofid vector to -1
-    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
+    CORE::LINALG::IntSerialDenseVector dofids(NumDofPerNode());
     for (int rr = 0; rr < NumDofPerNode(); ++rr)
     {
       dofids[rr] = -1;

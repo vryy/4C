@@ -70,8 +70,8 @@ int DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Evaluate(Artery* ele,
   const int numnode = my::iel_;
 
   // construct views
-  CORE::LINALG::Matrix<numnode, numnode> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<numnode, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<numnode, numnode> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<numnode, 1> elevec1(elevec1_epetra.values(), true);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side

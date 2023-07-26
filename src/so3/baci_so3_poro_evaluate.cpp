@@ -8,13 +8,13 @@
 
 *----------------------------------------------------------------------*/
 
+#include <iterator>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_poro.H"
 #include "baci_so3_poro_eletypes.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
-#include <iterator>
 
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
@@ -203,11 +203,11 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
     case ELEMENTS::struct_calc_nlnstiff:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
       // damping
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.values(), true);
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
       // elevec2+3 are not used anyway
 
       std::vector<int> lm = la[0].lm_;
@@ -272,9 +272,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
     case ELEMENTS::struct_calc_nlnstiffmass:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
       // elemat2,elevec2+3 are not used anyway
 
       // build the location vector only for the structure field
@@ -348,7 +348,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
     case ELEMENTS::struct_poro_calc_fluidcoupling:
     {
       // stiffness
-      CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_> elemat1(elemat1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_> elemat1(elemat1_epetra.values(), true);
 
       // build the location vector only for the structure field
       std::vector<int> lm = la[0].lm_;
@@ -419,7 +419,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
     case ELEMENTS::struct_calc_internalforce:
     {
       // internal force vector
-      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
+      CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
       // elemat1+2,elevec2+3 are not used anyway
 
       // build the location vector only for the structure field
@@ -1412,9 +1412,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureDeriv(
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
   {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(pressderiv);
-    int err = inverse.Invert();
+    typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+    typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
+    inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
+    int err = inverse.invert();
     if (err != 0)
       dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
   }
@@ -1424,7 +1426,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureDeriv(
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-  satderiv.Multiply('N', 'N', 1.0, helpderiv, pressderiv, 0.0);
+  satderiv.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, helpderiv, pressderiv, 0.0);
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
   // standard derivative: no volume fractions present
@@ -2804,8 +2806,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
       CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
 
-      d_cauchyndir_dp->Reshape(NUMNOD_SOH8, 1);
-      CORE::LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->A(), true);
+      d_cauchyndir_dp->reshape(NUMNOD_SOH8, 1);
+      CORE::LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->values(), true);
 
       for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       {

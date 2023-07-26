@@ -346,10 +346,10 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
   numgp_ = intpoints_->NumPoints();
 
   // local coordinates of the face's gausspoints w.r.t parent and neighbor element
-  p_xi_points_.Shape(numgp_, nsd_);
-  n_xi_points_.Shape(numgp_, nsd_);
-  face_xi_points_master_.Shape(numgp_, facensd_);
-  face_xi_points_slave_.Shape(numgp_, facensd_);
+  p_xi_points_.shape(numgp_, nsd_);
+  n_xi_points_.shape(numgp_, nsd_);
+  face_xi_points_master_.shape(numgp_, facensd_);
+  face_xi_points_slave_.shape(numgp_, facensd_);
 
   if (nsd_ == 3)
   {
@@ -908,10 +908,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // transform the face's Gaussian points to both parent elements
 
   // local coordinates of the face's gausspoints w.r.t parent and neighbor element
-  p_xi_points_.Scale(0.0);
-  n_xi_points_.Scale(0.0);
-  face_xi_points_master_.Scale(0.0);
-  face_xi_points_slave_.Scale(0.0);
+  p_xi_points_.putScalar(0.0);
+  n_xi_points_.putScalar(0.0);
+  face_xi_points_master_.putScalar(0.0);
+  face_xi_points_slave_.putScalar(0.0);
 
   //------------------------
   // local coordinates of the face nodes w.r.t slave side

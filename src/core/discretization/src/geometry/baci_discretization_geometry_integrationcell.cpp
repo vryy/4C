@@ -189,7 +189,7 @@ static std::string PosToString(double x, double y, double z)
 std::string CORE::GEO::DomainIntCell::toString() const
 {
   std::ostringstream s;
-  int numpoints = nodalpos_xi_domain_.N();
+  int numpoints = nodalpos_xi_domain_.numCols();
   s << "DomainIntCell:" << std::endl;
   s << " position in xi coordinates: " << std::endl;
   for (int inode = 0; inode < numpoints; ++inode)
@@ -503,7 +503,7 @@ template <> /* function specialization */
 void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
     const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center)
 {
-  phys_center.SetCopy(xyze.A());
+  phys_center.SetCopy(xyze.values());
 }
 
 template class CORE::GEO::ConcreteBoundaryIntCell<2, ::DRT::Element::point1>;
