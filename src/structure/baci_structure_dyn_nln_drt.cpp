@@ -24,8 +24,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_comm_utils.H"
 #include "baci_inpar_structure.H"
-#include "baci_inpar_invanalysis.H"
-#include "baci_inpar_statinvanalysis.H"
 #include "baci_structure_resulttest.H"
 
 #include "baci_lib_discret.H"

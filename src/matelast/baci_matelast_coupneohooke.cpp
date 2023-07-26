@@ -25,28 +25,6 @@ MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params
 {
 }
 
-// copy matparmas to summands
-void MAT::ELASTIC::CoupNeoHooke::CopyStatInvAnaMatParams(
-    std::vector<Teuchos::RCP<Epetra_Vector>> input)
-{
-  params_->ReturnMatparams() = input;
-}
-
-// Add parameters of elasthyper-summand for stat inverse analysis to matparams
-void MAT::ELASTIC::CoupNeoHooke::SetStatInvAnaSummandMatParams()
-{
-  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_c)->PutScalar(params_->c_);
-  params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_beta)->PutScalar(params_->beta_);
-}
-
-// Add parameters of elasthyper-summand for stat inverse analysis
-void MAT::ELASTIC::CoupNeoHooke::AddElastOptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("CoupNeoHooke_C", MAT::ELASTIC::PAR::coupneohooke_c));
-  pnames->insert(
-      std::pair<std::string, int>("CoupNeoHooke_BETA", MAT::ELASTIC::PAR::coupneohooke_beta));
-}
-
 void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
@@ -80,83 +58,9 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(CORE::LINALG::Matrix<3,
     CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 1>& prinv, const int gp,
     const int eleGID)
 {
-  double c = 0.;
-  double beta = 0.;
+  const double beta = params_->beta_;
+  const double c = params_->c_;
 
-  // in case of stat inverse analysis use getparameter
-  if (!params_->ReturnMatparams().empty())
-  {
-    c = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_c, eleGID);
-    beta = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_beta, eleGID);
-    dserror(
-        "Stat Inverse Analysis is not correct implemented with elasthyper-materials in the moment."
-        "See comments in elast_coupneohooke.cpp -> AddDerivativesPrincipal.");
-  }
-  // in other cases (e.g. gen-inv-analysis) matparams_ does not exist
-  else
-  {
-    beta = params_->beta_;
-    c = params_->c_;
-  }
-
-  /*
-   * This is the correct implementation for the use of stat inverse analysis
-   * with elasthyper-materials.
-   * However therefore the params-list params is necassary in this function.
-   * This is invasive in the code; consequently I did not implement it
-   * in the commited version.
-   * To Do: Think about a version, that's not so invasive.
-   *                                                                 abirzle 12/2017
-  // in case of stat inverse analysis
-  // calculate derivative of stress with respect to the parameters
-  // and safe in stress
-  int deriv = params.get<int>("matparderiv",-1);
-  // c
-  if (deriv == MAT::ELASTIC::PAR::coupneohooke_c)
-  {
-    dPI(0) += 1.;
-    if (prinv(2) > 0)
-      dPI(2) -= std::pow(prinv(2),-beta-1.);
-    else
-      dPI(2) = std::numeric_limits<double>::quiet_NaN();
-  }
-  // beta
-  else if (deriv == MAT::ELASTIC::PAR::coupneohooke_beta)
-  {
-    if (prinv(2) > 0)
-      dPI(2) += c*std::pow(prinv(2),-beta-1.)*std::log(prinv(2));
-    else
-      dPI(2) = std::numeric_limits<double>::quiet_NaN();
-  }
-  // normal case
-  // e.g. forward problem
-  else if(deriv == -1)
-  {
-    dPI(0) += c;
-    // computing exp(log(a)*b) is faster than pow(a,b)
-    if (prinv(2) > 0)
-    {
-      const double prinv2_to_beta_m1 = std::exp(std::log(prinv(2))*(-beta-1.));
-      dPI(2) -= c * prinv2_to_beta_m1;
-    }
-    else
-      dPI(2) = std::numeric_limits<double>::quiet_NaN();
-  }
-
-  // second derivative is the same for all
-  // computing exp(log(a)*b) is faster than pow(a,b)
-  if (prinv(2) > 0)
-  {
-    const double prinv2_to_beta_m1 = std::exp(std::log(prinv(2))*(-beta-1.));
-    ddPII(2) += c*(beta+1.)*prinv2_to_beta_m1/prinv(2);
-  }
-  else
-    ddPII(2) = std::numeric_limits<double>::quiet_NaN();
-
-    // other material --> do nothing
-  */
-
-  /* Correct implementation for stat inverse analysis replaces this part*/
   dPI(0) += c;
   // computing exp(log(a)*b) is faster than pow(a,b)
   if (prinv(2) > 0)

@@ -370,10 +370,10 @@ namespace IO
         const std::string name, Teuchos::RCP<std::vector<int>> setint);
 
 
-    /// overwrite result files for the inverse analysis
+    /// overwrite result files
     virtual void OverwriteResultFile();
 
-    /// creating new result files for the inverse analysis
+    /// creating new result files
     virtual void NewResultFile(int numb_run);
 
     /// creating new result files for the mlmc

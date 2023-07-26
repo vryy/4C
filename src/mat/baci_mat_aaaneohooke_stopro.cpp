@@ -46,12 +46,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke_stopro::CreateMaterial()
   return Teuchos::rcp(new MAT::AAAneohooke_stopro(this));
 }
 
-void MAT::PAR::AAAneohooke_stopro::OptParams(std::vector<std::string>* pnames)
-{
-  pnames->push_back("YOUNG");
-  pnames->push_back("BETA");
-}
-
 MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
 
 DRT::ParObject* MAT::AAAneohooke_stoproType::Create(const std::vector<char>& data)

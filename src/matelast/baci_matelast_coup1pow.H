@@ -76,14 +76,6 @@ namespace MAT
       /// material type
       INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coup1pow; }
 
-      void CopyStatInvAnaMatParams(std::vector<Teuchos::RCP<Epetra_Vector>> input) override;
-
-      /// Add parameters of elasthyper-summand for stat inverse analysis
-      void SetStatInvAnaSummandMatParams() override;
-
-      /// Add parameters of elasthyper-summand for stat inverse analysis
-      void AddElastOptParams(std::map<std::string, int>* pnames) override;
-
       //@}
 
       // add strain energy

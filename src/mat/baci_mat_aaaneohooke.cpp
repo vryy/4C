@@ -49,12 +49,6 @@ MAT::AAAneohookeType MAT::AAAneohookeType::instance_;
 
 
 
-void MAT::PAR::AAAneohooke::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("YOUNG", young));
-  pnames->insert(std::pair<std::string, int>("BETA", beta));
-}
-
 DRT::ParObject* MAT::AAAneohookeType::Create(const std::vector<char>& data)
 {
   MAT::AAAneohooke* aaa = new MAT::AAAneohooke();

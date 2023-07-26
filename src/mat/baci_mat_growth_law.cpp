@@ -1403,11 +1403,6 @@ MAT::PAR::GrowthLawConst::GrowthLawConst(Teuchos::RCP<MAT::PAR::Material> matdat
   matparams_.at(thetarate)->PutScalar(matdata->GetDouble("THETARATE"));
 }
 
-void MAT::PAR::GrowthLawConst::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("THETARATE", thetarate));
-}
-
 /*----------------------------------------------------------------------------*/
 MAT::GrowthLawConst::GrowthLawConst() : GrowthLawStatic(nullptr) {}
 

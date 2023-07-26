@@ -133,10 +133,6 @@ namespace MAT
     /// Setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    void ResetAll(int numgp) override;
-
     /// Update
     void Update() override;
 
@@ -374,10 +370,6 @@ namespace MAT
 
     /// Update
     void Update() override;
-
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    void ResetAll(int numgp) override;
 
     /// Return names of visualization data
     void VisNames(std::map<std::string, int>& names) override;

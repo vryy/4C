@@ -99,14 +99,6 @@ namespace MAT
         return INPAR::MAT::mes_coupneohooke;
       }
 
-      void CopyStatInvAnaMatParams(std::vector<Teuchos::RCP<Epetra_Vector>> input) override;
-
-      /// Add parameters of elasthyper-summand for stat inverse analysis
-      void SetStatInvAnaSummandMatParams() override;
-
-      /// Add parameters of elasthyper-summand for stat inverse analysis
-      void AddElastOptParams(std::map<std::string, int>* pnames) override;
-
       /// add shear modulus equivalent
       void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
           double& shearmod                  ///< variable to add upon

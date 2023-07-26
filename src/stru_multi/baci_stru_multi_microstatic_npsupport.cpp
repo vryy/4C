@@ -159,16 +159,6 @@ void STRUMULTI::np_support_drt()
         dummymaterials[eleID]->ReadRestart(gp, eleID, eleowner, microdisnum, V0);
         break;
       }
-      case 5:
-      {
-        // receive data from the master proc for inverse analysis
-        int owner = -1;
-        subcomm->Broadcast(&owner, 1, 0);
-        const bool eleowner = owner;
-        // dummy material is used initialize the inverse analysis on the micro material
-        dummymaterials[eleID]->InvAnaInit(eleowner, eleID);
-        break;
-      }
       case 9:
       {
         // end of simulation after deleting all dummy materials

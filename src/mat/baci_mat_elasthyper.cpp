@@ -18,8 +18,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-#include "baci_comm_utils.H"             // for stat inverse analysis
-#include "baci_inpar_statinvanalysis.H"  // for stat inverse analysis
 #include "baci_mat_elasthyper_service.H"
 #include "baci_lib_voigt_notation.H"
 
@@ -30,8 +28,7 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata
       nummat_(matdata->GetInt("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
       density_(matdata->GetDouble("DENS")),
-      polyconvex_(matdata->GetInt("POLYCONVEX")),
-      statiaelasthyper_(nullptr)
+      polyconvex_(matdata->GetInt("POLYCONVEX"))
 
 {
   // check if sizes fit
@@ -41,15 +38,6 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata
 
   // output, that polyconvexity is checked
   if (polyconvex_ != 0) std::cout << "Polyconvexity of your simulation is checked." << std::endl;
-
-  // STAT INVERSE ANALYSIS
-  // For stat inverse analysis, add all parameters to matparams_
-  // set size of matparams_ here, add values in summands
-  Epetra_Map dummy_map(1, 1, 0, *(DRT::Problem::Instance()->GetCommunicators()->LocalComm()));
-  for (int i = MAT::ELASTIC::PAR::first; i <= MAT::ELASTIC::PAR::last; i++)
-  {
-    matparams_.push_back(Teuchos::rcp(new Epetra_Vector(dummy_map, true)));
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -57,13 +45,6 @@ MAT::PAR::ElastHyper::ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata
 Teuchos::RCP<MAT::Material> MAT::PAR::ElastHyper::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ElastHyper(this));
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::PAR::ElastHyper::OptParams(std::map<std::string, int>* pnames)
-{
-  statiaelasthyper_->ElastOptParams(pnames);
 }
 
 /*----------------------------------------------------------------------*/
@@ -105,24 +86,6 @@ MAT::ElastHyper::ElastHyper(MAT::PAR::ElastHyper* params)
     if (sum == Teuchos::null) dserror("Failed to allocate");
     potsum_.push_back(sum);
     sum->RegisterAnisotropyExtensions(anisotropy_);
-  }
-
-  // For Stat Inverse Analysis
-  // pointer to elasthyper
-  params_->SetMaterialPtrSIA(this);
-
-  // just in case of stat inverse analysis (so far just tested for lbfgs)
-  const Teuchos::ParameterList& invp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-  if (DRT::INPUT::IntegralValue<INPAR::INVANA::StatInvAnalysisType>(invp, "STAT_INV_ANALYSIS") ==
-      INPAR::INVANA::stat_inv_lbfgs)
-  {
-    // copy matparams_ to summands, to fill it with respective parameters
-    // loop map of associated potential summands
-    for (auto& p : potsum_)
-    {
-      p->CopyStatInvAnaMatParams(params_->matparams_);
-      p->SetStatInvAnaSummandMatParams();
-    }
   }
 }
 
@@ -211,10 +174,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
       p->UnpackSummand(data, position);
       p->RegisterAnisotropyExtensions(anisotropy_);
     }
-
-    // For Stat Inverse Analysis
-    // pointer to elasthyper
-    params_->SetMaterialPtrSIA(this);
 
     // in the postprocessing mode, we do not unpack everything we have packed
     // -> position check cannot be done in this case
@@ -1026,18 +985,4 @@ Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
     if (p->MaterialType() == materialtype) return p;
   }
   return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*/
-/* Fit parameters of elasthyper materials in
- * stat inverse analysis
- *                                                        birzle 05/2017 */
-/*----------------------------------------------------------------------*/
-void MAT::ElastHyper::ElastOptParams(std::map<std::string, int>* pnames)
-{
-  // loop map of associated potential summands
-  for (auto& p : potsum_)
-  {
-    p->AddElastOptParams(pnames);
-  }
 }

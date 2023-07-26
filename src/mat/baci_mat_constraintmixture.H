@@ -118,8 +118,6 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-      void OptParams(std::map<std::string, int>* pnames);
-
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum matparamnames_
       {

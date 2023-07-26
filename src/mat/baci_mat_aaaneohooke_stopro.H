@@ -61,8 +61,6 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-      void OptParams(std::vector<std::string>* pnames);
-
     };  // class AAAneohooke
   }     // namespace PAR
 

@@ -204,7 +204,6 @@ namespace DRT
       FlowRateThroughSurface_3D,
       ImpulsRateThroughSurface_3D,
       SurfaceModeKrylovProjection,
-      InvAnaSurface,
       VolumeModeKrylovProjection,
       ArtJunctionCond,
       ArtWriteGnuplotCond,

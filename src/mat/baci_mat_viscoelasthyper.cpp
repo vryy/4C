@@ -400,7 +400,7 @@ void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 }
 
 /*------------------------------------------------------------------------------------------*
-|  Setup internal stress variables - special for the inverse analysis (public)         09/13|
+|  Setup internal stress variables (public)
  *-------------------------------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::ResetAll(const int numgp)
 {

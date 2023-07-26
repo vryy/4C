@@ -168,9 +168,6 @@ namespace MAT
     void ReadRestart(
         const int gp, const int eleID, const bool eleowner, int microdisnum, double V0);
 
-    /// Prepare new run of inverse analysis
-    void InvAnaInit(bool eleowner, int eleID);
-
     /// @name Access parameters
     //@{
     std::string MicroInputFileName() const { return params_->microfile_; }

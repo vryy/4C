@@ -77,9 +77,9 @@ namespace IO
 
     int BinIO() const { return create_controlfile_; }
 
-    /// overwrites result files for the inverse analysis
+    /// overwrites result files
     void OverwriteResultFile(const ShapeFunctionType& spatial_approx);
-    /// creates new result files for the inverse analysis
+    /// creates new result files
     void NewResultFile(int numb_run, const ShapeFunctionType& spatial_approx);
     /// creates new result files for the mlmc
     void NewResultFile(

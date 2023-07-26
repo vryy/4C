@@ -46,10 +46,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Maxwell_0d_acinus_Ogden::CreateMaterial()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PAR::Maxwell_0d_acinus_Ogden::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("KAPPA", kappa));
-}
 
 MAT::Maxwell_0d_acinusOgdenType MAT::Maxwell_0d_acinusOgdenType::instance_;
 

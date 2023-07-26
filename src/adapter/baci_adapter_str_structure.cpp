@@ -19,7 +19,7 @@
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_str_fsiwrapper_immersed.H"
-#include "baci_adapter_str_invana.H"
+#include "baci_adapter_str_timeloop.H"
 
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
@@ -274,20 +274,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
     output->WriteMesh(0, 0.0);
   }
 
-  // in case of nested inverse analysis
-  // we just want to print the output of group 0 on screen
-  // birzle 02/2017
-  if (probtype == ProblemType::invana)
-  {
-    Teuchos::RCP<COMM_UTILS::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
-    const int groupid = group->GroupId();
-
-    if (groupid != 0)
-    {
-      ioflags->set("STDOUTEVRY", 0);
-    }
-  }
-
   // create marching time integrator
   Teuchos::RCP<STR::TimInt> tmpstr =
       STR::TimIntCreate(prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
@@ -474,11 +460,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
       case ProblemType::struct_ale:
       {
         structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
-      }
-      break;
-      case ProblemType::invana:
-      {
-        structure_ = (Teuchos::rcp(new StructureInvana(tmpstr)));
       }
       break;
       default:

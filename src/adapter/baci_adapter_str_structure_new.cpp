@@ -20,7 +20,7 @@
 #include "baci_adapter_str_fbiwrapper.H"
 #include "baci_adapter_str_fsiwrapper_immersed.H"
 #include "baci_adapter_str_structalewrapper.H"
-#include "baci_adapter_str_invana.H"
+#include "baci_adapter_str_timeloop.H"
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_pasiwrapper.H"
 
@@ -752,33 +752,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
       }
       break;
     }
-    // in case of nested inverse analysis
-    // we just want to print the output of group 0 on screen
-    // birzle 02/2017
-    case ProblemType::invana:
-    {
-      Teuchos::RCP<COMM_UTILS::Communicators> group = DRT::Problem::Instance()->GetCommunicators();
-
-      const int groupid = group->GroupId();
-
-      if (groupid != 0)
-      {
-        ioflags.set("STDOUTEVRY", 0);
-        Teuchos::ParameterList& print_nox = nox.sublist("Printing", true);
-
-        print_nox.set<std::string>("Error", "No");
-        print_nox.set<std::string>("Warning", "No");
-        print_nox.set<std::string>("Outer Iteration", "No");
-        print_nox.set<std::string>("Inner Iteration", "No");
-        print_nox.set<std::string>("Parameters", "No");
-        print_nox.set<std::string>("Details", "No");
-        print_nox.set<std::string>("Outer Iteration StatusTest", "No");
-        print_nox.set<std::string>("Linear Solver Details", "No");
-        print_nox.set<std::string>("Test Details", "No");
-        print_nox.set<std::string>("Debug", "No");
-      }
-      break;
-    }
     default:
     {
       // do nothing
@@ -813,27 +786,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetTimeIntegrationStrategy(
   ti_strategy = STR::TIMINT::BuildStrategy(*sdyn_);
   ti_strategy->Init(dataio, datasdyn, dataglobalstate);
 
-  DRT::Problem* problem = DRT::Problem::Instance();
-  ProblemType probtype = problem->GetProblemType();
-
-  switch (probtype)
-  {
-    case ProblemType::invana:
-    {
-      ti_strategy->Setup();
-
-      break;
-    }
-    default:
-    {
-      /* In the restart case, we Setup the structural time integration after the
-       * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
-       * for more information.                                     hiermeier 05/16*/
-      if (not restart) ti_strategy->Setup();
-
-      break;
-    }
-  }
+  /* In the restart case, we Setup the structural time integration after the
+   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
+   * for more information.                                     hiermeier 05/16*/
+  if (not restart) ti_strategy->Setup();
 }
 
 
@@ -971,9 +927,6 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(Teuchos::RCP<STR::TIMINT:
       dserror("ProblemType::struct_ale not supported, yet");
       break;
     }
-    case ProblemType::invana:
-      str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
-      break;
     default:
       /// wrap time loop for pure structure problems
       str_wrapper_ = (Teuchos::rcp(new StructureTimeLoop(ti_strategy)));

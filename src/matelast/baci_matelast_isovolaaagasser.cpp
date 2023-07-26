@@ -53,11 +53,6 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR:
   matparams_.at(xi)->PutScalar(10e12);
 }
 
-void MAT::ELASTIC::PAR::IsoVolAAAGasser::OptParams(std::map<std::string, int>* pnames)
-{
-  pnames->insert(std::pair<std::string, int>("XI", xi));
-}
-
 MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params)
     : params_(params)
 {

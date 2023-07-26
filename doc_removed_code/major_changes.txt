@@ -1,5 +1,11 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Inverse analysis
+- removed in commit 23c53cb7a65b4a584eb18718641e0136f98d3c59 on 26/07/2023
+- reasons: QUEENS provides all the necessary methods for inverse analysis
+- adjoint formulations were part of the inv_analysis module
+- removed by Janina Datz
+
 structure_xstructure (by Michael Hiermeier)
 - removed in commit f3ed4ac7e2173935262dbfd31d024e6e1b336b3b on 1/5/2023
 - reasons: remnants after removal of xcontact.
