@@ -14,8 +14,8 @@
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix::Base& A,
-    CORE::LINALG::SerialDenseVector::Base& L, const bool postproc)
+void CORE::LINALG::SymmetricEigenValues(
+    CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L, const bool postproc)
 {
   CORE::LINALG::SymmetricEigen(A, L, 'N', postproc);
 }
@@ -25,8 +25,8 @@ void LINALG::SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix::Base& A,
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix::Base& A,
-    CORE::LINALG::SerialDenseVector::Base& L, const bool postproc)
+void CORE::LINALG::SymmetricEigenProblem(
+    CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L, const bool postproc)
 {
   CORE::LINALG::SymmetricEigen(A, L, 'V', postproc);
 }
@@ -35,17 +35,17 @@ void LINALG::SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix::Base& A,
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
-void LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix::Base& A,
-    CORE::LINALG::SerialDenseVector::Base& L, const char jobz, const bool postproc)
+void CORE::LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A,
+    CORE::LINALG::SerialDenseVector& L, const char jobz, const bool postproc)
 {
-  if (A.M() != A.N()) dserror("Matrix is not square");
-  if (A.M() != L.Length()) dserror("Dimension of eigenvalues does not match");
+  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
+  if (A.numRows() != L.length()) dserror("Dimension of eigenvalues does not match");
 
-  double* a = A.A();
-  double* w = L.A();
+  double* a = A.values();
+  double* w = L.values();
   const char uplo = {'U'};
-  const int lda = A.LDA();
-  const int dim = A.M();
+  const int lda = A.stride();
+  const int dim = A.numRows();
 
   int lwork = 0;
   if (dim == 1)
@@ -88,11 +88,11 @@ void LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix::Base& A,
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double LINALG::GeneralizedEigen(
+double CORE::LINALG::GeneralizedEigen(
     CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix::Base& B)
 {
-  CORE::LINALG::SerialDenseMatrix tmpA(A);
-  CORE::LINALG::SerialDenseMatrix tmpB(B);
+  CORE::LINALG::SerialDenseMatrix::Base tmpA(A);
+  CORE::LINALG::SerialDenseMatrix::Base tmpB(B);
 
   //--------------------------------------------------------------------
   // STEP 1:
@@ -100,11 +100,11 @@ double LINALG::GeneralizedEigen(
   // QR-factorization
   //--------------------------------------------------------------------
 
-  int N = tmpA.M();
-  double* a = tmpA.A();
-  double* b = tmpB.A();
-  int LDA = tmpA.LDA();
-  int LDB = tmpB.LDA();
+  int N = tmpA.numRows();
+  double* a = tmpA.values();
+  double* b = tmpB.values();
+  int LDA = tmpA.stride();
+  int LDB = tmpB.stride();
 
   // the order of permutation matrix
   std::vector<int> jpvt(N);
@@ -137,33 +137,33 @@ double LINALG::GeneralizedEigen(
   // v is a vector with v(1:i-1) = 0 and v(i+1:m) is stored on exit in B(i+1:m,i)
 
   // Q is initialized as an unit matrix
-  CORE::LINALG::SerialDenseMatrix Q_new(true);
-  Q_new.Shape(N, N);
+  CORE::LINALG::SerialDenseMatrix::Base Q_new;
+  Q_new.shape(N, N);
   for (int i = 0; i < N; ++i) Q_new(i, i) = 1.0;
 
   for (int i = 0; i < N; ++i)
   {
-    CORE::LINALG::SerialDenseVector v;
-    v.Shape(N, 1);
-    v(i, 0) = 1.;
-    for (int j = i + 1; j < N; ++j) v(j, 0) = tmpB(j, i);
+    CORE::LINALG::SerialDenseVector::Base v;
+    v.size(N);
+    v(i) = 1.;
+    for (int j = i + 1; j < N; ++j) v(j) = tmpB(j, i);
 
-    CORE::LINALG::SerialDenseMatrix H;
-    H.Shape(N, N);
+    CORE::LINALG::SerialDenseMatrix::Base H;
+    H.shape(N, N);
 
-    H.Multiply('N', 'T', tau[i], v, v, 0.);
-    H.Scale(-1.);
+    H.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, tau[i], v, v, 0.);
+    H.scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
-    CORE::LINALG::SerialDenseMatrix Q_help;
-    Q_help.Shape(N, N);
-    Q_new.Apply(H, Q_help);
+    CORE::LINALG::SerialDenseMatrix::Base Q_help;
+    Q_help.shape(N, N);
+    Q_help.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Q_new, H, 0.0);
     Q_new = Q_help;
   }
 
   // permutation matrix
-  CORE::LINALG::SerialDenseMatrix P(true);
-  P.Shape(N, N);
+  CORE::LINALG::SerialDenseMatrix::Base P;
+  P.shape(N, N);
   for (int i = 0; i < N; ++i)
   {
     int w = jpvt[i];
@@ -179,16 +179,16 @@ double LINALG::GeneralizedEigen(
   }
 
   // the new A:= Q**T A P
-  CORE::LINALG::SerialDenseMatrix A_tmp;
-  A_tmp.Shape(N, N);
+  CORE::LINALG::SerialDenseMatrix::Base A_tmp;
+  A_tmp.shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
-  A_tmp.Multiply('T', 'N', 1., Q_new, tmpA, 0.);
+  A_tmp.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Q_new, tmpA, 0.);
 
-  CORE::LINALG::SerialDenseMatrix A_new;
-  A_new.Shape(N, N);
-  A_new.Multiply('N', 'N', 1., A_tmp, P, 0.);
+  CORE::LINALG::SerialDenseMatrix::Base A_new;
+  A_new.shape(N, N);
+  A_new.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., A_tmp, P, 0.);
 
-  a = A_new.A();
+  a = A_new.values();
 
   //--------------------------------------------------------
   // STEP 2
@@ -219,14 +219,14 @@ double LINALG::GeneralizedEigen(
   }
   std::vector<double> work(lwork);
 
-  CORE::LINALG::SerialDenseMatrix A1(true);
-  CORE::LINALG::SerialDenseMatrix A2(true);
-  A1.Shape(N, N);
-  A2.Shape(N, N);
-  double* Q = A1.A();
-  int LDQ = A1.LDA();
-  double* Z = A2.A();
-  int LDZ = A2.LDA();
+  CORE::LINALG::SerialDenseMatrix::Base A1;
+  CORE::LINALG::SerialDenseMatrix::Base A2;
+  A1.shape(N, N);
+  A2.shape(N, N);
+  double* Q = A1.values();
+  int LDQ = A1.stride();
+  double* Z = A2.values();
+  int LDZ = A2.stride();
 
   dgghrd(&COMPQ, &COMPZ, &N, &ILO, &IHI, a, &LDA, b, &LDB, Q, &LDQ, Z, &LDZ, &info);
 
@@ -241,18 +241,18 @@ double LINALG::GeneralizedEigen(
   // QZ-transformation
   //--------------------------------------------------------
   // vectors which contain the eigenvalues of the problem
-  CORE::LINALG::SerialDenseVector L1(true);
-  CORE::LINALG::SerialDenseVector L2(true);
-  CORE::LINALG::SerialDenseVector L3(true);
-  L1.Shape(N, 1);
-  L2.Shape(N, 1);
-  L3.Shape(N, 1);
-  double* ALPHAR = L1.A();
-  double* ALPHAI = L2.A();
-  double* BETA = L3.A();
+  CORE::LINALG::SerialDenseVector::Base L1;
+  CORE::LINALG::SerialDenseVector::Base L2;
+  CORE::LINALG::SerialDenseVector::Base L3;
+  L1.size(N);
+  L2.size(N);
+  L3.size(N);
+  double* ALPHAR = L1.values();
+  double* ALPHAI = L2.values();
+  double* BETA = L3.values();
 
-  int LDH = A_new.LDA();
-  int LDT = tmpB.LDA();
+  int LDH = A_new.stride();
+  int LDT = tmpB.stride();
 
   char COMPQ2 = 'V';
   char COMPZ2 = 'V';

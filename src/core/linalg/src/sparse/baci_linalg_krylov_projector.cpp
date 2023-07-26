@@ -15,7 +15,7 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_densematrix_communication.H"
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
@@ -174,9 +174,11 @@ void CORE::LINALG::KrylovProjector::FillComplete()
 
   // invert wTc-matrix (also done if it's only a scalar - check with Micheal
   // Gee before changing this)
-  Epetra_SerialDenseSolver densesolver;
-  densesolver.SetMatrix(*invwTc_);
-  int err = densesolver.Invert();
+  typedef CORE::LINALG::SerialDenseMatrix::ordinalType ordinalType;
+  typedef CORE::LINALG::SerialDenseMatrix::scalarType scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> densesolver;
+  densesolver.setMatrix(invwTc_);
+  int err = densesolver.invert();
   if (err)
     dserror(
         "Error inverting dot-product matrix of kernels and weights for orthogonal (\"krylov\") "
@@ -205,7 +207,6 @@ const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetP()
 
   if (P_ == Teuchos::null)
   {
-    invwTc_->SetUseTranspose(false);
     CreateProjector(P_, w_, c_, invwTc_);
   }
 
@@ -235,8 +236,9 @@ const CORE::LINALG::SparseMatrix CORE::LINALG::KrylovProjector::GetPT()
     }
     else
     {
-      invwTc_->SetUseTranspose(true);
-      CreateProjector(PT_, c_, w_, invwTc_);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTcT =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*invwTc_, Teuchos::TRANS));
+      CreateProjector(PT_, c_, w_, invwTcT);
     }
   }
 
@@ -259,7 +261,6 @@ int CORE::LINALG::KrylovProjector::ApplyP(Epetra_MultiVector& Y) const
   if (!complete_)
     dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
-  invwTc_->SetUseTranspose(false);
   return ApplyProjector(Y, w_, c_, invwTc_);
 }
 
@@ -276,8 +277,9 @@ int CORE::LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
   if (!complete_)
     dserror("Krylov space projector is not complete. Call FillComplete() after changing c_ or w_.");
 
-  invwTc_->SetUseTranspose(true);
-  return ApplyProjector(Y, c_, w_, invwTc_);
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invwTcT =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*invwTc_, Teuchos::TRANS));
+  return ApplyProjector(Y, c_, w_, invwTcT);
 }
 
 /* --------------------------------------------------------------------
@@ -439,7 +441,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   // compute temp2 from matrix-vector-product:
   // temp2 = (v1^T v2)^(-1) * temp1
   CORE::LINALG::SerialDenseVector temp2(nsdim_);
-  inv_v1Tv2->Apply(temp1, temp2);
+  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *inv_v1Tv2, temp1, 0.0);
 
   // loop
   for (int rr = 0; rr < nsdim_; ++rr)
@@ -465,35 +467,17 @@ Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::MultiplyMultiVec
   // create empty multivector mvout
   Teuchos::RCP<Epetra_MultiVector> mvout = Teuchos::rcp(new Epetra_MultiVector(mv->Map(), nsdim_));
 
-  // use depending on whether dm is set Transpose or not:
-  if (dm->UseTranspose())
-    // loop over all vectors of mvout
-    for (int rr = 0; rr < nsdim_; ++rr)
-    {
-      // extract i-th (rr-th) vector of mvout
-      Epetra_Vector mvouti(::View, *mvout, rr);
-      // loop over all vectors of mv
-      for (int mm = 0; mm < nsdim_; ++mm)
-      {
-        // scale j-th (mm-th) vector of mv with corresponding entry of dm
-        // and add to i-th (rr-th) vector of mvout
-        mvouti.Update((*dm)(rr, mm), *((*mv)(mm)), 1.0);
-      }
-    }
-  else
+  // loop over all vectors of mvout
+  for (int rr = 0; rr < nsdim_; ++rr)
   {
-    // loop over all vectors of mvout
-    for (int rr = 0; rr < nsdim_; ++rr)
+    // extract i-th (rr-th) vector of mvout
+    Epetra_Vector mvouti(::View, *mvout, rr);
+    // loop over all vectors of mv
+    for (int mm = 0; mm < nsdim_; ++mm)
     {
-      // extract i-th (rr-th) vector of mvout
-      Epetra_Vector mvouti(::View, *mvout, rr);
-      // loop over all vectors of mv
-      for (int mm = 0; mm < nsdim_; ++mm)
-      {
-        // scale j-th (mm-th) vector of mv with corresponding entry of dm
-        // and add to i-th (rr-th) vector of mvout
-        mvouti.Update((*dm)(mm, rr), *((*mv)(mm)), 1.0);
-      }
+      // scale j-th (mm-th) vector of mv with corresponding entry of dm
+      // and add to i-th (rr-th) vector of mvout
+      mvouti.Update((*dm)(mm, rr), *((*mv)(mm)), 1.0);
     }
   }
 

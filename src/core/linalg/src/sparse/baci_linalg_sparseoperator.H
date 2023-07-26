@@ -100,7 +100,7 @@ namespace CORE::LINALG
     /// throw away the matrix and its graph and start anew
     virtual void Reset() = 0;
 
-    /// Assemble a CORE::LINALG::SerialDenseMatrix::Base into a matrix with striding
+    /// Assemble a CORE::LINALG::SerialDenseMatrix into a matrix with striding
     /*!
 
     This is an individual call.  Will only assemble locally and will never
@@ -131,13 +131,13 @@ namespace CORE::LINALG
     \param lmowner (in) : vector with owner procs of gids
     */
     virtual void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lm,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner)
     {
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
-    /// Assemble a CORE::LINALG::SerialDenseMatrix::Base into a matrix with striding
+    /// Assemble a CORE::LINALG::SerialDenseMatrix into a matrix with striding
     /*!
 
       This is an individual call.
@@ -173,7 +173,7 @@ namespace CORE::LINALG
       \param lmcol (in)      : vector with column gids
     */
     virtual void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) = 0;
 
     /// single value assemble using gids

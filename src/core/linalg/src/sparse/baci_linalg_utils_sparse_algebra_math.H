@@ -22,12 +22,12 @@
 namespace CORE::LINALG
 {
   /*!
-   \brief Make CORE::LINALG::SerialDenseMatrix::Base symmetric by averaging upper and lower
-   traingular indices
+   \brief Make CORE::LINALG::SerialDenseMatrix symmetric by averaging upper and lower traingular
+   indices
 
    \param A (in/out): Matrix to be symmetrised
    */
-  void SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix::Base& A);
+  void SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A);
 
   /*!
    \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
@@ -90,7 +90,6 @@ namespace CORE::LINALG
       const double scalarA, Teuchos::RCP<Epetra_CrsMatrix> B, const double scalarB)
   {
     CORE::LINALG::Add(*A, transposeA, scalarA, *B, scalarB);
-    return;
   }
 
   /*!

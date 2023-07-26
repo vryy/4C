@@ -28,8 +28,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix::Base& A,
-      CORE::LINALG::SerialDenseVector::Base& L, const bool postproc = false);
+  void SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+      const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
@@ -41,8 +41,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix::Base& A,
-      CORE::LINALG::SerialDenseVector::Base& L, const bool postproc = false);
+  void SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+      const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and, optionally, eigenvectors
@@ -55,8 +55,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigen(CORE::LINALG::SerialDenseMatrix::Base& A,
-      CORE::LINALG::SerialDenseVector::Base& L, const char eigv, const bool postproc = false);
+  void SymmetricEigen(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& L,
+      const char eigv, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues the generalized Eigenvalue problem

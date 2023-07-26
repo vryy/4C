@@ -354,14 +354,14 @@ void CORE::LINALG::SparseMatrix::Reset()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
-    const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+    const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     dserror("Mismatch in dimensions");
 
   const int myrank = sysmat_->Comm().MyPID();
@@ -369,7 +369,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
   const Epetra_Map& colmap = sysmat_->ColMap();
 
   //-----------------------------------------------------------------------------------
-  auto& A = (CORE::LINALG::SerialDenseMatrix::Base&)Aele;
+  auto& A = (CORE::LINALG::SerialDenseMatrix&)Aele;
   if (sysmat_->Filled())  // assembly in local indices
   {
 #ifdef DEBUG
@@ -481,7 +481,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
 #ifdef DEBUG
             if (errone)
             {
-              printf("Dimensions of A: %d x %d\n", A.M(), A.N());
+              printf("Dimensions of A: %d x %d\n", A.numRows(), A.numCols());
               for (unsigned k = 0; k < lmstride.size(); ++k)
                 printf("lmstride[%d] %d\n", k, lmstride[k]);
               dserror(
@@ -542,15 +542,15 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::Assemble(int eid,
-    const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
-    const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
+void CORE::LINALG::SparseMatrix::Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
+    const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+    const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     dserror("Mismatch in dimensions");
 
   const int myrank = sysmat_->Comm().MyPID();
@@ -649,7 +649,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -658,7 +658,7 @@ void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatri
 
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     dserror("Mismatch in dimensions");
 
   Teuchos::RCP<Epetra_FECrsMatrix> fe_mat =
@@ -684,14 +684,14 @@ void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatri
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmcol)
 {
   const int lrowdim = static_cast<int>(lmrow.size());
   const int lcoldim = static_cast<int>(lmcol.size());
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim > Aele.M() || lcoldim > Aele.N()) dserror("Mismatch in dimensions");
+  if (lrowdim > Aele.numRows() || lcoldim > Aele.numCols()) dserror("Mismatch in dimensions");
 
   Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
 

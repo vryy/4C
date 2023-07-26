@@ -177,14 +177,14 @@ namespace CORE::LINALG
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lm,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
         const std::vector<int>& lmowner) override
     {
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+    virtual void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
         const std::vector<int>& lm, const std::vector<int>& lmowner)
     {
       Assemble(eid, Aele, lm, lmowner, lm);
@@ -192,11 +192,11 @@ namespace CORE::LINALG
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override;
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+    void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
 
@@ -228,9 +228,8 @@ namespace CORE::LINALG
       values are set. This is needed if the method is called in a loop over
       column elements (which is the standard in baci) to avoid multiple same entries.
      */
-    void FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
-        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-        const std::vector<int>& lmcol);
+    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
       Assemble method for an Epetra_FECrsMatrices.
@@ -240,8 +239,8 @@ namespace CORE::LINALG
       values to their owning procs, such that FillComplete can be safely
       called on this matrix.
      */
-    void FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
-        const std::vector<int>& lmrow, const std::vector<int>& lmcol);
+    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmcol);
 
     /*!
       Assemble method for an Epetra_FECrsMatrices.

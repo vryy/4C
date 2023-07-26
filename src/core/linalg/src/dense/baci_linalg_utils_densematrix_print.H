@@ -23,8 +23,8 @@ namespace CORE::LINALG
   @param[in] A Matrix to be printed
   @param[in] newfile Flage to force printing to a new file (instead of appeding to an existing file)
   */
-  void PrintSerialDenseMatrixInMatlabFormat(std::string filename,
-      const CORE::LINALG::SerialDenseMatrix::Base& A, const bool newfile = true);
+  void PrintSerialDenseMatrixInMatlabFormat(
+      std::string filename, const CORE::LINALG::SerialDenseMatrix& A, const bool newfile = true);
 
 }  // namespace CORE::LINALG
 

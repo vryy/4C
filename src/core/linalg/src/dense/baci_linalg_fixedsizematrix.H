@@ -792,7 +792,7 @@ namespace CORE::LINALG
     /// 1-norm
     /*!
       This function computes the norm of the whole matrix. It returns
-      a different result than CORE::LINALG::SerialDenseMatrix::OneNorm(),
+      a different result than CORE::LINALG::SerialDenseMatrix::Base::OneNorm(),
       which returns the maximum of the norms of the columns.
       The template arguments \c i and \c j are the size of the matrix.
 
@@ -816,7 +816,7 @@ namespace CORE::LINALG
 
     /// Inf-norm
     /*!
-      This function does not do the same as CORE::LINALG::SerialDenseMatrix::InfNorm().
+      This function does not do the same as CORE::LINALG::SerialDenseMatrix::Base::InfNorm().
       The template arguments \c i and \c j are the size of the matrix.
 
       \param mat
@@ -1514,7 +1514,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void scaleMatrix(const value_type scalar, CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      scaleMatrix<value_type, i, j>(scalar, mat.A());
+      mat.scale(scalar);
     }
 
     /// Dot product
@@ -1532,7 +1532,7 @@ namespace CORE::LINALG
     inline value_type dot(const CORE::LINALG::SerialDenseMatrix::Base& left,
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
-      return dot<value_type, i, j>(left.A(), right.A());
+      return dot<value_type, i, j>(left.values(), right.values());
     }
 
     /// Set matrix to zero
@@ -1548,7 +1548,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void clearMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      clearMatrix<value_type, i, j>(mat.A());
+      mat.putScalar(0.0);
     }
 
     /// Fill matrix with scalar value
@@ -1564,7 +1564,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline void putScalar(const value_type scalar, CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      putScalar<value_type, i, j>(scalar, mat.A());
+      mat.putScalar(scalar);
     }
 
     /// Calculate absolut values of a matrix
@@ -1607,7 +1607,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type norm1(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return norm1<value_type, i, j>(mat.A());
+      return norm1<value_type, i, j>(mat.values());
     }
 
     /// 2-norm (Euclidean norm)
@@ -1621,7 +1621,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type norm2(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return norm2<value_type, i, j>(mat.A());
+      return norm2<value_type, i, j>(mat.values());
     }
 
     /// Inf-norm
@@ -1635,7 +1635,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type normInf(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return normInf<value_type, i, j>(mat.A());
+      return normInf<value_type, i, j>(mat.values());
     }
 
     /// Minimum value of a matrix
@@ -1649,7 +1649,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type minValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return minValue<value_type, i, j>(mat.A());
+      return minValue<value_type, i, j>(mat.values());
     }
 
     /// Maximum value of a matrix
@@ -1663,7 +1663,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type maxValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return maxValue<value_type, i, j>(mat.A());
+      return maxValue<value_type, i, j>(mat.values());
     }
 
     /// Mean value of a matrix
@@ -1677,7 +1677,7 @@ namespace CORE::LINALG
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type meanValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
-      return meanValue<value_type, i, j>(mat.A());
+      return meanValue<value_type, i, j>(mat.values());
     }
 
     /*
@@ -2674,11 +2674,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiply<value_type, i, j, k>(out.A(), left.A(), right.A());
+      multiply<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2687,11 +2689,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(out.A(), left.A(), right.A());
+      multiplyNN<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2700,11 +2704,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
+          left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(out.A(), left.A(), right.A());
+      multiplyNT<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2713,11 +2719,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
+          left.numRows() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(out.A(), left.A(), right.A());
+      multiplyTN<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2726,11 +2734,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
+          left.numRows() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(out.A(), left.A(), right.A());
+      multiplyTT<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2739,11 +2749,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiply<value_type, i, j, k>(out.A(), infac, left.A(), right.A());
+      multiply<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2752,11 +2764,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(out.A(), infac, left.A(), right.A());
+      multiplyNN<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2765,11 +2779,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
+          left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(out.A(), infac, left.A(), right.A());
+      multiplyNT<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2778,11 +2794,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
+          left.numRows() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(out.A(), infac, left.A(), right.A());
+      multiplyTN<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2791,11 +2809,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
+          left.numRows() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(out.A(), infac, left.A(), right.A());
+      multiplyTT<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
 
@@ -2805,11 +2825,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiply<value_type, i, j, k>(outfac, out.A(), infac, left.A(), right.A());
+      multiply<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2818,11 +2840,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numCols() or
+          left.numCols() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyNN<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2831,11 +2855,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or out.numCols() != right.numRows() or
+          left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i) * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyNT<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2844,11 +2870,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numCols() or
+          left.numRows() != right.numRows())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyTN<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2857,11 +2885,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
-        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T", out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numCols() or out.numCols() != right.numRows() or
+          left.numRows() != right.numCols())
+        dserror("Invalid matrix sizes for multiplication, (%i,%i) = (%i,%i)^T * (%i,%i)^T",
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(outfac, out.A(), infac, left.A(), right.A());
+      multiplyTT<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2869,31 +2899,34 @@ namespace CORE::LINALG
         CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
-      if (out.M() != out.N() or in.M() != in.N() or out.M() != in.M())
-        dserror("Invalid matrix sizes for inversion, (%i,%i) = inv( (%i,%i) )", out.M(), out.N(),
-            in.M(), in.N());
+      if (out.numRows() != out.numCols() or in.numRows() != in.numCols() or
+          out.numRows() != in.numRows())
+        dserror("Invalid matrix sizes for inversion, (%i,%i) = inv( (%i,%i) )", out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      return invert<value_type, i, j>(out.A(), in.A());
+      return invert<value_type, i, j>(out.values(), in.values());
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& mat)
-    {
-#ifdef DEBUG
-      if (mat.M() != mat.N())
-        dserror("Invalid matrix sizes for inversion, inv( (%i,%i) )", mat.M(), mat.N());
-#endif
-      return invert<value_type, i, j>(mat.A());
-    }
+    //     template <class value_type, unsigned int i, unsigned int j>
+    //     inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& mat)
+    //     {
+    // #ifdef DEBUG
+    //       if (mat.numRows() != mat.numCols())
+    //         dserror("Invalid matrix sizes for inversion, inv( (%i,%i) )", mat.numRows(),
+    //         mat.numCols());
+    // #endif
+    //       return invert<value_type, i, j>(mat.values());
+    //     }
 
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type determinant(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
 #ifdef DEBUG
-      if (mat.M() != mat.N())
-        dserror("Invalid matrix sizes for determinant, inv( (%i,%i) )", mat.M(), mat.N());
+      if (mat.numRows() != mat.numCols())
+        dserror(
+            "Invalid matrix sizes for determinant, inv( (%i,%i) )", mat.numRows(), mat.numCols());
 #endif
-      return determinant<value_type, i, j>(mat.A());
+      return determinant<value_type, i, j>(mat.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2902,12 +2935,12 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
-          left.N() != right.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.M(), out.N(),
-            left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
+          out.numCols() != left.numCols() or left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.numRows(),
+            out.numCols(), left.numRows(), left.numCols(), right.numRows(), right.numCols());
 #endif
-      update<value_type, i, j>(out.A(), left.A(), right.A());
+      update<value_type, i, j>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2916,12 +2949,12 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
-          left.N() != right.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.M(), out.N(),
-            left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
+          out.numCols() != left.numCols() or left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.numRows(),
+            out.numCols(), left.numRows(), left.numCols(), right.numRows(), right.numCols());
 #endif
-      update<value_type, i, j>(out.A(), leftfac, left.A(), rightfac, right.A());
+      update<value_type, i, j>(out.values(), leftfac, left.values(), rightfac, right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2930,12 +2963,13 @@ namespace CORE::LINALG
         const value_type rightfac, const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
-      if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
-          left.N() != right.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.M(), out.N(),
-            left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != left.numRows() or left.numRows() != right.numRows() or
+          out.numCols() != left.numCols() or left.numCols() != right.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) = (%i,%i) + (%i,%i)", out.numRows(),
+            out.numCols(), left.numRows(), left.numCols(), right.numRows(), right.numCols());
 #endif
-      update<value_type, i, j>(outfac, out.A(), leftfac, left.A(), rightfac, right.A());
+      update<value_type, i, j>(
+          outfac, out.values(), leftfac, left.values(), rightfac, right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2943,11 +2977,11 @@ namespace CORE::LINALG
         CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
-      if (out.M() != in.M() or out.N() != in.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.M(), out.N(), in.M(),
-            in.N());
+      if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      update<value_type, i, j>(out.A(), in.A());
+      update<value_type, i, j>(out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2955,11 +2989,11 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
-      if (out.M() != in.M() or out.N() != in.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.M(), out.N(), in.M(),
-            in.N());
+      if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      update<value_type, i, j>(out.A(), infac, in.A());
+      update<value_type, i, j>(out.values(), infac, in.values());
     }
 
 
@@ -2968,11 +3002,11 @@ namespace CORE::LINALG
         const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
-      if (out.M() != in.M() or out.N() != in.N())
-        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.M(), out.N(), in.M(),
-            in.N());
+      if (out.numRows() != in.numRows() or out.numCols() != in.numCols())
+        dserror("Invalid matrix sizes for addition, (%i,%i) += (%i,%i)", out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      update<value_type, i, j>(outfac, out.A(), infac, in.A());
+      update<value_type, i, j>(outfac, out.values(), infac, in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2980,11 +3014,11 @@ namespace CORE::LINALG
         CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
-        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.M(),
-            out.N(), in.M(), in.N());
+      if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      eMultiply<value_type, i, j>(out.A(), in.A());
+      eMultiply<value_type, i, j>(out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -2992,11 +3026,11 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
-        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.M(),
-            out.N(), in.M(), in.N());
+      if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
+        dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      eMultiply<value_type, i, j>(fac, out.A(), in.A());
+      eMultiply<value_type, i, j>(fac, out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3005,12 +3039,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.M(), out.N(), left.M(), left.N(), right.M(), right.N());
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eMultiply<value_type, i, j>(out.A(), left.A(), right.A());
+      eMultiply<value_type, i, j>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3019,12 +3054,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.M(), out.N(), left.M(), left.N(), right.M(), right.N());
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eMultiply<value_type, i, j>(out.A(), infac, left.A(), right.A());
+      eMultiply<value_type, i, j>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3033,12 +3069,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
         dserror("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.M(), out.N(), left.M(), left.N(), right.M(), right.N());
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eMultiply<value_type, i, j>(outfac, out.A(), infac, left.A(), right.A());
+      eMultiply<value_type, i, j>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3046,11 +3083,11 @@ namespace CORE::LINALG
         CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
-        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.M(),
-            out.N(), in.M(), in.N());
+      if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      eDivide<value_type, i, j>(out.A(), in.A());
+      eDivide<value_type, i, j>(out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3058,11 +3095,11 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
-        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.M(),
-            out.N(), in.M(), in.N());
+      if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j, out.numRows(),
+            out.numCols(), in.numRows(), in.numCols());
 #endif
-      eDivide<value_type, i, j>(fac, out.A(), in.A());
+      eDivide<value_type, i, j>(fac, out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3071,12 +3108,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
-        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j, out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eDivide<value_type, i, j>(out.A(), left.A(), right.A());
+      eDivide<value_type, i, j>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3085,12 +3123,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
-        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j, out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eDivide<value_type, i, j>(out.A(), infac, left.A(), right.A());
+      eDivide<value_type, i, j>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3099,12 +3138,13 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
-      if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
-          right.N() != j)
-        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j, out.M(),
-            out.N(), left.M(), left.N(), right.M(), right.N());
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
+        dserror("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
 #endif
-      eDivide<value_type, i, j>(outfac, out.A(), infac, left.A(), right.A());
+      eDivide<value_type, i, j>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3112,11 +3152,11 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
 #ifdef DEBUG
-      if (dest.M() != dest.M() or src.N() != src.N())
-        dserror("Invalid matrix sizes for abs, (%i,%i) = abs( (%i,%i) )", dest.M(), dest.N(),
-            src.M(), src.N());
+      if (dest.numRows() != dest.numRows() or src.numCols() != src.numCols())
+        dserror("Invalid matrix sizes for abs, (%i,%i) = abs( (%i,%i) )", dest.numRows(),
+            dest.numCols(), src.numRows(), src.numCols());
 #endif
-      abs<value_type, i, j>(dest.A(), src.A());
+      abs<value_type, i, j>(dest.values(), src.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3124,11 +3164,11 @@ namespace CORE::LINALG
         const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
 #ifdef DEBUG
-      if (dest.M() != dest.M() or src.N() != src.N())
-        dserror("Invalid matrix sizes for reciprocal, (%i,%i) = reciprocal( (%i,%i) )", dest.M(),
-            dest.N(), src.M(), src.N());
+      if (dest.numRows() != dest.numRows() or src.numCols() != src.numCols())
+        dserror("Invalid matrix sizes for reciprocal, (%i,%i) = reciprocal( (%i,%i) )",
+            dest.numRows(), dest.numCols(), src.numRows(), src.numCols());
 #endif
-      reciprocal<value_type, i, j>(dest.A(), src.A());
+      reciprocal<value_type, i, j>(dest.values(), src.values());
     }
   }  // namespace DENSEFUNCTIONS
 
@@ -3146,7 +3186,7 @@ namespace CORE::LINALG
     different, though. See the appropriate functions for details.
 
     There is no operator[]. It behaves differently in
-    CORE::LINALG::SerialDenseMatrix::Base and CORE::LINALG::SerialDenseVector, and is not
+    CORE::LINALG::SerialDenseMatrix::Base and CORE::LINALG::SerialDenseVector::Base, and is not
     needed in either of them.
    */
   template <unsigned int rows, unsigned int cols, class value_type = double>
@@ -3285,7 +3325,15 @@ namespace CORE::LINALG
     /// Return the value_type* holding the data.
     inline const value_type* A() const { return data_; }
     /// Return the value_type* holding the data.
+    inline const value_type* values() const { return data_; }
+    /// Return the value_type* holding the data.
     inline value_type* A()
+    {
+      dsassert((not isreadonly_), "No write access to read-only data!");
+      return data_;
+    }
+    /// Return the value_type* holding the data.
+    inline value_type* values()
     {
       dsassert((not isreadonly_), "No write access to read-only data!");
       return data_;
@@ -3300,6 +3348,10 @@ namespace CORE::LINALG
     static constexpr unsigned int M() { return rows; }
     /// Return the number of columns
     static constexpr unsigned int N() { return cols; }
+    /// Return the number of rows
+    static constexpr unsigned int numRows() { return rows; }
+    /// Return the number of columns
+    static constexpr unsigned int numCols() { return cols; }
     /// Check whether the matrix is initialized
     /*!
       You cannot test whether the matrix is empty using M() and N(),
@@ -3345,10 +3397,9 @@ namespace CORE::LINALG
     /// Set copy
     /*!
       Set this matrix to be a copy of source. Only the value_type array
-      will be copied, the \e isview_ flag is ignored (this is equivalent to SetCopy(source.A()).
-      The difference to Update(\e source) is that this funcion will allocate
-      it's own memory when it was a view before, Update would copy the
-      data into the view.
+      will be copied, the \e isview_ flag is ignored (this is equivalent to
+      SetCopy(source.values()). The difference to Update(\e source) is that this funcion will
+      allocate it's own memory when it was a view before, Update would copy the data into the view.
 
       \param source
         matrix to copy from
@@ -3400,6 +3451,19 @@ namespace CORE::LINALG
       DENSEFUNCTIONS::putScalar<value_type, rows, cols>(scalar, A());
     }
 
+    // Teuchos-style Functions
+    /// Fill with scalar
+    /*!
+      Sets every value in this matrix to \e scalar.
+
+      \param scalar
+        value to fill matrix with
+     */
+    inline void putScalar(const value_type scalar)
+    {
+      DENSEFUNCTIONS::putScalar<value_type, rows, cols>(scalar, A());
+    }
+
     /// Dot product
     /*!
       Return the dot product of \e this and \e other.
@@ -3410,7 +3474,7 @@ namespace CORE::LINALG
      */
     inline value_type Dot(const Matrix<rows, cols, value_type>& other) const
     {
-      return DENSEFUNCTIONS::dot<value_type, rows, cols>(A(), other.A());
+      return DENSEFUNCTIONS::dot<value_type, rows, cols>(A(), other.values());
     }
 
     /// Cross product
@@ -3424,7 +3488,7 @@ namespace CORE::LINALG
     inline void CrossProduct(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(A(), left.values(), right.values());
     }
 
     /// Compute absolute value
@@ -3436,7 +3500,7 @@ namespace CORE::LINALG
      */
     inline void Abs(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::abs<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::abs<value_type, rows, cols>(A(), other.values());
     }
 
     /// Compute reciprocal value
@@ -3448,7 +3512,7 @@ namespace CORE::LINALG
      */
     inline void Reciprocal(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::reciprocal<value_type, rows, cols>(A(), other.values());
     }
 
     /// Scale
@@ -3472,7 +3536,7 @@ namespace CORE::LINALG
      */
     inline void Update(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.values());
     }
 
     /// Scaled copy: \e this = \e scalarOther * \e other
@@ -3486,7 +3550,7 @@ namespace CORE::LINALG
      */
     inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), scalarOther, other.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
@@ -3503,7 +3567,7 @@ namespace CORE::LINALG
     inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other,
         const value_type scalarThis)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e left + \e right
@@ -3518,7 +3582,7 @@ namespace CORE::LINALG
     inline void Update(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(A(), left.values(), right.values());
     }
 
     /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3538,7 +3602,7 @@ namespace CORE::LINALG
         const value_type scalarRight, const Matrix<rows, cols, value_type>& right)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
-          A(), scalarLeft, left.A(), scalarRight, right.A());
+          A(), scalarLeft, left.values(), scalarRight, right.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3561,7 +3625,7 @@ namespace CORE::LINALG
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
-          scalarThis, A(), scalarLeft, left.A(), scalarRight, right.A());
+          scalarThis, A(), scalarLeft, left.values(), scalarRight, right.values());
     }
 
     /// Transposed copy: \e this = \e other^T
@@ -3573,7 +3637,7 @@ namespace CORE::LINALG
      */
     inline void UpdateT(const Matrix<cols, rows, value_type>& other)
     {
-      DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), other.values());
     }
 
     /// Scaled transposed copy: \e this = \e scalarOther * \e other^T
@@ -3587,7 +3651,7 @@ namespace CORE::LINALG
      */
     inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other)
     {
-      DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), scalarOther, other.A());
+      DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
@@ -3604,7 +3668,7 @@ namespace CORE::LINALG
     inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other,
         const value_type scalarThis)
     {
-      DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.A());
+      DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
@@ -3616,7 +3680,7 @@ namespace CORE::LINALG
      */
     inline void EMultiply(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3630,7 +3694,7 @@ namespace CORE::LINALG
      */
     inline void EMultiply(const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(scalar, A(), other.A());
+      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(scalar, A(), other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3645,7 +3709,7 @@ namespace CORE::LINALG
     inline void EMultiply(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), left.values(), right.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3663,7 +3727,8 @@ namespace CORE::LINALG
     inline void EMultiply(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
         const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(A(), scalarOther, left.A(), right.A());
+      DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(
+          A(), scalarOther, left.values(), right.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e
@@ -3685,7 +3750,7 @@ namespace CORE::LINALG
         const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::eMultiply<value_type, rows, cols>(
-          scalarThis, A(), scalarOther, left.A(), right.A());
+          scalarThis, A(), scalarOther, left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) *= \e other(m,n)
@@ -3697,7 +3762,7 @@ namespace CORE::LINALG
      */
     inline void EDivide(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), other.A());
+      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), other.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3711,7 +3776,7 @@ namespace CORE::LINALG
      */
     inline void EDivide(const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(scalar, A(), other.A());
+      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(scalar, A(), other.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3726,7 +3791,7 @@ namespace CORE::LINALG
     inline void EDivide(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3744,7 +3809,8 @@ namespace CORE::LINALG
     inline void EDivide(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
         const Matrix<rows, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(A(), scalarOther, left.A(), right.A());
+      DENSEFUNCTIONS::eDivide<value_type, rows, cols>(
+          A(), scalarOther, left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e
@@ -3766,13 +3832,13 @@ namespace CORE::LINALG
         const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::eDivide<value_type, rows, cols>(
-          scalarThis, A(), scalarOther, left.A(), right.A());
+          scalarThis, A(), scalarOther, left.values(), right.values());
     }
 
 
     /// Calculate 1-norm
     /*!
-      This is *not* the same as CORE::LINALG::SerialDenseMatrix::NormOne.
+      This is *not* the same as CORE::LINALG::SerialDenseMatrix::Base::NormOne.
 
       \return 1-norm
      */
@@ -3786,7 +3852,7 @@ namespace CORE::LINALG
 
     /// Calculate inf-norm
     /*!
-      This is *not* the same as CORE::LINALG::SerialDenseMatrix::NormInf.
+      This is *not* the same as CORE::LINALG::SerialDenseMatrix::Base::NormInf.
 
       \return inf-norm
      */
@@ -3835,7 +3901,7 @@ namespace CORE::LINALG
     inline void Multiply(
         const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left*right
@@ -3849,7 +3915,7 @@ namespace CORE::LINALG
     inline void MultiplyNN(
         const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left*right^T
@@ -3863,7 +3929,7 @@ namespace CORE::LINALG
     inline void MultiplyNT(
         const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
-      DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left^T*right
@@ -3877,7 +3943,7 @@ namespace CORE::LINALG
     inline void MultiplyTN(
         const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
-      DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left^T*right^T
@@ -3891,7 +3957,7 @@ namespace CORE::LINALG
     inline void MultiplyTT(
         const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
-      DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(A(), left.A(), right.A());
+      DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
 
 
@@ -3909,7 +3975,7 @@ namespace CORE::LINALG
         const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.A(), right.A());
+          A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left*right
@@ -3928,7 +3994,7 @@ namespace CORE::LINALG
         const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.A(), right.A());
+          A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left*right^T
@@ -3945,7 +4011,7 @@ namespace CORE::LINALG
         const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.A(), right.A());
+          A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left^T*right
@@ -3962,7 +4028,7 @@ namespace CORE::LINALG
         const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.A(), right.A());
+          A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
@@ -3979,7 +4045,7 @@ namespace CORE::LINALG
         const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.A(), right.A());
+          A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
@@ -4000,7 +4066,7 @@ namespace CORE::LINALG
         const Matrix<inner, cols, value_type>& right, const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.A(), right.A());
+          scalarThis, A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
@@ -4020,7 +4086,7 @@ namespace CORE::LINALG
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.A(), right.A());
+          scalarThis, A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
@@ -4040,7 +4106,7 @@ namespace CORE::LINALG
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.A(), right.A());
+          scalarThis, A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
@@ -4060,7 +4126,7 @@ namespace CORE::LINALG
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.A(), right.A());
+          scalarThis, A(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
@@ -4080,7 +4146,7 @@ namespace CORE::LINALG
         const value_type scalarThis)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.A(), right.A());
+          scalarThis, A(), scalarOthers, left.values(), right.values());
     }
 
     /// Write \e this to \e out
@@ -4137,7 +4203,7 @@ namespace CORE::LINALG
      */
     inline Matrix<rows, cols, value_type>& operator+=(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), 1.0, other.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), 1.0, other.values());
       return *this;
     }
 
@@ -4150,7 +4216,7 @@ namespace CORE::LINALG
      */
     inline Matrix<rows, cols, value_type>& operator-=(const Matrix<rows, cols, value_type>& other)
     {
-      DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), -1.0, other.A());
+      DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), -1.0, other.values());
       return *this;
     }
 
@@ -4258,11 +4324,12 @@ namespace CORE::LINALG
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
-    if (d.A() == 0) return;
-    if (d.M() != rows or d.N() != cols) dserror("illegal matrix dimension (%d,%d)", d.M(), d.N());
+    if (d.values() == 0) return;
+    if (d.numRows() != rows or d.numCols() != cols)
+      dserror("illegal matrix dimension (%d,%d)", d.numRows(), d.numCols());
     if (isview_)
     {
-      data_ = d.A();
+      data_ = d.values();
     }
     else
     {
@@ -4270,7 +4337,7 @@ namespace CORE::LINALG
         data_ = new value_type[rows * cols];
       else
         data_ = datafieldsmall_;
-      std::copy(d.A(), d.A() + rows * cols, data_);
+      std::copy(d.values(), d.values() + rows * cols, data_);
     }
   }
 
@@ -4319,7 +4386,7 @@ namespace CORE::LINALG
     if (isview_)
     {
       isreadonly_ = true;
-      data_ = const_cast<value_type*>(source.A());
+      data_ = const_cast<value_type*>(source.values());
     }
     else
     {
@@ -4377,7 +4444,7 @@ namespace CORE::LINALG
   template <unsigned int rows, unsigned int cols, class value_type>
   void Matrix<rows, cols, value_type>::SetCopy(const Matrix<rows, cols, value_type>& source)
   {
-    SetCopy(source.A());
+    SetCopy(source.values());
   }
 
   // Determinant
@@ -4401,7 +4468,7 @@ namespace CORE::LINALG
       const Matrix<rows, cols, value_type>& other)
   {
     DENSEERROR::Checker<rows == cols>::Cannot_compute_inverse_of_nonsquare_matrix();
-    return DENSEFUNCTIONS::invert<value_type, rows, cols>(A(), other.A());
+    return DENSEFUNCTIONS::invert<value_type, rows, cols>(A(), other.values());
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
@@ -4460,7 +4527,7 @@ namespace CORE::LINALG
   inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
       const Matrix<rows, cols, value_type>& other)
   {
-    DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.A());
+    DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.values());
     return *this;
   }
 
@@ -4476,11 +4543,11 @@ namespace CORE::LINALG
   inline bool Matrix<rows, cols, value_type>::operator==(
       const Matrix<rows, cols, value_type>& other) const
   {
-    if (A() == other.A()) return true;
+    if (A() == other.values()) return true;
     // unfortunately memcmp does not work, because +0 and -0 are
     // different in memory...
     for (unsigned int c = 0; c < rows * cols; ++c)
-      if (A()[c] != other.A()[c]) return false;
+      if (A()[c] != other.values()[c]) return false;
     return true;
   }
 

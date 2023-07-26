@@ -390,7 +390,7 @@ namespace CORE::LINALG
    \param A (in/out): Matrix to be inverted
    \param dim (in) :  Dimension of matrix
    */
-  void SymmetricInverse(CORE::LINALG::SerialDenseMatrix::Base& A, const int dim);
+  void SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const int dim);
 
 }  // namespace CORE::LINALG
 

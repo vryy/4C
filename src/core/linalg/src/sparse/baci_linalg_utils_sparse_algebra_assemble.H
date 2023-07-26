@@ -24,7 +24,7 @@
 namespace CORE::LINALG
 {
   /*!
-   \brief Assemble an CORE::LINALG::SerialDenseMatrix::Base into an Epetra_CrsMatrix
+   \brief Assemble an CORE::LINALG::SerialDenseMatrix into an Epetra_CrsMatrix
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -44,7 +44,7 @@ namespace CORE::LINALG
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
-  void Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+  void Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
 

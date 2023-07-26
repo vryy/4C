@@ -308,7 +308,7 @@ namespace CORE::LINALG
 
     /// just a dummy that switches from strided assembly to standard assembly
     void Assemble(int eid, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override
     {
       const int myrank = Comm().MyPID();
@@ -372,7 +372,7 @@ namespace CORE::LINALG
 
     /// assemble into the given block using nodal strides
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /// assemble into the given block
@@ -603,8 +603,8 @@ inline int CORE::LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int cg
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
-    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix::Base& Aele,
+inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
+    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
