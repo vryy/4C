@@ -30,12 +30,12 @@ namespace
 
   void AssertIsUnitaryMatrix(const CORE::LINALG::SerialDenseMatrix& M)
   {
-    CORE::LINALG::SerialDenseMatrix MHM(M.RowDim(), M.ColDim(), false);
+    CORE::LINALG::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
 
     MHM.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, M, 0.0);
 
-    for (int i = 0; i < M.RowDim(); ++i)
-      for (int j = 0; j < M.ColDim(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
+    for (int i = 0; i < M.numRows(); ++i)
+      for (int j = 0; j < M.numCols(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
   }
 
   template <unsigned int rows, unsigned int cols, size_t length>
@@ -71,8 +71,8 @@ namespace
       const CORE::LINALG::SerialDenseMatrix& Q, const CORE::LINALG::SerialDenseMatrix& S,
       const CORE::LINALG::SerialDenseMatrix& VT, const std::array<double, length>& singularValues)
   {
-    int rows = A.RowDim();
-    int cols = A.ColDim();
+    int rows = A.numRows();
+    int cols = A.numCols();
     // check whether SVD fulfills: A = Q * S * VT
     CORE::LINALG::SerialDenseMatrix QS(rows, cols, false);
     CORE::LINALG::SerialDenseMatrix A_result(rows, cols, false);

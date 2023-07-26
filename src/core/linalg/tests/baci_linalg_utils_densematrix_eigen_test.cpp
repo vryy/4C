@@ -25,7 +25,7 @@ namespace
   void AssertEigenValues(const CORE::LINALG::SerialDenseVector& eigenvalues,
       const std::array<double, length>& eig_compare)
   {
-    EXPECT_EQ(eigenvalues.Length(), length);
+    EXPECT_EQ(eigenvalues.length(), length);
     for (unsigned i = 0; i < length; ++i) EXPECT_NEAR(eigenvalues[i], eig_compare[i], 1e-9);
   }
 
@@ -51,11 +51,11 @@ namespace
       const CORE::LINALG::SerialDenseMatrix& eigenvectors,
       const std::array<double, length>& eig_compare)
   {
-    EXPECT_EQ(eigenvalues.Length(), length);
-    EXPECT_EQ(A.RowDim(), length);
-    EXPECT_EQ(A.ColDim(), length);
-    EXPECT_EQ(eigenvectors.RowDim(), length);
-    EXPECT_EQ(eigenvectors.ColDim(), length);
+    EXPECT_EQ(eigenvalues.length(), length);
+    EXPECT_EQ(A.numRows(), length);
+    EXPECT_EQ(A.numCols(), length);
+    EXPECT_EQ(eigenvectors.numRows(), length);
+    EXPECT_EQ(eigenvectors.numCols(), length);
 
     AssertEigenValues(eigenvalues, eig_compare);
 
