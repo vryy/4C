@@ -10,7 +10,7 @@
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
 #include "baci_so3_thermo.H"
-#include "so3_thermo_fwd.hpp"
+#include "baci_so3_thermo_fwd.hpp"
 
 #include "baci_lib_globalproblem.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"

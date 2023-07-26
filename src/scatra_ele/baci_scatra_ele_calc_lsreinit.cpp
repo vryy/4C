@@ -1334,7 +1334,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
 
 // template classes
 
-#include "scatra_ele_calc_fwd.hpp"
+#include "baci_scatra_ele_calc_fwd.hpp"
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2, 1>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2, 2>;
