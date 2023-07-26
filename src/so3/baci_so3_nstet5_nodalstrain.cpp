@@ -652,14 +652,14 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
     force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, Vnode, bopbar, stress_epetra, 0.0);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
-        Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+        Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
     stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, Vnode, bopbar, cb, 0.0);

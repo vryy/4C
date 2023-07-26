@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
   // Set the FAD variables for the beam and solid DOFs.
   auto set_q_fad = [](const auto& q_original, auto& q_fad, unsigned int fad_offset = 0)
   {
-    for (unsigned int i_dof = 0; i_dof < q_original.Rows(); i_dof++)
+    for (unsigned int i_dof = 0; i_dof < q_original.numRows(); i_dof++)
       q_fad(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type_pair>::apply(
           n_dof_fad_, fad_offset + i_dof, CORE::FADUTILS::CastToDouble(q_original(i_dof)));
   };

@@ -644,7 +644,7 @@ namespace CORE::GEO
     template <class Matrix_cln, class Matrix_double>
     void ConvClnDouble(const Matrix_cln& in, Matrix_double& out)
     {
-      for (unsigned int idx = 0; idx < in.Rows() * in.Columns(); ++idx)
+      for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
       {
         out.A()[idx] = cln::double_approx(in.A()[idx]);
       }
@@ -653,7 +653,7 @@ namespace CORE::GEO
     template <class Matrix_cln, class Matrix_double>
     void ConvDoubleCLN(const Matrix_double& in, Matrix_cln& out, int precision = 20)
     {
-      for (unsigned int idx = 0; idx < in.Rows() * in.Columns(); ++idx)
+      for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
       {
         ClnWrapper clnnum;
         // zeros do not convert properly to CLN (lose of precision)

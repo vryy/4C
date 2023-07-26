@@ -97,8 +97,8 @@ namespace CORE::DRT::UTILS
     template <typename M>
     void Evaluate(const double point, M &derivatives) const
     {
-      dsassert(derivatives.Columns() == 1, "Only column vectors supported");
-      if (derivatives.Rows() == 1)
+      dsassert(derivatives.numCols() == 1, "Only column vectors supported");
+      if (derivatives.numRows() == 1)
       {
         derivatives(0) = Evaluate(point);
         return;
@@ -106,16 +106,16 @@ namespace CORE::DRT::UTILS
 
       // compute the value and derivatives by expanding the derivatives
       derivatives(0) = weight_;
-      for (unsigned int k = 1; k < derivatives.Rows(); ++k) derivatives(k) = 0;
+      for (unsigned int k = 1; k < derivatives.numRows(); ++k) derivatives(k) = 0;
       for (double supportPoint : supportPoints_)
       {
         const double v = point - supportPoint;
-        for (int k = derivatives.Rows() - 1; k > 0; --k)
+        for (int k = derivatives.numRows() - 1; k > 0; --k)
           derivatives(k) = v * derivatives(k) + derivatives(k - 1);
         derivatives(0) *= v;
       }
       double faculty = 1;
-      for (unsigned int k = 2; k < derivatives.Rows(); ++k)
+      for (unsigned int k = 2; k < derivatives.numRows(); ++k)
       {
         faculty *= static_cast<double>(k);
         derivatives(k) *= faculty;
@@ -177,8 +177,8 @@ namespace CORE::DRT::UTILS
     template <typename M>
     void Evaluate(const double point, M &derivatives) const
     {
-      dsassert(derivatives.Columns() == 1, "Only column vectors supported");
-      if (derivatives.Rows() == 1)
+      dsassert(derivatives.numCols() == 1, "Only column vectors supported");
+      if (derivatives.numRows() == 1)
       {
         derivatives(0) = Evaluate(point);
         return;
@@ -187,7 +187,7 @@ namespace CORE::DRT::UTILS
       // compute the value and derivatives by Horner scheme
       std::vector<double> temp(coefficients_);
       const int length = coefficients_.size();
-      const int nderivs = derivatives.Rows();
+      const int nderivs = derivatives.numRows();
       const int maxder = std::min(length, nderivs);
       double kfaculty = 1.;
       // skip derivatives that are necessarily zero

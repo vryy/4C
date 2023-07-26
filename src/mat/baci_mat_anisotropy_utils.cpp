@@ -84,7 +84,7 @@ void MAT::PackFiberArray(DRT::PackBuffer& buffer, const std::vector<std::array<T
   {
     for (const auto& fiber : list)
     {
-      DRT::ParObject::AddtoPack<T::Rows(), T::Cols()>(buffer, fiber);
+      DRT::ParObject::AddtoPack<T::numRows(), T::numCols()>(buffer, fiber);
     }
   }
 }
@@ -114,7 +114,7 @@ void MAT::UnpackFiberArray(std::vector<char>::size_type& position, const std::ve
     std::array<T, numfib> mat;
     for (unsigned int j = 0; j < numfib; ++j)
     {
-      DRT::ParObject::ExtractfromPack<T::Rows(), T::Cols()>(position, data, mat.at(j));
+      DRT::ParObject::ExtractfromPack<T::numRows(), T::numCols()>(position, data, mat.at(j));
     }
     vct.emplace_back(mat);
   }

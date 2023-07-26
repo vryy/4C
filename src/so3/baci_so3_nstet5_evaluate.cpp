@@ -783,10 +783,10 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
     CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
-  CORE::LINALG::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.Rows());
+  CORE::LINALG::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.numRows());
   CORE::LINALG::SerialDenseMatrix cmat_e(
-      Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
-  const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.Rows());
+      Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+  const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
 
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())

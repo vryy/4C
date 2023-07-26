@@ -50,7 +50,7 @@ namespace CORE::LINALG
   /*!
    * \brief Zero out first n elements of the matrix
    */
-  void Zero(SerialDenseMatrix& mat, int Length);
+  void Zero(SerialDenseMatrix& mat, int length);
 
   /*!
     \brief Determinant Computation using the Sarrus rule.
@@ -81,7 +81,7 @@ namespace CORE::LINALG
    \param C (out):       Matrix C
    */
   template <typename Tmat1, typename Tmat2, typename Tmat3>
-  int AxB(const Tmat1& A, const Tmat2& B, Tmat3& C)
+  int Multiply(const Tmat1& A, const Tmat2& B, Tmat3& C)
   {
     for (int i = 0; i < C.numRows(); ++i)
     {

@@ -613,7 +613,7 @@ void CONTACT::CoIntegratorNitsche::BuildAdjointTest(MORTAR::MortarElement& moEle
 
   CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
   CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
-      derivtravo_slave.Rows(), derivtravo_slave.Rows(), derivtravo_slave.Columns());
+      derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
   if (tmp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., d2sntDdDpxi, deriv_trafo, 0.))
     dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)

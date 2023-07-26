@@ -51,7 +51,7 @@ namespace TUTORIAL
         CORE::LINALG::Matrix<7, 1>* freact, const CORE::LINALG::Matrix<7, 1>* dirichcond)
     {
       // do dirichlet
-      for (int dirich = 0; dirich < (int)dirichcond->Rows(); dirich++)
+      for (int dirich = 0; dirich < (int)dirichcond->numRows(); dirich++)
       {
         if ((*dirichcond)(dirich) > -1234.0)
         {
@@ -61,11 +61,11 @@ namespace TUTORIAL
           (*disp)(dirich) = (*dirichcond)(dirich);
 
 
-          for (int col = 0; col < (int)stiff->Cols(); ++col)
+          for (int col = 0; col < (int)stiff->numCols(); ++col)
           {
             (*stiff)(dirich, col) = 0.0;
           }
-          for (int row = 0; row < (int)stiff->Rows(); ++row)
+          for (int row = 0; row < (int)stiff->numRows(); ++row)
           {
             (*stiff)(row, dirich) = 0.0;
           }
@@ -92,7 +92,7 @@ namespace TUTORIAL
         CORE::LINALG::Matrix<7, 1>* RHS, const CORE::LINALG::Matrix<7, 1>* neumanncond)
     {
       // do neumann
-      for (int neum = 0; neum < (int)RHS->Rows(); neum++)
+      for (int neum = 0; neum < (int)RHS->numRows(); neum++)
       {
         if ((*neumanncond)(neum) > -1234.0)
         {

@@ -3328,15 +3328,9 @@ namespace CORE::LINALG
       return data_;
     }
     /// Return the number of rows
-    static constexpr unsigned int Rows() { return rows; }
+    static constexpr unsigned int M() { return numRows(); }
     /// Return the number of columns
-    static constexpr unsigned int Columns() { return cols; }
-    /// Return the number of columns
-    static constexpr unsigned int Cols() { return cols; }
-    /// Return the number of rows
-    static constexpr unsigned int M() { return rows; }
-    /// Return the number of columns
-    static constexpr unsigned int N() { return cols; }
+    static constexpr unsigned int N() { return numCols(); }
     /// Return the number of rows
     static constexpr unsigned int numRows() { return rows; }
     /// Return the number of columns

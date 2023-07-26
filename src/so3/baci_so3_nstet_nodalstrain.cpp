@@ -792,7 +792,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix*
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
     force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);  // bop
   }
 
@@ -800,7 +800,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix*
   if (stiff)
   {
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
-        Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+        Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
     stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);  // bop
@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatr
   //----------------------------------------------------- internal forces
   if (force)
   {
-    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
     force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);
   }
 
@@ -1093,7 +1093,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatr
   if (stiff)
   {
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
-        Teuchos::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+        Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
     stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);
