@@ -88,7 +88,7 @@ namespace CORE::GEO
       //@}
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's GEO::CUT::Elements (sub-elements)
+      //! @name access to the element's CORE::GEO::CUT::Elements (sub-elements)
 
       virtual void CollectElements(plain_element_set& elements) = 0;
 
@@ -312,7 +312,7 @@ namespace CORE::GEO
 
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's GEO::CUT::Elements (subelements)
+      //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
 
       //! collect all sub-elements
       virtual void CollectElements(plain_element_set& elements) { elements.insert(element_); }
@@ -464,7 +464,7 @@ namespace CORE::GEO
 
 
       //--------------------------------------------------------------------------//
-      //! @name access to the element's GEO::CUT::Elements (subelements)
+      //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
 
       //! collect all sub-elements
       virtual void CollectElements(plain_element_set& elements)

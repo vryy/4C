@@ -1518,11 +1518,11 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
 
 template class CORE::GEO::CUT::Intersection<2, ::DRT::Element::line2, ::DRT::Element::line2>;
 template class CORE::GEO::CUT::Intersection<3, ::DRT::Element::line2, ::DRT::Element::line2>;
-// template class GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad4>;
+// template class CORE::GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad4>;
 template class CORE::GEO::CUT::Intersection<3, ::DRT::Element::line2, ::DRT::Element::quad4>;
-// template class GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad8>;
+// template class CORE::GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad8>;
 template class CORE::GEO::CUT::Intersection<3, ::DRT::Element::line2, ::DRT::Element::quad8>;
-// template class GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad9>;
+// template class CORE::GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::quad9>;
 template class CORE::GEO::CUT::Intersection<3, ::DRT::Element::line2, ::DRT::Element::quad9>;
-// template class GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::tri3>;
+// template class CORE::GEO::CUT::Intersection<2,DRT::Element::line2,DRT::Element::tri3>;
 template class CORE::GEO::CUT::Intersection<3, ::DRT::Element::line2, ::DRT::Element::tri3>;

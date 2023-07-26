@@ -592,7 +592,7 @@ namespace CORE::GEO
           ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
-      /// \brief specify general floattype for all geometric operations in GEO::CUT::POSITON
+      /// \brief specify general floattype for all geometric operations in CORE::GEO::CUT::POSITON
       static void SpecifyGeneralPosFloattype(INPAR::CUT::CUT_Floattype floattype)
       {
         general_pos_floattype_ = floattype;
@@ -1063,11 +1063,11 @@ namespace CORE::GEO
 
       /// @}
 
-      /*! \brief get general floattype for all geometric operations in GEO::CUT::POSITON*/
+      /*! \brief get general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
       static INPAR::CUT::CUT_Floattype UsePosFloattype(INPAR::CUT::CUT_Floattype floattype);
       static INPAR::CUT::CUT_Floattype UseDistFloattype(INPAR::CUT::CUT_Floattype floattype);
 
-      /*! \brief general floattype for all geometric operations in GEO::CUT::POSITON*/
+      /*! \brief general floattype for all geometric operations in CORE::GEO::CUT::POSITON*/
       static INPAR::CUT::CUT_Floattype general_pos_floattype_;
       static INPAR::CUT::CUT_Floattype general_dist_floattype_;
 

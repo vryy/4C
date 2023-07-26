@@ -1041,7 +1041,7 @@ void XFEM::ConditionManager::GetCouplingEleLocationVector(
 // comment: as soon as we start doing mesh and levelset coupling with overlapping interfaces, we
 // need to provide the position of the volumecells down here as well to choose the correct material.
 // atm the position this is hardcoded in the coupling objects
-// (all assume GEO::CUT::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
+// (all assume CORE::GEO::CUT::Point::outside, exept TwoPhaseFlow Master outside, Slave inside)
 void XFEM::ConditionManager::GetAverageWeights(
     const int coup_sid,   ///< the overall global coupling side id
     DRT::Element* xfele,  ///< xfluid ele

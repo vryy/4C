@@ -623,7 +623,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
   if (myrank == 0) std::cout << " done\n" << std::flush;
 }
 
-/// Gmsh output function for elements without an GEO::CUT::ElementHandle
+/// Gmsh output function for elements without an CORE::GEO::CUT::ElementHandle
 void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
     DRT::Discretization& discret,             ///< background fluid discretization
     std::ofstream& vel_f,                     ///< output file stream for velocity

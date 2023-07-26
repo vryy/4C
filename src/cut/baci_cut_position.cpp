@@ -518,11 +518,11 @@ template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, ::DRT::Element::line2>
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::line2>;
 
 // non-embedded element types for the embedded case (only necessary due to compiler problems)
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex16>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex18>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex27>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::tet10>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::wedge15>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex16>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex18>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex27>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::tet10>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::wedge15>;
 
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::tri3,
     CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::tri3>::numNodePerElement,
@@ -648,10 +648,10 @@ template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::wedge6>;
 template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::wedge15>;
 
 // unused / impossible cases (only necessary due to compiler problems)
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::hex8>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::tet4>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::pyramid5>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::wedge6>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::hex8>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::tet4>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::pyramid5>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::wedge6>;
 
 // embedded cases
 template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::tri3,

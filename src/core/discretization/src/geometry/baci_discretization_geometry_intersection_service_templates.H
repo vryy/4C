@@ -135,9 +135,9 @@ namespace CORE::GEO
     */
     // create 4 normal vectors to each tet surface plane
     const CORE::LINALG::Matrix<3, 1> nplane012 = CORE::GEO::computeCrossProduct(v01, v02);
-    /*    const CORE::LINALG::Matrix<3,1> nplane013 = GEO::computeCrossProduct(v01,v03);
-        const CORE::LINALG::Matrix<3,1> nplane023 = GEO::computeCrossProduct(v02,v03);
-        const CORE::LINALG::Matrix<3,1> nplane123 = GEO::computeCrossProduct(v12,v13);
+    /*    const CORE::LINALG::Matrix<3,1> nplane013 = CORE::GEO::computeCrossProduct(v01,v03);
+        const CORE::LINALG::Matrix<3,1> nplane023 = CORE::GEO::computeCrossProduct(v02,v03);
+        const CORE::LINALG::Matrix<3,1> nplane123 = CORE::GEO::computeCrossProduct(v12,v13);
     */
     // compute norm (area) of each plane
     const double norm012 = nplane012.Norm2();

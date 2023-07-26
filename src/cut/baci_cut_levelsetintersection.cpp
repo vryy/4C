@@ -86,7 +86,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 1/3 --- Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/3 --- Cut");
 
   Mesh& m = NormalMesh();
 
@@ -257,4 +257,4 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
 
   // ######################################################################################
 
-}  // GEO::CUT::LevelSetIntersection::Cut
+}  // CORE::GEO::CUT::LevelSetIntersection::Cut

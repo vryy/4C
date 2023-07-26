@@ -271,7 +271,7 @@ namespace CORE::GEO
       void GmshCutPairDump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
           const std::string& suffix);
 
-      // void GmshObjectDump2(std::ofstream & file, GEO::CUT::Facet* f)
+      // void GmshObjectDump2(std::ofstream & file, CORE::GEO::CUT::Facet* f)
       //{
       //  return;
       //};//GmshFacetDump(file,f);}

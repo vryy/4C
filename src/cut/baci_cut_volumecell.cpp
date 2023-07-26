@@ -465,7 +465,7 @@ void CORE::GEO::CUT::VolumeCell::NewArbitraryCell(Mesh& mesh, Facet* f,
   f->NewArbitraryCell(mesh, this, x, bcells_, gp, normal);
 }
 
-/*double GEO::CUT::VolumeCell::Volume()
+/*double CORE::GEO::CUT::VolumeCell::Volume()
 {
   double volume = 0;
   for ( plain_integrationcell_set::iterator i=integrationcells_.begin(); i!=integrationcells_.end();
@@ -1080,7 +1080,7 @@ void CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh& mesh,
     const CORE::GEO::CUT::Point::PointPosition posi, Element* elem, int BaseNos,
     INPAR::CUT::BCellGaussPts BCellgausstype)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateBoundaryCells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::GenerateBoundaryCells" );
 
 
   // TODO: we have to restructure the creation of boundary cells.
@@ -1443,7 +1443,7 @@ bool CORE::GEO::CUT::VolumeCell::ToReverse(const CORE::GEO::CUT::Point::PointPos
 Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::VolumeCell::GenerateInternalGaussRule(
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>& gp)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::VolumeCell::GenerateInternalGaussRule" );
 
 
   CORE::DRT::UTILS::GaussIntegration grule(gp);

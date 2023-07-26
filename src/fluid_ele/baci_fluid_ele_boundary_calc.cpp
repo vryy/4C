@@ -1572,7 +1572,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  // GEO::fillInitialPositionArray<distype,nsd_,CORE::LINALG::SerialDenseMatrix>(ele,xyze_);
+  // CORE::GEO::fillInitialPositionArray<distype,nsd_,CORE::LINALG::SerialDenseMatrix>(ele,xyze_);
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
       ele, xyze_);
 
@@ -1690,7 +1690,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
-  // GEO::fillInitialPositionArray<distype,nsd_,CORE::LINALG::SerialDenseMatrix>(ele,xyze_);
+  // CORE::GEO::fillInitialPositionArray<distype,nsd_,CORE::LINALG::SerialDenseMatrix>(ele,xyze_);
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, bdrynen_>>(
       ele, xyze_);
 

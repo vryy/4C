@@ -28,7 +28,7 @@
 Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::GEO::CUT::DirectDivergence::VCIntegrationRule(
     std::vector<double>& RefPlaneEqn)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::VCIntegrationRule" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::VCIntegrationRule" );
 
   std::vector<plain_facet_set::const_iterator>
       facetIterator;  // iterators of facets which need to be considered for integration rule
@@ -120,7 +120,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
     std::vector<plain_facet_set::const_iterator>& facetIterator, std::vector<double>& RefPlaneEqn,
     plain_facet_set::const_iterator& IteratorRefFacet, bool& IsRefFacet)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::ListFacets" );
 
   const plain_facet_set& facete = volcell_->Facets();
 
@@ -174,7 +174,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
     // consider only facet whose x-direction normal componenet is non-zero
     if (fabs(RefPlaneTemp[0]) > TOL_EQN_PLANE)  // This could give issues with non-planar facets?
     {
-      TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT::DirectDivergence::ListFacets-tmp1");
+      TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::DirectDivergence::ListFacets-tmp1");
 
 #ifdef LOCAL
       if (warpFac.size() > 0)  // if there are warped facets that are not yet processed
@@ -268,7 +268,7 @@ void CORE::GEO::CUT::DirectDivergence::ListFacets(
   //   considered facet are in the same plane, so delete this facet
   if (RefOnCutSide)
   {
-    // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::DirectDivergence::ListFacets-tmp2" );
+    // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::DirectDivergence::ListFacets-tmp2" );
 
     for (unsigned i = 0; i < facetIterator.size(); i++)
     {
@@ -333,7 +333,7 @@ void CORE::GEO::CUT::DirectDivergence::DivengenceCellsGMSH(
   for (plain_facet_set::const_iterator j = facete.begin(); j != facete.end(); j++)
   {
     // Writes only for GLOBAL Coordinates!
-    GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(file, *j, true);
+    CORE::GEO::CUT::OUTPUT::GmshEqnPlaneNormalDump(file, *j, true);
   }
   file << "};\n";
 #endif
@@ -645,12 +645,12 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
     std::cout << "There are two possible sources of this problem \n";
     std::cout
         << "1. divCells created from facet may fall on a line. Print the main Gauss points from "
-           "GEO::CUT::FacetIntegration::DivergenceIntegrationRule(),"
+           "CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(),"
            " if this is the case, all points belong to a particular divCells have NaN weights\n";
     std::cout << "2. GLOBAL::: The reference plane is not correctly chosen. Print the equation of "
                  "reference plane and if the first component "
                  "is close to zero, then the volume is infinity. Check "
-                 "GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
+                 "CORE::GEO::CUT::DirectDivergenceGlobalRefplane::GetReferencePlane() \n";
     throw std::runtime_error("Volume is not a number.");
   }
 }

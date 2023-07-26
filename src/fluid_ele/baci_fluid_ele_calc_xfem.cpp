@@ -3642,7 +3642,7 @@ namespace DRT
             }
 
             {
-              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GEO::CUT::Position");
+              TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::CORE::GEO::CUT::Position");
 
               if (!evaluated_cut)  // compute the local coordiante based on the reference position
                                    // (first time the cut was frozen)

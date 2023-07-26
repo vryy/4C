@@ -1474,13 +1474,13 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
     std::ofstream file(str.str().c_str());
     for (std::size_t section = 0; section < sections.size(); ++section)
     {
-      GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
+      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
       for (std::size_t entry = 0; entry < (plot_data_[section]).size(); ++entry)
       {
-        GEO::CUT::OUTPUT::GmshCoordDump(
+        CORE::GEO::CUT::OUTPUT::GmshCoordDump(
             file, (plot_data_[section])[entry].first, (plot_data_[section])[entry].second);
       }
-      GEO::CUT::OUTPUT::GmshEndSection(file, false);
+      CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
     }
     file.close();
   }

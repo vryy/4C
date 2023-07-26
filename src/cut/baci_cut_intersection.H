@@ -619,7 +619,7 @@ namespace CORE::GEO
        *  \param tolerance (out) : tolerance specified by the CUT::KERNEL
        *                           intersection method
        *
-       *  This function returns GEO::CUT::IntersectionStatus. There are three different
+       *  This function returns CORE::GEO::CUT::IntersectionStatus. There are three different
        *  outcomes:
        *
        *  ( 1 ) Multiple cut points are detected during the CheckParallelism call.
@@ -1103,7 +1103,7 @@ namespace CORE::GEO
         if (dimside + dimedge != probdim)
           dserror(
               "This ComputeDistance variant won't work! Think about using "
-              "a GEO::CUT::Position object instead!");
+              "a CORE::GEO::CUT::Position object instead!");
         CORE::LINALG::Matrix<probdim, 1> xsi(xsi_.A(), true);
 
         KERNEL::ComputeDistance<probdim, sidetype, floattype> cd(xsi);

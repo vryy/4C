@@ -53,7 +53,7 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
     const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::BoundaryCell::TransformLocalCoords" );
 
 
   const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;

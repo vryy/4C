@@ -548,7 +548,7 @@ void CORE::GEO::CUT::FacetIntegration::BoundaryFacetIntegration(
 void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
     Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
 
   std::list<Teuchos::RCP<BoundaryCell>> divCells;
 
@@ -584,16 +584,16 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule(
            k != facetSplit.end(); k++)
       {
         std::cout << "Split cell output." << std::endl;
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, *k);
+        CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, *k);
       }
     }
     else
-      GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
+      CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
 
     CORE::LINALG::Matrix<3, 1> midpt;
     bcell->ElementCenter(midpt);
-    GEO::CUT::OUTPUT::GmshVector(
-        file, midpt, GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
+    CORE::GEO::CUT::OUTPUT::GmshVector(
+        file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
 #endif
 
     CORE::DRT::UTILS::GaussIntegration gi_temp =
@@ -907,7 +907,7 @@ void CORE::GEO::CUT::FacetIntegration::DebugAreaCheck(
 void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
     Mesh &mesh, Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> &cgp)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRule");
 
   std::list<Teuchos::RCP<BoundaryCell>> divCells;
 
@@ -1040,17 +1040,18 @@ void CORE::GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew(
         midpt.Scale(1.0 / (*k).size());
 
         //        bcell->ElementCenter(midpt);
-        GEO::CUT::OUTPUT::GmshTriSideDump(file, *k);
-        GEO::CUT::OUTPUT::GmshVector(file, midpt, GEO::CUT::OUTPUT::GetEqOfPlane(*k), true);
+        CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, *k);
+        CORE::GEO::CUT::OUTPUT::GmshVector(
+            file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(*k), true);
       }
     }
     else
     {
       CORE::LINALG::Matrix<3, 1> midpt(true);
       bcell->ElementCenter(midpt);
-      GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
-      GEO::CUT::OUTPUT::GmshVector(
-          file, midpt, GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
+      CORE::GEO::CUT::OUTPUT::GmshTriSideDump(file, bcell->Points());
+      CORE::GEO::CUT::OUTPUT::GmshVector(
+          file, midpt, CORE::GEO::CUT::OUTPUT::GetEqOfPlane(bcell->Points()), true);
     }
 #endif
 

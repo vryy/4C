@@ -392,7 +392,7 @@ namespace CORE::GEO
         }
 
         //      std::cout <<"LS cut found? --> " << (cutfound ? "TRUE" : "FALSE") << std::endl;
-        //      dserror("GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
+        //      dserror("CORE::GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
 
         return cutfound;
       }

@@ -1790,7 +1790,8 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     {
       // const double * cutter_node_xyz = cutter_node->X();
       // search for the fluid element, the current scatra node lies in to obtain the node's
-      // GEO::CUT::Point::PointPosition interpolate fluid quantities within the element afterwards
+      // CORE::GEO::CUT::Point::PointPosition interpolate fluid quantities within the element
+      // afterwards
 
       dserror("ask a mesh projector with a search tree for the right fluid phase!");
     }

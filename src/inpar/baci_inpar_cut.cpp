@@ -33,20 +33,20 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "The floattype of the cut distance computation", tuple<std::string>("cln", "double"),
       tuple<int>(INPAR::CUT::floattype_cln, INPAR::CUT::floattype_double), &cut_general);
 
-  // A general floattype for GEO::CUT::Position for Embedded Elements (ComputeDistance)
-  // If specified this floattype is used for all computations of GEO::CUT::Position with embedded
-  // elements
+  // A general floattype for CORE::GEO::CUT::Position for Embedded Elements (ComputeDistance)
+  // If specified this floattype is used for all computations of CORE::GEO::CUT::Position with
+  // embedded elements
   setStringToIntegralParameter<int>("GENERAL_POSITON_DISTANCE_FLOATTYPE", "none",
-      "A general floattype for GEO::CUT::Position for Embedded Elements (ComputeDistance)",
+      "A general floattype for CORE::GEO::CUT::Position for Embedded Elements (ComputeDistance)",
       tuple<std::string>("none", "cln", "double"),
       tuple<int>(
           INPAR::CUT::floattype_none, INPAR::CUT::floattype_cln, INPAR::CUT::floattype_double),
       &cut_general);
 
-  // A general floattype for GEO::CUT::Position for Elements (ComputePosition)
-  // If specified this floattype is used for all computations of GEO::CUT::Position
+  // A general floattype for CORE::GEO::CUT::Position for Elements (ComputePosition)
+  // If specified this floattype is used for all computations of CORE::GEO::CUT::Position
   setStringToIntegralParameter<int>("GENERAL_POSITON_POSITION_FLOATTYPE", "none",
-      "A general floattype for GEO::CUT::Position Elements (ComputePosition)",
+      "A general floattype for CORE::GEO::CUT::Position Elements (ComputePosition)",
       tuple<std::string>("none", "cln", "double"),
       tuple<int>(
           INPAR::CUT::floattype_none, INPAR::CUT::floattype_cln, INPAR::CUT::floattype_double),

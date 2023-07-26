@@ -674,8 +674,8 @@ namespace FLD
     //    */
     //    void GetVolumeCellMaterial(DRT::Element* actele,
     //                               Teuchos::RCP<MAT::Material> & mat,
-    //                               const GEO::CUT::Point::PointPosition position =
-    //                               GEO::CUT::Point::outside);
+    //                               const CORE::GEO::CUT::Point::PointPosition position =
+    //                               CORE::GEO::CUT::Point::outside);
 
 
     //-------------------------------------------------------------------------------

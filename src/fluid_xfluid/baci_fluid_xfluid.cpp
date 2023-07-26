@@ -4711,8 +4711,9 @@ void FLD::XFluid::SetInitialFlowField(
         const double tmp_vortex =
             -0.5 * (C * C / R_squared) * (exp(-r_squared_left) + exp(-r_squared_right));
 
-        if (pos == CORE::GEO::CUT::Point::inside)  // plus/burnt domain -> burnt material (
-                                                   // GEO::CUT::Position is inside ) / slave side
+        if (pos ==
+            CORE::GEO::CUT::Point::inside)  // plus/burnt domain -> burnt material (
+                                            // CORE::GEO::CUT::Position is inside ) / slave side
         {
           dens = dens_b;
           pres = 0.0;  // matching the zero pressure condition at outflow

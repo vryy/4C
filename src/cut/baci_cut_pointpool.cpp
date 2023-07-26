@@ -235,15 +235,15 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
 
           if (cut_side)
           {
-            GEO::CUT::OUTPUT::GmshNewSection(file, "InterSides");
-            GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, NULL);
-            GEO::CUT::OUTPUT::GmshEndSection(file, false);
+            CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "InterSides");
+            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           }
           if (cut_edge)
           {
-            GEO::CUT::OUTPUT::GmshNewSection(file, "InterEdges");
-            GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, NULL);
-            GEO::CUT::OUTPUT::GmshEndSection(file, false);
+            CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "InterEdges");
+            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           }
 
           file.close();

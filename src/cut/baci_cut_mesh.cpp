@@ -784,7 +784,7 @@ void CORE::GEO::CUT::Mesh::BuildStaticSearchTree()
  *---------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::Cut(Mesh& mesh, plain_element_set& elements_done)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- CUT (incl. tetmesh-cut)");
 
   plain_element_set my_elements_done;
 
@@ -825,7 +825,7 @@ void CORE::GEO::CUT::Mesh::Cut(
 
   {
     TEUCHOS_FUNC_TIME_MONITOR(
-        "GEO::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between");
+        "CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- preselection of possible cut between");
 
     // preselection of possible cut between linear elements and the current side
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
@@ -861,7 +861,8 @@ void CORE::GEO::CUT::Mesh::Cut(
   }
 
   {
-    TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 6/6 --- Cut_Finalize --- cutting sides with elements");
+    TEUCHOS_FUNC_TIME_MONITOR(
+        "CORE::GEO::CUT --- 6/6 --- Cut_Finalize --- cutting sides with elements");
 
 
     // perform the cut of this side for each involved element
@@ -977,7 +978,7 @@ void CORE::GEO::CUT::Mesh::SearchCollisions(Mesh& cutmesh)
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::FindCutPoints()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1014,7 +1015,7 @@ void CORE::GEO::CUT::Mesh::FindCutPoints()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::MakeCutLines()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeCutLines");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeCutLines");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1060,7 +1061,7 @@ void CORE::GEO::CUT::Mesh::MakeCutLines()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::MakeFacets()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeFacets");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeFacets");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1098,7 +1099,7 @@ void CORE::GEO::CUT::Mesh::MakeFacets()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::MakeVolumeCells()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeVolumeCells");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- MakeVolumeCells");
 
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1136,7 +1137,8 @@ void CORE::GEO::CUT::Mesh::MakeVolumeCells()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::FindNodePositions()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodePositions");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodePositions");
 
 
   // On multiple cuts former outside positions can become inside
@@ -1220,7 +1222,8 @@ void CORE::GEO::CUT::Mesh::FindLSNodePositions()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Mesh::FindFacetPositions()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindFacetPositions");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindFacetPositions");
 
 
   plain_volumecell_set undecided;
@@ -1339,22 +1342,22 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
 
   //     bool haveundecided = false;
   //     bool havecutsurface = false;
-  //     GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
+  //     CORE::GEO::CUT::Point::PointPosition position = CORE::GEO::CUT::Point::undecided;
   //     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   //     {
   //       Facet * f = *i;
-  //       GEO::CUT::Point::PointPosition fp = f->Position();
+  //       CORE::GEO::CUT::Point::PointPosition fp = f->Position();
   //       switch ( fp )
   //       {
-  //       case GEO::CUT::Point::undecided:
+  //       case CORE::GEO::CUT::Point::undecided:
   //         haveundecided = true;
   //         break;
-  //       case GEO::CUT::Point::oncutsurface:
+  //       case CORE::GEO::CUT::Point::oncutsurface:
   //         havecutsurface = true;
   //         break;
-  //       case GEO::CUT::Point::inside:
-  //       case GEO::CUT::Point::outside:
-  //         if ( position!=GEO::CUT::Point::undecided and position!=fp )
+  //       case CORE::GEO::CUT::Point::inside:
+  //       case CORE::GEO::CUT::Point::outside:
+  //         if ( position!=CORE::GEO::CUT::Point::undecided and position!=fp )
   //         {
   //           throw std::runtime_error( "mixed facet set" );
   //         }
@@ -1364,23 +1367,23 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
 
   // this is a bold assumption.
 
-  //     if ( position == GEO::CUT::Point::undecided )
+  //     if ( position == CORE::GEO::CUT::Point::undecided )
   //     {
   //       if ( havecutsurface )
-  //         position = GEO::CUT::Point::inside;
+  //         position = CORE::GEO::CUT::Point::inside;
   //       else
-  //         position = GEO::CUT::Point::outside;
+  //         position = CORE::GEO::CUT::Point::outside;
   //     }
 
   // set any undecided facets in a decided volume cell
 
-  //     if ( haveundecided and position != GEO::CUT::Point::undecided )
+  //     if ( haveundecided and position != CORE::GEO::CUT::Point::undecided )
   //     {
   //       for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   //       {
   //         Facet * f = *i;
-  //         GEO::CUT::Point::PointPosition fp = f->Position();
-  //         if ( fp==GEO::CUT::Point::undecided )
+  //         CORE::GEO::CUT::Point::PointPosition fp = f->Position();
+  //         if ( fp==CORE::GEO::CUT::Point::undecided )
   //         {
   //           f->Position( position );
   //         }
@@ -2151,11 +2154,11 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
   // ###############write all facets (or bacially the facet points)###############
   if (facets_.size() > 0)
   {
-    //    GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
+    //    CORE::GEO::CUT::OUTPUT::GmshNewSection(file,"Facet_Points");
     //    for ( std::list<Teuchos::RCP<Facet > >::iterator i=facets_.begin(); i!=facets_.end(); ++i
     //    )
-    //      GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
-    //    GEO::CUT::OUTPUT::GmshEndSection(file);
+    //      CORE::GEO::CUT::OUTPUT::GmshFacetDump(file,&(**i),"points");
+    //    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
 
     // ###############write all facets (or bacially the facet lines)###############
     CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "Facet_Lines");
@@ -2223,8 +2226,8 @@ void CORE::GEO::CUT::Mesh::DumpGmsh(std::string name)
     file << "View \"LevelSetZeroShape\" {\n";
     for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
          i++)
-      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, &(*i->second));
-    GEO::CUT::OUTPUT::GmshEndSection(file);
+      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, &(*i->second));
+    CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
 #endif
   }
 }
@@ -2373,7 +2376,7 @@ void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name, bool include_in
          i++)
     {
       Element* ele = &*i->second;
-      GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, ele);
+      CORE::GEO::CUT::OUTPUT::GmshLevelSetValueZeroSurfaceDump(file, ele);
     }
     file << "};\n";
 #endif
@@ -2534,9 +2537,10 @@ void CORE::GEO::CUT::Mesh::DumpGmshVolumeCells(std::string name)
 void CORE::GEO::CUT::Mesh::DebugDump(CORE::GEO::CUT::Element* ele, std::string file, int line)
 {
   if (file != "" || line != -1)
-    std::cout << "GEO::CUT::Mesh::DebugDump called in " << file << " in line " << line << std::endl;
+    std::cout << "CORE::GEO::CUT::Mesh::DebugDump called in " << file << " in line " << line
+              << std::endl;
 
-  //  std::cout << "Skip GEO::CUT::Mesh::DebugDump for now -- hiermeier" << std::endl;
+  //  std::cout << "Skip CORE::GEO::CUT::Mesh::DebugDump for now -- hiermeier" << std::endl;
   //  return;
   std::stringstream str;
   str << ".full_debug_cut_output." << myrank_ << "_CUTFAIL.pos";

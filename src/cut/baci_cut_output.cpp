@@ -1178,10 +1178,10 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
   file << "{"
        << "\n";
   if (not haslevelsetside)
-    file << "  GEO::CUT::MeshIntersection intersection;"
+    file << "  CORE::GEO::CUT::MeshIntersection intersection;"
          << "\n";
   else
-    file << "  GEO::CUT::CombIntersection intersection(-1);"
+    file << "  CORE::GEO::CUT::CombIntersection intersection(-1);"
          << "\n";
   file << "  intersection.GetOptions().Init_for_Cuttests();  // use full cln\n";
   file << "  std::vector<int> nids;"
@@ -1317,12 +1317,12 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << ""
          << "\n";
-    file << "  GEO::CUT::Mesh mesh = intersection.NormalMesh();"
+    file << "  CORE::GEO::CUT::Mesh mesh = intersection.NormalMesh();"
          << "\n";
-    file << "  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell> > & other_cells = "
+    file << "  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell> > & other_cells = "
             "mesh.VolumeCells();"
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "        i!=other_cells.end();"
@@ -1331,7 +1331,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << "  {"
          << "\n";
-    file << "    GEO::CUT::VolumeCell * vc = &**i;"
+    file << "    CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "    tessVol.push_back(vc->Volume());"
          << "\n";
@@ -1343,7 +1343,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << ""
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "        i!=other_cells.end();"
@@ -1352,7 +1352,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << "  {"
          << "\n";
-    file << "    GEO::CUT::VolumeCell * vc = &**i;"
+    file << "    CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "    "
             "vc->MomentFitGaussWeights(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
@@ -1364,7 +1364,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << ""
          << "\n";
-    file << "  for ( std::list<Teuchos::RCP<GEO::CUT::VolumeCell> >::const_iterator "
+    file << "  for ( std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell> >::const_iterator "
             "i=other_cells.begin();"
          << "\n";
     file << "           i!=other_cells.end();"
@@ -1373,7 +1373,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     file << "   {"
          << "\n";
-    file << "     GEO::CUT::VolumeCell * vc = &**i;"
+    file << "     CORE::GEO::CUT::VolumeCell * vc = &**i;"
          << "\n";
     file << "     "
             "vc->DirectDivergenceGaussRule(vc->ParentElement(),mesh,true,INPAR::CUT::BCellGaussPts_"
@@ -1460,7 +1460,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
 #if CUT_CREATION_INFO
     const std::pair<Side*, Edge*>& cu_pair = std::make_pair(other, edge);
     const std::pair<Side*, Edge*>& or_pair = (*it)->AddedFrom(cu_pair);
-    GEO::CUT::OUTPUT::GmshCutPairDump(file, or_pair, 0, std::string("added_from"));
+    CORE::GEO::CUT::OUTPUT::GmshCutPairDump(file, or_pair, 0, std::string("added_from"));
     if (or_pair != cu_pair)
     {
       file << "// original added becase: " << (*it)->GetCreationInfo(or_pair) << "\n";

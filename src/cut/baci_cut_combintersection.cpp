@@ -32,7 +32,7 @@ CORE::GEO::CUT::CombIntersection::CombIntersection(int myrank)
 
 void CORE::GEO::CUT::CombIntersection::Cut(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_Intersection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_Intersection");
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 Cut_Intersection ...";
 

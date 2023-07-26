@@ -134,7 +134,7 @@ int CORE::GEO::SearchTree::queryFSINearestObject(const ::DRT::Discretization& di
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
     const CORE::LINALG::Matrix<3, 1>& point, CORE::GEO::NearestObject& nearestobject)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::SearchTree - queryTime");
 
   if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
 
@@ -153,7 +153,7 @@ int CORE::GEO::SearchTree::queryXFEMFSIPointType(const ::DRT::Discretization& di
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
     const CORE::LINALG::Matrix<3, 1>& point)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::SearchTree - queryTime");
 
   if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
 
@@ -171,7 +171,7 @@ void CORE::GEO::SearchTree::moveContactNodes(const std::vector<std::vector<int>>
     const std::map<int, CORE::LINALG::Matrix<3, 2>>& triangleXAABBs,
     const CORE::LINALG::Matrix<3, 1>& querypoint, const int querypointId, const int querypointLabel)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::SearchTree - queryTime");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::SearchTree - queryTime");
 
   if (treeRoot_ == Teuchos::null) dserror("tree is not yet initialized !!!");
 

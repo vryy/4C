@@ -24,9 +24,12 @@ unsigned int CORE::GEO::CUT::ClnWrapper::precision_ = CLN_START_PRECISION;
 
 // wrappers to call the method (function pointers and class method pointers are not convertible, so
 // we need to use singleton here)
-void* mallocwrap(size_t size) { return (GEO::CUT::MemorySingleton::getInstance().Allocate(size)); }
+void* mallocwrap(size_t size)
+{
+  return (CORE::GEO::CUT::MemorySingleton::getInstance().Allocate(size));
+}
 
-void deallocwrap(void* ptr) { return (GEO::CUT::MemorySingleton::getInstance().Free(ptr)); }
+void deallocwrap(void* ptr) { return (CORE::GEO::CUT::MemorySingleton::getInstance().Free(ptr)); }
 // just function pointers to overwrite the ones provided by cln ( malloc and free)
 namespace cln
 {

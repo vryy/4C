@@ -741,7 +741,7 @@ namespace CORE::GEO
     // works properly REMARK: tested this method for quite a while and seems to be fine now
     // (28.11.2012 ghamm)
     //  dserror("This function seems to deliver wrong results! Check carefully before use or use a
-    //  different function, e.g. GEO::CUT::Position");
+    //  different function, e.g. CORE::GEO::CUT::Position");
     // REMARK: Added a scaling of the function -> biggest entry is 1 and thus this function should
     // work for elements far away
     //         from the origin as well. (27.07.2015 winter & seitz)
@@ -1138,7 +1138,7 @@ namespace CORE::GEO
     //  std::cout << "nodeWithinElement: " << nodeWithinElement << std::endl;
     //  printf("iter = %d\n", iter);
     //  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n",
-    //  eleCoord(0),eleCoord(1), residual, GEO::TOL14); exit(1);
+    //  eleCoord(0),eleCoord(1), residual, CORE::GEO::TOL14); exit(1);
     return;
   }
 

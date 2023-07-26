@@ -267,7 +267,7 @@ void CORE::GEO::CUT::MeshIntersection::CutTest_Cut(bool include_inner,
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_SelfCut");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_SelfCut");
 
   Teuchos::RCP<PointPool> point_pool = CutMesh().Points();
   if (CutMesh().GetOptions().Do_SelfCut())
@@ -292,7 +292,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_SelfCut(bool include_inner, bool scre
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::MeshIntersection::Cut_CollisionDetection(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 3/6 --- Cut_CollisionDetection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 3/6 --- Cut_CollisionDetection");
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 3/6 Cut_CollisionDetection ...";
 
@@ -309,7 +309,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_CollisionDetection(bool include_inner
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection");
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 4/6 Cut_MeshIntersection ...";
 
@@ -322,7 +322,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection(bool screenoutput)
   m.MakeFacets();
   m.MakeVolumeCells();
 
-}  // GEO::CUT::MeshIntersection::Cut_MeshIntersection
+}  // CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection
 
 /*------------------------------------------------------------------------------------------------*
  * Routine for deciding the inside-outside position. This creates the dofset data,                *
@@ -330,7 +330,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_MeshIntersection(bool screenoutput)
  *------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets(bool include_inner, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (serial)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (serial)");
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 5/6 Cut_Positions_Dofsets ...";
 
@@ -351,7 +351,7 @@ void CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets(bool include_inner,
     m.FindNodalDOFSets(include_inner);
   }
 
-}  // GEO::CUT::MeshIntersection::Cut_Positions_Dofsets
+}  // CORE::GEO::CUT::MeshIntersection::Cut_Positions_Dofsets
 
 
 /*--------------------------------------------------------------------------------------*

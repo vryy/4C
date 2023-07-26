@@ -24,7 +24,8 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
 {
   dis.Comm().Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CreateNodalDofSet");
 
 
   std::set<int> eids;  // eids of elements that are involved in CUT and include
@@ -157,7 +158,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
   //===============
   for (std::set<int>::iterator i = eids.begin(); i != eids.end(); i++)
   {
-    TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- STEP 2");
+    TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- STEP 2");
 
 
     int eid = *i;
@@ -218,7 +219,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
     bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FillParallelDofSetData");
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FillParallelDofSetData");
 
   // find volumecell sets and non-row nodes for that dofset numbers has to be communicated parallel
   // the communication is done element wise for all its sets of volumecells when there is a non-row
@@ -367,7 +368,8 @@ void CORE::GEO::CUT::ParentIntersection::FindNodalCellSets(bool include_inner, s
     std::vector<plain_volumecell_set>& cell_sets_outside,
     std::vector<plain_volumecell_set>& cell_sets)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodalCellSets");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- FindNodalCellSets");
 
   for (std::vector<int>::iterator i = sourrounding_elements.begin();
        i != sourrounding_elements.end(); ++i)
@@ -431,7 +433,8 @@ void CORE::GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
     std::vector<std::vector<int>>& nodaldofset_vc_sets,
     std::vector<std::map<int, int>>& vcsets_nid_dofsetnumber_map_toComm)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- ConnectNodalDOFSets");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- ConnectNodalDOFSets");
 
 
   for (std::vector<plain_volumecell_set>::const_iterator s =
@@ -506,7 +509,7 @@ void CORE::GEO::CUT::ParentIntersection::Cut_Finalize(bool include_inner,
     INPAR::CUT::VCellGaussPts VCellgausstype, INPAR::CUT::BCellGaussPts BCellgausstype,
     bool tetcellsonly, bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 6/6 --- Cut_Finalize");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 6/6 --- Cut_Finalize");
 
   if (myrank_ == 0 and screenoutput) IO::cout << "\t * 6/6 Cut_Finalize ...\t";
 
@@ -974,7 +977,8 @@ void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
     //++++++++++++++++++++
-    //     const GEO::CUT::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+    //     const CORE::GEO::CUT::plain_integrationcell_set & integrationcells =
+    //     vc->IntegrationCells();
 
     //     if(integrationcells.size()==0)
     //     {

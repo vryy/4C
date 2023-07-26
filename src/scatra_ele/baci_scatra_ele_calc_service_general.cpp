@@ -874,7 +874,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(const
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
 
-  //  GEO::fillInitialPositionArray<distype,nsd_, CORE::LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  //  CORE::GEO::fillInitialPositionArray<distype,nsd_, CORE::LINALG::Matrix<nsd_,nen_>
+  //  >(ele,xyze_);
   //  // Do ALE specific updates if necessary
   //  if (ele->IsAle())
   //  {

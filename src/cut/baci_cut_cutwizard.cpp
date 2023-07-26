@@ -233,9 +233,9 @@ void CORE::GEO::CutWizard::Cut(
   // safety checks if the cut is initialized correctly
   if (!SafetyChecks(false)) return;
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CutWizard::Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CutWizard::Cut");
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -271,11 +271,11 @@ void CORE::GEO::CutWizard::Prepare()
   // safety checks if the cut is initialized correctly
   if (!SafetyChecks(true)) return;
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 1/6 --- Cut_Initialize");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/6 --- Cut_Initialize");
 
   const double t_start = Teuchos::Time::wallTime();
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nGEO::CutWizard::Prepare:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Prepare:" << IO::endl;
 
   if (myrank_ == 0 and screenoutput_) IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
@@ -704,7 +704,7 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
   comm_.Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)");
 
   if (myrank_ == 0 and screenoutput_) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
 

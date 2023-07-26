@@ -186,7 +186,8 @@ void CORE::GEO::CUT::TetMesh::CreateElementTets(Mesh& mesh, Element* element,
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-  std::cout << "Entered GEO::CUT::TetMesh::CreateElementTets(...), count: " << count << std::endl;
+  std::cout << "Entered CORE::GEO::CUT::TetMesh::CreateElementTets(...), count: " << count
+            << std::endl;
 #endif
   if (count == 1)
   {
@@ -870,7 +871,7 @@ bool CORE::GEO::CUT::TetMesh::IsValidTet(const std::vector<Point*>& t)
 }
 
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
-double GEO::CUT::TetMesh::CalcVolumeOfTet(const std::vector<Point*>& t)
+double CORE::GEO::CUT::TetMesh::CalcVolumeOfTet(const std::vector<Point*>& t)
 {
   if (t.size() != 4) dserror("Expected a tet. Size of vector is not 4.");
   // create planes consisting of 3 nodes each
@@ -1157,7 +1158,7 @@ void CORE::GEO::CUT::TetMesh::CollectCoordinates(
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
 
-void GEO::CUT::TetMesh::GmshWriteCells()
+void CORE::GEO::CUT::TetMesh::GmshWriteCells()
 {
   std::ofstream file("delaunaycells.pos");
   file << "View \"delaunaycells\" {\n";
@@ -1169,7 +1170,7 @@ void GEO::CUT::TetMesh::GmshWriteCells()
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteActiveCells()
+void CORE::GEO::CUT::TetMesh::GmshWriteActiveCells()
 {
   std::ofstream file("activecells.pos");
   file << "View \"activecells\" {\n";
@@ -1185,7 +1186,7 @@ void GEO::CUT::TetMesh::GmshWriteActiveCells()
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteSurfaceCells()
+void CORE::GEO::CUT::TetMesh::GmshWriteSurfaceCells()
 {
   std::ofstream file("surfacecells.pos");
   file << "View \"surfacecells\" {\n";
@@ -1199,7 +1200,7 @@ void GEO::CUT::TetMesh::GmshWriteSurfaceCells()
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteSurfaceTris()
+void CORE::GEO::CUT::TetMesh::GmshWriteSurfaceTris()
 {
   std::ofstream file("surfacetris.pos");
   file << "View \"surfacetris\" {\n";
@@ -1212,7 +1213,8 @@ void GEO::CUT::TetMesh::GmshWriteSurfaceTris()
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteTriSet(const std::string& name, const PlainEntitySet<3>& tris)
+void CORE::GEO::CUT::TetMesh::GmshWriteTriSet(
+    const std::string& name, const PlainEntitySet<3>& tris)
 {
   std::string filename = name + ".pos";
   std::ofstream file(filename.c_str());
@@ -1226,7 +1228,8 @@ void GEO::CUT::TetMesh::GmshWriteTriSet(const std::string& name, const PlainEnti
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteTetSet(const std::string& name, const PlainEntitySet<4>& tets)
+void CORE::GEO::CUT::TetMesh::GmshWriteTetSet(
+    const std::string& name, const PlainEntitySet<4>& tets)
 {
   std::string filename = name + ".pos";
   std::ofstream file(filename.c_str());
@@ -1240,19 +1243,19 @@ void GEO::CUT::TetMesh::GmshWriteTetSet(const std::string& name, const PlainEnti
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteTri(std::ostream& file, int eid, const std::vector<int>& t)
+void CORE::GEO::CUT::TetMesh::GmshWriteTri(std::ostream& file, int eid, const std::vector<int>& t)
 {
   GmshWriteConnect(file, "ST", t);
   GmshWritePosition(file, eid, t);
 }
 
-void GEO::CUT::TetMesh::GmshWriteTet(std::ostream& file, int eid, const std::vector<int>& t)
+void CORE::GEO::CUT::TetMesh::GmshWriteTet(std::ostream& file, int eid, const std::vector<int>& t)
 {
   GmshWriteConnect(file, "SS", t);
   GmshWritePosition(file, eid, t);
 }
 
-void GEO::CUT::TetMesh::GmshWriteConnect(
+void CORE::GEO::CUT::TetMesh::GmshWriteConnect(
     std::ostream& file, std::string name, const std::vector<int>& t)
 {
   file << name << "(";
@@ -1265,7 +1268,8 @@ void GEO::CUT::TetMesh::GmshWriteConnect(
   file << "){";
 }
 
-void GEO::CUT::TetMesh::GmshWritePosition(std::ostream& file, int eid, const std::vector<int>& t)
+void CORE::GEO::CUT::TetMesh::GmshWritePosition(
+    std::ostream& file, int eid, const std::vector<int>& t)
 {
   for (std::vector<int>::const_iterator j = t.begin(); j != t.end(); ++j)
   {

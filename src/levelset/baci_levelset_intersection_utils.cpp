@@ -106,7 +106,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
       continue;
 
     // ------------------------------------------------------------------------
-    // call GEO::Cut algorithm and process cut data
+    // call CORE::GEO::Cut algorithm and process cut data
     // ------------------------------------------------------------------------
     CORE::GEO::CUT::ElementHandle* ehandle = Cut(levelset, xyze, phi_nodes, cut_screenoutput);
 
