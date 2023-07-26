@@ -962,7 +962,7 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMa
       solver.setMatrix(Teuchos::rcpFromRef(K_T));
       solver.setVectors(Teuchos::rcpFromRef(dsol), Teuchos::rcpFromRef(R));
       solver.solveToRefinedSolution(true);
-      solver.applyRefinement();
+      solver.factorWithEquilibration(true);
       solver.solve();
 
       l = 0;
@@ -1057,7 +1057,7 @@ void MAT::GrowthRemodel_ElastHyper::SolveFordrhodCdlambrdC(
   solver.setMatrix(Teuchos::rcpFromRef(K_T));
   solver.setVectors(Teuchos::rcpFromRef(dsolcmat), Teuchos::rcpFromRef(Rcmat));
   solver.solveToRefinedSolution(true);
-  solver.applyRefinement();
+  solver.factorWithEquilibration(true);
   solver.solve();
 
   sum_drhodC.Clear();
