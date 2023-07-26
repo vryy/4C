@@ -10,191 +10,90 @@
 #define BACI_LINALG_SERIALDENSEMATRIX_H
 
 
-#include <Epetra_SerialDenseMatrix.h>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace CORE::LINALG
 {
   /*!
-  \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
-         in the constructor and a modified memory management
+  \brief A class that wraps Teuchos::SerialDenseMatrix
 
-  Epetra_SerialDenseMatrix always allocates new memory upon call of Shape() or
-  Reshape(). This class re-uses previously allocated memory as much as possible,
-  similar to the implementation in std::vector. If the matrix size is reduced
-  or if the allocated memory is sufficient for the new matrix sizes, the old
-  data array is re-used. Re-allocation only happens in case more memory is
-  necessary. This way, some memory might be wasted but it results in code that
-  is generally considerably faster and avoids memory fragmentation. To force a
-  new allocation with the correct amount of memory, call Shape(0,0) first.
-
+       This is done in favor of typedef to allow forward declaration
   */
-  class SerialDenseMatrix : public Epetra_SerialDenseMatrix
+  class SerialDenseMatrix : public Teuchos::SerialDenseMatrix<int, double>
   {
    public:
-    //! @name Constructors and destructors and related methods
-    //@{
+    /// Base type definition
+    using Base = Teuchos::SerialDenseMatrix<int, double>;
+
+    /// Using the base class constructor
+    using Base::SerialDenseMatrix;
 
     /*!
-    \brief Standard Constructor wrapping
-           Epetra_SerialDenseMatrix(bool set_object_label=true);
-
+       \brief Standard Copy Constructor wraps
+        Teuchos::SerialDenseMatrix(const SerialDenseMatrix& Source);
+       This allows to use the CORE::LINALG::SerialDenseVector in place of
+       CORE::LINALG::SerialDenseMatrix at the cost of a copy operation
     */
-    SerialDenseMatrix(bool set_object_label = true);
+    SerialDenseMatrix(const Base& Source, Teuchos::ETransp trans = Teuchos::NO_TRANS)
+        : Base(Source, trans)
+    {
+    }
+  };
 
-    /*!
-    \brief Standard Constructor wrapping
-           Epetra_SerialDenseMatrix(int NumRows, int NumCols, bool set_object_label=true);
-
-    This class provides the possibility to avoid the initialization of the matrix to improve
-    performance, by explicitly setting the init flag to false. The default behavior is to set to
-    zero.
-
-    \param NumRows          (in): no. of rows the matrix is supposed to have
-    \param NumCols          (in): no. of cols the matrix is supposed to have
-    \param init             (in): flag indicating whether the matrix is initialized to zero (true)
-                                  or left uninitialized (false). Defaults to true.
-    \param set_object_label (in): set an epetra object label for print out (defaults to true!)
-
+  /*!
+    \brief Update matrix components with scaled values of A,
+           B = alpha*A + beta*B
     */
-    SerialDenseMatrix(int NumRows, int NumCols, bool init = true, bool set_object_label = true);
+  void Update(double alpha, const SerialDenseMatrix& A, double beta, SerialDenseMatrix& B);
 
-    /*!
-    \brief Standard Constructor wrapping
-           Epetra_SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int
-    NumCols, bool set_object_label=true);
+  /*!
+   * \brief Zero out first n elements of the matrix
+   */
+  void Zero(SerialDenseMatrix& mat, int Length);
 
-    \param CV               (in): specifies whether a view to the data in A is created or it is
-    copied \param A                (in): pointer to data array, organized by columns \param LDA
-    (in): leading dimension of A, i.e., the distance between columns in the data array. The first
-    column starts at A, the second at A+LDA, the third at A+2*LDA, etc. \param NumRows (in): no. of
-    rows the matrix is supposed to have, must be smaller or equal LDA \param NumCols          (in):
-    no. of cols the matrix is supposed to have \param set_object_label (in): set an epetra object
-    label for print out (defaults to true!)
-
-    */
-    SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
-        bool set_object_label = true);
-
-    /*!
-    \brief Standard Constructor allowing view on Epetra_SerialDenseMatrix and wrapping
-           SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
-                             bool set_object_label=true);
-
-
-    */
-    SerialDenseMatrix(
-        Epetra_SerialDenseMatrix& Source, Epetra_DataAccess CV, bool set_object_label = true);
-
-    /*!
-    \brief Standard Copy Constructor wraps
-           Epetra_SerialDenseMatrix(const SerialDenseMatrix& Source);
-
-    */
-    SerialDenseMatrix(const SerialDenseMatrix& Source);
-
-    /*!
-    \brief Standard Copy Constructor wraps
-           Epetra_SerialDenseMatrix(const SerialDenseMatrix& Source);
-
-    */
-    SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source);
-
-    /*!
-    \brief Shape dimensions of this matrix as in Epetra_SerialDenseMatrix::Shape
-           (but only allocate new memory if necessary)
-
-    If the number of rows or columns is zero, the memory will be freed. Otherwise,
-    the algorithm keeps the old memory if it is sufficient and only sets the
-    matrix bounds differently.
-    */
-    int Shape(int NumRows, int NumCols);
-
-    /*!
-    \brief Shape dimensions of this matrix but do NOT initialize to zero
-           (as opposed to Epetra_SerialDenseMatrix::Shape(...))
-    */
-    int LightShape(int NumRows, int NumCols);
-
-    /*!
-    \brief Reshape dimensions of this matrix and zero out excess space
-
-    Existing values are kept as far as they fit into the new shape and
-    potential excess space in the matrix is zeroed out
-
-    If the number of rows or columns is zero, the memory will be freed. Otherwise,
-    the algorithm keeps the old memory if it is sufficient and only sets the
-    matrix bounds differently.
-    */
-    int Reshape(int NumRows, int NumCols);
-
-    /*!
-    \brief Reshape dimensions of this matrix but do NOT initialize to zero
-           (as opposed to Epetra_SerialDenseMatrix::Reshape(...))
-
-    Existing values are kept as far as they fit into the new shape but
-    potential excess space in the matrix is NOT zeroed out
-
-    */
-    int LightReshape(int NumRows, int NumCols);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~SerialDenseMatrix();
-
-    /*!
-    \brief Assignment operator from another SerialDenseMatrix
-
-    If the matrix memory is enough to keep the new matrix, no memory reallocation
-    is done, similarly to memory management of the LightShape method.
-     */
-    SerialDenseMatrix& operator=(const SerialDenseMatrix& Source);
-
-    //@}
-
-    //! @name Mathematical methods
-    //@{
-
-    /*!
+  /*!
     \brief Determinant Computation using the Sarrus rule.
     Internal computation is based on the long double data type (80/128 bit depending on platform)
     this allows for higher precision when used on a bigger matrix. Long double is also used for
     output, therefore it has to be expicitly casted to a double if used in a "double only" context.
     */
-    long double Det_long();
+  long double Det_long(const SerialDenseMatrix& mat);
 
-    /*!
-     * \brief Update matrix components with scaled values of B,
-     *        this = ScalarThis * this + ScalarB * B
-     * \author bborn \date 08/08
-     */
-    void Update(const double& ScalarB,     /*!< scale input matrix with */
-        const Epetra_SerialDenseMatrix& B, /*!< input matrix */
-        const double& ScalarThis           /*!< scale this matrix with */
-    );
+  /*!
+   * \brief Utility function to copy the data to SerialDenseMatrix
+   */
+  void copy(const double* vec, SerialDenseMatrix::Base& mat);
 
-    /*!
-     * \brief Set matrix components to zero,
-     *        this = 0.0
-     * \author bborn \date 08/08
-     */
-    void Zero();
+  // output stream operator
+  inline std::ostream& operator<<(std::ostream& out, const SerialDenseMatrix& mat)
+  {
+    mat.print(out);
+    return out;
+  }
 
-    //@}
+  /*!
+   \brief General matrix-matrix multiplication C = A*B.
+   It assumes that the dimension is compatible
 
-   protected:
-    /*!
-     * \brief Internal reshape function
-     */
-    int DoReshape(const int NumRows, const int NumCols, const bool light);
-
-    std::size_t allocatedSize_;  /// Remembers the amount of bytes allocated when changing layout
-
-  };  // class SerialDenseMatrix
+   \param A (in):        Matrix A
+   \param B (in):        Matrix B
+   \param C (out):       Matrix C
+   */
+  template <typename Tmat1, typename Tmat2, typename Tmat3>
+  int AxB(const Tmat1& A, const Tmat2& B, Tmat3& C)
+  {
+    for (int i = 0; i < C.numRows(); ++i)
+    {
+      for (int j = 0; j < C.numCols(); ++j)
+      {
+        double cij = 0.0;
+        for (int k = 0; k < A.numCols(); ++k) cij += A(i, k) * B(k, j);
+        C(i, j) = cij;
+      }
+    }
+    return 0;
+  }
 }  // namespace CORE::LINALG
 
-
-
-#endif  // LINALG_SERIALDENSEMATRIX_H
+#endif  // BACI_LINALG_SERIALDENSEMATRIX_H
