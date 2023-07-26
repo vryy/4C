@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+void CORE::LINALG::SymmetricInverse(CORE::LINALG::SerialDenseMatrix::Base& A, const int dim)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != dim) dserror("Dimension supplied does not match matrix");

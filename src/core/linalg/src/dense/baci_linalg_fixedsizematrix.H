@@ -12,8 +12,6 @@
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_BLAS.hpp>
 
-#include <Epetra_SerialDenseMatrix.h>
-
 #include <cstring>
 #include <vector>
 #include <cmath>
@@ -21,6 +19,7 @@
 #include <iostream>
 
 #include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.H"
 
 // Attention: In the case a CORE::LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.
@@ -793,7 +792,7 @@ namespace CORE::LINALG
     /// 1-norm
     /*!
       This function computes the norm of the whole matrix. It returns
-      a different result than Epetra_SerialDenseMatrix::OneNorm(),
+      a different result than CORE::LINALG::SerialDenseMatrix::OneNorm(),
       which returns the maximum of the norms of the columns.
       The template arguments \c i and \c j are the size of the matrix.
 
@@ -817,7 +816,7 @@ namespace CORE::LINALG
 
     /// Inf-norm
     /*!
-      This function does not do the same as Epetra_SerialDenseMatrix::InfNorm().
+      This function does not do the same as CORE::LINALG::SerialDenseMatrix::InfNorm().
       The template arguments \c i and \c j are the size of the matrix.
 
       \param mat
@@ -861,7 +860,7 @@ namespace CORE::LINALG
     inline value_type meanValue(const value_type* mat);
 
     /*
-     * Declaration of the functions taking Epetra_SerialDenseMatrix
+     * Declaration of the functions taking CORE::LINALG::SerialDenseMatrix::Base
      *
      */
 
@@ -880,8 +879,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiply(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e left*\e right
     /*!
@@ -897,8 +897,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNN(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e left*\e right^T
     /*!
@@ -915,8 +916,9 @@ namespace CORE::LINALG
         j)x(\e k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNT(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e left^T*\e right
     /*!
@@ -933,8 +935,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTN(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e left^T*\e right^T
     /*!
@@ -952,8 +955,9 @@ namespace CORE::LINALG
         j)x(\e k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTT(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -971,8 +975,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+    inline void multiply(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -990,8 +995,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNN(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right^T
     /*!
@@ -1009,8 +1015,9 @@ namespace CORE::LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNT(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right
     /*!
@@ -1029,8 +1036,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTN(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right^T
     /*!
@@ -1049,8 +1057,9 @@ namespace CORE::LINALG
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTT(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -1070,9 +1079,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiply(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -1092,9 +1101,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNN(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
     /*!
@@ -1115,9 +1124,9 @@ namespace CORE::LINALG
         (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyNT(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
     /*!
@@ -1138,9 +1147,9 @@ namespace CORE::LINALG
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTN(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
     /*!
@@ -1162,9 +1171,9 @@ namespace CORE::LINALG
         (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void multiplyTT(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Invert matrix: \e out = inv(\e in)
     /*!
@@ -1182,7 +1191,8 @@ namespace CORE::LINALG
         matrix to be inverted, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
+    inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// Invert matrix: \e mat = inv(\e mat)
     /*!
@@ -1198,7 +1208,7 @@ namespace CORE::LINALG
         matrix to be inverted in place, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type invert(Epetra_SerialDenseMatrix& mat);
+    inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& mat);
 
     /// Compute determinant
     /*!
@@ -1213,7 +1223,7 @@ namespace CORE::LINALG
      */
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type determinant(const Epetra_SerialDenseMatrix& mat);
+    inline value_type determinant(const CORE::LINALG::SerialDenseMatrix::Base& mat);
 
     /// Copy: \e out = \e in
     /*!
@@ -1226,7 +1236,8 @@ namespace CORE::LINALG
         matrix to be copied, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// Scaled copy: \e out = \e infac * \e in
     /*!
@@ -1241,8 +1252,8 @@ namespace CORE::LINALG
         matrix to read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(
-        Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in);
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// Addition: \e out = \e outfac * \e out + \e infac * \e in
     /*!
@@ -1259,8 +1270,8 @@ namespace CORE::LINALG
         matrix to be added, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& in);
+    inline void update(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// Addition: \e out = \e left + \e right
     /*!
@@ -1276,8 +1287,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right);
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Addition: \e out = \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -1298,9 +1310,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const value_type leftfac,
-        const Epetra_SerialDenseMatrix& left, const value_type rightfac,
-        const Epetra_SerialDenseMatrix& right);
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type leftfac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left, const value_type rightfac,
+        const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Addition: \e out = \e outfac * \e out + \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -1323,9 +1335,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type leftfac, const Epetra_SerialDenseMatrix& left, const value_type rightfac,
-        const Epetra_SerialDenseMatrix& right);
+    inline void update(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type leftfac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const value_type rightfac, const CORE::LINALG::SerialDenseMatrix::Base& right);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -1338,7 +1350,8 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    inline void eMultiply(
+        CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in);
 
     /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
     /*!
@@ -1353,8 +1366,8 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
-        const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    inline void eMultiply(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base in);
 
     /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -1369,8 +1382,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right);
+    inline void eMultiply(CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Multiply element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
     /*!
@@ -1387,8 +1401,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const value_type infac,
-        const Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
+    inline void eMultiply(CORE::LINALG::SerialDenseMatrix::Base out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Multiply element-wise, \e out(m,n) = \e outfac*out(m,n) + \e infac*\e left(m,n)*\e
     /// right(m,n)
@@ -1401,9 +1416,9 @@ namespace CORE::LINALG
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, Epetra_SerialDenseMatrix out,
-        const value_type infac, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right);
+    inline void eMultiply(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -1416,7 +1431,8 @@ namespace CORE::LINALG
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    inline void eDivide(
+        CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in);
 
     /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
     /*!
@@ -1431,8 +1447,8 @@ namespace CORE::LINALG
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
-        const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in);
+    inline void eDivide(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base in);
 
     /// Divide element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -1447,8 +1463,9 @@ namespace CORE::LINALG
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right);
+    inline void eDivide(CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Divide element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
     /*!
@@ -1465,8 +1482,9 @@ namespace CORE::LINALG
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const value_type infac,
-        const Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right);
+    inline void eDivide(CORE::LINALG::SerialDenseMatrix::Base out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e
     /// right(m,n)
@@ -1479,9 +1497,9 @@ namespace CORE::LINALG
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, Epetra_SerialDenseMatrix out,
-        const value_type infac, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right);
+    inline void eDivide(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right);
 
     /// Scale matrix
     /*!
@@ -1494,7 +1512,7 @@ namespace CORE::LINALG
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type scalar, Epetra_SerialDenseMatrix& mat)
+    inline void scaleMatrix(const value_type scalar, CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       scaleMatrix<value_type, i, j>(scalar, mat.A());
     }
@@ -1511,8 +1529,8 @@ namespace CORE::LINALG
       \return dot product
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type dot(
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline value_type dot(const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
       return dot<value_type, i, j>(left.A(), right.A());
     }
@@ -1528,7 +1546,7 @@ namespace CORE::LINALG
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void clearMatrix(Epetra_SerialDenseMatrix& mat)
+    inline void clearMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       clearMatrix<value_type, i, j>(mat.A());
     }
@@ -1544,7 +1562,7 @@ namespace CORE::LINALG
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void putScalar(const value_type scalar, Epetra_SerialDenseMatrix& mat)
+    inline void putScalar(const value_type scalar, CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       putScalar<value_type, i, j>(scalar, mat.A());
     }
@@ -1560,7 +1578,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void abs(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
+    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// Calculate reciprocal values of a matrix
     /*!
@@ -1574,7 +1593,8 @@ namespace CORE::LINALG
         matrix the values are read from, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void reciprocal(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in);
+    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& in);
 
     /// 1-norm
     /*!
@@ -1585,7 +1605,7 @@ namespace CORE::LINALG
       \return 1-norm of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type norm1(const Epetra_SerialDenseMatrix& mat)
+    inline value_type norm1(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return norm1<value_type, i, j>(mat.A());
     }
@@ -1599,7 +1619,7 @@ namespace CORE::LINALG
       \return 2-norm of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type norm2(const Epetra_SerialDenseMatrix& mat)
+    inline value_type norm2(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return norm2<value_type, i, j>(mat.A());
     }
@@ -1613,7 +1633,7 @@ namespace CORE::LINALG
       \return inf-norm of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type normInf(const Epetra_SerialDenseMatrix& mat)
+    inline value_type normInf(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return normInf<value_type, i, j>(mat.A());
     }
@@ -1627,7 +1647,7 @@ namespace CORE::LINALG
       \return minimum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type minValue(const Epetra_SerialDenseMatrix& mat)
+    inline value_type minValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return minValue<value_type, i, j>(mat.A());
     }
@@ -1641,7 +1661,7 @@ namespace CORE::LINALG
       \return maximum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type maxValue(const Epetra_SerialDenseMatrix& mat)
+    inline value_type maxValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return maxValue<value_type, i, j>(mat.A());
     }
@@ -1655,7 +1675,7 @@ namespace CORE::LINALG
       \return mean value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type meanValue(const Epetra_SerialDenseMatrix& mat)
+    inline value_type meanValue(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
       return meanValue<value_type, i, j>(mat.A());
     }
@@ -2644,13 +2664,14 @@ namespace CORE::LINALG
     }
 
     /*
-     * Definitions of the functions taking Epetra_SerialDenseMatrix
+     * Definitions of the functions taking CORE::LINALG::SerialDenseMatrix::Base
      *
      */
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiply(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2661,8 +2682,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNN(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2673,8 +2695,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNT(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
@@ -2685,8 +2708,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTN(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
@@ -2697,8 +2721,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTT(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
@@ -2709,8 +2734,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiply(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2721,8 +2747,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNN(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2733,8 +2760,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNT(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
@@ -2745,8 +2773,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTN(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
@@ -2757,8 +2786,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Epetra_SerialDenseMatrix& out, const value_type infac,
-        const Epetra_SerialDenseMatrix& left, const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTT(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
@@ -2770,9 +2800,9 @@ namespace CORE::LINALG
 
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiply(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2783,9 +2813,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNN(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.N() or left.N() != right.M())
@@ -2796,9 +2826,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyNT(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or out.N() != right.M() or left.N() != right.N())
@@ -2809,9 +2839,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTN(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.N() or left.M() != right.M())
@@ -2822,9 +2852,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void multiplyTT(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.N() or out.N() != right.M() or left.M() != right.N())
@@ -2835,7 +2865,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type invert(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in)
+    inline value_type invert(
+        CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
       if (out.M() != out.N() or in.M() != in.N() or out.M() != in.M())
@@ -2846,7 +2877,7 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type invert(Epetra_SerialDenseMatrix& mat)
+    inline value_type invert(CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
 #ifdef DEBUG
       if (mat.M() != mat.N())
@@ -2856,7 +2887,7 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type determinant(const Epetra_SerialDenseMatrix& mat)
+    inline value_type determinant(const CORE::LINALG::SerialDenseMatrix::Base& mat)
     {
 #ifdef DEBUG
       if (mat.M() != mat.N())
@@ -2866,8 +2897,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& left,
-        const Epetra_SerialDenseMatrix& right)
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out,
+        const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
@@ -2879,9 +2911,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const value_type leftfac,
-        const Epetra_SerialDenseMatrix& left, const value_type rightfac,
-        const Epetra_SerialDenseMatrix& right)
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type leftfac,
+        const CORE::LINALG::SerialDenseMatrix::Base& left, const value_type rightfac,
+        const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
@@ -2893,9 +2925,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type leftfac, const Epetra_SerialDenseMatrix& left, const value_type rightfac,
-        const Epetra_SerialDenseMatrix& right)
+    inline void update(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type leftfac, const CORE::LINALG::SerialDenseMatrix::Base& left,
+        const value_type rightfac, const CORE::LINALG::SerialDenseMatrix::Base& right)
     {
 #ifdef DEBUG
       if (out.M() != left.M() or left.M() != right.M() or out.N() != left.N() or
@@ -2907,7 +2939,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(Epetra_SerialDenseMatrix& out, const Epetra_SerialDenseMatrix& in)
+    inline void update(
+        CORE::LINALG::SerialDenseMatrix::Base& out, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
       if (out.M() != in.M() or out.N() != in.N())
@@ -2918,8 +2951,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(
-        Epetra_SerialDenseMatrix& out, const value_type infac, const Epetra_SerialDenseMatrix& in)
+    inline void update(CORE::LINALG::SerialDenseMatrix::Base& out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
       if (out.M() != in.M() or out.N() != in.N())
@@ -2931,8 +2964,8 @@ namespace CORE::LINALG
 
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, Epetra_SerialDenseMatrix& out,
-        const value_type infac, const Epetra_SerialDenseMatrix& in)
+    inline void update(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base& out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base& in)
     {
 #ifdef DEBUG
       if (out.M() != in.M() or out.N() != in.N())
@@ -2943,7 +2976,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    inline void eMultiply(
+        CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
@@ -2954,8 +2988,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
-        const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    inline void eMultiply(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
@@ -2966,8 +3000,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right)
+    inline void eMultiply(CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -2979,8 +3014,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Epetra_SerialDenseMatrix out, const value_type infac,
-        const Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
+    inline void eMultiply(CORE::LINALG::SerialDenseMatrix::Base out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -2992,9 +3028,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, Epetra_SerialDenseMatrix out,
-        const value_type infac, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right)
+    inline void eMultiply(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -3006,7 +3042,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    inline void eDivide(
+        CORE::LINALG::SerialDenseMatrix::Base out, const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
@@ -3017,8 +3054,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
-        const value_type fac, Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix in)
+    inline void eDivide(const value_type fac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base in)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or in.M() != i or in.N() != j)
@@ -3029,8 +3066,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right)
+    inline void eDivide(CORE::LINALG::SerialDenseMatrix::Base out,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -3042,8 +3080,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Epetra_SerialDenseMatrix out, const value_type infac,
-        const Epetra_SerialDenseMatrix left, const Epetra_SerialDenseMatrix right)
+    inline void eDivide(CORE::LINALG::SerialDenseMatrix::Base out, const value_type infac,
+        const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -3055,9 +3094,9 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, Epetra_SerialDenseMatrix out,
-        const value_type infac, const Epetra_SerialDenseMatrix left,
-        const Epetra_SerialDenseMatrix right)
+    inline void eDivide(const value_type outfac, CORE::LINALG::SerialDenseMatrix::Base out,
+        const value_type infac, const CORE::LINALG::SerialDenseMatrix::Base left,
+        const CORE::LINALG::SerialDenseMatrix::Base right)
     {
 #ifdef DEBUG
       if (out.M() != i or out.N() != j or left.M() != i or left.N() != j or right.M() != i or
@@ -3069,7 +3108,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void abs(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& src)
+    inline void abs(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
 #ifdef DEBUG
       if (dest.M() != dest.M() or src.N() != src.N())
@@ -3080,7 +3120,8 @@ namespace CORE::LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void reciprocal(Epetra_SerialDenseMatrix& dest, const Epetra_SerialDenseMatrix& src)
+    inline void reciprocal(CORE::LINALG::SerialDenseMatrix::Base& dest,
+        const CORE::LINALG::SerialDenseMatrix::Base& src)
     {
 #ifdef DEBUG
       if (dest.M() != dest.M() or src.N() != src.N())
@@ -3098,14 +3139,14 @@ namespace CORE::LINALG
     be fast and lightweight. The default scalar type is double.
     The value_type-array is allocated on the stack (small sizes, up to 512
     bytes or on the heap (larger sizes) and stored in
-    column-major order, just like in Epetra_SerialDenseMatrix.
+    column-major order, just like in CORE::LINALG::SerialDenseMatrix::Base.
 
-    The interface is based on that of Epetra_SerialDenseMatrix and
+    The interface is based on that of CORE::LINALG::SerialDenseMatrix::Base and
     Epetra_MultiVector. The whole View/Copy thing works a little
     different, though. See the appropriate functions for details.
 
     There is no operator[]. It behaves differently in
-    Epetra_SerialDenseMatrix and Epetra_SerialDenseVector, and is not
+    CORE::LINALG::SerialDenseMatrix::Base and CORE::LINALG::SerialDenseVector, and is not
     needed in either of them.
    */
   template <unsigned int rows, unsigned int cols, class value_type = double>
@@ -3181,7 +3222,7 @@ namespace CORE::LINALG
       \param view
         whether the data is to be viewed or copied
      */
-    explicit Matrix(Epetra_SerialDenseMatrix& d, bool view = false);
+    explicit Matrix(CORE::LINALG::SerialDenseMatrix::Base& d, bool view = false);
 
     /// Constructor
     /*!
@@ -3190,7 +3231,7 @@ namespace CORE::LINALG
       \param d
         matrix to be copied
      */
-    explicit Matrix(const Epetra_SerialDenseMatrix& d);
+    explicit Matrix(const CORE::LINALG::SerialDenseMatrix::Base& d);
 
     /// Constructor
     /*!
@@ -3213,7 +3254,7 @@ namespace CORE::LINALG
     /// Copy constructor
     /*!
       Constructs a new Matrix from source. Unlike
-      the Epetra_SerialDenseMatrix copy constructor this one *always*
+      the CORE::LINALG::SerialDenseMatrix::Base copy constructor this one *always*
       copies the data, even when \e source is a view.
 
       \param source
@@ -3731,7 +3772,7 @@ namespace CORE::LINALG
 
     /// Calculate 1-norm
     /*!
-      This is *not* the same as Epetra_SerialDenseMatrix::NormOne.
+      This is *not* the same as CORE::LINALG::SerialDenseMatrix::NormOne.
 
       \return 1-norm
      */
@@ -3745,7 +3786,7 @@ namespace CORE::LINALG
 
     /// Calculate inf-norm
     /*!
-      This is *not* the same as Epetra_SerialDenseMatrix::NormInf.
+      This is *not* the same as CORE::LINALG::SerialDenseMatrix::NormInf.
 
       \return inf-norm
      */
@@ -4213,7 +4254,7 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  Matrix<rows, cols, value_type>::Matrix(Epetra_SerialDenseMatrix& d, bool view)
+  Matrix<rows, cols, value_type>::Matrix(CORE::LINALG::SerialDenseMatrix::Base& d, bool view)
       : data_(0), isview_(view), isreadonly_(false)
   {
     DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
@@ -4234,8 +4275,8 @@ namespace CORE::LINALG
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  Matrix<rows, cols, value_type>::Matrix(const Epetra_SerialDenseMatrix& d)
-      : Matrix(const_cast<Epetra_SerialDenseMatrix&>(d), false)
+  Matrix<rows, cols, value_type>::Matrix(const CORE::LINALG::SerialDenseMatrix::Base& d)
+      : Matrix(const_cast<CORE::LINALG::SerialDenseMatrix::Base&>(d), false)
   {
   }
 

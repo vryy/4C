@@ -12,12 +12,13 @@
 #include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_utils_exceptions.H"
 
-void CORE::LINALG::SVD(const Epetra_SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& Q,
-    CORE::LINALG::SerialDenseMatrix& S, CORE::LINALG::SerialDenseMatrix& VT)
+void CORE::LINALG::SVD(const CORE::LINALG::SerialDenseMatrix::Base& A,
+    CORE::LINALG::SerialDenseMatrix& Q, CORE::LINALG::SerialDenseMatrix& S,
+    CORE::LINALG::SerialDenseMatrix& VT)
 {
-  Epetra_SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
-  const char jobu = 'A';            // compute and return all M columns of U
-  const char jobvt = 'A';           // compute and return all N rows of V^T
+  CORE::LINALG::SerialDenseMatrix tmp(A);  // copy, because content of A is destroyed
+  const char jobu = 'A';                   // compute and return all M columns of U
+  const char jobvt = 'A';                  // compute and return all N rows of V^T
   const int n = tmp.N();
   const int m = tmp.M();
   std::vector<double> s(std::min(n, m));

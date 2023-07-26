@@ -289,7 +289,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(const Epetra_CrsMatrix& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
+void CORE::LINALG::SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix::Base& A)
 {
   const int n = A.N();
   if (n != A.M()) dserror("Cannot symmetrize non-square matrix");

@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::LINALG
 {
@@ -23,8 +23,8 @@ namespace CORE::LINALG
   @param[in] A Matrix to be printed
   @param[in] newfile Flage to force printing to a new file (instead of appeding to an existing file)
   */
-  void PrintSerialDenseMatrixInMatlabFormat(
-      std::string filename, const Epetra_SerialDenseMatrix& A, const bool newfile = true);
+  void PrintSerialDenseMatrixInMatlabFormat(std::string filename,
+      const CORE::LINALG::SerialDenseMatrix::Base& A, const bool newfile = true);
 
 }  // namespace CORE::LINALG
 

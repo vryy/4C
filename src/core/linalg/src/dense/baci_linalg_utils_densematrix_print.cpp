@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
-    std::string filename, const Epetra_SerialDenseMatrix& A, const bool newfile)
+    std::string filename, const CORE::LINALG::SerialDenseMatrix::Base& A, const bool newfile)
 {
   std::ofstream os;
 

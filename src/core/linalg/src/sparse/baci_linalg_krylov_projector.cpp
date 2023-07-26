@@ -453,7 +453,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
 
 
 /* --------------------------------------------------------------------
-         multiplies Epetra_MultiVector times Epetra_SerialDenseMatrix
+         multiplies Epetra_MultiVector times CORE::LINALG::SerialDenseMatrix
    -------------------------------------------------------------------- */
 Teuchos::RCP<Epetra_MultiVector> CORE::LINALG::KrylovProjector::MultiplyMultiVecterDenseMatrix(
     const Teuchos::RCP<Epetra_MultiVector>& mv,

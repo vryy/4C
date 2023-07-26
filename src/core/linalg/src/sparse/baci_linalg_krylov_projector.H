@@ -103,7 +103,7 @@ namespace CORE::LINALG
         const Teuchos::RCP<Epetra_MultiVector>& v2,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& inv_v1Tv2) const;
 
-    //! multiplies Epetra_MultiVector times Epetra_SerialDenseMatrix
+    //! multiplies Epetra_MultiVector times CORE::LINALG::SerialDenseMatrix
     Teuchos::RCP<Epetra_MultiVector> MultiplyMultiVecterDenseMatrix(
         const Teuchos::RCP<Epetra_MultiVector>& mv,
         const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& dm) const;

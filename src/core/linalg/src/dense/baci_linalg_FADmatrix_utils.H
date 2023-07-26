@@ -34,7 +34,7 @@ namespace CORE::LINALG
     explicit FADMatrix(const double* d, bool view = false) : Matrix<rows, cols, FAD>(d, view) {}
 
     /// Constructor
-    explicit FADMatrix(Epetra_SerialDenseMatrix& d, bool view = false)
+    explicit FADMatrix(CORE::LINALG::SerialDenseMatrix& d, bool view = false)
         : Matrix<rows, cols, FAD>(d, view)
     {
     }

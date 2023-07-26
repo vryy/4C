@@ -13,12 +13,12 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
+double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
 {
 #ifdef DEBUG
   if (A.M() != A.N()) dserror("Matrix is not square");
 #endif
-  Epetra_SerialDenseMatrix tmp(A);
+  CORE::LINALG::SerialDenseMatrix tmp(A);
   const int n = tmp.N();
   const int m = tmp.M();
   std::vector<int> ipiv(n);

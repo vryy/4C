@@ -10,12 +10,12 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_RCP.hpp>
 #include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::LINALG
 {
@@ -28,8 +28,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigenValues(
-      Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc = false);
+  void SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix::Base& A,
+      CORE::LINALG::SerialDenseVector::Base& L, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
@@ -41,8 +41,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigenProblem(
-      Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc = false);
+  void SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix::Base& A,
+      CORE::LINALG::SerialDenseVector::Base& L, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues and, optionally, eigenvectors
@@ -55,8 +55,8 @@ namespace CORE::LINALG
    routine for postprocessing only (in that
    case dserror is replaced with a warning)
    */
-  void SymmetricEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const char eigv,
-      const bool postproc = false);
+  void SymmetricEigen(CORE::LINALG::SerialDenseMatrix::Base& A,
+      CORE::LINALG::SerialDenseVector::Base& L, const char eigv, const bool postproc = false);
 
   /*!
    \brief Compute all eigenvalues the generalized Eigenvalue problem
@@ -67,7 +67,8 @@ namespace CORE::LINALG
    \param B (in):    B Matrix
 
    */
-  double GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& B);
+  double GeneralizedEigen(
+      CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix::Base& B);
 
   /*!
    \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A

@@ -12,8 +12,8 @@
 
 #include "baci_unittest_utils_assertions.h"
 
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace
 {
@@ -22,8 +22,8 @@ namespace
    *
    */
   template <size_t length>
-  void AssertEigenValues(
-      const Epetra_SerialDenseVector& eigenvalues, const std::array<double, length>& eig_compare)
+  void AssertEigenValues(const CORE::LINALG::SerialDenseVector& eigenvalues,
+      const std::array<double, length>& eig_compare)
   {
     EXPECT_EQ(eigenvalues.Length(), length);
     for (unsigned i = 0; i < length; ++i) EXPECT_NEAR(eigenvalues[i], eig_compare[i], 1e-9);
@@ -46,8 +46,9 @@ namespace
   }
 
   template <size_t length>
-  void AssertEigenProblem(const Epetra_SerialDenseMatrix& A,
-      const Epetra_SerialDenseVector& eigenvalues, const Epetra_SerialDenseMatrix& eigenvectors,
+  void AssertEigenProblem(const CORE::LINALG::SerialDenseMatrix& A,
+      const CORE::LINALG::SerialDenseVector& eigenvalues,
+      const CORE::LINALG::SerialDenseMatrix& eigenvectors,
       const std::array<double, length>& eig_compare)
   {
     EXPECT_EQ(eigenvalues.Length(), length);
@@ -58,10 +59,10 @@ namespace
 
     AssertEigenValues(eigenvalues, eig_compare);
 
-    Epetra_SerialDenseMatrix A_result(length, length, true);
+    CORE::LINALG::SerialDenseMatrix A_result(length, length, true);
     for (std::size_t i = 0; i < length; ++i)
     {
-      Epetra_SerialDenseMatrix v(length, 1, false);
+      CORE::LINALG::SerialDenseMatrix v(length, 1, false);
       for (std::size_t j = 0; j < length; ++j) v(j, 0) = eigenvectors(j, i);
       A_result.Multiply('N', 'T', eigenvalues(i), v, v, 1.0);
     }
@@ -94,7 +95,7 @@ namespace
    */
   TEST(LinalgDenseMatrixEigenTest, 2x2SymmetricEigenValues)
   {
-    Epetra_SerialDenseMatrix A(2, 2, false);
+    CORE::LINALG::SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
     A(0, 1) = 0.490484665405466;
     A(1, 0) = 0.490484665405466;
@@ -102,7 +103,7 @@ namespace
 
     std::array eigenvalues{0.24218351254540577, 1.3154000057163198};
 
-    Epetra_SerialDenseVector L(2);
+    CORE::LINALG::SerialDenseVector L(2);
     CORE::LINALG::SymmetricEigenValues(A, L, false);
 
     AssertEigenValues(L, eigenvalues);
@@ -110,7 +111,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 2x2SymmetricEigenProblem)
   {
-    Epetra_SerialDenseMatrix A(2, 2, false);
+    CORE::LINALG::SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
     A(0, 1) = 0.490484665405466;
     A(1, 0) = 0.490484665405466;
@@ -118,8 +119,8 @@ namespace
 
     std::array eigenvalues{0.24218351254540577, 1.3154000057163198};
 
-    Epetra_SerialDenseMatrix eigenvectors(A);
-    Epetra_SerialDenseVector L(2);
+    CORE::LINALG::SerialDenseMatrix eigenvectors(A);
+    CORE::LINALG::SerialDenseVector L(2);
     CORE::LINALG::SymmetricEigenProblem(eigenvectors, L, false);
 
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
@@ -127,7 +128,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 2x2SymmetricEigenNoVectors)
   {
-    Epetra_SerialDenseMatrix A(2, 2, false);
+    CORE::LINALG::SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
     A(0, 1) = 0.490484665405466;
     A(1, 0) = 0.490484665405466;
@@ -135,7 +136,7 @@ namespace
 
     std::array eigenvalues{0.24218351254540577, 1.3154000057163198};
 
-    Epetra_SerialDenseVector L(2);
+    CORE::LINALG::SerialDenseVector L(2);
     CORE::LINALG::SymmetricEigen(A, L, 'N', false);
 
     AssertEigenValues(L, eigenvalues);
@@ -143,7 +144,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 2x2SymmetricEigenVectors)
   {
-    Epetra_SerialDenseMatrix A(2, 2, false);
+    CORE::LINALG::SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
     A(0, 1) = 0.490484665405466;
     A(1, 0) = 0.490484665405466;
@@ -151,8 +152,8 @@ namespace
 
     std::array eigenvalues{0.24218351254540577, 1.3154000057163198};
 
-    Epetra_SerialDenseMatrix eigenvectors(A);
-    Epetra_SerialDenseVector L(2);
+    CORE::LINALG::SerialDenseMatrix eigenvectors(A);
+    CORE::LINALG::SerialDenseVector L(2);
     CORE::LINALG::SymmetricEigen(eigenvectors, L, 'V', false);
 
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
@@ -177,7 +178,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 3x3SymmetricEigenValues)
   {
-    Epetra_SerialDenseMatrix A(3, 3, false);
+    CORE::LINALG::SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
     A(0, 1) = 0.8940941796919223;
     A(0, 2) = 0.16862685184206302;
@@ -190,7 +191,7 @@ namespace
 
     std::array eigenvalues{0.01628207201103285, 0.2515293645924337, 2.0639621389680487};
 
-    Epetra_SerialDenseVector L(3);
+    CORE::LINALG::SerialDenseVector L(3);
     CORE::LINALG::SymmetricEigenValues(A, L, false);
 
     AssertEigenValues(L, eigenvalues);
@@ -198,7 +199,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 3x3SymmetricEigenProblem)
   {
-    Epetra_SerialDenseMatrix A(3, 3, false);
+    CORE::LINALG::SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
     A(0, 1) = 0.8940941796919223;
     A(0, 2) = 0.16862685184206302;
@@ -211,8 +212,8 @@ namespace
 
     std::array eigenvalues{0.01628207201103285, 0.2515293645924337, 2.0639621389680487};
 
-    Epetra_SerialDenseMatrix V(A);
-    Epetra_SerialDenseVector L(3);
+    CORE::LINALG::SerialDenseMatrix V(A);
+    CORE::LINALG::SerialDenseVector L(3);
     CORE::LINALG::SymmetricEigenProblem(V, L, false);
 
     AssertEigenProblem(A, L, V, eigenvalues);
@@ -220,7 +221,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 3x3SymmetricEigenNoVectors)
   {
-    Epetra_SerialDenseMatrix A(3, 3, false);
+    CORE::LINALG::SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
     A(0, 1) = 0.8940941796919223;
     A(0, 2) = 0.16862685184206302;
@@ -233,7 +234,7 @@ namespace
 
     std::array eigenvalues{0.01628207201103285, 0.2515293645924337, 2.0639621389680487};
 
-    Epetra_SerialDenseVector L(3);
+    CORE::LINALG::SerialDenseVector L(3);
     CORE::LINALG::SymmetricEigen(A, L, 'N', false);
 
     AssertEigenValues(L, eigenvalues);
@@ -241,7 +242,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 3x3SymmetricEigenVectors)
   {
-    Epetra_SerialDenseMatrix A(3, 3, false);
+    CORE::LINALG::SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
     A(0, 1) = 0.8940941796919223;
     A(0, 2) = 0.16862685184206302;
@@ -254,8 +255,8 @@ namespace
 
     std::array eigenvalues{0.01628207201103285, 0.2515293645924337, 2.0639621389680487};
 
-    Epetra_SerialDenseMatrix V(A);
-    Epetra_SerialDenseVector L(3);
+    CORE::LINALG::SerialDenseMatrix V(A);
+    CORE::LINALG::SerialDenseVector L(3);
     CORE::LINALG::SymmetricEigen(V, L, 'V', false);
 
     AssertEigenProblem(A, L, V, eigenvalues);
@@ -285,7 +286,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenValues)
   {
-    Epetra_SerialDenseMatrix A(4, 4, false);
+    CORE::LINALG::SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
     A(0, 1) = 1.0052918588741722;
     A(0, 2) = 0.8408494685470309;
@@ -306,7 +307,7 @@ namespace
     std::array eigenvalues{
         0.00023212100268553735, 0.06219024553961773, 0.11100584442852221, 5.443458239275074};
 
-    Epetra_SerialDenseVector L(4);
+    CORE::LINALG::SerialDenseVector L(4);
     CORE::LINALG::SymmetricEigenValues(A, L, false);
 
     AssertEigenValues(L, eigenvalues);
@@ -314,7 +315,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenProblem)
   {
-    Epetra_SerialDenseMatrix A(4, 4, false);
+    CORE::LINALG::SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
     A(0, 1) = 1.0052918588741722;
     A(0, 2) = 0.8408494685470309;
@@ -335,8 +336,8 @@ namespace
     std::array eigenvalues{
         0.00023212100268553735, 0.06219024553961773, 0.11100584442852221, 5.443458239275074};
 
-    Epetra_SerialDenseMatrix V(A);
-    Epetra_SerialDenseVector L(4);
+    CORE::LINALG::SerialDenseMatrix V(A);
+    CORE::LINALG::SerialDenseVector L(4);
     CORE::LINALG::SymmetricEigenProblem(V, L, false);
 
     AssertEigenProblem(A, L, V, eigenvalues);
@@ -344,7 +345,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenNoVectors)
   {
-    Epetra_SerialDenseMatrix A(4, 4, false);
+    CORE::LINALG::SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
     A(0, 1) = 1.0052918588741722;
     A(0, 2) = 0.8408494685470309;
@@ -365,7 +366,7 @@ namespace
     std::array eigenvalues{
         0.00023212100268553735, 0.06219024553961773, 0.11100584442852221, 5.443458239275074};
 
-    Epetra_SerialDenseVector L(4);
+    CORE::LINALG::SerialDenseVector L(4);
     CORE::LINALG::SymmetricEigen(A, L, 'N', false);
 
     AssertEigenValues(L, eigenvalues);
@@ -373,7 +374,7 @@ namespace
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenVectors)
   {
-    Epetra_SerialDenseMatrix A(4, 4, false);
+    CORE::LINALG::SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
     A(0, 1) = 1.0052918588741722;
     A(0, 2) = 0.8408494685470309;
@@ -394,8 +395,8 @@ namespace
     std::array eigenvalues{
         0.00023212100268553735, 0.06219024553961773, 0.11100584442852221, 5.443458239275074};
 
-    Epetra_SerialDenseMatrix V(A);
-    Epetra_SerialDenseVector L(4);
+    CORE::LINALG::SerialDenseMatrix V(A);
+    CORE::LINALG::SerialDenseVector L(4);
     CORE::LINALG::SymmetricEigen(V, L, 'V', false);
 
     AssertEigenProblem(A, L, V, eigenvalues);

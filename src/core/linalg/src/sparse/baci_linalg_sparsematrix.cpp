@@ -354,7 +354,7 @@ void CORE::LINALG::SparseMatrix::Reset()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
-    const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
@@ -369,7 +369,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
   const Epetra_Map& colmap = sysmat_->ColMap();
 
   //-----------------------------------------------------------------------------------
-  auto& A = (Epetra_SerialDenseMatrix&)Aele;
+  auto& A = (CORE::LINALG::SerialDenseMatrix::Base&)Aele;
   if (sysmat_->Filled())  // assembly in local indices
   {
 #ifdef DEBUG
@@ -542,9 +542,9 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatrix& Aele,
-    const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-    const std::vector<int>& lmcol)
+void CORE::LINALG::SparseMatrix::Assemble(int eid,
+    const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+    const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
@@ -649,7 +649,7 @@ void CORE::LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatri
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -684,7 +684,7 @@ void CORE::LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::SparseMatrix::FEAssemble(const CORE::LINALG::SerialDenseMatrix::Base& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmcol)
 {
   const int lrowdim = static_cast<int>(lmrow.size());

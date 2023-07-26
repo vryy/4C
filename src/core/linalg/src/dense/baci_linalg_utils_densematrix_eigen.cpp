@@ -14,8 +14,8 @@
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigenValues(
-    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
+void LINALG::SymmetricEigenValues(CORE::LINALG::SerialDenseMatrix::Base& A,
+    CORE::LINALG::SerialDenseVector::Base& L, const bool postproc)
 {
   CORE::LINALG::SymmetricEigen(A, L, 'N', postproc);
 }
@@ -25,8 +25,8 @@ void CORE::LINALG::SymmetricEigenValues(
  |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigenProblem(
-    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const bool postproc)
+void LINALG::SymmetricEigenProblem(CORE::LINALG::SerialDenseMatrix::Base& A,
+    CORE::LINALG::SerialDenseVector::Base& L, const bool postproc)
 {
   CORE::LINALG::SymmetricEigen(A, L, 'V', postproc);
 }
@@ -35,8 +35,8 @@ void CORE::LINALG::SymmetricEigenProblem(
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A                  maf 06/07|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricEigen(
-    Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& L, const char jobz, const bool postproc)
+void LINALG::SymmetricEigen(CORE::LINALG::SerialDenseMatrix::Base& A,
+    CORE::LINALG::SerialDenseVector::Base& L, const char jobz, const bool postproc)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != L.Length()) dserror("Dimension of eigenvalues does not match");
@@ -88,10 +88,11 @@ void CORE::LINALG::SymmetricEigen(
  |  Ax =  lambda Bx via QZ-algorithm (B is singular) and returns the
  |  maximum eigenvalue                              shahmiri  05/13
  *----------------------------------------------------------------------*/
-double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& B)
+double LINALG::GeneralizedEigen(
+    CORE::LINALG::SerialDenseMatrix::Base& A, CORE::LINALG::SerialDenseMatrix::Base& B)
 {
-  Epetra_SerialDenseMatrix tmpA(A);
-  Epetra_SerialDenseMatrix tmpB(B);
+  CORE::LINALG::SerialDenseMatrix tmpA(A);
+  CORE::LINALG::SerialDenseMatrix tmpB(B);
 
   //--------------------------------------------------------------------
   // STEP 1:
@@ -136,32 +137,32 @@ double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_Serial
   // v is a vector with v(1:i-1) = 0 and v(i+1:m) is stored on exit in B(i+1:m,i)
 
   // Q is initialized as an unit matrix
-  Epetra_SerialDenseMatrix Q_new(true);
+  CORE::LINALG::SerialDenseMatrix Q_new(true);
   Q_new.Shape(N, N);
   for (int i = 0; i < N; ++i) Q_new(i, i) = 1.0;
 
   for (int i = 0; i < N; ++i)
   {
-    Epetra_SerialDenseVector v;
+    CORE::LINALG::SerialDenseVector v;
     v.Shape(N, 1);
     v(i, 0) = 1.;
     for (int j = i + 1; j < N; ++j) v(j, 0) = tmpB(j, i);
 
-    Epetra_SerialDenseMatrix H;
+    CORE::LINALG::SerialDenseMatrix H;
     H.Shape(N, N);
 
     H.Multiply('N', 'T', tau[i], v, v, 0.);
     H.Scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
-    Epetra_SerialDenseMatrix Q_help;
+    CORE::LINALG::SerialDenseMatrix Q_help;
     Q_help.Shape(N, N);
     Q_new.Apply(H, Q_help);
     Q_new = Q_help;
   }
 
   // permutation matrix
-  Epetra_SerialDenseMatrix P(true);
+  CORE::LINALG::SerialDenseMatrix P(true);
   P.Shape(N, N);
   for (int i = 0; i < N; ++i)
   {
@@ -178,12 +179,12 @@ double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_Serial
   }
 
   // the new A:= Q**T A P
-  Epetra_SerialDenseMatrix A_tmp;
+  CORE::LINALG::SerialDenseMatrix A_tmp;
   A_tmp.Shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
   A_tmp.Multiply('T', 'N', 1., Q_new, tmpA, 0.);
 
-  Epetra_SerialDenseMatrix A_new;
+  CORE::LINALG::SerialDenseMatrix A_new;
   A_new.Shape(N, N);
   A_new.Multiply('N', 'N', 1., A_tmp, P, 0.);
 
@@ -218,8 +219,8 @@ double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_Serial
   }
   std::vector<double> work(lwork);
 
-  Epetra_SerialDenseMatrix A1(true);
-  Epetra_SerialDenseMatrix A2(true);
+  CORE::LINALG::SerialDenseMatrix A1(true);
+  CORE::LINALG::SerialDenseMatrix A2(true);
   A1.Shape(N, N);
   A2.Shape(N, N);
   double* Q = A1.A();
@@ -240,9 +241,9 @@ double CORE::LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A, Epetra_Serial
   // QZ-transformation
   //--------------------------------------------------------
   // vectors which contain the eigenvalues of the problem
-  Epetra_SerialDenseVector L1(true);
-  Epetra_SerialDenseVector L2(true);
-  Epetra_SerialDenseVector L3(true);
+  CORE::LINALG::SerialDenseVector L1(true);
+  CORE::LINALG::SerialDenseVector L2(true);
+  CORE::LINALG::SerialDenseVector L3(true);
   L1.Shape(N, 1);
   L2.Shape(N, 1);
   L3.Shape(N, 1);

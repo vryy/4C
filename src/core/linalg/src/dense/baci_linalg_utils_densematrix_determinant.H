@@ -12,8 +12,7 @@
 #define BACI_LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
 
 #include "baci_linalg_fixedsizematrix.H"
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::LINALG
 {
@@ -104,7 +103,7 @@ namespace CORE::LINALG
 
   \return the determinant of the matrix A
   */
-  double DeterminantLU(const Epetra_SerialDenseMatrix& A);
+  double DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A);
 
 }  // namespace CORE::LINALG
 

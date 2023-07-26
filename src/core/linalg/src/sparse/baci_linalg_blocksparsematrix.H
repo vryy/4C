@@ -87,23 +87,23 @@ namespace CORE::LINALG
     /** \name FE methods */
     //@{
 
-    void Zero();
-    void Reset();
+    void Zero() override;
+    void Reset() override;
 
     void Complete(bool enforce_complete = false) override;
 
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
         bool enforce_complete = false) override;
 
-    void UnComplete();
+    void UnComplete() override;
 
-    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
 
-    void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Map& dbcmap, bool diagonalblock = true) override;
 
     /// derived
     virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = NULL) const;
+        const CORE::LINALG::SparseMatrix* trafo = NULL) const override;
 
     //@}
 
@@ -111,7 +111,7 @@ namespace CORE::LINALG
     //@{
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
-    bool Filled() const;
+    bool Filled() const override;
 
     //@}
 
@@ -158,7 +158,7 @@ namespace CORE::LINALG
     //@{
 
     /// If set true, transpose of this operator will be applied.
-    virtual int SetUseTranspose(bool UseTranspose);
+    int SetUseTranspose(bool UseTranspose) override;
 
     //@}
 
@@ -166,35 +166,35 @@ namespace CORE::LINALG
     //@{
 
     /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
-    virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Resolve virtual function of parent class
-    virtual int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int Multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Add a (transposed) BlockSparseMatrix: (*this) = (*this)*scalarB + A(^T)*scalarA
     virtual void Add(const BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
         const double scalarB);
 
     /// Resolve virtual function of parent class
-    virtual void Add(
-        const SparseOperator& A, const bool transposeA, const double scalarA, const double scalarB);
+    void Add(const SparseOperator& A, const bool transposeA, const double scalarA,
+        const double scalarB) override;
 
     /// Resolve virtual function of parent class
-    virtual void AddOther(SparseMatrixBase& A, const bool transposeA, const double scalarA,
-        const double scalarB) const;
+    void AddOther(SparseMatrixBase& A, const bool transposeA, const double scalarA,
+        const double scalarB) const override;
 
     /// Resolve virtual function of parent class
-    virtual void AddOther(BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
-        const double scalarB) const;
+    void AddOther(BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,
+        const double scalarB) const override;
 
     /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
-    virtual int Scale(double ScalarConstant);
+    int Scale(double ScalarConstant) override;
 
     /// Returns the infinity norm of the global matrix.
-    virtual double NormInf() const;
+    double NormInf() const override;
 
     //@}
 
@@ -202,22 +202,22 @@ namespace CORE::LINALG
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     /// Returns the current UseTranspose setting.
-    virtual bool UseTranspose() const;
+    bool UseTranspose() const override;
 
     /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
-    virtual bool HasNormInf() const;
+    bool HasNormInf() const override;
 
     /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
-    virtual const Epetra_Comm& Comm() const;
+    const Epetra_Comm& Comm() const override;
 
     /// Returns the Epetra_Map object associated with the domain of this operator.
-    virtual const Epetra_Map& OperatorDomainMap() const;
+    const Epetra_Map& OperatorDomainMap() const override;
 
     /// Returns the Epetra_Map object associated with the range of this operator.
-    virtual const Epetra_Map& OperatorRangeMap() const;
+    const Epetra_Map& OperatorRangeMap() const override;
 
     //@}
 
@@ -307,9 +307,9 @@ namespace CORE::LINALG
         const std::vector<unsigned>& row_block_ids, const std::vector<unsigned>& col_block_ids);
 
     /// just a dummy that switches from strided assembly to standard assembly
-    void Assemble(int eid, const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
-        const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-        const std::vector<int>& lmcol)
+    void Assemble(int eid, const std::vector<int>& lmstride,
+        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override
     {
       const int myrank = Comm().MyPID();
       Strategy::Assemble(eid, myrank, lmstride, Aele, lmrow, lmrowowner, lmcol);
@@ -324,9 +324,9 @@ namespace CORE::LINALG
        the element matrix.
 
      */
-    void Assemble(double val, int rgid, int cgid) { Strategy::Assemble(val, rgid, cgid); }
+    void Assemble(double val, int rgid, int cgid) override { Strategy::Assemble(val, rgid, cgid); }
 
-    void Complete(bool enforce_complete = false);
+    void Complete(bool enforce_complete = false) override;
 
    private:
     /** \brief internal clone method which provides the possibility to clone only
@@ -372,7 +372,7 @@ namespace CORE::LINALG
 
     /// assemble into the given block using nodal strides
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix::Base& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /// assemble into the given block
@@ -603,8 +603,8 @@ inline int CORE::LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int cg
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-inline void CORE::LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
-    const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+inline void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid, int myrank,
+    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix::Base& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {

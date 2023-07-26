@@ -11,8 +11,6 @@
 
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 
 namespace CORE::LINALG
 {
@@ -392,7 +390,7 @@ namespace CORE::LINALG
    \param A (in/out): Matrix to be inverted
    \param dim (in) :  Dimension of matrix
    */
-  void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
+  void SymmetricInverse(CORE::LINALG::SerialDenseMatrix::Base& A, const int dim);
 
 }  // namespace CORE::LINALG
 

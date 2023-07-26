@@ -14,20 +14,20 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_RCP.hpp>
 #include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::LINALG
 {
   /*!
-   \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
+   \brief Make CORE::LINALG::SerialDenseMatrix::Base symmetric by averaging upper and lower
+   traingular indices
 
    \param A (in/out): Matrix to be symmetrised
    */
-  void SymmetriseMatrix(Epetra_SerialDenseMatrix& A);
+  void SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix::Base& A);
 
   /*!
    \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
