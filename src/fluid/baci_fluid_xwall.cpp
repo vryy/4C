@@ -1011,11 +1011,11 @@ void FLD::XWall::CalcTauW(
     std::vector<int> lmstride;
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     // get number of elements
     const int numele = xwdiscret_->NumMyColElements();
@@ -1164,12 +1164,12 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   std::vector<int> lmstride;
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevectordummy;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevectordummy;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // get number of elements
   const int numele = xwdiscret_->NumMyColElements();

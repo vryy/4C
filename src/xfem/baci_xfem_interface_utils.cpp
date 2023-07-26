@@ -499,7 +499,7 @@ double XFEM::UTILS::ComputeMeasCutSurf(
  * compute the measure of the elements surface with given local id
  *--------------------------------------------------------------------------------*/
 double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
-    Epetra_SerialDenseMatrix &ele_xyze,                 ///< element coordinates
+    CORE::LINALG::SerialDenseMatrix &ele_xyze,          ///< element coordinates
     const int local_face_id,  ///< the local id of the face w.r.t the fluid element
     const int nsd             ///< number of space dimensions
 )
@@ -510,7 +510,7 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
 
   // get the current node coordinates, extract them from the element's node coordinates
   const int numnode_face = CORE::DRT::UTILS::getNumberOfElementNodes(face_shape);
-  Epetra_SerialDenseMatrix xyze_face(nsd, numnode_face);
+  CORE::LINALG::SerialDenseMatrix xyze_face(nsd, numnode_face);
 
   // map for numbering of nodes of the surfaces
   std::vector<std::vector<int>> map = CORE::DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
@@ -523,7 +523,7 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
   }
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix metrictensor(nsd - 1, nsd - 1);
+  CORE::LINALG::SerialDenseMatrix metrictensor(nsd - 1, nsd - 1);
   double drs = 0.0;
 
   if (nsd != 3)
@@ -557,7 +557,7 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
 
-    Epetra_SerialDenseMatrix deriv(nsd - 1, numnode_face);
+    CORE::LINALG::SerialDenseMatrix deriv(nsd - 1, numnode_face);
 
     // get shape functions and derivatives in the plane of the element
     CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, face_shape);
@@ -581,7 +581,7 @@ double XFEM::UTILS::EvalElementVolume(
         xyze,
     CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>
         *nurbs_weights,
-    std::vector<Epetra_SerialDenseVector> *nurbs_knots)
+    std::vector<CORE::LINALG::SerialDenseVector> *nurbs_knots)
 {
   static const int nsd = 3;
   static const int nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -660,7 +660,7 @@ double XFEM::UTILS::EvalElementVolume(
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double XFEM::UTILS::ComputeCharEleLength(DRT::Element *ele,    ///< fluid element
-    Epetra_SerialDenseMatrix &ele_xyze,                        ///< element coordinates
+    CORE::LINALG::SerialDenseMatrix &ele_xyze,                 ///< element coordinates
     const Teuchos::RCP<XFEM::ConditionManager> &cond_manager,  ///< XFEM condition manager
     const CORE::GEO::CUT::plain_volumecell_set &vcSet,  ///< volumecell sets for volume integration
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>>
@@ -1085,53 +1085,53 @@ template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex20>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex27>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet4>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet10>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge6>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge15>(
     CORE::LINALG::Matrix<3,
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement>,
     CORE::LINALG::Matrix<
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement, 1> *,
-    std::vector<Epetra_SerialDenseVector> *);
+    std::vector<CORE::LINALG::SerialDenseVector> *);
 
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex8>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex8>>, DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex20>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
@@ -1139,7 +1139,7 @@ template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex20>(DRT::Elem
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex20>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex27>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
@@ -1147,14 +1147,14 @@ template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex27>(DRT::Elem
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex27>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::tet4>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet4>>, DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::tet10>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
@@ -1162,7 +1162,7 @@ template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::tet10>(DRT::Elem
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet10>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::wedge6>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
@@ -1170,7 +1170,7 @@ template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::wedge6>(DRT::Ele
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>>,
     DRT::Element *);
 template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::wedge15>(DRT::Element *,
-    Epetra_SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,

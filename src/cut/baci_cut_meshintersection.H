@@ -52,7 +52,7 @@ namespace CORE::GEO
 
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           const double* lsv = NULL);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
@@ -63,7 +63,7 @@ namespace CORE::GEO
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)
       SideHandle* AddCutSide(int sid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           int mi = 0);
 
       /// build the static search tree for the collision detection in the self cut

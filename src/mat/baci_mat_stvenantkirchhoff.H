@@ -114,8 +114,8 @@ namespace MAT
     //! @name Evaluation methods
 
     /// evaluates material law
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e, Epetra_SerialDenseMatrix* cmat_e,
-        Epetra_SerialDenseVector* stress_e);
+    void Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
+        CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e);
 
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
@@ -138,7 +138,7 @@ namespace MAT
 
     // computes isotropic elasticity tensor in matrix notion for 2d
     // plane strain, rotational symmetry
-    void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
+    void SetupCmat2d(CORE::LINALG::SerialDenseMatrix* cmat);
 
     //@}
 

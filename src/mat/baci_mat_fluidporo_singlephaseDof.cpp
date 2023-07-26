@@ -112,7 +112,7 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawTy
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // safety check
   if ((int)diffpresCoeffs_->size() != dofmat.N())
@@ -217,7 +217,7 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType()
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofPressure::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // just mark the corresponding entry in the matrix
   dofmat(numphase, numphase) = 1.0;
@@ -314,7 +314,7 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // get pressure coefficients of phase law
   const std::vector<int>* presIDs = phaselaw_->PresIds();

@@ -135,12 +135,12 @@ namespace ELEMAG
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError();
+    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError();
 
     /*!
     \brief Print the computed errors to screen.
     */
-    virtual void PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector>& errors);
+    virtual void PrintErrors(Teuchos::RCP<CORE::LINALG::SerialDenseVector>& errors);
     /*!
     \brief ProjectfieldTest is used for debugging purposes.
 

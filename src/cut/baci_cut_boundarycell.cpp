@@ -20,13 +20,13 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::BoundaryCell::BoundaryCell(
-    const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+    const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
     : facet_(facet), points_(Teuchos::rcp(new Cycle(points)))
 {
   xyz_.Shape(3, xyz.N());
 
   /* This is necessary, because it is possible, that the given
-   * Epetra_SerialDenseMatrix has a total row number smaller than 3 (equal the
+   * linalg_serialdensematrix.Has a total row number smaller than 3 (equal the
    * actual problem dimension).                              hiermeier 11/16 */
   for (unsigned c = 0; c < static_cast<unsigned>(xyz.N()); ++c)
   {

@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_hex8.H"
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_element_service.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_surface.H"

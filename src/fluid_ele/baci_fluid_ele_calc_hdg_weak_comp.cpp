@@ -24,7 +24,7 @@
 
 namespace
 {
-  void zeroMatrix(Epetra_SerialDenseMatrix& mat)
+  void zeroMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
   {
     std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
   }
@@ -80,10 +80,12 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InitializeShapes(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::DRT::UTILS::GaussIntegration&,
+    bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -94,9 +96,9 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Flu
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix&,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&,
-    bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
   // read global vectors
   ReadGlobalVectors(*ele, discretization, lm);
@@ -216,9 +218,10 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ReadAleVectors(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
@@ -259,7 +262,7 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& interiorinc)
+    CORE::LINALG::SerialDenseVector& interiorinc)
 {
   // read global vectors
   ReadGlobalVectors(*ele, discretization, lm);
@@ -299,17 +302,17 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(0, "globaltraceinc");
   DRT::UTILS::ExtractMyValues(*matrix_state, localtraceinc_vec, lm);
 
-  // convert local trace increments to Epetra_SerialDenseVector
-  Epetra_SerialDenseVector localtraceinc(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
+  // convert local trace increments to CORE::LINALG::SerialDenseVector
+  CORE::LINALG::SerialDenseVector localtraceinc(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
   for (unsigned int i = 0; i < nfaces_ * (1 + nsd_) * shapesface_->nfdofs_; ++i)
     localtraceinc(i) = localtraceinc_vec[i];
 
   // compute local solver vector
-  Epetra_SerialDenseVector LocalSolverVec((msd_ + 1 + nsd_) * shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector LocalSolverVec((msd_ + 1 + nsd_) * shapes_->ndofs_);
   LocalSolverVec.Multiply('N', 'N', 1.0, localSolver_->KlocallocalInv, localSolver_->Rlocal, 0.0);
 
   // compute local solver matrix
-  Epetra_SerialDenseMatrix LocalSolverMat(
+  CORE::LINALG::SerialDenseMatrix LocalSolverMat(
       (msd_ + 1 + nsd_) * shapes_->ndofs_, nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
   LocalSolverMat.Multiply(
       'N', 'N', -1.0, localSolver_->KlocallocalInv, localSolver_->Klocalglobal, 0.0);
@@ -327,7 +330,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec)
 {
   // read ale vectors
   ReadAleVectors(*ele, discretization);
@@ -370,9 +374,9 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
   double norm_w = 0.0;
 
   // initialize numerical values
-  Epetra_SerialDenseVector Leg;
-  Epetra_SerialDenseVector reg;
-  Epetra_SerialDenseVector weg;
+  CORE::LINALG::SerialDenseVector Leg;
+  CORE::LINALG::SerialDenseVector reg;
+  CORE::LINALG::SerialDenseVector weg;
 
   // ease notation
   CORE::LINALG::SerialDenseMatrix N = shapes_->shfunct;
@@ -437,8 +441,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ComputeError(DRT::ELEMENTS:
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   // read ale vectors
   ReadAleVectors(*ele, discretization);
@@ -462,7 +466,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   if (elevec2.M() > 0)
   {
     // Create the local matrix from starting at the addres where elevec2 is with the right shape
-    Epetra_SerialDenseMatrix localMat(
+    CORE::LINALG::SerialDenseMatrix localMat(
         View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, msd_ + 1 + nsd_, false);
     // Initialize matrix to zeros
     zeroMatrix(localMat);
@@ -516,9 +520,9 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   }
 
   // Here we have the projection of the field on the trace
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // trVec is the vector of the trace values
-  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, 1 + nsd_);
+  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, 1 + nsd_);
   dsassert(elevec1.M() == static_cast<int>((1 + nsd_) * shapesface_->nfdofs_) ||
                elevec1.M() == static_cast<int>(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
@@ -644,7 +648,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // read ale vectors
   ReadAleVectors(*ele, discretization);
@@ -656,14 +660,14 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations =
+  CORE::LINALG::SerialDenseMatrix locations =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
-  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
 
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
@@ -755,7 +759,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
   }
   for (int i = (msd_ + 1 + nsd_) * nen_; i < elevec1.M(); ++i) elevec1(i) = 0.0;
 
-  Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
@@ -1039,14 +1043,14 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InitializeAll
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMaterialMatrix(
     const Teuchos::RCP<MAT::Material>& mat, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-    Epetra_SerialDenseMatrix& DL, Epetra_SerialDenseMatrix& Dw)
+    CORE::LINALG::SerialDenseMatrix& DL, CORE::LINALG::SerialDenseMatrix& Dw)
 {
   // initialize DL and Dw
   DL.Shape(msd_, msd_);
   Dw.Shape(msd_, msd_);
 
   // evaluate D_fac
-  Epetra_SerialDenseMatrix D_fac(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix D_fac(msd_, msd_);
   for (unsigned int m = 0; m < msd_; ++m) D_fac(m, m) = 1.0;
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int e = 0; e < nsd_; ++e) D_fac(d, e) -= 1.0 / 3.0;
@@ -1128,15 +1132,15 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
   // extract interior nodal values
   CORE::LINALG::Matrix<nsd_, 1> xyze;
-  Epetra_SerialDenseMatrix Le(msd_, ndofs_);
-  Epetra_SerialDenseVector re(ndofs_);
-  Epetra_SerialDenseMatrix we(nsd_, ndofs_);
-  Epetra_SerialDenseVector pe(ndofs_);
-  Epetra_SerialDenseVector drdte(ndofs_);
-  Epetra_SerialDenseMatrix dwdte(nsd_, ndofs_);
-  Epetra_SerialDenseMatrix DLe(msd_, msd_);
-  Epetra_SerialDenseMatrix Dwe(msd_, msd_);
-  Epetra_SerialDenseMatrix DwLe(msd_, ndofs_);
+  CORE::LINALG::SerialDenseMatrix Le(msd_, ndofs_);
+  CORE::LINALG::SerialDenseVector re(ndofs_);
+  CORE::LINALG::SerialDenseMatrix we(nsd_, ndofs_);
+  CORE::LINALG::SerialDenseVector pe(ndofs_);
+  CORE::LINALG::SerialDenseVector drdte(ndofs_);
+  CORE::LINALG::SerialDenseMatrix dwdte(nsd_, ndofs_);
+  CORE::LINALG::SerialDenseMatrix DLe(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dwe(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix DwLe(msd_, ndofs_);
 
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
@@ -1164,7 +1168,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
   }
 
   // extract ale nodal values
-  Epetra_SerialDenseMatrix ae(nsd_, ndofs_);
+  CORE::LINALG::SerialDenseMatrix ae(nsd_, ndofs_);
 
   if (ale)
     for (unsigned int n = 0; n < nen_; ++n)
@@ -1172,13 +1176,13 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
   // initialize values interpolated on gauss points
   CORE::LINALG::Matrix<nsd_, 1> xyzeg;
-  Epetra_SerialDenseMatrix feg(1 + nsd_, nqpoints);
-  Epetra_SerialDenseVector drdteg(nqpoints);
-  Epetra_SerialDenseMatrix dwdteg(nsd_, nqpoints);
-  Epetra_SerialDenseMatrix dDwLdxyzeg(msd_ * nsd_, nqpoints);
-  Epetra_SerialDenseMatrix dpdxyzeg(1 * nsd_, nqpoints);
-  Epetra_SerialDenseMatrix DLeg(msd_, msd_);
-  Epetra_SerialDenseMatrix Dweg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix feg(1 + nsd_, nqpoints);
+  CORE::LINALG::SerialDenseVector drdteg(nqpoints);
+  CORE::LINALG::SerialDenseMatrix dwdteg(nsd_, nqpoints);
+  CORE::LINALG::SerialDenseMatrix dDwLdxyzeg(msd_ * nsd_, nqpoints);
+  CORE::LINALG::SerialDenseMatrix dpdxyzeg(1 * nsd_, nqpoints);
+  CORE::LINALG::SerialDenseMatrix DLeg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dweg(msd_, msd_);
 
   // loop over quadrature points
   for (unsigned int q = 0; q < nqpoints; ++q)
@@ -1314,9 +1318,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
   // extract interior nodal values
   CORE::LINALG::Matrix<nsd_, 1> xyze;
-  Epetra_SerialDenseMatrix DLe(msd_, msd_);
-  Epetra_SerialDenseMatrix Dwe(msd_, msd_);
-  Epetra_SerialDenseMatrix Dwemod(nsd_ * nsd_ + (msd_ - nsd_), ndofs_);
+  CORE::LINALG::SerialDenseMatrix DLe(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dwe(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dwemod(nsd_ * nsd_ + (msd_ - nsd_), ndofs_);
 
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
@@ -1333,9 +1337,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeInteri
 
   // initialize values interpolated on gauss points
   CORE::LINALG::Matrix<nsd_, 1> xyzeg;
-  Epetra_SerialDenseMatrix DLeg(msd_, msd_);
-  Epetra_SerialDenseMatrix Dweg(msd_, msd_);
-  Epetra_SerialDenseMatrix dDwdxyzeg((nsd_ * nsd_ + (msd_ - nsd_)) * nsd_, nqpoints);
+  CORE::LINALG::SerialDenseMatrix DLeg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dweg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix dDwdxyzeg((nsd_ * nsd_ + (msd_ - nsd_)) * nsd_, nqpoints);
 
   // loop over quadrature points
   for (unsigned int q = 0; q < nqpoints; ++q)
@@ -1496,10 +1500,10 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   std::vector<std::vector<int>> faceNodeOrder = shapesface_.faceNodeOrder;
 
   // extract interior nodal values
-  Epetra_SerialDenseMatrix Le(msd_, ndofs_);
-  Epetra_SerialDenseVector re(ndofs_);
-  Epetra_SerialDenseMatrix we(nsd_, ndofs_);
-  Epetra_SerialDenseVector pe(ndofs_);
+  CORE::LINALG::SerialDenseMatrix Le(msd_, ndofs_);
+  CORE::LINALG::SerialDenseVector re(ndofs_);
+  CORE::LINALG::SerialDenseMatrix we(nsd_, ndofs_);
+  CORE::LINALG::SerialDenseVector pe(ndofs_);
 
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
@@ -1513,15 +1517,15 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
   }
 
   // extract ale nodal values
-  Epetra_SerialDenseMatrix aef(nsd_, nfn);
+  CORE::LINALG::SerialDenseMatrix aef(nsd_, nfn);
 
   if (ale)
     for (unsigned int n = 0; n < nfn; ++n)
       for (unsigned int d = 0; d < nsd_; ++d) aef(d, n) = alevel[faceNodeOrder[f][n] * nsd_ + d];
 
   // extract trace nodal value
-  Epetra_SerialDenseVector rhatef(nfdofs);
-  Epetra_SerialDenseMatrix whatef(nsd_, nfdofs);
+  CORE::LINALG::SerialDenseVector rhatef(nfdofs);
+  CORE::LINALG::SerialDenseMatrix whatef(nsd_, nfdofs);
   for (unsigned int i = 0; i < nfdofs; ++i)
   {
     rhatef(i) = traceval[f * nfdofs * (1 + nsd_) + i];
@@ -1532,12 +1536,12 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceRe
 
   // initialize values interpolated on gauss points
   CORE::LINALG::Matrix<nsd_, 1> xyzefg;
-  Epetra_SerialDenseMatrix Lefg(msd_, nfqpoints);
-  Epetra_SerialDenseVector refg(nfqpoints);
-  Epetra_SerialDenseMatrix wefg(nsd_, nfqpoints);
-  Epetra_SerialDenseVector phatefg(nfqpoints);
-  Epetra_SerialDenseMatrix DLefg(msd_, msd_);
-  Epetra_SerialDenseMatrix Dwefg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Lefg(msd_, nfqpoints);
+  CORE::LINALG::SerialDenseVector refg(nfqpoints);
+  CORE::LINALG::SerialDenseMatrix wefg(nsd_, nfqpoints);
+  CORE::LINALG::SerialDenseVector phatefg(nfqpoints);
+  CORE::LINALG::SerialDenseMatrix DLefg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dwefg(msd_, msd_);
   rhatefg.Shape(nfqpoints, 1);
   whatefg.Shape(nsd_, nfqpoints);
   aefg.Shape(nsd_, nfqpoints);
@@ -1675,8 +1679,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeFaceMa
 
   // initialize values interpolated on gauss points
   CORE::LINALG::Matrix<nsd_, 1> xyzefg;
-  Epetra_SerialDenseMatrix DLefg(msd_, msd_);
-  Epetra_SerialDenseMatrix Dwefg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix DLefg(msd_, msd_);
+  CORE::LINALG::SerialDenseMatrix Dwefg(msd_, msd_);
 
   // loop over quadrature points
   for (unsigned int q = 0; q < nfqpoints; ++q)
@@ -2041,13 +2045,13 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::InvertLocalLo
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocalResidual(
-    Epetra_SerialDenseVector& eleVec)
+    CORE::LINALG::SerialDenseVector& eleVec)
 {
   // initialize element vector
   eleVec.Shape((1 + nsd_) * ndofsfaces_, 1);
 
   // create auxiliary vector
-  Epetra_SerialDenseVector eleVecAux;
+  CORE::LINALG::SerialDenseVector eleVecAux;
   eleVecAux.Shape((msd_ + 1 + nsd_) * ndofs_, 1);
 
   // compute element vector
@@ -2060,13 +2064,13 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocalMatrix(
-    Epetra_SerialDenseMatrix& eleMat)
+    CORE::LINALG::SerialDenseMatrix& eleMat)
 {
   // initialize element matrix
   eleMat.Shape((1 + nsd_) * ndofsfaces_, (1 + nsd_) * ndofsfaces_);
 
   // create auxiliary matrix
-  Epetra_SerialDenseMatrix eleMatAux;
+  CORE::LINALG::SerialDenseMatrix eleMatAux;
   eleMatAux.Shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
 
   // compute element matrix
@@ -2079,7 +2083,8 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::PrintMatricesAndResiduals(
-    DRT::ELEMENTS::Fluid& ele, Epetra_SerialDenseVector& eleVec, Epetra_SerialDenseMatrix& eleMat)
+    DRT::ELEMENTS::Fluid& ele, CORE::LINALG::SerialDenseVector& eleVec,
+    CORE::LINALG::SerialDenseMatrix& eleMat)
 {
   // element
   std::cout << "\n\n Element number = " << ele.Id() + 1;

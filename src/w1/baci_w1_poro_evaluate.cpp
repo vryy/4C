@@ -69,9 +69,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   if (not init_) dserror("internal element data not initialized!");
 
@@ -135,9 +137,11 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   this->SetParamsInterfacePtr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -464,7 +468,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
 
         if (couplstressdata == Teuchos::null) dserror("Cannot get 'couplstress' data");
 
-        Epetra_SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
+        CORE::LINALG::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
 
         auto iocouplstress = DRT::INPUT::get<INPAR::STR::StressType>(
             params, "iocouplstress", INPAR::STR::stress_none);
@@ -1244,9 +1248,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingPoroelastPressureBased(
     std::vector<int>& lm,                          // location matrix
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,  // current displacements
-    const std::vector<double>& ephi,     // current primary variable for poro-multiphase flow
-    Epetra_SerialDenseMatrix& couplmat,  // element stiffness matrix
-    Teuchos::ParameterList& params)      // algorithmic parameters e.g. time
+    const std::vector<double>& ephi,            // current primary variable for poro-multiphase flow
+    CORE::LINALG::SerialDenseMatrix& couplmat,  // element stiffness matrix
+    Teuchos::ParameterList& params)             // algorithmic parameters e.g. time
 {
   GetMaterialsPressureBased();
 
@@ -1385,7 +1389,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopODPressureBased(
     Teuchos::ParameterList& params, const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
     const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
     const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
-    Epetra_SerialDenseMatrix& couplmat)
+    CORE::LINALG::SerialDenseMatrix& couplmat)
 {
   /*--------------------------------- get node weights for nurbs elements */
   if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
@@ -1589,7 +1593,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::FillMatrixAndVectorsODPressureBased(con
     const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
     const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
     const CORE::LINALG::Matrix<numdim_, numdim_>& C_inv, const std::vector<double>& solpressderiv,
-    Epetra_SerialDenseMatrix& couplmat)
+    CORE::LINALG::SerialDenseMatrix& couplmat)
 {
   const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
 
@@ -1715,8 +1719,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::CouplingStressPoroelast(
     CORE::LINALG::Matrix<numdim_, numnod_>& disp,    // current displacements
     CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  // current fluid velocities
     CORE::LINALG::Matrix<numnod_, 1>& epreaf,        // current fluid pressure
-    Epetra_SerialDenseMatrix* elestress,             // stresses at GP
-    Epetra_SerialDenseMatrix* elestrain,             // strains at GP
+    CORE::LINALG::SerialDenseMatrix* elestress,      // stresses at GP
+    CORE::LINALG::SerialDenseMatrix* elestrain,      // strains at GP
     Teuchos::ParameterList& params,                  // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress            // stress output option
 )
@@ -2185,9 +2189,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeSolPressureDeriv(const std::vect
   std::vector<double> genpress(numfluidphases);
   std::vector<double> press(numfluidphases);
   std::vector<double> sat(numfluidphases);
-  Epetra_SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
-  Epetra_SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
-  Epetra_SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
+  CORE::LINALG::SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
+  CORE::LINALG::SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
+  CORE::LINALG::SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
   std::vector<double> fluidphi(phiAtGP.data(), phiAtGP.data() + numfluidphases);
 
   // evaluate the pressures

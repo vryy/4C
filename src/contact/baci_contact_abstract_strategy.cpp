@@ -2325,7 +2325,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < 3; ++d) gmcs[d] += nodemoment[d];
 
       // weighted gap
-      Epetra_SerialDenseVector posnode(Dim());
+      CORE::LINALG::SerialDenseVector posnode(Dim());
       std::vector<int> lm(Dim());
       std::vector<int> lmowner(Dim());
       for (int d = 0; d < Dim(); ++d)
@@ -2366,7 +2366,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < 3; ++d) gmcm[d] += nodemoment[d];
 
       // weighted gap
-      Epetra_SerialDenseVector posnode(Dim());
+      CORE::LINALG::SerialDenseVector posnode(Dim());
       std::vector<int> lm(Dim());
       std::vector<int> lmowner(Dim());
       for (int d = 0; d < Dim(); ++d)

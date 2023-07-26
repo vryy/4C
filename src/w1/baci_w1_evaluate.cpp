@@ -42,9 +42,10 @@
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -100,7 +101,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(2);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
 
   if (Shape() == DRT::Element::nurbs4 or Shape() == DRT::Element::nurbs9)
   {
@@ -246,7 +247,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix (initialised to zero)
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
-      Epetra_SerialDenseMatrix myemat(lm.size(), lm.size());
+      CORE::LINALG::SerialDenseMatrix myemat(lm.size(), lm.size());
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
@@ -314,10 +315,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (iseas_)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        CORE::LINALG::SerialDenseMatrix* alpha =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        CORE::LINALG::SerialDenseMatrix* alphao =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY(
             (*alphao).M() * (*alphao).N(), (*alpha).A(), 1, (*alphao).A(), 1);  // alphao := alpha
@@ -331,10 +332,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (iseas_)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        CORE::LINALG::SerialDenseMatrix* alpha =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        CORE::LINALG::SerialDenseMatrix* alphao =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY(
             (*alphao).M() * (*alphao).N(), (*alphao).A(), 1, (*alpha).A(), 1);  // alpha := alphao
@@ -386,8 +387,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-        Epetra_SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
-        Epetra_SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
+        CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, Wall1::numstr_);
+        CORE::LINALG::SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
 
         // special case: geometrically linear
         if (kintype_ == INPAR::STR::kinem_linear)
@@ -466,19 +467,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         const int numdf = 2;
         const int nd = numnode * numdf;
         const int numeps = 4;
-        Epetra_SerialDenseMatrix xjm;
+        CORE::LINALG::SerialDenseMatrix xjm;
         xjm.Shape(2, 2);
         double det = 0.0;
-        Epetra_SerialDenseMatrix boplin;
+        CORE::LINALG::SerialDenseMatrix boplin;
         boplin.Shape(numeps, nd);
-        Epetra_SerialDenseVector F;
+        CORE::LINALG::SerialDenseVector F;
         F.Size(numeps);
-        Epetra_SerialDenseVector strain;
+        CORE::LINALG::SerialDenseVector strain;
         strain.Size(numeps);
 
         // shape functions, derivatives and integration rule
-        Epetra_SerialDenseVector funct(numnode);
-        Epetra_SerialDenseMatrix deriv;
+        CORE::LINALG::SerialDenseVector funct(numnode);
+        CORE::LINALG::SerialDenseMatrix deriv;
         deriv.Shape(2, numnode);
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -489,8 +490,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
         // reference and current geometry (nodal positions)
-        Epetra_SerialDenseMatrix xrefe(2, numnode);
-        Epetra_SerialDenseMatrix xcure(2, numnode);
+        CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
+        CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
         for (int k = 0; k < numnode; ++k)
         {
           xrefe(0, k) = Nodes()[k]->X()[0];
@@ -501,7 +502,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
         /*------------------------- get node weights for nurbs elements */
         const DiscretizationType distype = Shape();
-        Epetra_SerialDenseVector weights(numnode);
+        CORE::LINALG::SerialDenseVector weights(numnode);
         if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
         {
           for (int inode = 0; inode < numnode; ++inode)
@@ -530,7 +531,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           else
           {
             // nurbs version
-            Epetra_SerialDenseVector gp(2);
+            CORE::LINALG::SerialDenseVector gp(2);
             gp(0) = e1;
             gp(1) = e2;
 
@@ -654,11 +655,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           for (int k = 0; k < numeps; ++k) strainerror(k, 0) = strainanalyt(k, 0) - straingp(k, 0);
 
           // compute stress vector and constitutive matrix
-          Epetra_SerialDenseMatrix C;
+          CORE::LINALG::SerialDenseMatrix C;
           C.Shape(4, 4);
-          Epetra_SerialDenseMatrix tempstress;
+          CORE::LINALG::SerialDenseMatrix tempstress;
           tempstress.Shape(4, 4);
-          Epetra_SerialDenseVector tempstrainerror(4);
+          CORE::LINALG::SerialDenseVector tempstrainerror(4);
           tempstrainerror[0] = strainerror(0, 0);
           tempstrainerror[1] = strainerror(1, 0);
           tempstrainerror[2] = strainerror(2, 0);
@@ -712,8 +713,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       const int numnode = NumNode();
       const int numdf = 2;
 
-      Epetra_SerialDenseMatrix xjm;
-      Epetra_SerialDenseMatrix xjmmat;
+      CORE::LINALG::SerialDenseMatrix xjm;
+      CORE::LINALG::SerialDenseMatrix xjmmat;
       xjm.Shape(2, 2);
       xjmmat.Shape(2, 2);
       double det = 0.0;
@@ -722,8 +723,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       double detFmat = 0.0;  // F[0]*F[1]-F[2]*F[3];
 
       // shape functions, derivatives and integration rule
-      Epetra_SerialDenseVector funct(numnode);
-      Epetra_SerialDenseMatrix deriv;
+      CORE::LINALG::SerialDenseVector funct(numnode);
+      CORE::LINALG::SerialDenseMatrix deriv;
       deriv.Shape(2, numnode);
       const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -742,14 +743,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       }
 
       // reference and current geometry (nodal positions)
-      Epetra_SerialDenseMatrix xrefe(2, numnode);
-      Epetra_SerialDenseMatrix xcure(2, numnode);
-      Epetra_SerialDenseMatrix xmat(2, numnode);
-      Epetra_SerialDenseVector strain;
+      CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
+      CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
+      CORE::LINALG::SerialDenseMatrix xmat(2, numnode);
+      CORE::LINALG::SerialDenseVector strain;
       strain.Size(4);
-      Epetra_SerialDenseMatrix boplin;
+      CORE::LINALG::SerialDenseMatrix boplin;
       boplin.Shape(4, 2 * numnode);
-      Epetra_SerialDenseVector F;
+      CORE::LINALG::SerialDenseVector F;
       F.Size(4);
 
       for (int k = 0; k < numnode; ++k)
@@ -769,7 +770,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
       /*------------------------- get node weights for nurbs elements */
       const DiscretizationType distype = Shape();
-      Epetra_SerialDenseVector weights(numnode);
+      CORE::LINALG::SerialDenseVector weights(numnode);
       if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
       {
         for (int inode = 0; inode < numnode; ++inode)
@@ -798,7 +799,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         else
         {
           // nurbs version
-          Epetra_SerialDenseVector gp(2);
+          CORE::LINALG::SerialDenseVector gp(2);
           gp(0) = e1;
           gp(1) = e2;
 
@@ -939,7 +940,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
@@ -962,8 +963,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   const int iel = NumNode();
 
   // do the isogeometric extras --- get knots and weights
-  std::vector<Epetra_SerialDenseVector> myknots(numdim_);
-  Epetra_SerialDenseVector weights(iel);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(numdim_);
+  CORE::LINALG::SerialDenseVector weights(iel);
 
   if (Shape() == DRT::Element::nurbs4 || Shape() == DRT::Element::nurbs9)
   {
@@ -987,8 +988,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // general arrays
-  Epetra_SerialDenseMatrix xjm(numdim_, numdim_);  // iso-parametric Jacobian
-  double det = 0.0;                                // determinant of iso-parametric Jacobian
+  CORE::LINALG::SerialDenseMatrix xjm(numdim_, numdim_);  // iso-parametric Jacobian
+  double det = 0.0;                                       // determinant of iso-parametric Jacobian
 
   // quad, tri, etc
   const DiscretizationType distype = Shape();
@@ -1000,12 +1001,12 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
   // shape functions
-  Epetra_SerialDenseVector shapefcts(iel);
+  CORE::LINALG::SerialDenseVector shapefcts(iel);
   // natural derivatives of shape funcions
-  Epetra_SerialDenseMatrix deriv(numdim_, iel);
+  CORE::LINALG::SerialDenseMatrix deriv(numdim_, iel);
 
   // reference co-ordinates of element nodes
-  Epetra_SerialDenseMatrix xrefe(numdim_, iel);
+  CORE::LINALG::SerialDenseMatrix xrefe(numdim_, iel);
 
 
   /*----------------------------------------------------- geometry update */
@@ -1033,7 +1034,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(2);
+      CORE::LINALG::SerialDenseVector gp(2);
       gp(0) = e1;
       gp(1) = e2;
 
@@ -1095,8 +1096,8 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
     const std::vector<double>& residual)
 {
   // for eas
-  Epetra_SerialDenseMatrix* alpha = NULL;
-  Epetra_SerialDenseMatrix* eas_inc = NULL;
+  CORE::LINALG::SerialDenseMatrix* alpha = NULL;
+  CORE::LINALG::SerialDenseMatrix* eas_inc = NULL;
   // get access to the interface parameters
   const double step_length = StrParamsInterface().GetStepLength();
 
@@ -1105,9 +1106,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
     // get the old eas increment
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1124,14 +1125,17 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
           NOX::NLN::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
 
       // get stored EAS history
-      Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-      Epetra_SerialDenseMatrix* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-      Epetra_SerialDenseMatrix* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+      CORE::LINALG::SerialDenseMatrix* oldfeas =
+          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+      CORE::LINALG::SerialDenseMatrix* oldKaainv =
+          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+      CORE::LINALG::SerialDenseMatrix* oldKda =
+          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
       if (!oldKaainv or !oldKda or !oldfeas) dserror("Missing EAS history-data");
 
       // we need the (residual) displacement at the previous step
       const int numnode = NumNode();
-      Epetra_SerialDenseVector res_d(2 * numnode);
+      CORE::LINALG::SerialDenseVector res_d(2 * numnode);
       for (int i = 0; i < (2 * numnode); ++i)
       {
         res_d(i) = residual[i];
@@ -1179,10 +1183,10 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
-    const std::vector<double>& dispmat, std::vector<Epetra_SerialDenseVector>& myknots,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force, Epetra_SerialDenseMatrix* elestress,
-    Epetra_SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
+    const std::vector<double>& dispmat, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseMatrix* elestress,
+    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain)
 {
@@ -1192,54 +1196,54 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
 
   // general arrays
-  Epetra_SerialDenseVector funct(numnode);
-  Epetra_SerialDenseMatrix deriv;
+  CORE::LINALG::SerialDenseVector funct(numnode);
+  CORE::LINALG::SerialDenseMatrix deriv;
   deriv.Shape(2, numnode);
-  Epetra_SerialDenseMatrix xjm;
+  CORE::LINALG::SerialDenseMatrix xjm;
   xjm.Shape(2, 2);
-  Epetra_SerialDenseMatrix boplin;
+  CORE::LINALG::SerialDenseMatrix boplin;
   boplin.Shape(4, 2 * numnode);
-  Epetra_SerialDenseVector F;
+  CORE::LINALG::SerialDenseVector F;
   F.Size(4);
-  Epetra_SerialDenseVector strain;
+  CORE::LINALG::SerialDenseVector strain;
   strain.Size(4);
   double det;
-  Epetra_SerialDenseMatrix xrefe(2, numnode);
-  Epetra_SerialDenseMatrix xcure(2, numnode);
+  CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
+  CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
-  Epetra_SerialDenseMatrix b_cure;
+  CORE::LINALG::SerialDenseMatrix b_cure;
   b_cure.Shape(numeps, nd);
-  Epetra_SerialDenseMatrix stress;
+  CORE::LINALG::SerialDenseMatrix stress;
   stress.Shape(4, 4);
-  Epetra_SerialDenseMatrix C;
+  CORE::LINALG::SerialDenseMatrix C;
   C.Shape(4, 4);
 
   // for EAS, in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = NULL;      // EAS alphas
-  Epetra_SerialDenseMatrix F_enh;              // EAS matrix F_enh
-  Epetra_SerialDenseMatrix F_tot;              // EAS vector F_tot
-  Epetra_SerialDenseMatrix p_stress;           // first piola-kirchhoff stress vector
-  Epetra_SerialDenseMatrix xjm0;               // Jacobian Matrix (origin)
-  Epetra_SerialDenseVector F0;                 // Deformation Gradient (origin)
-  Epetra_SerialDenseMatrix boplin0;            // B operator (origin)
-  Epetra_SerialDenseMatrix W0;                 // W operator (origin)
-  Epetra_SerialDenseMatrix G;                  // G operator
-  Epetra_SerialDenseMatrix Z;                  // Z operator
-  Epetra_SerialDenseMatrix FCF;                // FCF^T
-  Epetra_SerialDenseMatrix Kda;                // EAS matrix Kda
-  Epetra_SerialDenseMatrix Kaa;                // EAS matrix Kaa
-  Epetra_SerialDenseVector feas;               // EAS portion of internal forces
-  double detJ0;                                // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = NULL;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = NULL;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* alpha = NULL;      // EAS alphas
+  CORE::LINALG::SerialDenseMatrix F_enh;              // EAS matrix F_enh
+  CORE::LINALG::SerialDenseMatrix F_tot;              // EAS vector F_tot
+  CORE::LINALG::SerialDenseMatrix p_stress;           // first piola-kirchhoff stress vector
+  CORE::LINALG::SerialDenseMatrix xjm0;               // Jacobian Matrix (origin)
+  CORE::LINALG::SerialDenseVector F0;                 // Deformation Gradient (origin)
+  CORE::LINALG::SerialDenseMatrix boplin0;            // B operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0;                 // W operator (origin)
+  CORE::LINALG::SerialDenseMatrix G;                  // G operator
+  CORE::LINALG::SerialDenseMatrix Z;                  // Z operator
+  CORE::LINALG::SerialDenseMatrix FCF;                // FCF^T
+  CORE::LINALG::SerialDenseMatrix Kda;                // EAS matrix Kda
+  CORE::LINALG::SerialDenseMatrix Kaa;                // EAS matrix Kaa
+  CORE::LINALG::SerialDenseVector feas;               // EAS portion of internal forces
+  double detJ0;                                       // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = NULL;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = NULL;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = NULL;     // EAS history
 
   // arrays for structure with ale (fractional step strategy)
-  Epetra_SerialDenseMatrix xmat;
-  Epetra_SerialDenseMatrix xjmmat;
-  Epetra_SerialDenseMatrix boplinmat;
-  Epetra_SerialDenseVector Fmat;
-  Epetra_SerialDenseVector FFmatinv;
+  CORE::LINALG::SerialDenseMatrix xmat;
+  CORE::LINALG::SerialDenseMatrix xjmmat;
+  CORE::LINALG::SerialDenseMatrix boplinmat;
+  CORE::LINALG::SerialDenseVector Fmat;
+  CORE::LINALG::SerialDenseVector FFmatinv;
   double detmat;
 
   if (structale_ == true)
@@ -1278,7 +1282,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   }
 
   /*--------------------------------- get node weights for nurbs elements */
-  Epetra_SerialDenseVector weights(numnode);
+  CORE::LINALG::SerialDenseVector weights(numnode);
   if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
@@ -1313,18 +1317,19 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+        "alpha");  // get alpha of previous iteration
 
     // get stored EAS history
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
     // FixMe deprecated implementation
     if (not IsParamsInterface())
     {
       // we need the (residual) displacement at the previous step
-      Epetra_SerialDenseVector res_d(2 * numnode);
+      CORE::LINALG::SerialDenseVector res_d(2 * numnode);
       for (int i = 0; i < (2 * numnode); ++i)
       {
         res_d(i) = residual[i];
@@ -1363,7 +1368,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(2);
+      CORE::LINALG::SerialDenseVector gp(2);
       gp(0) = e1;
       gp(1) = e2;
 
@@ -1564,7 +1569,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       solve_for_inverseKaa.Invert();
 
 
-      Epetra_SerialDenseMatrix KdaKaa(2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
+      CORE::LINALG::SerialDenseMatrix KdaKaa(
+          2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
       KdaKaa.Multiply('N', 'N', 1.0, Kda, Kaa, 1.0);
 
 
@@ -1596,10 +1602,10 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
-    const std::vector<double>& dispmat, std::vector<Epetra_SerialDenseVector>& myknots,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force, Epetra_SerialDenseMatrix* elestress,
-    Epetra_SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
+    const std::vector<double>& dispmat, std::vector<CORE::LINALG::SerialDenseVector>& myknots,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseMatrix* elestress,
+    CORE::LINALG::SerialDenseMatrix* elestrain, Teuchos::RCP<const MAT::Material> material,
     Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain)
 {
@@ -1608,26 +1614,26 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   const int nd = numnode * numdf;
 
   // general arrays
-  Epetra_SerialDenseVector funct(numnode);
-  Epetra_SerialDenseMatrix deriv;
+  CORE::LINALG::SerialDenseVector funct(numnode);
+  CORE::LINALG::SerialDenseMatrix deriv;
   deriv.Shape(2, numnode);
-  Epetra_SerialDenseMatrix xjm;
+  CORE::LINALG::SerialDenseMatrix xjm;
   xjm.Shape(2, 2);
-  Epetra_SerialDenseMatrix boplin;
+  CORE::LINALG::SerialDenseMatrix boplin;
   boplin.Shape(4, 2 * numnode);
-  Epetra_SerialDenseVector F;
+  CORE::LINALG::SerialDenseVector F;
   F.Size(4);
-  Epetra_SerialDenseVector strain;
+  CORE::LINALG::SerialDenseVector strain;
   strain.Size(4);
   double det;
-  Epetra_SerialDenseMatrix xrefe(2, numnode);
-  Epetra_SerialDenseMatrix xcure(2, numnode);
+  CORE::LINALG::SerialDenseMatrix xrefe(2, numnode);
+  CORE::LINALG::SerialDenseMatrix xcure(2, numnode);
   const int numeps = 4;
-  Epetra_SerialDenseMatrix b_cure;
+  CORE::LINALG::SerialDenseMatrix b_cure;
   b_cure.Shape(numeps, nd);
-  Epetra_SerialDenseMatrix stress;
+  CORE::LINALG::SerialDenseMatrix stress;
   stress.Shape(4, 4);
-  Epetra_SerialDenseMatrix C;
+  CORE::LINALG::SerialDenseMatrix C;
   C.Shape(4, 4);
 
   // ------------------------------------ check calculation of mass matrix
@@ -1650,7 +1656,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
   }
 
   /*--------------------------------- get node weights for nurbs elements */
-  Epetra_SerialDenseVector weights(numnode);
+  CORE::LINALG::SerialDenseVector weights(numnode);
   if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
@@ -1679,7 +1685,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(2);
+      CORE::LINALG::SerialDenseVector gp(2);
       gp(0) = e1;
       gp(1) = e2;
 
@@ -1782,8 +1788,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 /*----------------------------------------------------------------------*
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(const Epetra_SerialDenseMatrix& xrefe,
-    const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm, double* det,
+void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
+    const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
   memset(xjm.A(), 0, xjm.N() * xjm.M() * sizeof(double));
@@ -1809,8 +1815,9 @@ void DRT::ELEMENTS::Wall1::w1_jacobianmatrix(const Epetra_SerialDenseMatrix& xre
  |  Matrix boplin in reference configuration (private)         mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
-    Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm, double& det, const int iel)
+void DRT::ELEMENTS::Wall1::w1_boplin(CORE::LINALG::SerialDenseMatrix& boplin,
+    CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
+    const int iel)
 {
   double dum;
   double xji[2][2];
@@ -1846,9 +1853,10 @@ void DRT::ELEMENTS::Wall1::w1_boplin(Epetra_SerialDenseMatrix& boplin,
 /*----------------------------------------------------------------------*
  | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F, Epetra_SerialDenseVector& strain,
-    const Epetra_SerialDenseMatrix& xrefe, const Epetra_SerialDenseMatrix& xcure,
-    Epetra_SerialDenseMatrix& boplin, const int iel)
+void DRT::ELEMENTS::Wall1::w1_defgrad(CORE::LINALG::SerialDenseVector& F,
+    CORE::LINALG::SerialDenseVector& strain, const CORE::LINALG::SerialDenseMatrix& xrefe,
+    const CORE::LINALG::SerialDenseMatrix& xcure, CORE::LINALG::SerialDenseMatrix& boplin,
+    const int iel)
 {
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
   defgrad looks like:
@@ -1893,10 +1901,11 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F, Epetra_Serial
  | Deformation gradient Fmat and Green-Langrange strain       mgit 04/11|
  | due to structure with ale approach (fractional step method)
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_defgradmat(Epetra_SerialDenseVector& F,
-    Epetra_SerialDenseVector& Fmat, Epetra_SerialDenseVector& FFmatinv,
-    Epetra_SerialDenseVector& strain, const Epetra_SerialDenseMatrix& xrefe,
-    const Epetra_SerialDenseMatrix& xmat, Epetra_SerialDenseMatrix& boplin, const int iel)
+void DRT::ELEMENTS::Wall1::w1_defgradmat(CORE::LINALG::SerialDenseVector& F,
+    CORE::LINALG::SerialDenseVector& Fmat, CORE::LINALG::SerialDenseVector& FFmatinv,
+    CORE::LINALG::SerialDenseVector& strain, const CORE::LINALG::SerialDenseMatrix& xrefe,
+    const CORE::LINALG::SerialDenseMatrix& xmat, CORE::LINALG::SerialDenseMatrix& boplin,
+    const int iel)
 {
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
   defgrad looks like:
@@ -1923,7 +1932,7 @@ void DRT::ELEMENTS::Wall1::w1_defgradmat(Epetra_SerialDenseVector& F,
   // determinant of deformation gradient Fmat
   double detFmat = Fmat[0] * Fmat[1] - Fmat[2] * Fmat[3];
 
-  Epetra_SerialDenseVector Fmatinv;
+  CORE::LINALG::SerialDenseVector Fmatinv;
   Fmatinv.Size(4);
 
   // inverse of Fmat
@@ -1954,11 +1963,11 @@ void DRT::ELEMENTS::Wall1::w1_defgradmat(Epetra_SerialDenseVector& F,
  reference configuration (private)                             mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
-    const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseVector& F, const int numeps,
-    const int nd)
+void DRT::ELEMENTS::Wall1::w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,
+    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
+    const int numeps, const int nd)
 {
-  Epetra_SerialDenseMatrix Fmatrix;
+  CORE::LINALG::SerialDenseMatrix Fmatrix;
   Fmatrix.Shape(4, 4);
 
 
@@ -1992,7 +2001,7 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
 
 //{
 //  Teuchos::RCP<MAT::Material> mat = Material();
-//  Epetra_SerialDenseMatrix cmat;
+//  CORE::LINALG::SerialDenseMatrix cmat;
 //
 //  switch(material->mattyp)
 //  {
@@ -2018,8 +2027,8 @@ void DRT::ELEMENTS::Wall1::w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,
 /*----------------------------------------------------------------------*
 | geometric stiffness part (total lagrange)                   mgit 05/07|
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
-    const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseMatrix& stress,
+void DRT::ELEMENTS::Wall1::w1_kg(CORE::LINALG::SerialDenseMatrix& estif,
+    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseMatrix& stress,
     const double fac, const int nd, const int numeps)
 {
   /*---------------------------------------------- perform B^T * SIGMA * B*/
@@ -2036,9 +2045,9 @@ void DRT::ELEMENTS::Wall1::w1_kg(Epetra_SerialDenseMatrix& estif,
 /*----------------------------------------------------------------------*
 | elastic and initial displacement stiffness (total lagrange)  mgit 05/07
 *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
-    const Epetra_SerialDenseMatrix& b_cure, const Epetra_SerialDenseMatrix& C, const double fac,
-    const int nd, const int numeps)
+void DRT::ELEMENTS::Wall1::w1_keu(CORE::LINALG::SerialDenseMatrix& estif,
+    const CORE::LINALG::SerialDenseMatrix& b_cure, const CORE::LINALG::SerialDenseMatrix& C,
+    const double fac, const int nd, const int numeps)
 {
   /*------------- perform B_cure^T * D * B_cure, whereas B_cure = F^T * B */
   for (int i = 0; i < nd; i++)
@@ -2053,12 +2062,12 @@ void DRT::ELEMENTS::Wall1::w1_keu(Epetra_SerialDenseMatrix& estif,
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) mgit 05/07  |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_fint(const Epetra_SerialDenseMatrix& stress,
-    const Epetra_SerialDenseMatrix& b_cure, Epetra_SerialDenseVector& intforce, const double fac,
-    const int nd)
+void DRT::ELEMENTS::Wall1::w1_fint(const CORE::LINALG::SerialDenseMatrix& stress,
+    const CORE::LINALG::SerialDenseMatrix& b_cure, CORE::LINALG::SerialDenseVector& intforce,
+    const double fac, const int nd)
 
 {
-  Epetra_SerialDenseVector st;
+  CORE::LINALG::SerialDenseVector st;
   st.Size(4);
 
   st[0] = fac * stress(0, 0);
@@ -2076,7 +2085,7 @@ void DRT::ELEMENTS::Wall1::w1_fint(const Epetra_SerialDenseMatrix& stress,
 /*-----------------------------------------------------------------------------*
 | lump mass matrix                                                  bborn 07/08|
 *-----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Wall1::w1_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != NULL)
@@ -2099,31 +2108,31 @@ void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const double& F22,
-    const double& F12, const double& F21, const Epetra_SerialDenseMatrix& stress,
-    Epetra_SerialDenseMatrix* elestress)
+    const double& F12, const double& F21, const CORE::LINALG::SerialDenseMatrix& stress,
+    CORE::LINALG::SerialDenseMatrix* elestress)
 {
   // Question: Is this true for plane stress and/or plane strain mode?
 
   double detf = F11 * F22 - F12 * F21;
   // Def.grad. tensor in Cartesian matrix notation
-  Epetra_SerialDenseMatrix defgrad(2, 2);
+  CORE::LINALG::SerialDenseMatrix defgrad(2, 2);
   defgrad(0, 0) = F11;
   defgrad(0, 1) = F12;
   defgrad(1, 0) = F21;
   defgrad(1, 1) = F22;
   // PK2 stress tensor in Cartesian matrix notation
-  Epetra_SerialDenseMatrix pk2stress(2, 2);
+  CORE::LINALG::SerialDenseMatrix pk2stress(2, 2);
   pk2stress(0, 0) = stress(0, 0);
   pk2stress(0, 1) = stress(0, 2);
   pk2stress(1, 0) = stress(0, 2);
   pk2stress(1, 1) = stress(1, 1);
 
   // PK1 stress tensor in Cartesian matrix notation
-  Epetra_SerialDenseMatrix pk1stress(2, 2);
+  CORE::LINALG::SerialDenseMatrix pk1stress(2, 2);
   pk1stress.Multiply('N', 'T', 1.0 / detf, pk2stress, defgrad, 0.0);
 
   // Cauchy stress tensor in Cartesian matrix notation
-  Epetra_SerialDenseMatrix cauchystress(2, 2);
+  CORE::LINALG::SerialDenseMatrix cauchystress(2, 2);
   cauchystress.Multiply('N', 'N', 1.0, defgrad, pk1stress, 0.0);
 
   // copy results to array for output
@@ -2138,7 +2147,7 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
-    const std::vector<double>& dis, Epetra_SerialDenseVector* energies,
+    const std::vector<double>& dis, CORE::LINALG::SerialDenseVector* energies,
     Teuchos::RCP<const MAT::Material> material)
 {
   // constants
@@ -2153,33 +2162,34 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   double internal_energy = 0.0;
 
   // general arrays
-  Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
-  Epetra_SerialDenseMatrix shpdrv(
+  CORE::LINALG::SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
+  CORE::LINALG::SerialDenseMatrix shpdrv(
       Wall1::numdim_, numnode);  // parametric derivatives of shape funct. at Gauss point
-  Epetra_SerialDenseMatrix Xjm(
+  CORE::LINALG::SerialDenseMatrix Xjm(
       Wall1::numdim_, Wall1::numdim_);  // material-to-parameter-space Jacobian
   double Xjdet;                         // determinant of #Xjm
-  Epetra_SerialDenseMatrix boplin(4, edof);
-  Epetra_SerialDenseVector Fuv(4);                       // disp-based def.grad. vector at t_{n}
-  Epetra_SerialDenseVector Ev(4);                        // Green-Lagrange strain vector at t_{n}
-  Epetra_SerialDenseMatrix Xe(Wall1::numdim_, numnode);  // material/initial element co-ordinates
-  Epetra_SerialDenseMatrix xe(
+  CORE::LINALG::SerialDenseMatrix boplin(4, edof);
+  CORE::LINALG::SerialDenseVector Fuv(4);  // disp-based def.grad. vector at t_{n}
+  CORE::LINALG::SerialDenseVector Ev(4);   // Green-Lagrange strain vector at t_{n}
+  CORE::LINALG::SerialDenseMatrix Xe(
+      Wall1::numdim_, numnode);  // material/initial element co-ordinates
+  CORE::LINALG::SerialDenseMatrix xe(
       Wall1::numdim_, numnode);  // spatial/current element co-ordinates at t_{n}
-  Epetra_SerialDenseMatrix bop(Wall1::numstr_, edof);  // non-linear B-op at t_{n}
+  CORE::LINALG::SerialDenseMatrix bop(Wall1::numstr_, edof);  // non-linear B-op at t_{n}
 
-  Epetra_SerialDenseMatrix massmatrix(lm.size(), lm.size());
+  CORE::LINALG::SerialDenseMatrix massmatrix(lm.size(), lm.size());
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  Epetra_SerialDenseMatrix* alphao = NULL;  // EAS alphas at t_{n}
-  Epetra_SerialDenseMatrix Fenhv;           // EAS matrix Fenhv
-  Epetra_SerialDenseMatrix Fm;              // total def.grad. matrix at t_{n}
-  Epetra_SerialDenseMatrix Xjm0;            // Jacobian Matrix (origin)
-  double Xjdet0;                            // determinant of #Xjm0
-  Epetra_SerialDenseVector Fuv0;            // deformation gradient at origin at t_{n}
-  Epetra_SerialDenseMatrix boplin0;         // B-operator (origin)
-  Epetra_SerialDenseMatrix W0;              // W-operator (origin) at t_{n}
-  Epetra_SerialDenseMatrix G;               // G-operator at t_{n}
-  Epetra_SerialDenseMatrix Z;               // Z-operator
+  CORE::LINALG::SerialDenseMatrix* alphao = NULL;  // EAS alphas at t_{n}
+  CORE::LINALG::SerialDenseMatrix Fenhv;           // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fm;              // total def.grad. matrix at t_{n}
+  CORE::LINALG::SerialDenseMatrix Xjm0;            // Jacobian Matrix (origin)
+  double Xjdet0;                                   // determinant of #Xjm0
+  CORE::LINALG::SerialDenseVector Fuv0;            // deformation gradient at origin at t_{n}
+  CORE::LINALG::SerialDenseMatrix boplin0;         // B-operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0;              // W-operator (origin) at t_{n}
+  CORE::LINALG::SerialDenseMatrix G;               // G-operator at t_{n}
+  CORE::LINALG::SerialDenseMatrix Z;               // Z-operator
 
   // element co-ordinates
   for (int k = 0; k < numnode; ++k)
@@ -2204,7 +2214,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     Z.Shape(edof, Wall1::neas_);
 
     // get alpha of last converged state
-    alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");
+    alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");
 
     // derivatives at origin
     CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);

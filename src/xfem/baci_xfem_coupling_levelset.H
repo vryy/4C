@@ -453,7 +453,7 @@ namespace XFEM
       else if (projtosurf_ == INPAR::XFEM::Proj_smoothed)
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
-        Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+        CORE::LINALG::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
@@ -463,7 +463,7 @@ namespace XFEM
       }
       else if (projtosurf_ == INPAR::XFEM::Proj_normal_phi)
       {
-        Epetra_SerialDenseMatrix ephi_test(nen, 1);
+        CORE::LINALG::SerialDenseMatrix ephi_test(nen, 1);
         CORE::LINALG::Matrix<nen, 1> ephi(ephi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(
             ephi_test, actele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_, 1);
@@ -474,7 +474,7 @@ namespace XFEM
       else if (projtosurf_ == INPAR::XFEM::Proj_normal_smoothed_comb)
       {
         // smoothed normal at cutter element nodes, the Gaussian point lies in
-        Epetra_SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
+        CORE::LINALG::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::ExtractQuantityAtElement(esmoothedgradphi_test, actele,
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
@@ -629,8 +629,8 @@ namespace XFEM
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
 
       // smoothed normal at cutter element nodes, the Gaussian point lies in
-      Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
-      Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
+      CORE::LINALG::SerialDenseMatrix esmoothedgradphi(nsd, nen);
+      CORE::LINALG::SerialDenseMatrix esmoothedcurvature(nen, 1);
 
       CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
       CORE::LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
@@ -664,7 +664,7 @@ namespace XFEM
       DRT::Element* cutter_ele = cutter_dis_->gElement(eid);
 
       // smoothed normal at cutter element nodes, the Gaussian point lies in
-      Epetra_SerialDenseMatrix ephinp(nen, 1);
+      CORE::LINALG::SerialDenseMatrix ephinp(nen, 1);
       CORE::LINALG::Matrix<nen, 1> ephinp_T(ephinp, View);
 
       // Get phi-values at node
@@ -968,19 +968,19 @@ namespace XFEM
     void SetParameters_SurfaceTension();
 
     //! get the smoothed level set gradient at a given node (not necessarily normalized to one)
-    void GetSmoothedQuantitiesAtNode(Epetra_SerialDenseVector& normal, double& curvature,
+    void GetSmoothedQuantitiesAtNode(CORE::LINALG::SerialDenseVector& normal, double& curvature,
         const DRT::Node* node,
         const Teuchos::RCP<const Epetra_MultiVector>& gradphinp_smoothed_node_col,
         const Teuchos::RCP<const Epetra_MultiVector>& curvaturenp_node_col,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds);
 
-    void GetSmoothedQuantitiesAtElement(Epetra_SerialDenseMatrix& normal,
-        Epetra_SerialDenseMatrix& curvature, const DRT::Element* element,
+    void GetSmoothedQuantitiesAtElement(CORE::LINALG::SerialDenseMatrix& normal,
+        CORE::LINALG::SerialDenseMatrix& curvature, const DRT::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& gradphinp_smoothed_node_col,
         const Teuchos::RCP<const Epetra_MultiVector>& curvaturenp_node_col,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds);
 
-    void GetPhiAtElement(Epetra_SerialDenseMatrix& phi_ele, const DRT::Element* element,
+    void GetPhiAtElement(CORE::LINALG::SerialDenseMatrix& phi_ele, const DRT::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& phinp, Teuchos::RCP<DRT::Discretization>& dis,
         const int nds);
 
@@ -994,8 +994,8 @@ namespace XFEM
       // number of nodes of element
       const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-      Epetra_SerialDenseMatrix esmoothedgradphi(nsd, nen);
-      Epetra_SerialDenseMatrix esmoothedcurvature(nen, 1);
+      CORE::LINALG::SerialDenseMatrix esmoothedgradphi(nsd, nen);
+      CORE::LINALG::SerialDenseMatrix esmoothedcurvature(nen, 1);
 
       CORE::LINALG::Matrix<nsd, nen> esmoothedgradphi_T(esmoothedgradphi, View);
       CORE::LINALG::Matrix<nen, 1> esmoothedcurvature_T(esmoothedcurvature, View);
@@ -1032,11 +1032,11 @@ namespace XFEM
     );
 
     //! do normalization or a manipulation of the smoothed normal vector
-    bool RescaleNormal(Epetra_SerialDenseVector& normal);
+    bool RescaleNormal(CORE::LINALG::SerialDenseVector& normal);
 
-    virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
-        const double& curv);
+    virtual void ComputeRelativeTransportVelocity(CORE::LINALG::SerialDenseVector& flvelrel,
+        const CORE::GEO::CUT::Point::PointPosition& position,
+        const CORE::LINALG::SerialDenseVector& nvec, const double& curv);
 
     virtual void Output(
         const int step, const double time, const bool write_restart_data, const int lsc_idx = 0);
@@ -1169,9 +1169,9 @@ namespace XFEM
 
     virtual void SetFlags_GeometricQuantities();
 
-    virtual void ComputeRelativeTransportVelocity(Epetra_SerialDenseVector& flvelrel,
-        const CORE::GEO::CUT::Point::PointPosition& position, const Epetra_SerialDenseVector& nvec,
-        const double& curv);
+    virtual void ComputeRelativeTransportVelocity(CORE::LINALG::SerialDenseVector& flvelrel,
+        const CORE::GEO::CUT::Point::PointPosition& position,
+        const CORE::LINALG::SerialDenseVector& nvec, const double& curv);
 
 
    private:

@@ -473,9 +473,9 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
 
   // store derivae into element
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-          linsize + 2 * ndof * mnodes, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+          linsize + 2 * ndof * mnodes, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+  CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // compute entries to bi-ortho matrices me/de with Gauss quadrature

@@ -72,9 +72,9 @@ DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double densnp, const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
-    const CORE::LINALG::Matrix<nen_, 1>& diff)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double timetaufac, const double densnp, const double scatrares,
+    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
 
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcMatChemo(
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcRHSChemo(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double scatrares, const double densnp)
 {
   Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;

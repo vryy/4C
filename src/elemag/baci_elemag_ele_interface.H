@@ -14,8 +14,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 
 #include "baci_cut_utils.H"
@@ -46,10 +46,11 @@ namespace DRT
        */
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false) = 0;
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
 
       /// Integrate shape function
       /*!
@@ -58,7 +59,7 @@ namespace DRT
        */
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1) = 0;
     };
 
 

@@ -279,11 +279,11 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
   bool assemblevec3 = systemvector3 != Teuchos::null;
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
 
   const double time = params.get("total time", -1.0);

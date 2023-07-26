@@ -55,26 +55,30 @@ namespace DRT
       //! evaluate the element
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      protected:
       //! calculate matrix and rhs. Here the whole thing is hidden. Hyperbolic reinit.
-      void SysmatHyperbolic(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs                     //!< element rhs to calculate
+      void SysmatHyperbolic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs                     //!< element rhs to calculate
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden. Ellipitic reinit.
-      void SysmatElliptic(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                  //!< element rhs to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& bcell      //!< interface for penalty term
+      void SysmatElliptic(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                  //!< element rhs to calculate
+          const CORE::GEO::BoundaryIntCellPtrs& bcell             //!< interface for penalty term
       );
 
       /** \brief Evaluate the system matrix and right-hand-side for the ellipitic
@@ -87,7 +91,8 @@ namespace DRT
        *  \param bcell (in)  : boundary integration cell (necessary for the penalty term)
        *
        *  \author hiermeier \date 12/16 */
-      void EllipticNewtonSystem(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
+      void EllipticNewtonSystem(CORE::LINALG::SerialDenseMatrix* emat,
+          CORE::LINALG::SerialDenseVector* erhs,
           const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
           const CORE::GEO::BoundaryIntCellPtrs& bcell);
 
@@ -98,29 +103,33 @@ namespace DRT
 
       void EvalReinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
           DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       void EvalReinitializationEmbedded(const std::vector<int>& lm, DRT::Element* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       void EvalReinitializationStd(const Epetra_Vector& phinp, const std::vector<int>& lm,
           DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       /*========================================================================*/
       //! @name overloaded methods for evaluation of individual terms
       /*========================================================================*/
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcMatDiff(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
       );
 
       //! standard Galerkin diffusive term on right hand side
-      void CalcRHSDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                  //!< index of current scalar
+      void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                         //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
@@ -159,29 +168,30 @@ namespace DRT
 
       //! calculate system matrix and rhs for correction step
       void SysmatCorrection(const double penalty,  ///!< element penalty parameter
-          Epetra_SerialDenseMatrix& emat,          ///!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs           ///!< element rhs to calculate
+          CORE::LINALG::SerialDenseMatrix& emat,   ///!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs    ///!< element rhs to calculate
       );
 
       //! calculation of penalty term on rhs
-      void CalcRHSPenalty(Epetra_SerialDenseVector& erhs,  //!< rhs vector
-          const double fac,                                //!< domain integration factor
-          const double penalty,                            //!< penalty parameter
-          const double deriv_sign,                         //!< derivative of sign function
-          const double norm_gradphizero                    //!< norm of gradient of initial phi
+      void CalcRHSPenalty(CORE::LINALG::SerialDenseVector& erhs,  //!< rhs vector
+          const double fac,                                       //!< domain integration factor
+          const double penalty,                                   //!< penalty parameter
+          const double deriv_sign,                                //!< derivative of sign function
+          const double norm_gradphizero  //!< norm of gradient of initial phi
       );
 
       //! calculation of interface penalty term for elliptic reinitialization
-      void EvaluateInterfaceTerm(Epetra_SerialDenseMatrix* emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector* erhs,                         //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCellPtrs& boucell           //!< interface for penalty term
+      void EvaluateInterfaceTerm(
+          CORE::LINALG::SerialDenseMatrix* emat,         //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector* erhs,         //!< element vector to calculate
+          const CORE::GEO::BoundaryIntCellPtrs& boucell  //!< interface for penalty term
       );
 
       //! calculation of interface penalty term for elliptic reinitialization (gauss loop)
       template <DRT::Element::DiscretizationType celldistype>
-      void CalcPenaltyTerm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                   //!< element vector to calculate
-          const CORE::GEO::BoundaryIntCell& cell            //!< interface cell
+      void CalcPenaltyTerm(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                   //!< element vector to calculate
+          const CORE::GEO::BoundaryIntCell& cell                   //!< interface cell
       );
 
 
@@ -193,17 +203,17 @@ namespace DRT
        *  \param cell (in)  : interface boundary integration cell
        *
        *  \author hiermeier \date 11/16 */
-      void CalcPenaltyTerm_0D(Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
-          const CORE::GEO::BoundaryIntCell& cell);
+      void CalcPenaltyTerm_0D(CORE::LINALG::SerialDenseMatrix* emat,
+          CORE::LINALG::SerialDenseVector* erhs, const CORE::GEO::BoundaryIntCell& cell);
 
       /*========================================================================*/
       //! @name additional service routines
       /*========================================================================*/
 
       //! calculate system matrix and rhs for velocity projection
-      void SysmatNodalVel(const int dir,   ///< current spatial direction
-          Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-          Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+      void SysmatNodalVel(const int dir,          ///< current spatial direction
+          CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
       );
 
       //! get diffusion manager for reinitialization

@@ -180,8 +180,8 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
       DRT::Condition& cond = *(fool->second);
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-      Epetra_SerialDenseVector elevector;
-      Epetra_SerialDenseMatrix elematrix;
+      CORE::LINALG::SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseMatrix elematrix;
       for (curr = geom.begin(); curr != geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships

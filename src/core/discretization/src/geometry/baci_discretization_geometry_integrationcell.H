@@ -320,15 +320,15 @@ namespace CORE::GEO
   /*----------------------------------------------------------------------------*/
   template <unsigned probDim, ::DRT::Element::DiscretizationType cellType>
   void ComputePhysicalCenterPosition(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<probDim, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<probDim, 1>& phys_center);
 
   template <>
   void ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 
   template <>
   void ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 
   /*----------------------------------------------------------------------------*/
   /** \brief create a concrete boundary integration cell

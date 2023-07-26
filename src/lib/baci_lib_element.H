@@ -15,8 +15,8 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_lib_parobject.H"
 #include "baci_lib_condition.H"
@@ -535,11 +535,12 @@ namespace DRT
     The method is used to build the connectivity between all the nodes adjacent
     to this element and how expensive its evaluation is
 
-    \param edgeweights (out): A Epetra_SerialDenseMatrix containing weights of all connected nodes
-    \param nodeweights (out): A Epetra_SerialDenseVector containing weights of all nodes
+    \param edgeweights (out): A CORE::LINALG::SerialDenseMatrix containing weights of all connected
+    nodes \param nodeweights (out): A CORE::LINALG::SerialDenseVector containing weights of all
+    nodes
     */
     virtual void NodalConnectivity(
-        Epetra_SerialDenseMatrix& edgeweights, Epetra_SerialDenseVector& nodeweights);
+        CORE::LINALG::SerialDenseMatrix& edgeweights, CORE::LINALG::SerialDenseVector& nodeweights);
 
     /*!
     \brief Return value how expensive it is to evaluate this element
@@ -1104,9 +1105,9 @@ namespace DRT
     \return 0 if successful, negative otherwise
     */
     virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3);
+        LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
     /*!
     \brief Evaluate an element
@@ -1135,9 +1136,9 @@ namespace DRT
     \return 0 if successful, negative otherwise
     */
     virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3);
+        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
     /*!
     \brief Evaluate a Neumann boundary condition
@@ -1159,8 +1160,8 @@ namespace DRT
     \return 0 if successful, negative otherwise
     */
     virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseMatrix* elemat1 = NULL) = 0;
+        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseMatrix* elemat1 = NULL) = 0;
 
 
     //@}

@@ -392,12 +392,12 @@ namespace CORE::GEO
 
       /// store the Gauss point weights and location for volumecells when moment fitting equations
       /// are used to arrive at them
-      Epetra_SerialDenseVector weights_;
+      CORE::LINALG::SerialDenseVector weights_;
       std::vector<std::vector<double>> gausPts_;
 
       /// store the Gauss point weights and location for boundarycells when moment fitting equations
       /// are used to arrive at them
-      Epetra_SerialDenseVector Bcellweights_;
+      CORE::LINALG::SerialDenseVector Bcellweights_;
       std::vector<std::vector<double>> BcellgausPts_;
 
       /// Equation of plane which contains the reference facet when using DirectDivergence

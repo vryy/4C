@@ -97,9 +97,9 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    virtual const Epetra_SerialDenseVector GetX1() = 0;
+    virtual const CORE::LINALG::SerialDenseVector GetX1() = 0;
 
-    virtual const Epetra_SerialDenseVector GetX2() = 0;
+    virtual const CORE::LINALG::SerialDenseVector GetX2() = 0;
 
     /*!
       \Check, if there is a difference between the result of the new and old gap definition, i.e. if
@@ -149,8 +149,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    virtual void UpdateElePos(
-        Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos) = 0;
+    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        CORE::LINALG::SerialDenseMatrix& newele2pos) = 0;
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing
@@ -254,18 +254,18 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    const Epetra_SerialDenseVector GetX1()
+    const CORE::LINALG::SerialDenseVector GetX1()
     {
-      Epetra_SerialDenseVector r1;
+      CORE::LINALG::SerialDenseVector r1;
       r1.Resize(3);
       for (int i = 0; i < 3; i++) r1(i) = CORE::FADUTILS::CastToDouble(r1_(i));
 
       return r1;
     };
 
-    const Epetra_SerialDenseVector GetX2()
+    const CORE::LINALG::SerialDenseVector GetX2()
     {
-      Epetra_SerialDenseVector r2;
+      CORE::LINALG::SerialDenseVector r2;
       r2.Resize(3);
       for (int i = 0; i < 3; i++) r2(i) = CORE::FADUTILS::CastToDouble(r2_(i));
 
@@ -313,7 +313,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos);
+    void UpdateElePos(
+        CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos);
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing

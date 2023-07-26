@@ -185,7 +185,7 @@ void DRT::AssembleStrategy::ClearElementStorage(int rdim, int cdim)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::AssembleStrategy::Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-    const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   sysmat.Assemble(eid, lmstride, Aele, lm, lmowner);
@@ -195,7 +195,7 @@ void DRT::AssembleStrategy::Assemble(CORE::LINALG::SparseOperator& sysmat, int e
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::AssembleStrategy::Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-    const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+    const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -213,7 +213,7 @@ void DRT::AssembleStrategy::Assemble(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::AssembleStrategy::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
+void DRT::AssembleStrategy::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   CORE::LINALG::Assemble(V, Vele, lm, lmowner);
@@ -222,7 +222,7 @@ void DRT::AssembleStrategy::Assemble(Epetra_Vector& V, const Epetra_SerialDenseV
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::AssembleStrategy::Assemble(Epetra_MultiVector& V, const int n,
-    const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
+    const CORE::LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
   CORE::LINALG::Assemble(V, n, Vele, lm, lmowner);

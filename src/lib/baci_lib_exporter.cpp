@@ -346,8 +346,8 @@ void DRT::Exporter::Export(std::map<int, double>& data)
   GenericExport(helper);
 }
 
-void DRT::Exporter::Export(std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& data)
+void DRT::Exporter::Export(std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& data)
 {
-  AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);
+  AnyObjectExporterHelper<CORE::LINALG::SerialDenseMatrix> helper(data);
   GenericExport(helper);
 }

@@ -27,8 +27,8 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
@@ -46,9 +46,10 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& slave_xyze,  ///< global node coordinates of slave element
-          Epetra_SerialDenseMatrix& C_umum,      ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,      ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base&
+              slave_xyze,  ///< global node coordinates of slave element
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
@@ -66,13 +67,14 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& slave_xyze,  ///< global node coordinates of slave element
-          Epetra_SerialDenseMatrix& C_umum,      ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& C_usum,      ///< C_usum coupling matrix
-          Epetra_SerialDenseMatrix& C_umus,      ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix& C_usus,      ///< C_usus coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,      ///< C_um coupling rhs
-          Epetra_SerialDenseMatrix& rhC_us,      ///< C_us coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base&
+              slave_xyze,  ///< global node coordinates of slave element
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
@@ -226,7 +228,7 @@ namespace DRT
               proj_tangential,  ///< tangential projection matrix
           const CORE::LINALG::Matrix<nsd_, nsd_>&
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const std::vector<Epetra_SerialDenseMatrix>&
+          const std::vector<CORE::LINALG::SerialDenseMatrix>&
               solid_stress,  ///< structural cauchy stress and linearization
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
               configmap  ///< Interface Terms configuration map

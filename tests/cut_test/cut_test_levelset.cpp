@@ -22,7 +22,7 @@ void test_ls_hex8_florian1()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -82,7 +82,7 @@ void test_ls_hex8_florian2()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -142,7 +142,7 @@ void test_ls_hex8_florian3()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -202,7 +202,7 @@ void test_ls_hex8_florian4()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -262,7 +262,7 @@ void test_ls_hex8_florian5()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -322,7 +322,7 @@ void test_ls_hex8_florian6()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -382,7 +382,7 @@ void test_ls_hex8_florian7()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -442,7 +442,7 @@ void test_ls_hex8_florian8()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -502,7 +502,7 @@ void test_ls_hex8_florian9()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -562,7 +562,7 @@ void test_ls_hex8_florian10()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -622,7 +622,7 @@ void test_ls_hex8_florian11()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -682,7 +682,7 @@ void test_ls_hex8_florian12()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -742,7 +742,7 @@ void test_ls_hex8_florian13()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -802,7 +802,7 @@ void test_ls_hex8_ursula1()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -862,7 +862,7 @@ void test_ls_hex8_ursula2()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -922,7 +922,7 @@ void test_ls_hex8_ursula3()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -982,7 +982,7 @@ void test_ls_hex8_ursula4()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1042,7 +1042,7 @@ void test_ls_hex8_ursula5()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1102,7 +1102,7 @@ void test_ls_hex8_ursula6()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1162,7 +1162,7 @@ void test_ls_hex8_simple()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1216,7 +1216,7 @@ void test_ls_hex8_simple2()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1270,7 +1270,7 @@ void test_ls_hex8_simple3()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1324,7 +1324,7 @@ void test_ls_hex8_simple4()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, 0);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1378,7 +1378,7 @@ void test_ls_hex8_simple5()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, 1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1433,7 +1433,7 @@ void test_ls_hex8_simple6()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1495,7 +1495,7 @@ void test_ls_hex8_simple7()
     // simple hex8 element
     std::vector<int> nids(8);
     std::vector<double> lsvs(8);
-    Epetra_SerialDenseMatrix xyze(3, 8);
+    CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
     for (int i = 0; i < 8; ++i)
     {
@@ -1556,7 +1556,7 @@ void test_ls_hex8_touch()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1631,7 +1631,7 @@ void test_ls_hex8_between()
     // simple hex8 element
     std::vector<int> nids(8);
     std::vector<double> lsvs(8, -1);
-    Epetra_SerialDenseMatrix xyze(3, 8);
+    CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
     for (int i = 0; i < 8; ++i)
     {
@@ -1658,7 +1658,7 @@ void test_ls_hex8_experiment()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {

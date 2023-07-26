@@ -35,18 +35,18 @@ class SimpleWrapper
 
   ~SimpleWrapper();
 
-  void CreateHex8(const Epetra_SerialDenseMatrix& xyze);
-  void CreateTet4(const Epetra_SerialDenseMatrix& xyze);
-  void CreatePyramid5(const Epetra_SerialDenseMatrix& xyze);
-  void CreateWedge6(const Epetra_SerialDenseMatrix& xyze);
+  void CreateHex8(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateTet4(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreatePyramid5(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateWedge6(const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateHex8Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreateTet4Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreatePyramid5Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreateWedge6Sides(const Epetra_SerialDenseMatrix& xyze);
+  void CreateHex8Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateTet4Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreatePyramid5Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateWedge6Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateTri3(const Epetra_SerialDenseMatrix& xyze);
-  void CreateQuad4(const Epetra_SerialDenseMatrix& xyze);
+  void CreateTri3(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateQuad4(const CORE::LINALG::SerialDenseMatrix& xyze);
 
   void CreateHex8(double dx = 0, double dy = 0, double dz = 0);
 
@@ -63,12 +63,13 @@ class SimpleWrapper
 
  private:
   void CreateElement(
-      DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
   void CreateElementSides(
-      DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateSide(DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+  void CreateSide(
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
   int GetId(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
 
@@ -99,7 +100,7 @@ CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDens
 // GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
 // GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
 
-void create_hex8(Epetra_SerialDenseMatrix& xyze, double dx, double dy, double dz);
+void create_hex8(CORE::LINALG::SerialDenseMatrix& xyze, double dx, double dy, double dz);
 
 CORE::GEO::CUT::Element* create_hex8(
     CORE::GEO::CUT::Mesh& mesh, double dx = 0, double dy = 0, double dz = 0);

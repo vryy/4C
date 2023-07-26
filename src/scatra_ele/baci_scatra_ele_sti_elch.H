@@ -34,8 +34,8 @@ namespace DRT
 
       //! element matrix and right-hand side vector contributions arising from thermal source terms
       //! in discrete thermo residuals
-      void CalcMatAndRhsSource(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,                       //!< element right-hand side vector
+      void CalcMatAndRhsSource(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
@@ -43,29 +43,29 @@ namespace DRT
 
       //! provide element matrix with linearizations of source terms in discrete thermo residuals
       //! w.r.t. scatra dofs
-      void CalcMatSourceOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatSourceOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
-      virtual void CalcMatAndRhsJoule(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+      virtual void CalcMatAndRhsJoule(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
           ) = 0;
 
       //! element matrix and right-hand side vector contributions arising from heat of mixing
-      virtual void CalcMatAndRhsMixing(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+      virtual void CalcMatAndRhsMixing(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
           ) = 0;
 
       //! element matrix and right-hand side vector contributions arising from Soret effect
-      virtual void CalcMatAndRhsSoret(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+      virtual void CalcMatAndRhsSoret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
@@ -73,19 +73,19 @@ namespace DRT
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      virtual void CalcMatJouleOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      virtual void CalcMatJouleOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) = 0;
 
       //! provide element matrix with linearizations of heat of mixing term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      virtual void CalcMatMixingOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      virtual void CalcMatMixingOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) = 0;
 
       //! provide element matrix with linearizations of Soret effect term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      virtual void CalcMatSoretOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      virtual void CalcMatSoretOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
           ) = 0;
 

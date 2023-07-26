@@ -172,7 +172,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   const CORE::DRT::UTILS::IntPointsAndWeights<bnsd> bintpoints(
       DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
-  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int biquad = 0; biquad < bintpoints.IP().nquad; ++biquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[biquad];
@@ -183,7 +183,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::CalcJa
   }
 
   // distinguish 2- and 3-D case
-  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
+  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, pnsd);
   if (pnsd == 2)
     CORE::DRT::UTILS::BoundaryGPToParentGP2(
         pqxg, gps, pdistype, bdistype, bele->FaceMasterNumber());

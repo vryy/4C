@@ -137,11 +137,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
           ) override;
 
       //! Evaluate a Neumann boundary condition
@@ -155,8 +157,8 @@ namespace DRT
           DRT::Discretization& discretization,  //!< A reference to the underlying discretization
           DRT::Condition& condition,            //!<  The condition to be evaluated
           std::vector<int>& lm,                 //!< location vector of this element
-          Epetra_SerialDenseVector& elevec1,    //!< vector to be filled by element.
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          CORE::LINALG::SerialDenseVector& elevec1,  //!< vector to be filled by element.
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //!@}
 
@@ -183,11 +185,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
       );
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems

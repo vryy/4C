@@ -17,9 +17,10 @@
  | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo element)
@@ -40,7 +41,7 @@ int DRT::ELEMENTS::Thermo::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, lm, elevec1, elemat1);

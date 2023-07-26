@@ -30,7 +30,7 @@ void test_sud_sc1()
 
   int sidecount = 0;
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.0996942032601194905172548;
     tri3_xyze(1, 0) = 0.6250558755965042179170155;
@@ -48,7 +48,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.09966207970739894561607031;
     tri3_xyze(1, 0) = 0.2499743966603427125505732;
@@ -66,7 +66,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.05505760557321457554502686;
     tri3_xyze(1, 0) = 0.2499679537643077209541076;
@@ -84,7 +84,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.09971545726258679298581455;
     tri3_xyze(1, 0) = 0.1250334532147774624366576;
@@ -102,7 +102,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.09944073071342637848424317;
     tri3_xyze(1, 0) = 0.2499917313447273525817138;
@@ -120,7 +120,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.05505431290674966948728297;
     tri3_xyze(1, 0) = 0.2499933525459366867593758;
@@ -138,7 +138,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.09966207970739894561607031;
     tri3_xyze(1, 0) = 0.2499743966603427125505732;
@@ -156,7 +156,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 0.0994407307135136281361909;
     tri3_xyze(1, 0) = 0.249991731344727269314987;
@@ -174,7 +174,7 @@ void test_sud_sc1()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.07999999999999996003197111;
   hex8_xyze(1, 0) = 0.3076923076923074873434416;

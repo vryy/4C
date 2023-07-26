@@ -139,8 +139,8 @@ DRT::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat,
-    Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
@@ -218,7 +218,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat, Epetra_SerialDenseVector& elevec)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
@@ -259,8 +259,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat,
-    Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
@@ -301,8 +301,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat,
-    Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
@@ -380,7 +380,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
     DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix::Base& elemat1,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat2)
 {
   switch (surfele->Shape())
   {
@@ -466,8 +467,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat,
-    Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat, CORE::LINALG::SerialDenseVector::Base& elevec)
 {
   switch (surfele->Shape())
   {
@@ -510,7 +511,8 @@ template <DRT::Element::DiscretizationType bdistype, DRT::Element::Discretizatio
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
-    Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
+    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
 {
   // initialize pressure value and pressure derivative at boundary
   double pressure = 0.0;
@@ -658,7 +660,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     // derivatives on boundary
     //---------------------------------------------------------------------
     // coordinates of current integration point
-    Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+    CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
     for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
     {
       const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -669,7 +671,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
     }
 
     // distinguish 2- and 3-D case
-    Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+    CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
     if (nsd == 2)
       CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
     else if (nsd == 3)
@@ -1246,7 +1248,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& plm,
-    Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
+    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1316,7 +1319,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1327,7 +1330,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(DRT::ELEMENTS::Flui
   }
 
   // distinguish 2- and 3-D case
-  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
     CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
@@ -1576,7 +1579,8 @@ template <DRT::Element::DiscretizationType bdistype, DRT::Element::Discretizatio
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
-    Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
+    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get time-integration parameters
@@ -1649,7 +1653,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1660,7 +1664,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
   }
 
   // distinguish 2- and 3-D case
-  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
     CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
@@ -1831,7 +1835,8 @@ template <DRT::Element::DiscretizationType bdistype, DRT::Element::Discretizatio
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
-    Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
+    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
 {
   //---------------------------------------------------------------------
   // get condition information
@@ -1983,7 +1988,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -1994,7 +1999,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   }
 
   // distinguish 2- and 3-D case
-  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 2)
     CORE::DRT::UTILS::BoundaryGPToParentGP2(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 3)
@@ -2072,8 +2077,8 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
   // NURBS-specific data for parent and boundary element
   // (currently not activated)
   //---------------------------------------------------------------------
-  /*std::vector<Epetra_SerialDenseVector> mypknots(nsd);
-  std::vector<Epetra_SerialDenseVector> mybknots(bnsd);
+  /*std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd);
+  std::vector<CORE::LINALG::SerialDenseVector> mybknots(bnsd);
   CORE::LINALG::Matrix<piel,1> pweights;
   CORE::LINALG::Matrix<biel,1> bweights;
 
@@ -3760,8 +3765,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype, DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenvalue(
     DRT::FaceElement* surfele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& blm, Epetra_SerialDenseMatrix& elemat_epetra1,
-    Epetra_SerialDenseMatrix& elemat_epetra2)
+    std::vector<int>& blm, CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra1,
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra2)
 {
   //---------------------------------------------------------------------
   // get parent element data
@@ -3825,7 +3830,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
   // derivatives on boundary
   //---------------------------------------------------------------------
   // coordinates of current integration point
-  Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
+  CORE::LINALG::SerialDenseMatrix gps(bintpoints.IP().nquad, bnsd);
   for (int iquad = 0; iquad < bintpoints.IP().nquad; ++iquad)
   {
     const double* gpcoord = (bintpoints.IP().qxg)[iquad];
@@ -3835,7 +3840,7 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::EstimateNitscheTraceMaxEigenva
     }
   }
 
-  Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+  CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
   if (nsd == 3)
     CORE::DRT::UTILS::BoundaryGPToParentGP3(pqxg, gps, pdistype, bdistype, bid);
   else if (nsd == 2)
@@ -4321,7 +4326,8 @@ template <DRT::Element::DiscretizationType bdistype, DRT::Element::Discretizatio
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& plm,
-    Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra)
+    CORE::LINALG::SerialDenseMatrix::Base& elemat_epetra,
+    CORE::LINALG::SerialDenseVector::Base& elevec_epetra)
 {
   //--------------------------------------------------
   // get my parent element
@@ -4820,10 +4826,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       CORE::LINALG::Matrix<nsd, 1> pxsi(true);
 
 
-      Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+      CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
 
       {
-        Epetra_SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
+        CORE::LINALG::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
 
 
         // coordinates of the current integration point
@@ -5118,10 +5124,10 @@ void DRT::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
     CORE::LINALG::Matrix<nsd, 1> pxsi(true);
 
 
-    Epetra_SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
+    CORE::LINALG::SerialDenseMatrix pqxg(pintpoints.IP().nquad, nsd);
 
     {
-      Epetra_SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
+      CORE::LINALG::SerialDenseMatrix gps(intpoints.IP().nquad, bnsd);
 
 
       // coordinates of the current integration point

@@ -21,11 +21,11 @@ DRT::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp, const bool
     : ParObject(), isinit_(false), numnode_(numnode)
 {
   // allocate history memory
-  Fhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp, 9));
+  Fhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
   if (!istet4)
-    invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp, 9));
+    invJhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 9));
   else
-    invJhist_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(ngp, 12));
+    invJhist_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ngp, 12));
 
   // init the deformation gradient history
   CORE::LINALG::Matrix<3, 3> F(true);
@@ -40,8 +40,8 @@ DRT::ELEMENTS::PreStress::PreStress(const DRT::ELEMENTS::PreStress& old)
     : ParObject(old),
       isinit_(old.isinit_),
       numnode_(old.numnode_),
-      Fhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.FHistory()))),
-      invJhist_(Teuchos::rcp(new Epetra_SerialDenseMatrix(old.JHistory())))
+      Fhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.FHistory()))),
+      invJhist_(Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(old.JHistory())))
 {
   return;
 }

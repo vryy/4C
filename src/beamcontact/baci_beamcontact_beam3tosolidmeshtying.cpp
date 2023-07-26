@@ -160,7 +160,8 @@ bool CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Eval
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::UpdateElePos(
-    Epetra_SerialDenseMatrix& newele1pos, std::vector<Epetra_SerialDenseMatrix>& newele2pos)
+    CORE::LINALG::SerialDenseMatrix& newele1pos,
+    std::vector<CORE::LINALG::SerialDenseMatrix>& newele2pos)
 {
   // Beam element positions
   for (int i = 0; i < 3 * numnodalvalues; i++)

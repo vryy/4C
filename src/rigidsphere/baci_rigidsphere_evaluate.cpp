@@ -32,9 +32,10 @@
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   SetParamsInterfacePtr(params);
 
@@ -161,8 +162,8 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
     std::vector<double>& acc, std::vector<double>& vel, std::vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force, Epetra_SerialDenseVector* inertia_force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force)
 {
   // assemble internal force vector if requested
   if (force != NULL)
@@ -199,8 +200,8 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
  03/14|
  *------------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
-    std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseVector* force)
+    std::vector<double>& vel, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   CalcDragForce(params, vel, disp, stiffmatrix, force);
   CalcStochasticForce(params, vel, disp, stiffmatrix, force);
@@ -210,10 +211,10 @@ void DRT::ELEMENTS::Rigidsphere::CalcBrownianForcesAndStiff(Teuchos::ParameterLi
  | compute drag forces and contribution to stiffness matrix  (private) grill 03/14|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
-    const std::vector<double>& vel,         //!< element velocity vector
-    const std::vector<double>& disp,        //!< element displacement vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    const std::vector<double>& vel,                //!< element velocity vector
+    const std::vector<double>& disp,               //!< element displacement vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   double gamma = MyDampingConstant();
 
@@ -385,11 +386,11 @@ void DRT::ELEMENTS::Rigidsphere::GetGeneralizedInterpolationMatrixIncrementsAtXi
  | computes stochastic forces and resulting stiffness (public) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
-    Teuchos::ParameterList& params,         //!< parameter list
-    const std::vector<double>& vel,         //!< element velocity vector
-    const std::vector<double>& disp,        //!< element disp vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    Teuchos::ParameterList& params,                //!< parameter list
+    const std::vector<double>& vel,                //!< element velocity vector
+    const std::vector<double>& disp,               //!< element disp vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficient
   double gamma = MyDampingConstant();

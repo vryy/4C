@@ -149,10 +149,11 @@ void MAT::Maxwell_0d_acinus_Exponential::Setup(DRT::INPUT::LineDefinition* lined
  | Evaluate Exponential material and build system matrix and rhs.       |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_Exponential::Evaluate(Epetra_SerialDenseVector& epnp,
-    Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
-    const double NumOfAcini, const double Vo, double time, double dt)
+void MAT::Maxwell_0d_acinus_Exponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
+    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
+    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
+    const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+    double time, double dt)
 {
   // Set sysmat and rhs to zero
   sysmat.Scale(0.0);

@@ -55,7 +55,7 @@ void DRT::UTILS::ExtractMyValues(
  |  locally extract a subset of values  (public)             henke 12/09|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ExtractMyValues(
-    const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm)
+    const Epetra_Vector& global, CORE::LINALG::SerialDenseVector& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
   local.Size(ldim);
@@ -132,8 +132,9 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 /*----------------------------------------------------------------------*
  | extract local values from global node-based multi vector   gjb 08/08 |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Element* ele, Epetra_SerialDenseVector& local,
-    const Teuchos::RCP<Epetra_MultiVector>& global, const int nsd)
+void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Element* ele,
+    CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
+    const int nsd)
 {
   if (global == Teuchos::null) dserror("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
@@ -162,8 +163,9 @@ void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Element* ele, Epetra_Serial
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Node* node, Epetra_SerialDenseVector& local,
-    const Teuchos::RCP<Epetra_MultiVector>& global, const int nsd)
+void DRT::UTILS::ExtractMyNodeBasedValues(const DRT::Node* node,
+    CORE::LINALG::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
+    const int nsd)
 {
   if (global == Teuchos::null) dserror("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
@@ -249,11 +251,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
   DRT::Element::LocationArray la(dis.NumDofSets());
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop column elements
   for (unsigned i = 0; i < numcolele; ++i)
@@ -656,11 +658,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   DRT::Element::LocationArray la(dis->NumDofSets());
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // get number of elements
   const int numele = dis->NumMyRowElements();

@@ -1903,7 +1903,7 @@ namespace MORTAR
         //*********************************************
         case DRT::Element::nurbs2:
         {
-          Epetra_SerialDenseVector weights(ele.NumNode());
+          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
 
@@ -1917,7 +1917,7 @@ namespace MORTAR
         //*********************************************
         case DRT::Element::nurbs3:
         {
-          Epetra_SerialDenseVector weights(ele.NumNode());
+          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
 
@@ -1963,7 +1963,7 @@ namespace MORTAR
         //*********************************************
         case DRT::Element::nurbs9:
         {
-          Epetra_SerialDenseVector weights(ele.NumNode());
+          CORE::LINALG::SerialDenseVector weights(ele.NumNode());
           for (int inode = 0; inode < ele.NumNode(); ++inode)
             weights(inode) = dynamic_cast<MORTAR::MortarNode*>(ele.Nodes()[inode])->NurbsW();
 

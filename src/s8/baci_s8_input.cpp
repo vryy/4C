@@ -147,8 +147,8 @@ bool DRT::ELEMENTS::Shell8::ReadElement(
   std::fill(alfao.begin(), alfao.end(), 0);
   std::fill(Rtild.begin(), Rtild.end(), 0);
 
-  Epetra_SerialDenseMatrix Dtildinv;
-  Epetra_SerialDenseMatrix Lt;
+  CORE::LINALG::SerialDenseMatrix Dtildinv;
+  CORE::LINALG::SerialDenseMatrix Lt;
   Dtildinv.Shape(nhyb_, nhyb_);
   Lt.Shape(nhyb_, NumNode() * 6);
 

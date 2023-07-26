@@ -125,11 +125,11 @@ namespace DRT
 
       void ElementDeformationGradient(DRT::Discretization& dis);
 
-      void NodalIntegration(Epetra_SerialDenseMatrix* stiff, Epetra_SerialDenseVector* force,
-          std::map<int, DRT::Node*>& adjnode, std::vector<DRT::ELEMENTS::NStet5*>& adjele,
-          std::map<int, std::vector<int>>& adjsubele, std::vector<int>& lm,
-          std::vector<std::vector<std::vector<int>>>& lmlm, const Epetra_Vector& disp,
-          DRT::Discretization& dis, std::vector<double>* nodalstress,
+      void NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+          CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+          std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
+          std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
+          const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
           std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
           const INPAR::STR::StrainType iostrain);
 
@@ -350,9 +350,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -370,8 +371,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      protected:
@@ -433,7 +434,7 @@ namespace DRT
       void UpdateJacobianMapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
-      void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
+      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
       //---------------------------------------------- quantities related to subtets

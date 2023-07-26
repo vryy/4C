@@ -40,9 +40,11 @@ namespace DRT
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      protected:
       //! protected constructor for singletons
@@ -61,10 +63,11 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate contributions to element matrix and residual (inside loop over all scalars)
-      virtual void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                         //!< element rhs to calculate+
-          const int k,                                            //!< index of current scalar
-          const double fac,                                       //!< domain-integration factor
+      virtual void CalcMatAndRhs(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -79,19 +82,19 @@ namespace DRT
 
       //! calculate contributions to element matrix and residual (outside loop over all scalars)
       virtual void CalcMatAndRhsOutsideScalarLoop(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-          const double fac,                //!< domain-integration factor
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
+          const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
       );
 
       //! compute additional flux terms across Dirichlet boundaries
       virtual void CorrectionForFluxAcrossDC(
-          DRT::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,           //!< location vector
-          Epetra_SerialDenseMatrix& emat,       //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs        //!< element rhs to calculate
+          DRT::Discretization& discretization,    //!< discretization
+          const std::vector<int>& lm,             //!< location vector
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       ){};
 
       /*========================================================================*/
@@ -113,8 +116,8 @@ namespace DRT
 
       //! CalcMat: linearizations of diffusion term and Ohmic overpotential w.r.t. structural
       //! displacements
-      void CalcDiffODMesh(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          const int k,                                     //!< index of current scalar
+      void CalcDiffODMesh(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          const int k,                                            //!< index of current scalar
           const int ndofpernodemesh,  //!< number of structural degrees of freedom per node
           const double diffcoeff,     //!< diffusion coefficient
           const double fac,           //!< domain-integration factor
@@ -128,15 +131,17 @@ namespace DRT
       );
 
       //! CalcMat: linearization of diffusion coefficient in diffusion term
-      void CalcMatDiffCoeffLin(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      void CalcMatDiffCoeffLin(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,  //!< gradient of concentration at GP
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
       //! CalcMat: potential equation div i with inserted current - ohmic overpotential
-      void CalcMatPotEquDiviOhm(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
+      void CalcMatPotEquDiviOhm(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double invf,        //!< 1/F
           const CORE::LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
@@ -152,12 +157,12 @@ namespace DRT
        * @param[in] rhsfac    time-integration factor for rhs times domain-integration factor
        * @param[in] vdiv      divergence of velocity
        */
-      void CalcRhsConservativePartOfConvectiveTerm(
-          Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double vdiv);
+      void CalcRhsConservativePartOfConvectiveTerm(CORE::LINALG::SerialDenseVector& erhs,
+          const int k, const double rhsfac, const double vdiv);
 
       //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
       virtual void CalcRhsPotEquDiviOhm(
-          Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double invf,    //!< 1./F
           const CORE::LINALG::Matrix<nsd_, 1>& gradpot,  //!< gradient of potential at GP
@@ -199,7 +204,8 @@ namespace DRT
           const DRT::Element* const& ele,             //!< the element we are dealing with
           const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la,            //!< location array
-          Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+          CORE::LINALG::SerialDenseVector&
+              scalars  //!< result vector for scalar integrals to be computed
       );
 
       //! calculate mean concentration of micro discretization
@@ -209,7 +215,7 @@ namespace DRT
       //! \param conc             result vector for scalar integrals to be computed
       virtual void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& conc);
+          CORE::LINALG::SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
       void CalculateFlux(CORE::LINALG::Matrix<nsd_, 1>& q,  //!< flux of species k
@@ -220,7 +226,7 @@ namespace DRT
       //! calculate error of numerical solution with respect to analytical solution
       virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
           Teuchos::ParameterList& params,                                     //!< parameter list
-          Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
       );
 
       //! set internal variables for electrodes

@@ -139,7 +139,7 @@ void EXODUS::ValidateElementJacobian(
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
-  Epetra_SerialDenseMatrix deriv(NSD, iel);
+  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->GetEleConn();
@@ -226,7 +226,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
   const int iel = eb->GetEleNodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
-  Epetra_SerialDenseMatrix deriv(NSD, iel);
+  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   int invalids = 0;
@@ -251,7 +251,7 @@ int EXODUS::ValidateElementJacobian_fullgp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const Mesh& mymesh,
-    const Epetra_SerialDenseMatrix& deriv)
+    const CORE::LINALG::SerialDenseMatrix& deriv)
 {
   const int iel = deriv.N();
   const int NSD = deriv.M();
@@ -352,7 +352,7 @@ int EXODUS::EleSaneSign(
   }
   // shape functions derivatives
   const int NSD = 3;
-  Epetra_SerialDenseMatrix deriv(NSD, iel);
+  CORE::LINALG::SerialDenseMatrix deriv(NSD, iel);
 
   CORE::LINALG::SerialDenseMatrix xyze(deriv.M(), iel);
   for (int inode = 0; inode < iel; inode++)

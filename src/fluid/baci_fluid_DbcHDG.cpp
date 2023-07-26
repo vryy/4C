@@ -194,8 +194,8 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
   // do we have faces?
   if (discret.NumMyRowFaces() > 0)
   {
-    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag)
@@ -268,7 +268,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
             const DRT::Element::DiscretizationType distype = ele->Shape();
 
             // evaluate pressure average     //TODO als make it valid for every discretization type
-            Epetra_SerialDenseVector elevec = Epetra_SerialDenseVector(1);
+            CORE::LINALG::SerialDenseVector elevec = CORE::LINALG::SerialDenseVector(1);
             if (distype == DRT::Element::DiscretizationType::quad4)
               DRT::ELEMENTS::FluidEleCalcHDG<DRT::Element::DiscretizationType::quad4>::Instance()
                   ->EvaluatePressureAverage(fluidele, params, mat, elevec);

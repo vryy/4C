@@ -14,10 +14,10 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -583,7 +583,8 @@ namespace CONTACT
     rotation matrix R. Note that theta is given in radiant.
 
     */
-    void TransformAngleToTriad(Epetra_SerialDenseVector& theta, Epetra_SerialDenseMatrix& R);
+    void TransformAngleToTriad(
+        CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R);
 
     /*!
     \brief Compute spin
@@ -591,7 +592,8 @@ namespace CONTACT
     Compute spin matrix according to Crisfield Vol. 2, equation (16.8)
 
     */
-    void ComputeSpin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle);
+    void ComputeSpin(
+        CORE::LINALG::SerialDenseMatrix& spin, CORE::LINALG::SerialDenseVector& rotationangle);
 
     /*!
     \brief Shift map of displacement vector
@@ -645,41 +647,41 @@ namespace CONTACT
     \brief Compute coordinates for GMSH-Output for two-noded-elements
 
     */
-    void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord,
+    void GMSH_2_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& coord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for three-noded-elements
 
     */
-    void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
+    void GMSH_3_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for four-noded-elements
 
     */
-    void GMSH_4_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
+    void GMSH_4_noded(const int& n, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output for N-noded-elements
     */
-    void GMSH_N_noded(const int& n, int& n_axial, const Epetra_SerialDenseMatrix& allcoord,
+    void GMSH_N_noded(const int& n, int& n_axial, const CORE::LINALG::SerialDenseMatrix& allcoord,
         const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Line-Output for N-noded-elements
     */
     void GMSH_N_nodedLine(const int& n, const int& n_axial,
-        const Epetra_SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+        const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
         std::stringstream& gmshfilecontent);
 
     /*!
     \brief Compute coordinates for GMSH-Output of rigid sphere
 
     */
-    void GMSH_sphere(const Epetra_SerialDenseMatrix& coord, const DRT::Element* thisele,
+    void GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
         std::stringstream& gmshfilecontent);
 
     /*!

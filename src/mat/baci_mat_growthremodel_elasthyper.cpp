@@ -944,10 +944,10 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMa
   static std::vector<double> E(nr_rf_tot_, 0.0);
   static Epetra_SerialDenseSolver solver;
   // residual vector of assembled system of equation
-  static Epetra_SerialDenseMatrix R(2 * nr_rf_tot_, 1);
+  static CORE::LINALG::SerialDenseMatrix R(2 * nr_rf_tot_, 1);
   for (unsigned i = 0; i < 2 * nr_rf_tot_; ++i) R(i, 0) = 1.0;
   // solution vector of assembled system of equation
-  static Epetra_SerialDenseMatrix dsol(2 * nr_rf_tot_, 1);
+  static CORE::LINALG::SerialDenseMatrix dsol(2 * nr_rf_tot_, 1);
 
   int nr_grf_proc = 0;
   int iter = 0;

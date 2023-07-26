@@ -92,20 +92,20 @@ bool DRT::ELEMENTS::Wall1::ReadElement(
     else
     {
       // EAS enhanced deformation gradient parameters
-      Epetra_SerialDenseMatrix alpha(
+      CORE::LINALG::SerialDenseMatrix alpha(
           Wall1::neas_, 1);  // if you change '4' here, then do it for alphao as well
-      Epetra_SerialDenseMatrix alphao(Wall1::neas_, 1);
+      CORE::LINALG::SerialDenseMatrix alphao(Wall1::neas_, 1);
 
       // EAS portion of internal forces, also called enhacement vector s or Rtilde
-      Epetra_SerialDenseVector feas(Wall1::neas_);
+      CORE::LINALG::SerialDenseVector feas(Wall1::neas_);
       // EAS matrix K_{alpha alpha}, also called Dtilde
-      Epetra_SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);
+      CORE::LINALG::SerialDenseMatrix invKaa(Wall1::neas_, Wall1::neas_);
       // EAS matrix K_{d alpha}
-      Epetra_SerialDenseMatrix Kda(2 * NumNode(), Wall1::neas_);
+      CORE::LINALG::SerialDenseMatrix Kda(2 * NumNode(), Wall1::neas_);
       // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
-      Epetra_SerialDenseMatrix Kad(Wall1::neas_, 2 * NumNode());
+      CORE::LINALG::SerialDenseMatrix Kad(Wall1::neas_, 2 * NumNode());
       // EAS increment over last Newton step
-      Epetra_SerialDenseMatrix eas_inc(Wall1::neas_, 1);
+      CORE::LINALG::SerialDenseMatrix eas_inc(Wall1::neas_, 1);
 
       // save EAS data into element container easdata_
       data_.Add("alpha", alpha);

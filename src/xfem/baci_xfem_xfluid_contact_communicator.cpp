@@ -188,7 +188,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   static std::vector<double> disp;
   static std::vector<double> ivel;
   DRT::Element* fluidele = NULL;
-  Epetra_SerialDenseMatrix ele_xyze;
+  CORE::LINALG::SerialDenseMatrix ele_xyze;
   double pres_m;
   static CORE::LINALG::Matrix<3, 1> vel_m;
   static CORE::LINALG::Matrix<3, 1> vel_s;
@@ -299,10 +299,10 @@ bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,      // Solid Surface
 void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
     const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
     const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
-    Epetra_SerialDenseMatrix& ele_xyze, std::vector<double>& velpres, std::vector<double>& disp,
-    std::vector<double>& ivel, double& pres_m, CORE::LINALG::Matrix<3, 1>& vel_m,
-    CORE::LINALG::Matrix<3, 1>& vel_s, CORE::LINALG::Matrix<3, 3>& vderxy_m,
-    CORE::LINALG::Matrix<3, 1>& velpf_s)
+    CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
+    std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
+    CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
+    CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s)
 {
   fluidele = fluiddis_->gElement(fluidele_id);
   DRT::ELEMENTS::Fluid* ffluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(fluidele);
@@ -445,7 +445,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
 }
 
 void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
-    CORE::GEO::CUT::VolumeCell* volumecell, Epetra_SerialDenseMatrix& ele_xyze,
+    CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
     const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
     const CORE::LINALG::Matrix<3, 1>& vel_m)
 {
@@ -677,7 +677,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
     const int numnodes =
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
 
-    Epetra_SerialDenseMatrix xyze_m;
+    CORE::LINALG::SerialDenseMatrix xyze_m;
     CORE::LINALG::Matrix<numnodes, 1> funct(false);
 
     sidehandle->Coordinates(xyze_m);
@@ -985,7 +985,7 @@ CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINA
     dserror("Couldn't get Sidehandle for side %f", newSide->Id());
   }
 
-  Epetra_SerialDenseMatrix xyzs;
+  CORE::LINALG::SerialDenseMatrix xyzs;
   sidehandle->Coordinates(xyzs);
   if (sidehandle->Shape() == DRT::Element::quad4)
   {
@@ -1108,8 +1108,8 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
         }
         if (common_nodes == -1) continue;  // we assigned already a side with the same id
 
-        Epetra_SerialDenseMatrix xyze1;
-        Epetra_SerialDenseMatrix xyze2;
+        CORE::LINALG::SerialDenseMatrix xyze1;
+        CORE::LINALG::SerialDenseMatrix xyze2;
         CORE::GEO::CUT::SideHandle* sh1 = cutwizard_->GetCutSide(side->Id());
         CORE::GEO::CUT::SideHandle* sh2 = cutwizard_->GetCutSide(s->Id());
 
@@ -1203,14 +1203,14 @@ void XFEM::XFluid_Contact_Comm::RegisterSideProc(int sid)
 
 
 void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
-    int sid, Epetra_SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
+    int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
 {
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
   if (!sh) dserror("Couldn't get SideHandle!");
   if (sh->Shape() != DRT::Element::quad4) dserror("Not a quad4!");
   const int numnodes_sh =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-  Epetra_SerialDenseMatrix xquad;
+  CORE::LINALG::SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
   CORE::LINALG::Matrix<2, numnodes_sh> deriv(false);
   CORE::LINALG::Matrix<2, 2> metrictensor(false);
@@ -1221,7 +1221,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   sh->CollectSides(subsides);
   std::vector<Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell>> bcs;
 
-  Epetra_SerialDenseMatrix tcoords(3, 3);
+  CORE::LINALG::SerialDenseMatrix tcoords(3, 3);
   for (CORE::GEO::CUT::plain_side_set::iterator sit = subsides.begin(); sit != subsides.end();
        ++sit)
   {

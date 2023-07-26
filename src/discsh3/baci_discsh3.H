@@ -293,22 +293,22 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
       int EvaluateCurvatureEnergy(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3);
 
       virtual int HowManyRandomNumbersINeed();
 
       virtual int HowManyRandomNumbersPerNode();
 
-      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
+      void EvaluatePTC(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1);
       /*!
       \brief Evaluate a Neumann boundary condition
 
@@ -325,7 +325,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
       /*!
@@ -363,9 +364,9 @@ namespace DRT
       /*!
       \brief Get reference to directors
       */
-      const Epetra_SerialDenseMatrix* GetDirectors()
+      const CORE::LINALG::SerialDenseMatrix* GetDirectors()
       {
-        return data_.Get<Epetra_SerialDenseMatrix>("a3ref");
+        return data_.Get<CORE::LINALG::SerialDenseMatrix>("a3ref");
       }
 
       //@}
@@ -451,53 +452,53 @@ namespace DRT
       //  evaluate the element (private)
       void sh3_nlnstiffmass(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, const std::vector<double>& vel, const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       inline void CalcBrownian(Teuchos::ParameterList& params,
-          const std::vector<double>& vel,         //!< element velocity vector
-          const std::vector<double>& disp,        //!< element displacement vector
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& vel,                //!< element velocity vector
+          const std::vector<double>& disp,               //!< element displacement vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force);
 
       //  evaluate the stiffness contribution from Area constraint (private)
       void CGConstrtStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          const std::vector<double>& vel, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force, const int NumGlobalNodes);
+          const std::vector<double>& vel, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force, const int NumGlobalNodes);
 
       //  evaluate the stiffness contribution from Area constraint (private)
       void CGGlobalConstrtStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          const std::vector<double>& vel, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force, const int NumGlobalNodes);
+          const std::vector<double>& vel, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force, const int NumGlobalNodes);
 
       //  evaluate the stiffness contribution from Area constraint (private)
       void BaryConstrtStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          const std::vector<double>& vel, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force, const int NumGlobalNodes);
+          const std::vector<double>& vel, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force, const int NumGlobalNodes);
 
       //  evaluate the stiffness contribution from Area constraint (private)
       void AreaConstrtStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          const std::vector<double>& vel, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& vel, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //  evaluate the stiffness contribution from Area constraint (private)
       void AreaConstrtQuadStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          const std::vector<double>& vel, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& vel, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //  evaluate the stiffness contribution from vol constraint (private)
       void VolConstrtStiffmass(Teuchos::ParameterList& params, const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force);
 
       //  evaluate the stiffness contribution from vol constraint (private)
       void VolConstrtGlobalStiff(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force);
 
       //  evaluate the stiffness contribution from vol constraint (private)
       void AreaConstrtGlobalStiff(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force);
 
       /*!
       \brief Submethod to compute interfacial area and its first and second
@@ -505,10 +506,10 @@ namespace DRT
       */
       void ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                           ///< number of nodes
-          const int ndof,                                ///< number of degrees of freedom
-          double& A,                                     ///< area
-          Teuchos::RCP<Epetra_SerialDenseVector> Adiff,  ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2  ///< second derivative
+          const int ndof,                                       ///< number of degrees of freedom
+          double& A,                                            ///< area
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,  ///< first derivative
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2  ///< second derivative
       );
 
       void ComputeAreaRef(
@@ -524,7 +525,7 @@ namespace DRT
       \param deriv  (in)  : derivatives of shape functions
       */
       void SurfaceIntegration(double& detA, std::vector<double>& normal,
-          const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv);
+          const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
 
       // calculate behavior function arising from area constraint of element (private)
@@ -534,14 +535,14 @@ namespace DRT
 
       // computes translational damping forces and stiffness (private)
       inline void MyDampingForces(Teuchos::ParameterList& params, const std::vector<double>& vel,
-          const std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
 
       // computes translational damping forces and stiffness (private)
       inline void MyTranslationalDamping(Teuchos::ParameterList& params,
           const std::vector<double>& vel, const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force);
 
 
       // computes translational damping forces  (private)
@@ -550,8 +551,8 @@ namespace DRT
                                             //!< nodal positions and nodal tangents of an element
           const std::vector<double>& disp,  //!< vector containing change in nodal positions and
                                             //!< nodal tangents of an element w.r.t. inital config.
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
 
       void MyDampingForcesVol(Teuchos::ParameterList& params,  //!< parameter list
@@ -559,14 +560,14 @@ namespace DRT
                                             //!< nodal positions and nodal tangents of an element
           const std::vector<double>& disp,  //!< vector containing change in nodal positions and
                                             //!< nodal tangents of an element w.r.t. inital config.
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
       inline void MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
           const std::vector<double>& vel,                             //!< element velocity vector
           const std::vector<double>& disp,                            //!< element disp vector
-          Epetra_SerialDenseMatrix* stiffmatrix,                      //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);  //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,               //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force);  //!< element internal force vector
 
 
       // calculate behavior function arising from area constraint of element (private)
@@ -713,7 +714,7 @@ namespace DRT
 
       //! lump mass matrix (bborn 07/08)
       void sh3_lumpmass(const std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* massmatrix);  //!< element mass matrix
+          CORE::LINALG::SerialDenseMatrix* massmatrix);  //!< element mass matrix
 
       FAD CalcTheta(
           CORE::LINALG::Matrix<1, 3, FAD>& vector1, CORE::LINALG::Matrix<1, 3, FAD>& vector2);
@@ -961,9 +962,9 @@ namespace DRT
       void SortPrimaryDOFs(DRT::Element& master, DRT::Element& neighbour, std::vector<FAD>& x_FAD,
           std::vector<FAD>& x_FAD_master, std::vector<FAD>& x_FAD_neighbour);
 
-      void ReassembleMATBlock(const int row_block,  ///< row block
-          const int col_block,                      ///< column block
-          Epetra_SerialDenseMatrix& mat_block,      ///< matrix block
+      void ReassembleMATBlock(const int row_block,     ///< row block
+          const int col_block,                         ///< column block
+          CORE::LINALG::SerialDenseMatrix& mat_block,  ///< matrix block
           CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
               elematrix_mm,  ///< element matrix master-master block
           CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
@@ -979,7 +980,7 @@ namespace DRT
       );
 
       void ReassembleRHSBlock(const int row_block,               ///< row block
-          Epetra_SerialDenseVector& rhs_block,                   ///< rhs block
+          CORE::LINALG::SerialDenseVector& rhs_block,            ///< rhs block
           CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
           CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
           std::vector<int>&
@@ -1048,11 +1049,12 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //    evaluate implementation for internal surface stabilization
       virtual int EvaluateEdges(const Teuchos::ParameterList& params,
@@ -1066,8 +1068,8 @@ namespace DRT
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-          std::vector<Epetra_SerialDenseVector>& elevec_blocks   ///< element vector blocks
+          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
       );
 
 

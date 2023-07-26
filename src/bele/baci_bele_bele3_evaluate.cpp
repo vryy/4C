@@ -27,9 +27,10 @@
  |  evaluate the element (public)                            gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // start with "none"
   DRT::ELEMENTS::Bele3::ActionType act = Bele3::none;
@@ -113,9 +114,11 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       SpatialConfiguration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
-      Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1 = Teuchos::rcp(new Epetra_SerialDenseVector);
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1 =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
       // second partial derivatives
-      Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2 =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // get projection method
       Teuchos::RCP<DRT::Condition> condition =
@@ -165,7 +168,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -239,8 +242,9 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& xc,
-    const int numnode, const int ndof, double& V, Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
+    const int numnode, const int ndof, double& V,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
   const int numdim = 3;

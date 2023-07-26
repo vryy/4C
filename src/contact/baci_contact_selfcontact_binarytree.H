@@ -62,9 +62,9 @@ namespace CONTACT
     */
     SelfBinaryTreeNode(SelfBinaryTreeNodeType type, DRT::Discretization& discret,
         Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
-        const Epetra_SerialDenseMatrix& dopnormals, const Epetra_SerialDenseMatrix& samplevectors,
-        const int& kdop, const int& dim, const int& nvectors, const int layer,
-        const bool nonsmoothsurf,
+        const CORE::LINALG::SerialDenseMatrix& dopnormals,
+        const CORE::LINALG::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
+        const int& nvectors, const int layer, const bool nonsmoothsurf,
         std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes);
 
     /*!
@@ -239,7 +239,7 @@ namespace CONTACT
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjacentTreenodes_;
 
     //! reference to sample vectors
-    const Epetra_SerialDenseMatrix& samplevectors_;
+    const CORE::LINALG::SerialDenseMatrix& samplevectors_;
 
     //! reference to number of sample vectors
     const int& nvectors_;
@@ -605,7 +605,7 @@ namespace CONTACT
     \brief Get matrix of sample vectors
 
     */
-    const Epetra_SerialDenseMatrix& SampleVectors() const { return samplevectors_; }
+    const CORE::LINALG::SerialDenseMatrix& SampleVectors() const { return samplevectors_; }
 
     /*!
     \brief Return reference to storage scheme of all tree nodes
@@ -833,7 +833,7 @@ namespace CONTACT
 
     \todo What are sample vectors?
     */
-    Epetra_SerialDenseMatrix samplevectors_;
+    CORE::LINALG::SerialDenseMatrix samplevectors_;
 
     //! root treenodes
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> roots_;

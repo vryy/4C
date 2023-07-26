@@ -26,9 +26,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -212,8 +214,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -226,8 +228,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -295,18 +297,18 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soshw6_easpoisthick>
-      M;                                          // EAS matrix M at current GP, fixed for sosh8
-  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                   // EAS matrix Kda
-  double detJ0;                                   // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = nullptr;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = nullptr;     // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
+      M;                                 // EAS matrix M at current GP, fixed for sosh8
+  CORE::LINALG::SerialDenseVector feas;  // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix Kaa;   // EAS matrix Kaa
+  CORE::LINALG::SerialDenseMatrix Kda;   // EAS matrix Kda
+  double detJ0;                          // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -321,18 +323,18 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(NUMDOF_WEG6);
+    CORE::LINALG::SerialDenseVector res_d(NUMDOF_WEG6);
     for (int i = 0; i < NUMDOF_WEG6; ++i)
     {
       res_d(i) = residual[i];
@@ -981,21 +983,21 @@ void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_easinit()
 {
-  // all parameters are stored in Epetra_SerialDenseMatrix as only
+  // all parameters are stored in CORE::LINALG::SerialDenseMatrix as only
   // those can be added to DRT::Container
 
   // EAS enhanced strain parameters at currently investigated load/time step
-  Epetra_SerialDenseMatrix alpha(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
-  Epetra_SerialDenseMatrix alphao(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alphao(neas_, 1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
-  Epetra_SerialDenseMatrix feas(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  Epetra_SerialDenseMatrix invKaa(neas_, neas_);
+  CORE::LINALG::SerialDenseMatrix invKaa(neas_, neas_);
   // EAS matrix K_{d alpha}
-  Epetra_SerialDenseMatrix Kda(neas_, NUMDOF_WEG6);
+  CORE::LINALG::SerialDenseMatrix Kda(neas_, NUMDOF_WEG6);
   // EAS increment
-  Epetra_SerialDenseMatrix eas_inc(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
 
   // save EAS data into element container
   data_.Add("alpha", alpha);
@@ -1012,8 +1014,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
-    std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
-    double& detJ0,                                 // det of Jacobian at origin
+    std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+    double& detJ0,                                        // det of Jacobian at origin
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
         T0invT,                                                   // maps M(origin) local to global
     const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe)  // material element coords
@@ -1036,7 +1038,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   soshw6_evaluateT(jac0, T0invT);
 
   // build EAS interpolation matrix M, evaluated at the GPs of soshw6
-  static std::vector<Epetra_SerialDenseMatrix> M(NUMGPT_WEG6);
+  static std::vector<CORE::LINALG::SerialDenseMatrix> M(NUMGPT_WEG6);
   static bool M_eval;
 
   if (M_eval == true)
@@ -1292,11 +1294,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  auto* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-  auto* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
-  auto* eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
-  auto* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
+  auto* eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())

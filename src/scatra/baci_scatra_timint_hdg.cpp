@@ -309,9 +309,9 @@ namespace
     dis.SetState(0, "phiaf", traceValues);
     dis.SetState(nds_intvar_, "intphinp", interiorValues);
     DRT::Element::LocationArray la(ndofs);
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
 
     phi->PutScalar(0.);
@@ -520,8 +520,8 @@ void SCATRA::TimIntHDG::SetInitialField(
       discret_->SetState(nds_intvar_, "intphin", intphin_);
       discret_->SetState(nds_intvar_, "intphinp", intphinp_);
 
-      Epetra_SerialDenseMatrix dummyMat;
-      Epetra_SerialDenseVector updateVec1, updateVec2, dummyVec;
+      CORE::LINALG::SerialDenseMatrix dummyMat;
+      CORE::LINALG::SerialDenseVector updateVec1, updateVec2, dummyVec;
       DRT::Element::LocationArray la(discret_->NumDofSets());
 
       const Epetra_Map *dofrowmap = discret_->DofRowMap();
@@ -647,9 +647,9 @@ void SCATRA::TimIntHDG::UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> upda
   discret_->SetState(nds_intvar_, "intphin", intphin_);
   discret_->SetState(nds_intvar_, "intphinp", intphinp_);
 
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
-  Epetra_SerialDenseVector updateVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseVector updateVec;
   DRT::Element::LocationArray la(discret_->NumDofSets());
   const Epetra_Map *intdofrowmap = discret_->DofRowMap(nds_intvar_);
 
@@ -872,7 +872,7 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
     case INPAR::SCATRA::calcerror_byfunction:
     case INPAR::SCATRA::calcerror_spherediffusion:
     {
-      Teuchos::RCP<Epetra_SerialDenseVector> errors = ComputeError();
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = ComputeError();
       if (errors == Teuchos::null)
         dserror("It was not possible to compute error. Check the error function number.");
 
@@ -937,7 +937,7 @@ void SCATRA::TimIntHDG::EvaluateErrorComparedToAnalyticalSol()
 /*----------------------------------------------------------------------------------*
  | compute relative error with reference to analytical solution    berardocco 08/20 |
  *----------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
+Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
 {
   // If we are here it means that we either arrived at the end and we are checking the results or
   // that we specified that we want to compute the error. In any case, if the error function was not
@@ -961,8 +961,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::TimIntHDG::ComputeError() const
   // The error is computed for the transported scalar and its gradient. Notice that so far only
   // the L2 error is computed, feel free to extend the calculations to any error measure needed
   unsigned int NumErrorEntries = 4;
-  Teuchos::RCP<Epetra_SerialDenseVector> errors =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumErrorEntries));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumErrorEntries));
 
   discret_->EvaluateScalars(eleparams, errors);
   discret_->ClearState();
@@ -1086,8 +1086,8 @@ void SCATRA::TimIntHDG::AdaptDegree()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::calc_padaptivity, eleparams);
 
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
 
   discret_->SetState("phiaf", phinp_);
   discret_->SetState(nds_intvar_, "intphinp", intphinp_);
@@ -1289,8 +1289,8 @@ void SCATRA::TimIntHDG::AdaptVariableVector(Teuchos::RCP<Epetra_Vector> phi_new,
   eleparams.set<Teuchos::RCP<Epetra_Vector>>("phi", phi_old);
   eleparams.set<Teuchos::RCP<Epetra_Vector>>("intphi", intphi_old);
 
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector intphi_ele, phi_ele, dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector intphi_ele, phi_ele, dummyVec;
 
   // create location array for new and old dofsets (old ones are already filled and only copied to
   // the location array)

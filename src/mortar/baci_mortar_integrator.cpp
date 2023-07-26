@@ -1252,10 +1252,10 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
  |  for curved interface (Paper by Puso/Wohlmuth) from given local      |
  |  coordinates sxia to sxib. The corresponding master side local       |
  |  element coordinates given by mxia and mxib                          |
- |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
+ |  Output is an linalg_serialdensematrix.Holding the int. values       |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-Teuchos::RCP<Epetra_SerialDenseMatrix>
+Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>
 MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::MortarElement& sele,
     double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib)
 {
@@ -1279,8 +1279,8 @@ MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(MORTAR::Mortar
   int nrowdof = ndim_;
   int ncol = mele.NumNode();
   int ncoldof = ndim_;
-  Teuchos::RCP<Epetra_SerialDenseMatrix> mmodseg =
-      Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow * nrowdof, ncol * ncoldof));
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mmodseg =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(nrow * nrowdof, ncol * ncoldof));
 
   // create empty vectors for shape fct. evaluation
   CORE::LINALG::SerialDenseVector sval(nrow);

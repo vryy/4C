@@ -74,14 +74,14 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
-      inline Epetra_SerialDenseMatrix& FHistory() const { return *Fhist_; }
+      inline CORE::LINALG::SerialDenseMatrix& FHistory() const { return *Fhist_; }
 
       /// get history of of reference configuration (inverse of Jacobian)
-      inline Epetra_SerialDenseMatrix& JHistory() const { return *invJhist_; }
+      inline CORE::LINALG::SerialDenseMatrix& JHistory() const { return *invJhist_; }
 
       /// put a matrix to storage
       inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<3, 3>& Mat,
-          Epetra_SerialDenseMatrix& gpMat) const
+          CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
@@ -89,7 +89,7 @@ namespace DRT
 
       /// put a matrix to storage
       inline void MatrixtoStorage(const int gp, const CORE::LINALG::Matrix<4, 3>& Mat,
-          Epetra_SerialDenseMatrix& gpMat) const
+          CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) gpMat(gp, i) = Mat.A()[i];
         return;
@@ -97,7 +97,7 @@ namespace DRT
 
       /// get matrix from storage
       inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<3, 3>& Mat,
-          const Epetra_SerialDenseMatrix& gpMat) const
+          const CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
@@ -105,7 +105,7 @@ namespace DRT
 
       /// get matrix from storage
       inline void StoragetoMatrix(const int gp, CORE::LINALG::Matrix<4, 3>& Mat,
-          const Epetra_SerialDenseMatrix& gpMat) const
+          const CORE::LINALG::SerialDenseMatrix& gpMat) const
       {
         for (int i = 0; i < gpMat.N(); ++i) Mat.A()[i] = gpMat(gp, i);
         return;
@@ -122,10 +122,10 @@ namespace DRT
       int numnode_;
 
       /// history of deformation gradient
-      Teuchos::RCP<Epetra_SerialDenseMatrix> Fhist_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Fhist_;
 
       /// updated Lagrange inverse of Jacobian
-      Teuchos::RCP<Epetra_SerialDenseMatrix> invJhist_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> invJhist_;
 
       /// get number of gaussian points considered
       inline int NGP() const { return Fhist_->M(); }

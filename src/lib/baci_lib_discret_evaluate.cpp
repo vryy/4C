@@ -20,8 +20,8 @@
 #include "baci_linalg_sparsematrix.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_function_of_time.H"
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -44,9 +44,9 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
 {
   // Call the Evaluate method for the specific element
   Evaluate(params, strategy,
-      [&](DRT::Element& ele, Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+      [&](DRT::Element& ele, Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
       {
         const int err =
             ele.Evaluate(params, *this, la, strategy.Elematrix1(), strategy.Elematrix2(),
@@ -58,9 +58,10 @@ void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::Assemble
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
-    const std::function<void(DRT::Element&, Element::LocationArray&, Epetra_SerialDenseMatrix&,
-        Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&,
-        Epetra_SerialDenseVector&)>& element_action)
+    const std::function<void(DRT::Element&, Element::LocationArray&,
+        CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+        CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
+        CORE::LINALG::SerialDenseVector&)>& element_action)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate");
 
@@ -133,11 +134,11 @@ void DRT::Discretization::Evaluate(const std::function<void(DRT::Element&)>& ele
 void DRT::Discretization::Evaluate(Teuchos::ParameterList& params)
 {
   // define empty element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   Element::LocationArray la(dofsets_.size());
 
@@ -233,8 +234,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
         name == (std::string) "VolumeNeumann")
     {
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond->Geometry();
-      Epetra_SerialDenseVector elevector;
-      Epetra_SerialDenseMatrix elematrix;
+      CORE::LINALG::SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseMatrix elematrix;
       for (const auto& [_, ele] : geom)
       {
         // get element location vector, dirichlet flags and ownerships
@@ -275,8 +276,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
     for (const int nodeid : *nodeids)
     {
       // create matrices for fext and fextlin
-      Epetra_SerialDenseVector elevector;
-      Epetra_SerialDenseMatrix elematrix;
+      CORE::LINALG::SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseMatrix elematrix;
 
       std::vector<int> lm;
       std::vector<int> lmowner;
@@ -458,7 +459,7 @@ void DRT::Discretization::EvaluateCondition(Teuchos::ParameterList& params,
  |  evaluate/assemble scalars across elements (public)       bborn 08/08|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateScalars(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_SerialDenseVector> scalars)
+    Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -467,14 +468,14 @@ void DRT::Discretization::EvaluateScalars(
   const int numscalars = scalars->Length();
   if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
   // intermediate sum of each scalar on each processor
-  Epetra_SerialDenseVector cpuscalars(numscalars);
+  CORE::LINALG::SerialDenseVector cpuscalars(numscalars);
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop over _row_ elements
   for (const auto& actele : MyRowElementRange())
@@ -484,7 +485,7 @@ void DRT::Discretization::EvaluateScalars(
     actele->LocationVector(*this, la, false);
 
     // define element vector
-    Epetra_SerialDenseVector elescalars(numscalars);
+    CORE::LINALG::SerialDenseVector elescalars(numscalars);
 
     // call the element evaluate method
     {
@@ -507,7 +508,7 @@ void DRT::Discretization::EvaluateScalars(
  | evaluate/assemble scalars across conditioned elements (public)   fang 02/15 |
  *-----------------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (in) parameter list
-    Teuchos::RCP<Epetra_SerialDenseVector>
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>
         scalars,                    //! (out) result vector for scalar quantities to be computed
     const std::string& condstring,  //! (in) name of condition to be evaluated
     const int condid                //! (in) condition ID (optional)
@@ -525,13 +526,13 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
     dserror("Result vector for EvaluateScalars routine must have positive length!");
 
   // initialize vector for intermediate results of scalar quantities on single processor
-  Epetra_SerialDenseVector cpuscalars(numscalars);
+  CORE::LINALG::SerialDenseVector cpuscalars(numscalars);
 
   // define empty dummy element matrices and residuals
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop over all conditions on discretization
   for (const auto& [name, condition] : condition_)
@@ -559,7 +560,7 @@ void DRT::Discretization::EvaluateScalars(Teuchos::ParameterList& params,  //! (
             element->LocationVector(*this, la, false);
 
             // initialize result vector for current element
-            Epetra_SerialDenseVector elescalars(numscalars);
+            CORE::LINALG::SerialDenseVector elescalars(numscalars);
 
             // call element evaluation routine
             int error = element->Evaluate(
@@ -603,10 +604,10 @@ void DRT::Discretization::EvaluateScalars(
 
   // define element matrices and vectors
   // -- which are empty and unused, just to satisfy element Evaluate()
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop over _row_ elements
   const int numrowele = NumMyRowElements();
@@ -623,7 +624,7 @@ void DRT::Discretization::EvaluateScalars(
     actele->LocationVector(*this, la, false);
 
     // define element vector
-    Epetra_SerialDenseVector elescalars(numscalars);
+    CORE::LINALG::SerialDenseVector elescalars(numscalars);
 
     // call the element evaluate method
     {

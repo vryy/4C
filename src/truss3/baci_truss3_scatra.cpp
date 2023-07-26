@@ -158,8 +158,8 @@ bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
-    const std::map<std::string, std::vector<double>>& ele_state, Epetra_SerialDenseVector& forcevec,
-    Epetra_SerialDenseMatrix& stiffmat)
+    const std::map<std::string, std::vector<double>>& ele_state,
+    CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
-      Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
+      CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, 1);
 
       CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
       CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -406,7 +406,7 @@ void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::Energy(
     const std::map<std::string, std::vector<double>>& ele_state, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& intenergy)
+    CORE::LINALG::SerialDenseVector& intenergy)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and

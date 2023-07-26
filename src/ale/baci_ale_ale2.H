@@ -245,9 +245,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
       /*!
@@ -266,7 +266,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
       //@}
@@ -295,19 +296,19 @@ namespace DRT
        */
       void static_ke_laplace(DRT::Discretization& dis,  ///< discretization
           std::vector<int>& lm,                         ///< node owning procs
-          Epetra_SerialDenseMatrix* sys_mat,            ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual,           ///< element residual vector (to be filled)
+          CORE::LINALG::SerialDenseMatrix* sys_mat,     ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,    ///< element residual vector (to be filled)
           std::vector<double>& displacements,           ///< nodal discplacements
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
       );
 
       void static_ke_spring(
-          Epetra_SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual,  ///< element residual vector (to be filled)
-          std::vector<double>& displacements,  ///, nodal displacements
-          const bool spatialconfiguration      ///< use spatial configuration (true), material
-                                               ///< configuration (false)
+          CORE::LINALG::SerialDenseMatrix* sys_mat,   ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& displacements,         ///, nodal displacements
+          const bool spatialconfiguration  ///< use spatial configuration (true), material
+                                           ///< configuration (false)
       );
 
       /*! \brief evaluate element quantities for nonlinear case
@@ -319,11 +320,12 @@ namespace DRT
        */
       void static_ke_nonlinear(const std::vector<int>& lm,  ///< node owning procs
           const std::vector<double>& disp,                  ///< nodal displacements
-          Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector* force,        ///< element residual vector (to be filled)
-          Teuchos::ParameterList& params,         ///< parameter list
-          const bool spatialconfiguration,        ///< use spatial configuration (true), material
-                                                  ///< configuration (false)
+          CORE::LINALG::SerialDenseMatrix*
+              stiffmatrix,                         ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector* force,  ///< element residual vector (to be filled)
+          Teuchos::ParameterList& params,          ///< parameter list
+          const bool spatialconfiguration,         ///< use spatial configuration (true), material
+                                                   ///< configuration (false)
           const bool pseudolinear  ///< compute residual as stiffness * displacements (pseudo-linear
                                    ///< approach)
       );
@@ -335,9 +337,10 @@ namespace DRT
        *
        *  \author mayr.mt \date 01/2016
        */
-      void compute_det_jac(Epetra_SerialDenseVector& elevec1,  ///< vector with element result data
-          const std::vector<int>& lm,                          ///< node owning procs
-          const std::vector<double>& disp                      ///< nodal displacements
+      void compute_det_jac(
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector with element result data
+          const std::vector<int>& lm,                ///< node owning procs
+          const std::vector<double>& disp            ///< nodal displacements
       );
 
       /*! \brief Element quality measure according to [Oddy et al. 1988a]
@@ -349,22 +352,24 @@ namespace DRT
        *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
        *  Vol. 12 (4), pp. 213-217
        */
-      void EvaluateOddy(const Epetra_SerialDenseMatrix& xjm, double det, double& qm);
+      void EvaluateOddy(const CORE::LINALG::SerialDenseMatrix& xjm, double det, double& qm);
 
-      void CallMatGeoNonl(const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-          Epetra_SerialDenseMatrix& stress,                        ///< stress vector
-          Epetra_SerialDenseMatrix& C,                             ///< elasticity matrix
-          const int numeps,                                        ///< number of strains
-          Teuchos::RCP<const MAT::Material> material,              ///< the material data
-          Teuchos::ParameterList& params,                          ///< element parameter list
-          int gp                                                   ///< Integration point
+      void CallMatGeoNonl(
+          const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress vector
+          CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
+          const int numeps,                               ///< number of strains
+          Teuchos::RCP<const MAT::Material> material,     ///< the material data
+          Teuchos::ParameterList& params,                 ///< element parameter list
+          int gp                                          ///< Integration point
       );
 
-      void MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,  ///< stress state (output)
-          Epetra_SerialDenseMatrix& C,                                ///< material tensor (output)
-          const Epetra_SerialDenseVector& strain,                     ///< strain state (input)
-          Teuchos::ParameterList& params,                             ///< parameter list
-          int gp                                                      ///< Integration point
+      void MaterialResponse3dPlane(
+          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress state (output)
+          CORE::LINALG::SerialDenseMatrix& C,             ///< material tensor (output)
+          const CORE::LINALG::SerialDenseVector& strain,  ///< strain state (input)
+          Teuchos::ParameterList& params,                 ///< parameter list
+          int gp                                          ///< Integration point
       );
 
       void MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress,  ///< stress state (output)
@@ -375,60 +380,67 @@ namespace DRT
       );
 
       //! Transform Green-Lagrange notation from 2D to 3D
-      void GreenLagrangePlane3d(
-          const Epetra_SerialDenseVector& glplane,  ///< Green-Lagrange strains in 2D notation
-          CORE::LINALG::Matrix<6, 1>& gl3d);        ///< Green-Lagrange strains in 2D notation
+      void GreenLagrangePlane3d(const CORE::LINALG::SerialDenseVector&
+                                    glplane,  ///< Green-Lagrange strains in 2D notation
+          CORE::LINALG::Matrix<6, 1>& gl3d);  ///< Green-Lagrange strains in 2D notation
 
-      void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze, double* length,
+      void edge_geometry(int i, int j, const CORE::LINALG::SerialDenseMatrix& xyze, double* length,
           double* sin_alpha, double* cos_alpha);
-      double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k);
+      double ale2_area_tria(const CORE::LINALG::SerialDenseMatrix& xyze, int i, int j, int k);
       void ale2_tors_spring_tri3(
-          Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
+          CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze);
       void ale2_tors_spring_quad4(
-          Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
-      void ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
-          Epetra_SerialDenseMatrix* k_torsion);
+          CORE::LINALG::SerialDenseMatrix* sys_mat, const CORE::LINALG::SerialDenseMatrix& xyze);
+      void ale2_torsional(int i, int j, int k, const CORE::LINALG::SerialDenseMatrix& xyze,
+          CORE::LINALG::SerialDenseMatrix* k_torsion);
 
-      void CalcBOpLin(Epetra_SerialDenseMatrix& boplin, Epetra_SerialDenseMatrix& deriv,
-          Epetra_SerialDenseMatrix& xjm, double& det, const int iel);
-
-      void BOpLinCure(Epetra_SerialDenseMatrix& b_cure, const Epetra_SerialDenseMatrix& boplin,
-          const Epetra_SerialDenseVector& F, const int numeps, const int nd);
-
-      void JacobianMatrix(const Epetra_SerialDenseMatrix& xrefe,
-          const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& xjm, double* det,
+      void CalcBOpLin(CORE::LINALG::SerialDenseMatrix& boplin,
+          CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm, double& det,
           const int iel);
 
+      void BOpLinCure(CORE::LINALG::SerialDenseMatrix& b_cure,
+          const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseVector& F,
+          const int numeps, const int nd);
+
+      void JacobianMatrix(const CORE::LINALG::SerialDenseMatrix& xrefe,
+          const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& xjm,
+          double* det, const int iel);
+
       ///! Compute deformation gradient
-      void DefGrad(Epetra_SerialDenseVector& F,   ///< deformation gradient (to be filled)
-          Epetra_SerialDenseVector& strain,       ///< strain tensor (to be filled)
-          const Epetra_SerialDenseMatrix& xrefe,  ///< nodal positions of reference configuration
-          const Epetra_SerialDenseMatrix& xcure,  ///< nodal positions of current configuration
-          Epetra_SerialDenseMatrix& boplin,       ///< B-operator
+      void DefGrad(CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient (to be filled)
+          CORE::LINALG::SerialDenseVector& strain,      ///< strain tensor (to be filled)
+          const CORE::LINALG::SerialDenseMatrix&
+              xrefe,  ///< nodal positions of reference configuration
+          const CORE::LINALG::SerialDenseMatrix&
+              xcure,                                ///< nodal positions of current configuration
+          CORE::LINALG::SerialDenseMatrix& boplin,  ///< B-operator
           const int iel);
 
       //! Compute geometric part of stiffness matrix
-      void Kg(Epetra_SerialDenseMatrix& estif,     ///< element stiffness matrix (to be filled)
-          const Epetra_SerialDenseMatrix& boplin,  ///< B-operator
-          const Epetra_SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress tensor
-          const double fac,                        ///< factor for Gaussian quadrature
-          const int nd,                            ///< number of DOFs in this element
+      void Kg(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< B-operator
+          const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress tensor
+          const double fac,                               ///< factor for Gaussian quadrature
+          const int nd,                                   ///< number of DOFs in this element
           const int numeps);
 
       //! Compute elastic part of stiffness matrix
-      void Keu(Epetra_SerialDenseMatrix& estif,    ///< element stiffness matrix (to be filled)
-          const Epetra_SerialDenseMatrix& b_cure,  ///< B-operator for current configuration (input)
-          const Epetra_SerialDenseMatrix& C,       ///< material tensor (input)
-          const double fac,                        ///< factor for Gaussian quadrature
-          const int nd,                            ///< number of DOFs in this element
+      void Keu(CORE::LINALG::SerialDenseMatrix& estif,  ///< element stiffness matrix (to be filled)
+          const CORE::LINALG::SerialDenseMatrix&
+              b_cure,  ///< B-operator for current configuration (input)
+          const CORE::LINALG::SerialDenseMatrix& C,  ///< material tensor (input)
+          const double fac,                          ///< factor for Gaussian quadrature
+          const int nd,                              ///< number of DOFs in this element
           const int numeps);
 
       //! Compute internal forces for solid approach
-      void Fint(const Epetra_SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress (input)
-          const Epetra_SerialDenseMatrix& b_cure,  ///< B-operator for current configuration (input)
-          Epetra_SerialDenseVector& intforce,      ///< force vector (to be filled)
-          const double fac,                        ///< factor for Gaussian quadrature
-          const int nd                             ///< number of DOFs in this element
+      void Fint(
+          const CORE::LINALG::SerialDenseMatrix& stress,  ///< 2. Piola-Kirchhoff stress (input)
+          const CORE::LINALG::SerialDenseMatrix&
+              b_cure,  ///< B-operator for current configuration (input)
+          CORE::LINALG::SerialDenseVector& intforce,  ///< force vector (to be filled)
+          const double fac,                           ///< factor for Gaussian quadrature
+          const int nd                                ///< number of DOFs in this element
       );
 
       //! action parameters recognized by ale2
@@ -620,7 +632,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 

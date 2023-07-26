@@ -184,11 +184,11 @@ void FLD::Boxfilter::ApplyBoxFilter(const Teuchos::RCP<const Epetra_Vector> velo
   discret_->SetState("T (trial)", scalar);
 
   // dummies
-  Epetra_SerialDenseMatrix emat1;
-  Epetra_SerialDenseMatrix emat2;
-  Epetra_SerialDenseVector evec1;
-  Epetra_SerialDenseVector evec2;
-  Epetra_SerialDenseVector evec3;
+  CORE::LINALG::SerialDenseMatrix emat1;
+  CORE::LINALG::SerialDenseMatrix emat2;
+  CORE::LINALG::SerialDenseVector evec1;
+  CORE::LINALG::SerialDenseVector evec2;
+  CORE::LINALG::SerialDenseVector evec3;
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct
@@ -956,11 +956,11 @@ void FLD::Boxfilter::ApplyBoxFilterScatra(const Teuchos::RCP<const Epetra_Vector
   scatradiscret_->SetState("scalar", scalar);
 
   // dummies
-  Epetra_SerialDenseMatrix emat1;
-  Epetra_SerialDenseMatrix emat2;
-  Epetra_SerialDenseVector evec1;
-  Epetra_SerialDenseVector evec2;
-  Epetra_SerialDenseVector evec3;
+  CORE::LINALG::SerialDenseMatrix emat1;
+  CORE::LINALG::SerialDenseMatrix emat2;
+  CORE::LINALG::SerialDenseVector evec1;
+  CORE::LINALG::SerialDenseVector evec2;
+  CORE::LINALG::SerialDenseVector evec3;
 
   // ---------------------------------------------------------------
   // get a vector layout from the discretization to construct

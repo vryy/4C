@@ -194,7 +194,8 @@ template <DRT::Element::DiscretizationType distype>
 std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<distype>::nen_, 1>>
     DRT::ELEMENTS::So3_Plast<distype>::weights_;
 template <DRT::Element::DiscretizationType distype>
-std::pair<bool, std::vector<Epetra_SerialDenseVector>> DRT::ELEMENTS::So3_Plast<distype>::knots_;
+std::pair<bool, std::vector<CORE::LINALG::SerialDenseVector>>
+    DRT::ELEMENTS::So3_Plast<distype>::knots_;
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |

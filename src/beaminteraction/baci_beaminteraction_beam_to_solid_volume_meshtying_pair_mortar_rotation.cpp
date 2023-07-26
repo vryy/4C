@@ -174,7 +174,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   CORE::LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
   CORE::LINALG::Matrix<3, mortar_rot::n_dof_, double> lambda_shape_functions_full(true);
-  Epetra_SerialDenseVector L_i(3);
+  CORE::LINALG::SerialDenseVector L_i(3);
   CORE::LINALG::Matrix<3, n_dof_rot_, double> L_full(true);
   std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;
   CORE::LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
@@ -455,7 +455,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   CORE::LINALG::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
   CORE::LINALG::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(
       true);
-  Epetra_SerialDenseVector L_i(3);
+  CORE::LINALG::SerialDenseVector L_i(3);
   CORE::LINALG::Matrix<3, n_dof_rot_, scalar_type_rot_1st> L_full(true);
   std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;
   CORE::LINALG::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;

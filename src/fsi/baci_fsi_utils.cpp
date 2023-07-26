@@ -30,7 +30,7 @@
 #include <EpetraExt_RowMatrixOut.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_so3_surface.H"
 #include "baci_so3_line.H"
@@ -425,11 +425,11 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
 
   // define stuff needed by the elements
   Teuchos::ParameterList params;
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // prepare variables for length (2D) or area (3D) of the interface
   std::vector<double> mycenterdisp(dim);
@@ -804,11 +804,11 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
          elemiter++)
     {
       // define stuff needed by the elements
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
       Teuchos::RCP<DRT::Element> iele = elemiter->second;
@@ -847,11 +847,11 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
          elemiter++)
     {
       // define stuff needed by the elements
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
       Teuchos::RCP<DRT::Element> iele = elemiter->second;

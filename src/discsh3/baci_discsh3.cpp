@@ -547,8 +547,8 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
   }
 
   // Check if the normal vector is outwards
-  Teuchos::RCP<Epetra_SerialDenseVector> CG_ref_rcp =
-      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("reference CG", Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> CG_ref_rcp =
+      params.get<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("reference CG", Teuchos::null);
   CORE::LINALG::Matrix<1, 3> CG(true);
   CORE::LINALG::Matrix<1, 3> Barycenter(true);
   for (int i = 0; i < 3; i++)
@@ -589,8 +589,9 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,
-    const int numnode, const int ndof, double& A, Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2)
+    const int numnode, const int ndof, double& A,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2)
 {
   // initialization
   A = 0.;
@@ -765,7 +766,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
  * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double>& normal,
-    const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv)
+    const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);

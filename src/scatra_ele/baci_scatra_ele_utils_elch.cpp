@@ -59,8 +59,8 @@ DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrationPoint(
     const DRT::Element* ele,                                   ///< current element
-    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
-    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ehist,                                   ///< history variables at element nodes
@@ -678,7 +678,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegrationPoint(
     const DRT::Element* ele,                   ///< current element
-    Epetra_SerialDenseVector& scalars,         ///< scalars to be computed
+    CORE::LINALG::SerialDenseVector& scalars,  ///< scalars to be computed
     const Teuchos::ParameterList& params,      ///< parameter list
     const Teuchos::RCP<DRT::Condition>& cond,  ///< condition
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&

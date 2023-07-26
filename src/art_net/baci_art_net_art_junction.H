@@ -155,30 +155,30 @@ namespace ART
       /*!
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
-      void Jacobian_Eval(Epetra_SerialDenseMatrix &Jacobian, std::vector<double> &A,
+      void Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &Jacobian, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Residual_Eval(Epetra_SerialDenseVector &f, std::vector<double> &A,
+      void Residual_Eval(CORE::LINALG::SerialDenseVector &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
-      void Residual_Eval(Epetra_SerialDenseMatrix &f, std::vector<double> &A,
+      void Residual_Eval(CORE::LINALG::SerialDenseMatrix &f, std::vector<double> &A,
           std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
           std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      void Update_Result(Epetra_SerialDenseVector &xn, Epetra_SerialDenseVector &dx);
+      void Update_Result(CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
-      double twoNorm(Epetra_SerialDenseVector &x);
+      double twoNorm(CORE::LINALG::SerialDenseVector &x);
 
 
 

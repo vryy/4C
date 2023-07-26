@@ -538,7 +538,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     // minimum three coupling dof's otherwise this method is not working
     // since the slave map is based on dof<dim
     // -> spacial coordinates cannot be assembled in vector based on this map
-    Epetra_SerialDenseVector val(dim);
+    CORE::LINALG::SerialDenseVector val(dim);
     std::vector<int> lm(dim, 0.0);
     std::vector<int> lmowner(dim, 0.0);
 
@@ -578,7 +578,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     // minimum three coupling dof's otherwise this method is not working
     // since the slave map is based on dof<dim
     // -> spacial coordinates cannot be assembled in vector based on this map
-    Epetra_SerialDenseVector val(dim);
+    CORE::LINALG::SerialDenseVector val(dim);
     std::vector<int> lm(dim, 0.0);
     std::vector<int> lmowner(dim, 0.0);
 
@@ -897,7 +897,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
     // prepare assembly
-    Epetra_SerialDenseVector val(dim);
+    CORE::LINALG::SerialDenseVector val(dim);
     std::vector<int> lm(dim);
     std::vector<int> lmowner(dim);
 
@@ -933,7 +933,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
     // prepare assembly
-    Epetra_SerialDenseVector val(dim);
+    CORE::LINALG::SerialDenseVector val(dim);
     std::vector<int> lm(dim);
     std::vector<int> lmowner(dim);
 

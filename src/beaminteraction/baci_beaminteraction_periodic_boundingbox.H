@@ -127,7 +127,7 @@ namespace CORE::GEO
       /*!
        \brief Check these points are within this boundingbox
        */
-      bool Within(const Epetra_SerialDenseMatrix& xyz) const;
+      bool Within(const CORE::LINALG::SerialDenseMatrix& xyz) const;
 
       /*!
        \brief Print the corner points of boundingbox on the screen

@@ -40,9 +40,11 @@ namespace DRT
       /// Evaluate the element
       virtual int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
 
       virtual void Initial(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -50,7 +52,7 @@ namespace DRT
 
       virtual void EvaluateTerminalBC(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -65,17 +67,17 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) = 0;
 
       virtual void GetJunctionVolumeMix(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& volumeMix_np,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<MAT::Material> material) = 0;
 
       virtual void SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& scatra_np,
-          Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
+          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) = 0;
 
       virtual void SolveScatraBifurcations(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& scatranp,
-          Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
+          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material) = 0;
 
       virtual void UpdateScatra(RedAcinus* ele, Teuchos::ParameterList& params,
@@ -91,9 +93,10 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material) = 0;
 
       virtual void EvalNodalEssentialValues(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& nodal_surface,
-          Epetra_SerialDenseVector& nodal_volume, Epetra_SerialDenseVector& nodal_flow,
-          std::vector<int>& lm, Teuchos::RCP<MAT::Material> material) = 0;
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
+          CORE::LINALG::SerialDenseVector& nodal_volume,
+          CORE::LINALG::SerialDenseVector& nodal_flow, std::vector<int>& lm,
+          Teuchos::RCP<MAT::Material> material) = 0;
 
       /// Internal implementation class for acinus element
       static RedAcinusImplInterface* Impl(DRT::ELEMENTS::RedAcinus* acinus);
@@ -129,13 +132,15 @@ namespace DRT
       */
       virtual int Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
 
       virtual void EvaluateTerminalBC(RedAcinus* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -180,20 +185,20 @@ namespace DRT
         \Essential functions to evaluate mixed volume flowing into a junction
       */
       virtual void GetJunctionVolumeMix(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& volumeMix_np,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& volumeMix_np,
           std::vector<int>& lm, Teuchos::RCP<MAT::Material> material);
 
       /*!
         \Essential functions to solve the forward scatra flow
       */
       virtual void SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& scatra_np,
-          Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatra_np,
+          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material);
 
       virtual void SolveScatraBifurcations(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& scatranp,
-          Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
+          CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> material);
 
       virtual void UpdateScatra(RedAcinus* ele, Teuchos::ParameterList& params,
@@ -209,9 +214,10 @@ namespace DRT
           Teuchos::RCP<MAT::Material> material);
 
       virtual void EvalNodalEssentialValues(RedAcinus* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& nodal_surface,
-          Epetra_SerialDenseVector& nodal_volume, Epetra_SerialDenseVector& nodal_flow,
-          std::vector<int>& lm, Teuchos::RCP<MAT::Material> material);
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& nodal_surface,
+          CORE::LINALG::SerialDenseVector& nodal_volume,
+          CORE::LINALG::SerialDenseVector& nodal_flow, std::vector<int>& lm,
+          Teuchos::RCP<MAT::Material> material);
 
 
      private:

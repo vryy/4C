@@ -136,11 +136,11 @@ DRT::ELEMENTS::TemperImpl<distype>::TemperImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
-    Epetra_SerialDenseMatrix& elemat2_epetra,  // Capacity ("mass")
-    Epetra_SerialDenseVector& elevec1_epetra,  // internal force vector
-    Epetra_SerialDenseVector& elevec2_epetra,  // external force vector
-    Epetra_SerialDenseVector& elevec3_epetra   // capacity vector
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  // Tangent ("stiffness")
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  // Capacity ("mass")
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  // internal force vector
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,  // external force vector
+    CORE::LINALG::SerialDenseVector& elevec3_epetra   // capacity vector
 )
 {
   PrepareNurbsEval(ele, discretization);
@@ -452,8 +452,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
     CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> efint(elevec1_epetra.A(), true);  // view only!
     // efext, efcap not needed for this action
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpheatfluxmap =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpheatfluxmap =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "gpheatfluxmap");
     std::string heatfluxtype = params.get<std::string>("heatfluxtype", "ndxyz");
     const int gid = ele->Id();
@@ -617,7 +617,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(DRT::Element* ele, Teuchos::Par
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseMatrix* elemat1_epetra)
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // prepare nurbs
   PrepareNurbsEval(ele, discretization);
@@ -2884,7 +2885,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
-    Epetra_SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
+    CORE::LINALG::SerialDenseVector& elevec1, const Epetra_IntSerialDenseVector& dofids)
 {
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);

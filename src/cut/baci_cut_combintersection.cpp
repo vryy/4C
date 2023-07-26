@@ -102,7 +102,7 @@ void CORE::GEO::CUT::CombIntersection::FindNodePositions()
 
 
 void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int>& nids,
-    const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+    const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
     const double* lsv, const bool lsv_only_plus_domain)
 {
   CORE::GEO::CUT::ElementHandle* e = NULL;
@@ -132,7 +132,7 @@ void CORE::GEO::CUT::CombIntersection::AddLevelSetSide(int levelset_side)
 }
 
 void CORE::GEO::CUT::CombIntersection::AddMeshCuttingSide(int sid, const std::vector<int>& nids,
-    const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype, int mi)
+    const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype, int mi)
 {
   MeshIntersection::AddCutSide(sid, nids, xyz, distype, mi);
 }

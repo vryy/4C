@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include <CORE::LINALG::SerialDenseMatrix.h>
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "baci_so3_element_service.H"
 #include "baci_so3_hex8.H"
@@ -64,9 +64,11 @@ using VoigtMapping = UTILS::VOIGT::IndexMappings;
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -691,7 +693,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         soh8_easrestore();
 
         // reset EAS internal force
-        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+        CORE::LINALG::SerialDenseMatrix* oldfeas =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
         oldfeas->Scale(0.0);
       }
       // Reset of history (if needed)
@@ -791,15 +794,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       }
 
       // prepare EAS data
-      Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-      std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
-      CORE::LINALG::SerialDenseMatrix M;                      // EAS matrix M at current GP
-      double detJ0;                                           // detJ(origin)
+      CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+      std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+      CORE::LINALG::SerialDenseMatrix M;                             // EAS matrix M at current GP
+      double detJ0;                                                  // detJ(origin)
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
       if (eastype_ != soh8_easnone)
       {
-        alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+        alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+            "alpha");  // get alpha of previous iteration
         soh8_eassetup(&M_GP, detJ0, T0invT, xrefe);
       }
 
@@ -923,7 +926,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           M.LightShape(MAT::NUM_STRESS_3D, neas_);
           // map local M to global, also enhancement is referred to element origin
           // M = detJ0/detJ T0^{-T} . M
-          // Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+          // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
           // add enhanced strains = M . alpha to GL strains to "unlock" element
           switch (eastype_)
           {
@@ -1404,13 +1407,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
         if (plstraindata == Teuchos::null) dserror("Cannot get 'plastic strain' data");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstressmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
           dserror("no gp stress map available for writing gpstresses");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstrainmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstrainmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
@@ -1444,8 +1449,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // add stresses to global map
         // get EleID Id()
         int gid = Id();
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
         gpstress->Shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
@@ -1458,8 +1463,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         }
 
         // strains
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstrain =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
         gpstrain->Shape(NUMGPT_SOH8, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
@@ -1544,7 +1549,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
@@ -1765,18 +1770,18 @@ void DRT::ELEMENTS::So_hex8::soh8_error_handling(const double& det_curr,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
-    const std::vector<double>& residual, Epetra_SerialDenseMatrix* const eas_inc)
+    const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc)
 {
-  auto* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-  auto* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  auto* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
   if (!oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history data");
 
   // we need the (residual) displacement at the previous step
   CORE::LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
   for (int i = 0; i < NUMDOF_SOH8; ++i) res_d_eas(i) = residual[i];
   // --- EAS default update ---------------------------
-  Epetra_SerialDenseMatrix eashelp(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix eashelp(neas_, 1);
   /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
   oldKda->Multiply(false, res_d_eas, eashelp);
   /*---------------------------------------- add old Rtilde to eashelp */
@@ -1792,8 +1797,8 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
     const std::vector<int>& lm, const std::vector<double>& residual)
 {
   // for eas
-  Epetra_SerialDenseMatrix* alpha = nullptr;
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
   const double step_length = StrParamsInterface().GetStepLength();
   const bool iseas = (eastype_ != soh8_easnone);
@@ -1803,9 +1808,9 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
     // get the old eas increment
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1934,17 +1939,17 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
-  CORE::LINALG::SerialDenseMatrix M;                      // EAS matrix M at current GP
-  Epetra_SerialDenseVector feas;                          // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                           // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                           // EAS matrix Kda
-  double detJ0;                                           // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = nullptr;            // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = nullptr;          // EAS history
-  Epetra_SerialDenseMatrix* oldKda = nullptr;             // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;            // EAS increment
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  CORE::LINALG::SerialDenseMatrix M;                             // EAS matrix M at current GP
+  CORE::LINALG::SerialDenseVector feas;                          // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix Kaa;                           // EAS matrix Kaa
+  CORE::LINALG::SerialDenseMatrix Kda;                           // EAS matrix Kda
+  double detJ0;                                                  // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;            // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;          // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;             // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;            // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -1960,11 +1965,12 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get alpha of previous iteration
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+        "alpha");  // get alpha of previous iteration
+    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
 
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
@@ -2180,7 +2186,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     cauchygreen.MultiplyTN(defgrd, defgrd);
 
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
     if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
     {
@@ -2208,7 +2214,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
       M.LightShape(MAT::NUM_STRESS_3D, neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      // Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       switch (eastype_)
       {
@@ -2876,9 +2882,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
-    Epetra_SerialDenseVector glstrain_epetrao(MAT::NUM_STRESS_3D);
+    CORE::LINALG::SerialDenseVector glstrain_epetrao(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstraino(glstrain_epetrao.A(), true);
     glstrain(0) = 0.5 * (rcg(0, 0) - 1.0);
     glstrain(1) = 0.5 * (rcg(1, 1) - 1.0);
@@ -3018,7 +3024,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
 
     // mid-strain GL vector
     // E_m = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_n
-    Epetra_SerialDenseVector glstrain_epetram(MAT::NUM_STRESS_3D);
+    CORE::LINALG::SerialDenseVector glstrain_epetram(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrainm(glstrain_epetram.A(), true);
     glstrainm.Update(1.0 - gemmalphaf + gemmxi, glstrain, gemmalphaf - gemmxi, glstraino);
 
@@ -3228,10 +3234,10 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
 
   // --- create EAS state backup ----------------------------------------------
   {
-    const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
+    const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
     if (not alpha) dserror("Can't access the current enhanced strain state.");
 
-    auto* alpha_backup_ptr = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha_backup");
+    auto* alpha_backup_ptr = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
     if (alpha_backup_ptr)
       *alpha_backup_ptr = *alpha;
     else
@@ -3241,10 +3247,10 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
   // --- create EAS increment backup ------------------------------------------
   {
     // compute the current eas increment
-    Epetra_SerialDenseMatrix eas_inc(neas_, 1);
+    CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
     soh8_computeEASInc(displ_incr, &eas_inc);
 
-    auto* eas_inc_backup_ptr = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    auto* eas_inc_backup_ptr = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
     if (eas_inc_backup_ptr)
       *eas_inc_backup_ptr = eas_inc;
     else
@@ -3258,18 +3264,18 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 {
   if (eastype_ == soh8_easnone) return;
 
-  Epetra_SerialDenseMatrix* alpha = nullptr;
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;
 
   // --- recover state from EAS backup ----------------------------------------
   {
-    const auto* alpha_backup = data_.Get<Epetra_SerialDenseMatrix>("alpha_backup");
+    const auto* alpha_backup = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
     if (not alpha_backup)
       dserror(
           "Can't access the enhanced strain backup state. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
     if (not alpha) dserror("Can't access the enhanced strain state.");
 
     *alpha = *alpha_backup;
@@ -3277,13 +3283,13 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 
   // --- recover increment from EAS backup ------------------------------------
   {
-    const auto* eas_inc_backup = data_.Get<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    const auto* eas_inc_backup = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
     if (not eas_inc_backup)
       dserror(
           "Can't access the enhanced strain increment backup. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (not eas_inc) dserror("Can't access the enhanced strain increment.");
 
     *eas_inc = *eas_inc_backup;
@@ -3315,7 +3321,7 @@ int DRT::ELEMENTS::So_hex8Type::Initialize(DRT::Discretization& dis)
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
@@ -3453,7 +3459,8 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     soh8_easupdate();
 
     // reset EAS internal force
-    Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    CORE::LINALG::SerialDenseMatrix* oldfeas =
+        data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
     oldfeas->Scale(0.0);
   }
   SolidMaterial()->Update();
@@ -3589,8 +3596,9 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
     const CORE::LINALG::Matrix<6, NUMDOF_SOH8>& cb,
     const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& N_XYZ,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
-    const std::vector<Epetra_SerialDenseMatrix>* M_GP, const Epetra_SerialDenseMatrix* alpha,
-    CORE::LINALG::SerialDenseMatrix& M, const int gp, Teuchos::ParameterList& params)
+    const std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP,
+    const CORE::LINALG::SerialDenseMatrix* alpha, CORE::LINALG::SerialDenseMatrix& M, const int gp,
+    Teuchos::ParameterList& params)
 {
   // build elastic stiffness matrix directly by finite differences
 
@@ -3680,7 +3688,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
       M.LightShape(MAT::NUM_STRESS_3D, neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      // Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      // CORE::LINALG::SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       switch (eastype_)
       {
@@ -3810,12 +3818,15 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
-    const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
     double* d_cauchyndir_dc)
 {
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)

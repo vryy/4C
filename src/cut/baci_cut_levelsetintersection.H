@@ -13,7 +13,10 @@
 #include "baci_cut_parentintersection.H"
 
 
-class Epetra_SerialDenseMatrix;
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 namespace CORE::GEO
 {
@@ -83,7 +86,7 @@ namespace CORE::GEO
        * Which implies that the level set function of the element has values which
        * are positive and negative. */
       CORE::GEO::CUT::ElementHandle* AddElement(int eid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
           const double* lsv, const bool lsv_only_plus_domain = false,
           const bool& check_lsv = false);
 

@@ -13,7 +13,7 @@
 
 #include "baci_lib_resulttest.H"
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 // forward declarations
 namespace DRT
@@ -46,7 +46,7 @@ namespace ELEMAG
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<Epetra_Vector> mysol_;
     /// Error vector
-    Teuchos::RCP<Epetra_SerialDenseVector> error_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> error_;
 
   };  // class ElemagResultTest
 

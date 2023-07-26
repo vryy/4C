@@ -244,13 +244,14 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseMatrix&
+              elemat2_epetra,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override;
 
       //@}
@@ -270,8 +271,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
@@ -283,29 +284,31 @@ namespace DRT
       void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
-          const double* concentration, double* d_cauchyndir_dc) override;
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
 
       void HeatFlux(const std::vector<double>& temp, const std::vector<double>& disp,
           const CORE::LINALG::Matrix<nsd_, 1>& xi, const CORE::LINALG::Matrix<nsd_, 1>& n,
-          double& q, Epetra_SerialDenseMatrix* dq_dT, Epetra_SerialDenseMatrix* dq_dd,
+          double& q, CORE::LINALG::SerialDenseMatrix* dq_dT, CORE::LINALG::SerialDenseMatrix* dq_dd,
           CORE::LINALG::Matrix<nsd_, 1>* dq_dn, CORE::LINALG::Matrix<nsd_, 1>* dq_dpxi,
-          Epetra_SerialDenseMatrix* d2q_dT_dd, Epetra_SerialDenseMatrix* d2q_dT_dn,
-          Epetra_SerialDenseMatrix* d2q_dT_dpxi);
+          CORE::LINALG::SerialDenseMatrix* d2q_dT_dd, CORE::LINALG::SerialDenseMatrix* d2q_dT_dn,
+          CORE::LINALG::SerialDenseMatrix* d2q_dT_dpxi);
 
       void HeatFlux(const std::vector<double>& temp, const std::vector<double>& disp,
           const CORE::LINALG::Matrix<2, 1>& xi, const CORE::LINALG::Matrix<2, 1>& n, double& q,
-          Epetra_SerialDenseMatrix* dq_dT, Epetra_SerialDenseMatrix* dq_dd,
+          CORE::LINALG::SerialDenseMatrix* dq_dT, CORE::LINALG::SerialDenseMatrix* dq_dd,
           CORE::LINALG::Matrix<2, 1>* dq_dn, CORE::LINALG::Matrix<2, 1>* dq_dpxi,
-          Epetra_SerialDenseMatrix* d2q_dT_dd, Epetra_SerialDenseMatrix* d2q_dT_dn,
-          Epetra_SerialDenseMatrix* d2q_dT_dpxi)
+          CORE::LINALG::SerialDenseMatrix* d2q_dT_dd, CORE::LINALG::SerialDenseMatrix* d2q_dT_dn,
+          CORE::LINALG::SerialDenseMatrix* d2q_dT_dpxi)
       {
         dserror("wrong spatial dimension");
       }
@@ -429,8 +432,9 @@ namespace DRT
           const double temp, Teuchos::ParameterList& params,
           CORE::LINALG::Matrix<numdofperelement_, 1>* force,
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* stiffmatrix,
-          const Epetra_SerialDenseMatrix* M = nullptr, Epetra_SerialDenseMatrix* Kda = nullptr,
-          std::vector<Epetra_SerialDenseVector>* dHda = nullptr,
+          const CORE::LINALG::SerialDenseMatrix* M = nullptr,
+          CORE::LINALG::SerialDenseMatrix* Kda = nullptr,
+          std::vector<CORE::LINALG::SerialDenseVector>* dHda = nullptr,
           const double* f_bar_factor = nullptr,
           const CORE::LINALG::Matrix<numdofperelement_, 1>* htensor = nullptr);
 
@@ -513,14 +517,16 @@ namespace DRT
       virtual void GetCauchyNDirAndDerivativesAtXiPlast(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT);
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
       /*!
        * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
@@ -574,14 +580,16 @@ namespace DRT
       virtual void GetCauchyNDirAndDerivativesAtXiElast(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT);
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
       virtual void OutputStrains(const int gp,
           const INPAR::STR::StrainType iostrain,                 // strain output option
@@ -600,11 +608,11 @@ namespace DRT
 
       virtual void IntegrateStiffMatrix(const int gp,
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>& stiff,
-          Epetra_SerialDenseMatrix& Kda);
+          CORE::LINALG::SerialDenseMatrix& Kda);
 
       virtual void IntegrateForce(const int gp, CORE::LINALG::Matrix<numdofperelement_, 1>& force);
 
-      virtual void IntegrateThermoGp(const int gp, Epetra_SerialDenseVector& dHda);
+      virtual void IntegrateThermoGp(const int gp, CORE::LINALG::SerialDenseVector& dHda);
 
 
       // algoirthmic parameters
@@ -715,7 +723,7 @@ namespace DRT
 
       // NURBS-specific
       static std::pair<bool, CORE::LINALG::Matrix<nen_, 1>> weights_;
-      static std::pair<bool, std::vector<Epetra_SerialDenseVector>> knots_;
+      static std::pair<bool, std::vector<CORE::LINALG::SerialDenseVector>> knots_;
 
       virtual void InvalidGpData()
       {
@@ -766,12 +774,12 @@ namespace DRT
         return weights_.second;
       }
 
-      inline const std::vector<Epetra_SerialDenseVector>& Knots() const
+      inline const std::vector<CORE::LINALG::SerialDenseVector>& Knots() const
       {
         dsassert(knots_.first, "weights_ not valid");
         return knots_.second;
       }
-      inline std::vector<Epetra_SerialDenseVector>& SetKnots()
+      inline std::vector<CORE::LINALG::SerialDenseVector>& SetKnots()
       {
         knots_.first = true;
         return knots_.second;

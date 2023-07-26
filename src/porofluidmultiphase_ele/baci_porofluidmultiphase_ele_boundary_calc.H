@@ -53,8 +53,8 @@ namespace DRT
       //! Evaluate the element (using location array)
       virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,
-          std::vector<Epetra_SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
      protected:
       //! setup element evaluation
@@ -69,13 +69,13 @@ namespace DRT
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
-          DRT::Element::LocationArray& la, std::vector<Epetra_SerialDenseMatrix*>& elemat,
-          std::vector<Epetra_SerialDenseVector*>& elevec);
+          DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
       //! evaluate Neumann boundary condition
       virtual int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1);
 
       //! evaluate shape functions and derivatives at int. point
       double EvalShapeFuncAndIntFac(

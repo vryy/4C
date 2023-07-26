@@ -2342,7 +2342,8 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_ele,
     CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
-    const CORE::LINALG::Matrix<3, 1>& normal, std::vector<Epetra_SerialDenseMatrix>& solid_stress)
+    const CORE::LINALG::Matrix<3, 1>& normal,
+    std::vector<CORE::LINALG::SerialDenseMatrix>& solid_stress)
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) return;
 
@@ -2363,7 +2364,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 
     traction.Clear();
 
-    static Epetra_SerialDenseMatrix dtraction_dd_i;
+    static CORE::LINALG::SerialDenseMatrix dtraction_dd_i;
     for (int i = 0; i < NUMDIM_SOH8; ++i)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
@@ -2617,8 +2618,8 @@ void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(DRT::Elemen
   DRT::Element::LocationArray la(1);
   params.set<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
-  Epetra_SerialDenseMatrix dummyelemat;
-  Epetra_SerialDenseVector dummyelevec;
+  CORE::LINALG::SerialDenseMatrix dummyelemat;
+  CORE::LINALG::SerialDenseVector dummyelevec;
   DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!faceele) dserror("Cast to faceele failed!");  // todo change to dsassert
 

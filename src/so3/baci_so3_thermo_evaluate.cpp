@@ -74,9 +74,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // set the pointer to the parameter list in element
   so3_ele::SetParamsInterfacePtr(params);
@@ -151,9 +153,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
   ActionType act = none;
@@ -663,7 +667,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         // --------------------------------------------------
         // Initialisation of nurbs specific stuff
-        std::vector<Epetra_SerialDenseVector> myknots(3);
+        std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
         CORE::LINALG::Matrix<27, 1> weights;
 
         // get nurbs specific infos
@@ -1128,7 +1132,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
@@ -1393,7 +1397,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
@@ -1677,7 +1681,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
       // Green-Lagrange strains(F_bar) matrix E = 0.5 . (Cauchygreen(F_bar) - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      Epetra_SerialDenseVector glstrain_bar_epetra(numstr_);
+      CORE::LINALG::SerialDenseVector glstrain_bar_epetra(numstr_);
       CORE::LINALG::Matrix<numstr_, 1> glstrain_bar(glstrain_bar_epetra.A(), true);
       glstrain_bar(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
       glstrain_bar(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
@@ -2453,7 +2457,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos

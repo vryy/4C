@@ -59,9 +59,10 @@ DRT::ELEMENTS::Ale3Surface_Impl<distype>* DRT::ELEMENTS::Ale3Surface_Impl<distyp
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   const Ale3::ActionType act = DRT::INPUT::get<Ale3::ActionType>(params, "action");
 
@@ -97,7 +98,7 @@ int DRT::ELEMENTS::Ale3Surface::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -107,7 +108,7 @@ int DRT::ELEMENTS::Ale3Surface::EvaluateNeumann(Teuchos::ParameterList& params,
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3Surface_Impl<distype>::ElementNodeNormal(Ale3Surface* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp)
+    CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp)
 {
   CORE::DRT::UTILS::ElementNodeNormal<distype>(funct_, deriv_, fac_, unitnormal_, drs_, xsi_, xyze_,
       ele, discretization, elevec1, mydispnp, false, true);

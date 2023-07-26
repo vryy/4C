@@ -28,8 +28,8 @@ DRT::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 
   // temp variables for solution of the linear system
   const int N = static_cast<int>(x_.size());
-  Epetra_SerialDenseMatrix A(N, N);
-  Epetra_SerialDenseVector c(N), b(N);
+  CORE::LINALG::SerialDenseMatrix A(N, N);
+  CORE::LINALG::SerialDenseVector c(N), b(N);
 
   BuildMatrixAndRhs(N, A, b);
   SolveLinearSystem(A, c, b);
@@ -38,7 +38,7 @@ DRT::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(
 
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::CubicSplineInterpolation::BuildMatrixAndRhs(
-    const int N, Epetra_SerialDenseMatrix &A, Epetra_SerialDenseVector &b) const
+    const int N, CORE::LINALG::SerialDenseMatrix &A, CORE::LINALG::SerialDenseVector &b) const
 {
   // fill everything except the boundary condition lines
   for (int i = 1; i < N - 1; ++i)
@@ -136,8 +136,8 @@ double DRT::UTILS::CubicSplineInterpolation::EvaluateScalarSecondDerivative(cons
 }
 
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::CubicSplineInterpolation::SolveLinearSystem(
-    Epetra_SerialDenseMatrix &A, Epetra_SerialDenseVector &c, Epetra_SerialDenseVector &b) const
+void DRT::UTILS::CubicSplineInterpolation::SolveLinearSystem(CORE::LINALG::SerialDenseMatrix &A,
+    CORE::LINALG::SerialDenseVector &c, CORE::LINALG::SerialDenseVector &b) const
 {
   // solve for third-order coefficients for cubic spline interpolation
   Epetra_SerialDenseSolver solver;
@@ -149,7 +149,8 @@ void DRT::UTILS::CubicSplineInterpolation::SolveLinearSystem(
 }
 
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::CubicSplineInterpolation::SetupInternalVectors(const Epetra_SerialDenseVector &c)
+void DRT::UTILS::CubicSplineInterpolation::SetupInternalVectors(
+    const CORE::LINALG::SerialDenseVector &c)
 {
   const std::size_t system_size = x_.size();
 

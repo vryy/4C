@@ -1690,9 +1690,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
   // Dual shape functions coefficient matrix and linearization
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-          (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+          (nnodes + mnodes) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+  CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // various variables
@@ -1941,7 +1941,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
     CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
-    Epetra_SerialDenseMatrix& pt = derivae[p->first];
+    CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
       {

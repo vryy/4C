@@ -16,9 +16,9 @@
 /* headers */
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseSolver.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
@@ -37,9 +37,9 @@
 /* evaluate the element forces and stiffness and mass for GEMM */
 void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     const std::vector<int>& lm, const std::vector<double>& dispo, const std::vector<double>& disp,
-    const std::vector<double>& residual, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force,
-    Epetra_SerialDenseMatrix* elestress, Epetra_SerialDenseMatrix* elestrain,
+    const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+    CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force,
+    CORE::LINALG::SerialDenseMatrix* elestress, CORE::LINALG::SerialDenseMatrix* elestrain,
     Teuchos::RCP<const MAT::Material> material, const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain)
 {
@@ -57,63 +57,65 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   const double density = (massmatrix) ? (material->Density()) : 0.0;
 
   // general arrays
-  Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
-  Epetra_SerialDenseMatrix shpdrv(
+  CORE::LINALG::SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
+  CORE::LINALG::SerialDenseMatrix shpdrv(
       Wall1::numdim_, numnode);  // parametric derivatives of shape funct. at Gauss point
-  Epetra_SerialDenseMatrix Xjm(
+  CORE::LINALG::SerialDenseMatrix Xjm(
       Wall1::numdim_, Wall1::numdim_);  // material-to-parameter-space Jacobian
   double Xjdet;                         // determinant of #Xjm
-  Epetra_SerialDenseMatrix boplin(4, edof);
+  CORE::LINALG::SerialDenseMatrix boplin(4, edof);
 
-  Epetra_SerialDenseVector Fuvo(4);  // disp-based def.grad. vector at t_{n}
-  Epetra_SerialDenseVector Fuv(4);   // disp-based def.grad. vector at t_{n+1}
+  CORE::LINALG::SerialDenseVector Fuvo(4);  // disp-based def.grad. vector at t_{n}
+  CORE::LINALG::SerialDenseVector Fuv(4);   // disp-based def.grad. vector at t_{n+1}
 
   CORE::LINALG::SerialDenseVector Evo(4, false);  // Green-Lagrange strain vector at t_{n}
   CORE::LINALG::SerialDenseVector Ev(4, false);   // Green-Lagrange strain vector at t_{n+1}
   CORE::LINALG::SerialDenseVector& Evm = Evo;     // Green-Lagrange mid-strain vector
 
-  Epetra_SerialDenseMatrix Xe(Wall1::numdim_, numnode);  // material/initial element co-ordinates
-  Epetra_SerialDenseMatrix xeo(
+  CORE::LINALG::SerialDenseMatrix Xe(
+      Wall1::numdim_, numnode);  // material/initial element co-ordinates
+  CORE::LINALG::SerialDenseMatrix xeo(
       Wall1::numdim_, numnode);  // spatial/current element co-ordinates at t_{n}
-  Epetra_SerialDenseMatrix xe(
+  CORE::LINALG::SerialDenseMatrix xe(
       Wall1::numdim_, numnode);  // spatial/current element co-ordinates at t_{n+1}
   CORE::LINALG::SerialDenseMatrix bopo(Wall1::numstr_, edof, false);  // non-linear B-op at t_{n}
   CORE::LINALG::SerialDenseMatrix bop(Wall1::numstr_, edof, false);   // non-linear B-op at t_{n+1}
   CORE::LINALG::SerialDenseMatrix& bopm = bopo;                       // non-linear mid-B-op
-  Epetra_SerialDenseMatrix Smm(4, 4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS:
-                                       // STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
-  Epetra_SerialDenseMatrix C(4, 4);
+  CORE::LINALG::SerialDenseMatrix Smm(
+      4, 4);  // 2nd Piola-Kirchhoff mid-stress matrix  // CHECK THIS:
+              // STRESS MATRIX SHOULD NOT EXIST IN EFFICIENT CODE
+  CORE::LINALG::SerialDenseMatrix C(4, 4);
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  Epetra_SerialDenseMatrix* alphao = NULL;     // EAS alphas at t_{n}
-  Epetra_SerialDenseMatrix* alpha = NULL;      // EAS alphas at t_{n+1}
-  Epetra_SerialDenseMatrix* oldfeas = NULL;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = NULL;     // EAS history
-  Epetra_SerialDenseMatrix* oldKad = NULL;     // EAS history
-  Epetra_SerialDenseMatrix Fenhvo;             // EAS matrix Fenhv
-  Epetra_SerialDenseMatrix Fenhv;              // EAS matrix Fenhv
-  CORE::LINALG::SerialDenseMatrix Fmo;         // total def.grad. matrix at t_{n}
-  CORE::LINALG::SerialDenseMatrix Fm;          // total def.grad. matrix at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& Fmm = Fmo;  // total mid-def.grad. matrix
-  Epetra_SerialDenseMatrix Pvmm;               // first Piola-Kirchhoff stress vector
-  Epetra_SerialDenseMatrix Xjm0;               // Jacobian Matrix (origin)
-  double Xjdet0;                               // determinant of #Xjm0
-  Epetra_SerialDenseVector Fuv0o;              // deformation gradient at origin at t_{n}
-  Epetra_SerialDenseVector Fuv0;               // deformation gradient at origin at t_{n+1}
-  Epetra_SerialDenseMatrix boplin0;            // B-operator (origin)
-  CORE::LINALG::SerialDenseMatrix W0o;         // W-operator (origin) at t_{n}
-  CORE::LINALG::SerialDenseMatrix W0;          // W-operator (origin) at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& W0m = W0o;  // mid-W-operator (origin)
-  CORE::LINALG::SerialDenseMatrix Go;          // G-operator at t_{n}
-  CORE::LINALG::SerialDenseMatrix G;           // G-operator at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& Gm = Go;    // mid-G-operator
-  Epetra_SerialDenseMatrix Z;                  // Z-operator
-  Epetra_SerialDenseMatrix FmCF;               // FCF^T
-  Epetra_SerialDenseMatrix Kda;                // EAS matrix Kda
-  Epetra_SerialDenseMatrix Kad;                // EAS matrix Kad
-  Epetra_SerialDenseMatrix Kaa;                // EAS matrix Kaa
-  Epetra_SerialDenseVector feas;               // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix* alphao = NULL;     // EAS alphas at t_{n}
+  CORE::LINALG::SerialDenseMatrix* alpha = NULL;      // EAS alphas at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix* oldfeas = NULL;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = NULL;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = NULL;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKad = NULL;     // EAS history
+  CORE::LINALG::SerialDenseMatrix Fenhvo;             // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fenhv;              // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fmo;                // total def.grad. matrix at t_{n}
+  CORE::LINALG::SerialDenseMatrix Fm;                 // total def.grad. matrix at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Fmm = Fmo;         // total mid-def.grad. matrix
+  CORE::LINALG::SerialDenseMatrix Pvmm;               // first Piola-Kirchhoff stress vector
+  CORE::LINALG::SerialDenseMatrix Xjm0;               // Jacobian Matrix (origin)
+  double Xjdet0;                                      // determinant of #Xjm0
+  CORE::LINALG::SerialDenseVector Fuv0o;              // deformation gradient at origin at t_{n}
+  CORE::LINALG::SerialDenseVector Fuv0;               // deformation gradient at origin at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix boplin0;            // B-operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0o;                // W-operator (origin) at t_{n}
+  CORE::LINALG::SerialDenseMatrix W0;                 // W-operator (origin) at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& W0m = W0o;         // mid-W-operator (origin)
+  CORE::LINALG::SerialDenseMatrix Go;                 // G-operator at t_{n}
+  CORE::LINALG::SerialDenseMatrix G;                  // G-operator at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Gm = Go;           // mid-G-operator
+  CORE::LINALG::SerialDenseMatrix Z;                  // Z-operator
+  CORE::LINALG::SerialDenseMatrix FmCF;               // FCF^T
+  CORE::LINALG::SerialDenseMatrix Kda;                // EAS matrix Kda
+  CORE::LINALG::SerialDenseMatrix Kad;                // EAS matrix Kad
+  CORE::LINALG::SerialDenseMatrix Kaa;                // EAS matrix Kaa
+  CORE::LINALG::SerialDenseVector feas;               // EAS portion of internal forces
 
   // element co-ordinates
   for (int k = 0; k < numnode; ++k)
@@ -155,20 +157,21 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     // Kaa and Kda of previous step to avoid additional element call.
     // This corresponds to the (innermost) element update loop
     // in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
-    alphao =
-        data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // get alpha of last converged state
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+    alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+        "alphao");  // get alpha of last converged state
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+        "alpha");  // get alpha of previous iteration
 
     // get stored EAS history
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    oldKad = data_.GetMutable<Epetra_SerialDenseMatrix>("Kad");
+    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+    oldKad = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kad");
     if ((not alpha) or (not oldKaainv) or (not oldKda) or (not oldKad) or (not oldfeas))
       dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(edof);
+    CORE::LINALG::SerialDenseVector res_d(edof);
     for (int i = 0; i < edof; ++i)
     {
       res_d(i) = residual[i];
@@ -364,7 +367,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     solve_for_inverseKaa.SetMatrix(Kaa);
     solve_for_inverseKaa.Invert();
 
-    Epetra_SerialDenseMatrix KdaKaa(edof, Wall1::neas_);  // temporary Kda.Kaa^{-1}
+    CORE::LINALG::SerialDenseMatrix KdaKaa(edof, Wall1::neas_);  // temporary Kda.Kaa^{-1}
     KdaKaa.Multiply('N', 'N', 1.0, Kda, Kaa, 1.0);
 
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
@@ -392,9 +395,10 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
 /*======================================================================*/
 /* elastic and initial displacement stiffness */
 void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const double& xigemm,
-    const double& fac, const Epetra_SerialDenseMatrix& bopm, const Epetra_SerialDenseMatrix& bopn,
-    const Epetra_SerialDenseMatrix& C, const Epetra_SerialDenseMatrix& boplin,
-    const Epetra_SerialDenseMatrix& Smm, Epetra_SerialDenseMatrix& estif)
+    const double& fac, const CORE::LINALG::SerialDenseMatrix& bopm,
+    const CORE::LINALG::SerialDenseMatrix& bopn, const CORE::LINALG::SerialDenseMatrix& C,
+    const CORE::LINALG::SerialDenseMatrix& boplin, const CORE::LINALG::SerialDenseMatrix& Smm,
+    CORE::LINALG::SerialDenseMatrix& estif)
 {
   // constants
   const int nd = Wall1::noddof_ * NumNode();  // number of element DOFs
@@ -428,11 +432,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
 /*======================================================================*/
 /* calcuate tangent (f_{int;m}),d */
 void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const double& xigemm,
-    const double& fac, const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseMatrix& W0m,
-    const Epetra_SerialDenseMatrix& W0, const Epetra_SerialDenseMatrix& Fmm,
-    const Epetra_SerialDenseMatrix& Fm, const Epetra_SerialDenseMatrix& C,
-    const Epetra_SerialDenseMatrix& Smm, Epetra_SerialDenseMatrix& FmCF,
-    Epetra_SerialDenseMatrix& estif)
+    const double& fac, const CORE::LINALG::SerialDenseMatrix& boplin,
+    const CORE::LINALG::SerialDenseMatrix& W0m, const CORE::LINALG::SerialDenseMatrix& W0,
+    const CORE::LINALG::SerialDenseMatrix& Fmm, const CORE::LINALG::SerialDenseMatrix& Fm,
+    const CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseMatrix& Smm,
+    CORE::LINALG::SerialDenseMatrix& FmCF, CORE::LINALG::SerialDenseMatrix& estif)
 {
   // contitutive matrix (3x3)
   CORE::LINALG::SerialDenseMatrix C_red(3, 3, false);
@@ -484,10 +488,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
 /*======================================================================*/
 /* calculate tangent (f_{int;m}),alpha */
 void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(const double& alphafgemm, const double& xigemm,
-    const double& fac, const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseMatrix& W0m,
-    const Epetra_SerialDenseMatrix& FmCF, const Epetra_SerialDenseMatrix& Smm,
-    const Epetra_SerialDenseMatrix& G, const Epetra_SerialDenseMatrix& Z,
-    const Epetra_SerialDenseMatrix& Pvmm, Epetra_SerialDenseMatrix& kda)
+    const double& fac, const CORE::LINALG::SerialDenseMatrix& boplin,
+    const CORE::LINALG::SerialDenseMatrix& W0m, const CORE::LINALG::SerialDenseMatrix& FmCF,
+    const CORE::LINALG::SerialDenseMatrix& Smm, const CORE::LINALG::SerialDenseMatrix& G,
+    const CORE::LINALG::SerialDenseMatrix& Z, const CORE::LINALG::SerialDenseMatrix& Pvmm,
+    CORE::LINALG::SerialDenseMatrix& kda)
 {
   // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
   CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
@@ -527,10 +532,11 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(const double& alphafgemm, const dou
 /*======================================================================*/
 /* calculate tangent (s_m),d */
 void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(const double& alphafgemm, const double& xigemm,
-    const double& fac, const Epetra_SerialDenseMatrix& boplin, const Epetra_SerialDenseMatrix& W0,
-    const Epetra_SerialDenseMatrix& FmCF, const Epetra_SerialDenseMatrix& Smm,
-    const Epetra_SerialDenseMatrix& Gm, const Epetra_SerialDenseMatrix& Z,
-    const Epetra_SerialDenseMatrix& Pvmm, Epetra_SerialDenseMatrix& kad)
+    const double& fac, const CORE::LINALG::SerialDenseMatrix& boplin,
+    const CORE::LINALG::SerialDenseMatrix& W0, const CORE::LINALG::SerialDenseMatrix& FmCF,
+    const CORE::LINALG::SerialDenseMatrix& Smm, const CORE::LINALG::SerialDenseMatrix& Gm,
+    const CORE::LINALG::SerialDenseMatrix& Z, const CORE::LINALG::SerialDenseMatrix& Pvmm,
+    CORE::LINALG::SerialDenseMatrix& kad)
 {
   // BplusW (4 x 8) :  B_L + W0_{n+1}
   CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
@@ -569,9 +575,9 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(const double& alphafgemm, const do
 /*======================================================================*/
 /* calculate tangent (s_m),alpha */
 void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(const double& alphafgemm, const double& xigemm,
-    const double& fac, const Epetra_SerialDenseMatrix& FmCF, const Epetra_SerialDenseMatrix& Smm,
-    const Epetra_SerialDenseMatrix& G, const Epetra_SerialDenseMatrix& Gm,
-    Epetra_SerialDenseMatrix& kaa)
+    const double& fac, const CORE::LINALG::SerialDenseMatrix& FmCF,
+    const CORE::LINALG::SerialDenseMatrix& Smm, const CORE::LINALG::SerialDenseMatrix& G,
+    const CORE::LINALG::SerialDenseMatrix& Gm, CORE::LINALG::SerialDenseMatrix& kaa)
 {
   // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
   CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);

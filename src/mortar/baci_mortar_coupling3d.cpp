@@ -2452,7 +2452,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
     // temporary storage for transformed points
     int np = (int)collconvexhull.size();
-    Epetra_SerialDenseMatrix transformed(2, np);
+    CORE::LINALG::SerialDenseMatrix transformed(2, np);
 
     // transform each convex hull point
     for (int i = 0; i < np; ++i)
@@ -3257,7 +3257,7 @@ bool MORTAR::Coupling3d::CenterTriangulation(
    else if (clipsize==4)
    {
    // IntCell 1 vertices = clip polygon vertices 0,1,2
-   Epetra_SerialDenseMatrix coords(3,3);
+   CORE::LINALG::SerialDenseMatrix coords(3,3);
    for (int k=0;k<3;++k)
    {
    coords(k,0) = Clip()[0].Coord()[k];

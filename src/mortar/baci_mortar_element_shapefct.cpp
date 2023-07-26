@@ -1963,7 +1963,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -1982,7 +1982,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -2002,7 +2002,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -2026,7 +2026,7 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::Serial
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -2609,7 +2609,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
  |  1D/2D shape function linearizations repository            popp 05/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::ShapeType shape,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivdual)
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   switch (shape)
   {
@@ -2644,9 +2644,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         // prepare computation with Gauss quadrature
@@ -2656,8 +2656,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, 1> val;
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -2686,7 +2686,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -2717,11 +2717,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -2758,9 +2758,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 2, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 2, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         // prepare computation with Gauss quadrature
@@ -2771,8 +2771,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 2, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 2, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
 
         // build me, de, derivme, derivde
@@ -2802,7 +2802,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -2833,11 +2833,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -2864,7 +2864,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        // *******************************************************************
 
        std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-       Epetra_SerialDenseMatrix aeref(ae);
+       CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
        int thedim=3;
        if (shape==MORTAR::MortarElement::quaddual1D) thedim=2;
@@ -2953,9 +2953,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 2, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 2, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         // prepare computation with Gauss quadrature
@@ -2966,8 +2966,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 2, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 2, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -2996,7 +2996,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3051,11 +3051,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3090,9 +3090,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -3106,8 +3106,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -3136,7 +3136,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3171,11 +3171,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3202,7 +3202,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        // *******************************************************************
 
        std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-       Epetra_SerialDenseMatrix aeref(ae);
+       CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
        int thedim=3;
        if (shape==MORTAR::MortarElement::quaddual1D) thedim=2;
@@ -3289,9 +3289,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -3305,8 +3305,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -3335,7 +3335,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3370,11 +3370,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3400,7 +3400,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
        // *******************************************************************
 
        std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-       Epetra_SerialDenseMatrix aeref(ae);
+       CORE::LINALG::SerialDenseMatrix aeref(ae);
        double delta = 1e-8;
        int thedim=3;
 
@@ -3485,9 +3485,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -3501,8 +3501,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -3531,7 +3531,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3562,11 +3562,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -3590,7 +3590,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         //      // *******************************************************************
         //
         //      std::cout << "FD Check for A-derivative of Element: " << Id() << std::endl;
-        //      Epetra_SerialDenseMatrix aeref(ae);
+        //      CORE::LINALG::SerialDenseMatrix aeref(ae);
         //      double delta = 1e-8;
         //      int thedim=3;
         //
@@ -4053,9 +4053,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -4069,8 +4069,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -4099,7 +4099,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -4154,11 +4154,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -4194,9 +4194,9 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 #endif
 
         MoData().DerivDualShape() =
-            Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-                nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+            Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+                nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
             *(MoData().DerivDualShape());
 
         typedef CORE::GEN::pairedvector<int, double>::const_iterator CI;
@@ -4210,8 +4210,8 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         CORE::LINALG::Matrix<nnodes, nnodes> de(true);
 
         // two-dim arrays of maps for linearization of me/de
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> derivde_me(
-            nnodes * 3, 0, Epetra_SerialDenseMatrix(nnodes + 1, nnodes));
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> derivde_me(
+            nnodes * 3, 0, CORE::LINALG::SerialDenseMatrix(nnodes + 1, nnodes));
 
         // build me, de, derivme, derivde
         for (int i = 0; i < integrator.nGP(); ++i)
@@ -4240,7 +4240,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
           // loop over all directional derivatives
           for (CI p = testmap.begin(); p != testmap.end(); ++p)
           {
-            Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
+            CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
             const double& ps = p->second;
             for (int j = 0; j < nnodes; ++j)
             {
@@ -4295,11 +4295,11 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
         // (this is done according to a quite complex formula, which
         // we get from the linearization of the biorthogonality condition:
         // Lin (Ae * Me = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
-        typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+        typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
         for (_CIM p = derivde_me.begin(); p != derivde_me.end(); ++p)
         {
-          Epetra_SerialDenseMatrix& dtmp = derivde_me[p->first];
-          Epetra_SerialDenseMatrix& pt = derivae[p->first];
+          CORE::LINALG::SerialDenseMatrix& dtmp = derivde_me[p->first];
+          CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
           for (int i = 0; i < nnodes; ++i)
             for (int j = 0; j < nnodes; ++j)
             {
@@ -4513,7 +4513,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     {
       if (valdim != 2) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -4535,7 +4535,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     {
       if (valdim != 3) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(3);
+      CORE::LINALG::SerialDenseVector weights(3);
       for (int inode = 0; inode < 3; ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -4558,7 +4558,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     {
       if (valdim != 4) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -4585,7 +4585,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     {
       if (valdim != 8) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -4612,7 +4612,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     {
       if (valdim != 9) dserror("Inconsistency in EvaluateShape");
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
         weights(inode) = dynamic_cast<MORTAR::MortarNode*>(Nodes()[inode])->NurbsW();
 
@@ -4646,7 +4646,7 @@ bool MORTAR::MortarElement::Evaluate2ndDerivShape(
  |  Compute directional derivative of dual shape functions    popp 05/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarElement::DerivShapeDual(
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivdual)
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual)
 {
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
@@ -4826,10 +4826,10 @@ bool MORTAR::MortarElement::DerivShapeDual(
 
 
   // do trafo
-  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix> dummy(
-      nnodes * nnodes * 3 * 10, 0, Epetra_SerialDenseMatrix(nnodes, nnodes, true));
+  CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix> dummy(
+      nnodes * nnodes * 3 * 10, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes, true));
 
-  typedef CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>::const_iterator _CIM;
+  typedef CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>::const_iterator _CIM;
   for (_CIM p = derivdual.begin(); p != derivdual.end(); ++p)
   {
     for (int i = 0; i < nnodes; ++i)

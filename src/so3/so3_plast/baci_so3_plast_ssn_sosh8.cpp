@@ -985,7 +985,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   }
 
   // EAS matrix block
-  Epetra_SerialDenseMatrix Kda(numdofperelement_, neas_);
+  CORE::LINALG::SerialDenseMatrix Kda(numdofperelement_, neas_);
 
   // ANS modified rows of bop in local(parameter) coords
   CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_> B_ans_loc;
@@ -1198,7 +1198,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     solve_for_inverseKaa.SetMatrix(*KaaInv_);
     solve_for_inverseKaa.Invert();
 
-    Epetra_SerialDenseMatrix kdakaai(numdofperelement_, neas_);
+    CORE::LINALG::SerialDenseMatrix kdakaai(numdofperelement_, neas_);
     switch (eastype_)
     {
       case soh8p_eassosh8:

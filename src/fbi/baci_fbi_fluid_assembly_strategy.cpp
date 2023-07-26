@@ -80,7 +80,7 @@ void FBI::UTILS::FBIAssemblyStrategy::Assemble(const DRT::Discretization& discre
 
 void FBI::UTILS::FBIAssemblyStrategy::AssembleFluidMatrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
-    const Epetra_SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
+    const CORE::LINALG::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(cff, true)->FEAssemble(

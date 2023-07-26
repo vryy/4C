@@ -65,8 +65,8 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -81,8 +81,8 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -104,7 +104,7 @@ namespace CONTACT
 
     template <int dim>
     void BuildAdjointTestTsi(MORTAR::MortarElement& moEle, const double fac,
-        const Epetra_SerialDenseMatrix& d2sntDdDT,
+        const CORE::LINALG::SerialDenseMatrix& d2sntDdDT,
         CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T);
 
     template <int dim>
@@ -174,8 +174,10 @@ namespace CONTACT
 
     template <int dim>
     void BuildAdjointTestThermo(MORTAR::MortarElement& moEle, const double fac,
-        const Epetra_SerialDenseMatrix& dq_dT_ele, const Epetra_SerialDenseMatrix& d2q_dT_dd,
-        const Epetra_SerialDenseMatrix& d2q_dT_dn, const Epetra_SerialDenseMatrix& d2q_dT_dpxi,
+        const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
+        const CORE::LINALG::SerialDenseMatrix& d2q_dT_dd,
+        const CORE::LINALG::SerialDenseMatrix& d2q_dT_dn,
+        const CORE::LINALG::SerialDenseMatrix& d2q_dT_dpxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
         const std::vector<CORE::GEN::pairedvector<int, double>>& boundary_gpcoord_lin,
         CORE::LINALG::Matrix<dim, dim>& derivtravo_slave,

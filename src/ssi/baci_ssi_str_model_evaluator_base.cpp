@@ -27,7 +27,8 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   const std::vector<char>& stressdata = EvalData().StressData();
 
   // initialize map for element-wise stresses
-  const auto stresses = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  const auto stresses =
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
 
   // initialize position pointer
   std::vector<char>::size_type position(0);
@@ -36,7 +37,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   for (int i = 0; i < Discret().ElementRowMap()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
-    const auto stresses_ele = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    const auto stresses_ele = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
     // extract stresses
     DRT::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);

@@ -780,7 +780,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiff(
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcFineScaleSubgrDiff(double& sgdiff,
-    Epetra_SerialDenseVector& subgrdiff, DRT::Element* ele, const double vol, const int k,
+    CORE::LINALG::SerialDenseVector& subgrdiff, DRT::Element* ele, const double vol, const int k,
     const double densnp, const double diffus, const CORE::LINALG::Matrix<nsd_, 1> convelint)
 {
   // get number of dimensions
@@ -1632,7 +1632,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
     // we have to set a vector, which is however only required for one
     // special case (computation of fine-scale subgrid diffusivity for non-incremental
     // solver -> only artificial subgrid diffusivity) not considered here
-    Epetra_SerialDenseVector elevec1_epetra_subgrdiff_dummy;
+    CORE::LINALG::SerialDenseVector elevec1_epetra_subgrdiff_dummy;
     if (turbparams_->FSSGD())
       CalcFineScaleSubgrDiff(sgdiff, elevec1_epetra_subgrdiff_dummy, ele, vol, 0, densnp[0],
           diffmanager_->GetIsotropicDiff(0), scatravarmanager_->ConVel(0));
@@ -1753,7 +1753,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
       // we have to set a vector, which is however only required for one
       // special case (computation of fine-scale subgrid diffusivity for non-incremental
       // solver -> only artificial subgrid diffusivity) not considered here
-      Epetra_SerialDenseVector elevec1_epetra_subgrdiff_dummy;
+      CORE::LINALG::SerialDenseVector elevec1_epetra_subgrdiff_dummy;
       if (turbparams_->FSSGD())
         CalcFineScaleSubgrDiff(sgdiff, elevec1_epetra_subgrdiff_dummy, ele, vol, 0, densnp[0],
             diffmanager_->GetIsotropicDiff(0), scatravarmanager_->ConVel(0));

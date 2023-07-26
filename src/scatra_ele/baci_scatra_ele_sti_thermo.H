@@ -49,7 +49,7 @@ namespace DRT
 
       //! provide element matrix with linearizations of Soret effect term in discrete scatra
       //! residuals w.r.t. scatra dofs
-      void CalcMatSoret(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatSoret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& conc,        //!< concentration
           const double& diffcoeff,   //!< diffusion coefficient
@@ -63,7 +63,7 @@ namespace DRT
 
       //! provide element matrix with linearizations of Soret effect term in discrete scatra
       //! residuals w.r.t. thermo dofs
-      void CalcMatSoretOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatSoretOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac,     //!< time integration factor times domain integration factor
           const double& concentration,  //!< concentration
           const double& diffcoeff,      //!< diffusion coefficient
@@ -75,7 +75,7 @@ namespace DRT
 
       //! provide element right-hand side vector with contributions of Soret effect term to discrete
       //! scatra residuals
-      void CalcRHSSoret(Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+      void CalcRHSSoret(CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& rhsfac,     //!< domain integration factor times time integration factor for
                                     //!< right-hand side vector
           const double& conc,       //!< concentration
@@ -99,7 +99,7 @@ namespace DRT
       //! \param funct     shape functions
       //! \param derxy     spatial derivatives of shape functions
       //! \param scalefac  scaling factor for pot. contributions
-      void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int& numdofpernode,
+      void CalcMatDiffThermoOD(CORE::LINALG::SerialDenseMatrix& emat, const int& numdofpernode,
           const double& timefacfac, const double& invF,
           const CORE::LINALG::Matrix<nsd_, 1>& gradconc,
           const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,

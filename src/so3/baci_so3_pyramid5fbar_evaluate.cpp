@@ -29,9 +29,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -581,7 +583,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::InitJacobianMapping()
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_pyramid5fbar::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -862,7 +864,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
 
     // Green-Lagrange strains(F_bar) matrix E = 0.5 * (Cauchygreen(F_bar) - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_bar_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::SerialDenseVector glstrain_bar_epetra(MAT::NUM_STRESS_3D);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_bar(glstrain_bar_epetra.A(), true);
     glstrain_bar(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
     glstrain_bar(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
@@ -1302,7 +1304,7 @@ void DRT::ELEMENTS::So_pyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // loca
         cauchygreen.MultiplyTN(defgrd, defgrd);
 
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+        CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
         // if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
         //{
@@ -1391,7 +1393,7 @@ int DRT::ELEMENTS::So_pyramid5fbarType::Initialize(DRT::Discretization& dis)
  | compute def gradient at every gaussian point (protected) seitz 03/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_pyramid5fbar::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5>> derivs = sop5_derivs();
   // derivatives at centroid point

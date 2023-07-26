@@ -169,7 +169,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 bool DRT::NURBS::Knotvector::GetEleKnots(
-    std::vector<Epetra_SerialDenseVector>& eleknots, int gid) const
+    std::vector<CORE::LINALG::SerialDenseVector>& eleknots, int gid) const
 {
   //------------------------------------------------
   // determine the segments knot values
@@ -247,8 +247,8 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
  |                                                  (public) gammi 05/09|
  *----------------------------------------------------------------------*/
 bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
-    std::vector<Epetra_SerialDenseVector>& eleknots,
-    std::vector<Epetra_SerialDenseVector>& surfknots, double& normalfac, int pgid,
+    std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+    std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
     const int surfaceid) const
 {
   // get parent element local knotspan to extract the surface's knotspan

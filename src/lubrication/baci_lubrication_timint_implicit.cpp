@@ -1079,7 +1079,8 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   discret_->SetState("prenp", prenp_);
 
   // get (squared) error values
-  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
   discret_->EvaluateScalars(eleparams, errors);
   discret_->ClearState();
 
@@ -1176,8 +1177,8 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
     if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // evaluate integrals of pressure(s) and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> pressures =
-        Teuchos::rcp(new Epetra_SerialDenseVector(2));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> pressures =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
     discret_->EvaluateScalars(eleparams, pressures);
     discret_->ClearState();  // clean up
 

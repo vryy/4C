@@ -105,9 +105,9 @@ namespace DRT
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF, double frt, int num_dof_per_node,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm,
-          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
+          CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
+          CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m);
 
       /*!
        * @brief evaluate capacitive part of the scatra-scatra interface coupling condition at
@@ -159,8 +159,8 @@ namespace DRT
               test_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timederivfac, double timefacfac, double timefacrhsfac, int num_dof_per_node,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_ms,
+          CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m);
 
       /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
@@ -210,10 +210,10 @@ namespace DRT
               test_master,
           double pseudo_contact_fac, double numelectrons, int nen_master, double timefacfac,
           double timefacrhsfac, double dj_dc_slave, double dj_dc_master, double dj_dpot_slave,
-          double dj_dpot_master, double j, int num_dof_per_node, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          double dj_dpot_master, double j, int num_dof_per_node,
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
+          CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
+          CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m);
 
       /*!
        * @brief calculate residual vectors and linearizations of residuals due to capacitive flux at
@@ -250,8 +250,8 @@ namespace DRT
               test_master,
           double pseudo_contact_fac, int numelectrons, double timefacfac, double timefacrhsfac,
           int nen_master, double jC, double djC_dpot_slave, int num_dof_per_node,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_ms,
+          CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m);
 
      protected:
       //! protected constructor for singletons
@@ -260,27 +260,30 @@ namespace DRT
 
       void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-          Epetra_SerialDenseVector& eslaveresidual) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
       void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
-          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
-          Epetra_SerialDenseVector& emasterresidual) override;
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual,
+          CORE::LINALG::SerialDenseVector& emasterresidual) override;
 
       void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
       void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix) override;
 
       double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
 
       void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& scalars) override;
+          CORE::LINALG::SerialDenseVector& scalars) override;
 
       //! evaluate factor F/RT
       virtual double GetFRT() const;

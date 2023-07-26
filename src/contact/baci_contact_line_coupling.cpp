@@ -226,9 +226,9 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   // Dual shape functions coefficient matrix and linearization
   CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes, true);
   SurfaceElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-          (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+          (nnodes + mnodes) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+  CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
       *(SurfaceElement().MoData().DerivDualShape());
 
   // various variables
@@ -393,7 +393,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
     CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
-    Epetra_SerialDenseMatrix& pt = derivae[p->first];
+    CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
       {
@@ -1803,7 +1803,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   tangent[1] -= mycnode2->xspatial()[1];
   tangent[2] -= mycnode2->xspatial()[2];
 
-  Epetra_SerialDenseMatrix tanplane(3, 3);
+  CORE::LINALG::SerialDenseMatrix tanplane(3, 3);
   tanplane(0, 0) = 1 - (tangent[0] * tangent[0]);
   tanplane(0, 1) = -(tangent[0] * tangent[1]);
   tanplane(0, 2) = -(tangent[0] * tangent[2]);
@@ -2777,7 +2777,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
     for (int dim = 0; dim < Dim(); ++dim)
       jump[dim] = mgpx[dim] - mgpxold[dim] - (sgpx[dim] - sgpxold[dim]);
 
-    Epetra_SerialDenseMatrix tanplane(3, 3);
+    CORE::LINALG::SerialDenseMatrix tanplane(3, 3);
     tanplane(0, 0) = 1 - (value[0] * value[0]);
     tanplane(0, 1) = -(value[0] * value[1]);
     tanplane(0, 2) = -(value[0] * value[2]);

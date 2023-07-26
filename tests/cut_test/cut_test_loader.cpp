@@ -6,9 +6,8 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Epetra_SerialDenseMatrix.h>
-
 #include "cut_test_loader.H"
+#include "linalg_serialdensematrix.H"
 
 void MeshLoader::GetCutNode(int nid, double x, double y, double z, double lsv)
 {
@@ -43,7 +42,7 @@ void MeshLoader::CreateSide(
   {
     case DRT::Element::quad4:
     {
-      Epetra_SerialDenseMatrix xyz(3, 4);
+      CORE::LINALG::SerialDenseMatrix xyz(3, 4);
       Fill(cut_nodes_, nid1, &xyz(0, 0));
       Fill(cut_nodes_, nid2, &xyz(0, 1));
       Fill(cut_nodes_, nid3, &xyz(0, 2));
@@ -71,7 +70,7 @@ void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, 
   {
     case DRT::Element::hex8:
     {
-      Epetra_SerialDenseMatrix xyz(3, 8);
+      CORE::LINALG::SerialDenseMatrix xyz(3, 8);
       Fill(nodes_, nid1, &xyz(0, 0));
       Fill(nodes_, nid2, &xyz(0, 1));
       Fill(nodes_, nid3, &xyz(0, 2));

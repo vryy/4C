@@ -367,7 +367,8 @@ CORE::LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementG
 
       // get phi-values of current adjacent element ele_adj
       // create vector "ephinp" holding scalar phi values for this element
-      Epetra_SerialDenseVector ephinp(numnode);  // local vector phi-values of adjacent element
+      CORE::LINALG::SerialDenseVector ephinp(
+          numnode);  // local vector phi-values of adjacent element
 
       // which node in param space of element ele_adj has actnode
       int ID_param_space = -1;

@@ -14,8 +14,6 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 #include "baci_lib_elementtype.H"
 #include "baci_discretization_fem_general_largerotations.H"
@@ -240,9 +238,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
       /*!
@@ -266,7 +264,7 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL)
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1 = NULL)
       {
         return (0);
       };
@@ -276,8 +274,8 @@ namespace DRT
       */
       void nlnstiffmass(Teuchos::ParameterList& params, std::vector<double>& acc,
           std::vector<double>& vel, std::vector<double>& disp,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector* force, Epetra_SerialDenseVector* inertia_force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+          CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force);
 
       /*! \brief set the parameter interface ptr for the solid elements
        *
@@ -455,25 +453,25 @@ namespace DRT
 
       //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
       void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of drag force and corresponding stiffness contribution
       void CalcDragForce(Teuchos::ParameterList& params, const std::vector<double>& vel,
-          const std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of stochastic force and corresponding stiffness contribution
       void CalcStochasticForce(Teuchos::ParameterList& params, const std::vector<double>& vel,
-          const std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //  //!calculation of inertia force and corresponding stiffness contribution
       //  void CalcInertiaForce( Teuchos::ParameterList&   params,
       //                         std::vector<double>&      vel,
       //                         std::vector<double>&      disp,
-      //                         Epetra_SerialDenseMatrix* stiffmatrix,
-      //                         Epetra_SerialDenseVector* force);
+      //                         CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+      //                         CORE::LINALG::SerialDenseVector* force);
 
       //! calculation of background fluid velocity and gradient of velocity
       void GetBackgroundVelocity(Teuchos::ParameterList& params,

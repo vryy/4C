@@ -422,7 +422,7 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
  |                                                          ghamm 09/13 |
  *----------------------------------------------------------------------*/
 void DRT::Element::NodalConnectivity(
-    Epetra_SerialDenseMatrix& edgeweights, Epetra_SerialDenseVector& nodeweights)
+    CORE::LINALG::SerialDenseMatrix& edgeweights, CORE::LINALG::SerialDenseVector& nodeweights)
 {
   // weight for this element
   double weight = EvaluationCost();
@@ -1033,9 +1033,9 @@ void DRT::Element::SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> f
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+    LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   return Evaluate(params, discretization, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
@@ -1044,9 +1044,9 @@ int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& 
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
 int DRT::Element::Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   std::cout << "DRT::Element::Evaluate:\n"
             << "Base class dummy routine DRT::Element::Evaluate(...) called\n"

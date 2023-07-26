@@ -335,8 +335,8 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(const CORE::LINALG::Matrix<3, 3>* defg
   // convert to epetra format and solve eigenvalue problem
   // this matrix contains spatial eigen directions (the second
   // index corresponds to the eigenvalue)
-  Epetra_SerialDenseMatrix n(3, 3);
-  Epetra_SerialDenseVector lambda_trial_square(3);
+  CORE::LINALG::SerialDenseMatrix n(3, 3);
+  CORE::LINALG::SerialDenseVector lambda_trial_square(3);
 
   // convert Input Matrix in Epetra format
   for (int i = 0; i < 3; i++)

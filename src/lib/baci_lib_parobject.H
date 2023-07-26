@@ -19,7 +19,7 @@
 #include <type_traits>
 #include <string>
 #include "baci_linalg_serialdensematrix.H"
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_utils_pairedmatrix.H"
@@ -42,7 +42,7 @@ namespace DRT
    double                   b;
    double*                  vec = new double[50];
    vector<char>             bla;
-   Epetra_SerialDenseMatrix matrix;
+   CORE::LINALG::SerialDenseMatrix matrix;
    \endcode
    This is how it is packed into a vector<char>& data:<br>
    \code
@@ -115,8 +115,8 @@ namespace DRT
    std::unordered_map<T,U>
    packing its own base class std::pair<T,U> std::set<T> CORE::LINALG::Matrix<T,U>
    std::vector<CORE::LINALG::Matrix<T,U> >
-   Epetra_SerialDenseMatrix
-   Epetra_SerialDenseVector
+   CORE::LINALG::SerialDenseMatrix
+   CORE::LINALG::SerialDenseVector
    CORE::LINALG::SerialDenseMatrix
 
    \endcode
@@ -428,32 +428,22 @@ namespace DRT
     /*!
      \brief Add stuff to the end of a char vector data
 
-     This method is an overload of the above template for Epetra_SerialDenseMatrix
-     \param data (in/out) : char string stuff shall be added to
-     \param stuff (in)    : Epetra_SerialDenseMatrix that get's added to stuff
-
-     */
-    static void AddtoPack(PackBuffer& data, const Epetra_SerialDenseMatrix& stuff);
-
-    /*!
-     \brief Add stuff to the end of a char vector data
-
-     This method is an overload of the above template for Epetra_SerialDenseMatrix
-     \param data (in/out) : char string stuff shall be added to
-     \param stuff (in)    : Epetra_SerialDenseVector that get's added to stuff
-
-     */
-    static void AddtoPack(PackBuffer& data, const Epetra_SerialDenseVector& stuff);
-
-    /*!
-     \brief Add stuff to the end of a char vector data
-
      This method is an overload of the above template for CORE::LINALG::SerialDenseMatrix
      \param data (in/out) : char string stuff shall be added to
      \param stuff (in)    : CORE::LINALG::SerialDenseMatrix that get's added to stuff
 
      */
     static void AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseMatrix& stuff);
+
+    /*!
+     \brief Add stuff to the end of a char vector data
+
+     This method is an overload of the above template for CORE::LINALG::SerialDenseMatrix
+     \param data (in/out) : char string stuff shall be added to
+     \param stuff (in)    : CORE::LINALG::SerialDenseVector that get's added to stuff
+
+     */
+    static void AddtoPack(PackBuffer& data, const CORE::LINALG::SerialDenseVector& stuff);
 
     /*!
      \brief Add stuff to the end of a char vector data
@@ -872,34 +862,6 @@ namespace DRT
     /*!
      @brief Extract stuff from a char vector data and increment position
 
-     This method is an overload of the above template for stuff of type Epetra_SerialDenseMatrix
-
-     @param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method
-     @param data (in)         : char vector where stuff is extracted from
-     @param stuff (out)       : Epetra_SerialDenseMatrix to extract from data
-
-     */
-    static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, Epetra_SerialDenseMatrix& stuff);
-
-    /*!
-     \brief Extract stuff from a char vector data and increment position
-
-     This method is an overload of the above template for stuff of type Epetra_SerialDenseVector
-
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : Epetra_SerialDenseVector to extract from data
-
-     */
-    static void ExtractfromPack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, Epetra_SerialDenseVector& stuff);
-
-
-    /*!
-     @brief Extract stuff from a char vector data and increment position
-
      This method is an overload of the above template for stuff of type
      CORE::LINALG::SerialDenseMatrix
 
@@ -911,6 +873,20 @@ namespace DRT
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
         const std::vector<char>& data, CORE::LINALG::SerialDenseMatrix& stuff);
+
+    /*!
+     \brief Extract stuff from a char vector data and increment position
+
+     This method is an overload of the above template for stuff of type
+     CORE::LINALG::SerialDenseVector
+
+     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method \param data (in)         : char vector where stuff is extracted from \param
+     stuff (out)       : CORE::LINALG::SerialDenseVector to extract from data
+
+     */
+    static void ExtractfromPack(std::vector<char>::size_type& position,
+        const std::vector<char>& data, CORE::LINALG::SerialDenseVector& stuff);
 
     /*!
     @brief Extract stuff from a char vector data and increment position

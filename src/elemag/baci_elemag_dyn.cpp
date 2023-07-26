@@ -367,7 +367,7 @@ void electromagnetics_drt()
   // Computing the error at the las time step (the conditional stateme nt is inside for now)
   if (DRT::INPUT::IntegralValue<bool>(elemagparams, "CALCERR"))
   {
-    Teuchos::RCP<Epetra_SerialDenseVector> errors = elemagalgo->ComputeError();
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors = elemagalgo->ComputeError();
     elemagalgo->PrintErrors(errors);
   }
 

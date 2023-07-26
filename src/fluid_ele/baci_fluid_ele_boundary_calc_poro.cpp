@@ -57,9 +57,10 @@ DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(
     DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
   const auto act = DRT::INPUT::get<FLD::BoundaryAction>(params, "action");
@@ -133,8 +134,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::EvaluateAction(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
@@ -188,8 +189,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
   /*
    * Evaluate all Terms for the FPSI Boundary & Neumann Integration. The both conditions should be
@@ -1691,7 +1692,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
@@ -1793,7 +1795,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -1907,10 +1910,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -2042,8 +2045,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -2090,7 +2094,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
   dsassert(mycondVector.size() != 0, "no condition IDs values for boundary element");
 
   // calculate normal
-  Epetra_SerialDenseVector normal;
+  CORE::LINALG::SerialDenseVector normal;
   normal.Size(lm.size());
 
   // gauss point loop
@@ -2274,7 +2278,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetration(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1, std::vector<int>& lm)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
+    std::vector<int>& lm)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -2313,7 +2318,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
     dserror("fluid poro element not an ALE element!");
 
   // calculate normal
-  Epetra_SerialDenseVector normal;
+  CORE::LINALG::SerialDenseVector normal;
   normal.Size(lm.size());
 
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
@@ -2362,8 +2367,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationIDs(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
   switch (distype)
   {
@@ -2481,8 +2486,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D and 2D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -2610,10 +2615,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -2853,8 +2858,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -2922,9 +2927,9 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PressureCoupling(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -3058,8 +3063,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputePorosityAtGP(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_fluid,
-    Epetra_SerialDenseVector& rhs)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs)
 {
   switch (distype)
   {
@@ -3165,8 +3170,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_fluid,
-    Epetra_SerialDenseVector& rhs)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_fluid, CORE::LINALG::SerialDenseVector& rhs)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -3303,10 +3308,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -3418,8 +3423,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_struct,
-    Epetra_SerialDenseMatrix& k_lambda)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda)
 {
   switch (distype)
   {
@@ -3530,8 +3535,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_struct,
-    Epetra_SerialDenseMatrix& k_lambda)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_struct, CORE::LINALG::SerialDenseMatrix& k_lambda)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -3694,10 +3699,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -4031,7 +4036,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPres(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_pres)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_pres)
 {
   switch (distype)
   {
@@ -4137,7 +4143,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPres(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& k_pres)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& k_pres)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -4275,10 +4282,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights
@@ -4383,7 +4390,8 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDisp(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& k_disp)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& k_disp)
 {
   switch (distype)
   {
@@ -4489,7 +4497,8 @@ template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDisp(
     DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& plm, Epetra_SerialDenseMatrix& k_disp)
+    DRT::Discretization& discretization, std::vector<int>& plm,
+    CORE::LINALG::SerialDenseMatrix& k_disp)
 {
   // This function is only implemented for 3D
   if (Base::bdrynsd_ != 2 and Base::bdrynsd_ != 1)
@@ -4628,10 +4637,10 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
 
   // In the case of nurbs the normal vector is multiplied with normalfac
   double normalfac = 0.0;
-  std::vector<Epetra_SerialDenseVector> mypknots(nsd_);
-  std::vector<Epetra_SerialDenseVector> myknots(Base::bdrynsd_);
-  Epetra_SerialDenseVector weights(Base::bdrynen_);
-  Epetra_SerialDenseVector pweights(pele->NumNode());
+  std::vector<CORE::LINALG::SerialDenseVector> mypknots(nsd_);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(Base::bdrynsd_);
+  CORE::LINALG::SerialDenseVector weights(Base::bdrynen_);
+  CORE::LINALG::SerialDenseVector pweights(pele->NumNode());
 
   // for isogeometric elements --- get knotvectors for parent
   // element and surface element, get weights

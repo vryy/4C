@@ -103,7 +103,7 @@ void MORTAR::BaseBinaryTree::Init()
  |  ctor BaseBinaryTreeNode (public)                       schmidt 01/19|
  *----------------------------------------------------------------------*/
 MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(DRT::Discretization& discret,
-    std::vector<int> elelist, const Epetra_SerialDenseMatrix& dopnormals, const int& kdop,
+    std::vector<int> elelist, const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop,
     const int& dim, const bool& useauxpos, const int layer)
     : MORTAR::AbstractBinaryTreeNode::AbstractBinaryTreeNode(),
       dim_(dim),
@@ -265,7 +265,7 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
     // PrintSlabs();
 
     // Matrix containing coordinates of points defining kdop (x,y,z)
-    Epetra_SerialDenseMatrix position(kdop_, 3);
+    CORE::LINALG::SerialDenseMatrix position(kdop_, 3);
 
     for (int i = 0; i < kdop_; i++) position(i, 2) = 0.0;
 

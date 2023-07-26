@@ -94,9 +94,11 @@ void DRT::ELEMENTS::NStet::InitElement()
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   CORE::LINALG::Matrix<12, 12> elemat1(elemat1_epetra.A(), true);
   CORE::LINALG::Matrix<12, 12> elemat2(elemat2_epetra.A(), true);
@@ -709,10 +711,11 @@ void DRT::ELEMENTS::NStet::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
     CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
-  Epetra_SerialDenseVector stress_e(::View, stress.A(), stress.Rows());
-  Epetra_SerialDenseMatrix cmat_e(::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
-  const Epetra_SerialDenseVector glstrain_e(::View, glstrain.A(), glstrain.Rows());
-  // Epetra_SerialDenseMatrix
+  CORE::LINALG::SerialDenseVector stress_e(::View, stress.A(), stress.Rows());
+  CORE::LINALG::SerialDenseMatrix cmat_e(
+      ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+  const CORE::LINALG::SerialDenseVector glstrain_e(::View, glstrain.A(), glstrain.Rows());
+  // CORE::LINALG::SerialDenseMatrix
   // defgrd_e(View,defgrd.A(),defgrd.Rows(),defgrd.Rows(),defgrd.Columns());
 
 
@@ -760,7 +763,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NStet::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("DRT::ELEMENTS::NStet::EvaluateNeumann not implemented");
   return -1;

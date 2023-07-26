@@ -299,7 +299,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
   CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
   CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> Tinv_solid_times_potential_variation;
   CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
-  Epetra_SerialDenseVector L_i(3);
+  CORE::LINALG::SerialDenseVector L_i(3);
   CORE::LINALG::Matrix<n_dof_rot_, 3, double> d_fc_beam_d_psi_beam;
   CORE::LINALG::Matrix<solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
   std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;

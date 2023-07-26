@@ -52,13 +52,13 @@ namespace CORE::GEO
       \brief Compute Gauss point weights by solving the moment fitting equations and returns the
       coordinates of Gauss points and their corresponding weights
       */
-      Epetra_SerialDenseVector compute_weights();
+      CORE::LINALG::SerialDenseVector compute_weights();
 
       /*!
       \brief Computes the RHS of the moment fitting matrix (performs integration of base functions
       over the volumecell)
       */
-      Epetra_SerialDenseVector compute_rhs_moment();
+      CORE::LINALG::SerialDenseVector compute_rhs_moment();
 
       /*!
       \brief Returns the location of Gauss points distributed over the volumecell
@@ -138,49 +138,49 @@ namespace CORE::GEO
       equations
       */
       void FirstOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of second order base function to the moment fitting system of
       equations
       */
       void SecondOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of third order base function to the moment fitting system of
       equations
       */
       void ThirdOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of fourth order base function to the moment fitting system of
       equations
       */
       void FourthOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of fifth order base function to the moment fitting system of
       equations
       */
       void FifthOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Adds linear combination of sixth order base function to the moment fitting system of
       equations
       */
       void SixthOrderAdditionalTerms(
-          std::vector<std::vector<double>>& mat, Epetra_SerialDenseVector& rhs);
+          std::vector<std::vector<double>>& mat, CORE::LINALG::SerialDenseVector& rhs);
 
       /*!
       \brief Computes the error introduced by the generated integration rule for integrating some
       specific functions
       */
-      void ErrorForSpecificFunction(
-          Epetra_SerialDenseVector rhs_moment, Epetra_SerialDenseVector weights, int numeach);
+      void ErrorForSpecificFunction(CORE::LINALG::SerialDenseVector rhs_moment,
+          CORE::LINALG::SerialDenseVector weights, int numeach);
 
       //! considered volumecell
       VolumeCell* volcell_;

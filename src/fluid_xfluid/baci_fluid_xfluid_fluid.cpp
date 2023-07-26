@@ -788,19 +788,19 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
   const int num_interf_norms = 8;
   const int num_stab_norms = 3;
 
-  Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
-  Epetra_SerialDenseVector cpu_dom_norms_emb(num_dom_norms);
-  Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
-  Epetra_SerialDenseVector cpu_stab_norms(num_stab_norms);
+  CORE::LINALG::SerialDenseVector cpu_dom_norms(num_dom_norms);
+  CORE::LINALG::SerialDenseVector cpu_dom_norms_emb(num_dom_norms);
+  CORE::LINALG::SerialDenseVector cpu_interf_norms(num_interf_norms);
+  CORE::LINALG::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
-  Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms_bg =
-      Teuchos::rcp(new Epetra_SerialDenseVector(num_dom_norms));
-  Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms_emb =
-      Teuchos::rcp(new Epetra_SerialDenseVector(num_dom_norms));
-  Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms =
-      Teuchos::rcp(new Epetra_SerialDenseVector(num_interf_norms));
-  Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms =
-      Teuchos::rcp(new Epetra_SerialDenseVector(num_stab_norms));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms_bg =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_dom_norms));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms_emb =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_dom_norms));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_interf_norms));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_stab_norms));
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -829,7 +829,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
   for (int i = 0; i < numrowele_emb; ++i)
   {
     // local element-wise squared error norms
-    Epetra_SerialDenseVector ele_dom_norms_emb(num_dom_norms);
+    CORE::LINALG::SerialDenseVector ele_dom_norms_emb(num_dom_norms);
 
     // pointer to current element
     DRT::Element* actele = mc_xff_->GetCondDis()->lRowElement(i);
@@ -843,10 +843,10 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::EvaluateErrorComparedToAnaly
     // get element location vector, dirichlet flags and ownerships
     actele->LocationVector(*mc_xff_->GetCondDis(), la, false);
 
-    Epetra_SerialDenseMatrix elemat1;
-    Epetra_SerialDenseMatrix elemat2;
-    Epetra_SerialDenseVector elevec2;
-    Epetra_SerialDenseVector elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1;
+    CORE::LINALG::SerialDenseMatrix elemat2;
+    CORE::LINALG::SerialDenseVector elevec2;
+    CORE::LINALG::SerialDenseVector elevec3;
     params_->set<int>("action", FLD::calc_fluid_error);
 
     DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem")

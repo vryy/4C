@@ -91,9 +91,11 @@ namespace DRT
     int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-        Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-        Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-        Epetra_SerialDenseVector& elevec3_epetra,
+        CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+        CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+        CORE::LINALG::SerialDenseVector& elevec1_epetra,
+        CORE::LINALG::SerialDenseVector& elevec2_epetra,
+        CORE::LINALG::SerialDenseVector& elevec3_epetra,
         const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag)
     {
@@ -116,7 +118,7 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
         DRT::Discretization& discretization, const std::vector<int>& lm,
-        Epetra_SerialDenseVector& elevec1_epetra,
+        CORE::LINALG::SerialDenseVector& elevec1_epetra,
         const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
         const CORE::GEO::CUT::plain_volumecell_set& cells)
     {
@@ -139,7 +141,7 @@ namespace DRT
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
-        Epetra_SerialDenseVector& ele_dom_norms)
+        CORE::LINALG::SerialDenseVector& ele_dom_norms)
     {
       // integrations points and weights
       // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -152,7 +154,7 @@ namespace DRT
     int FluidEleCalcXFEM<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
         DRT::Discretization& discretization, std::vector<int>& lm,
-        Epetra_SerialDenseVector& ele_dom_norms,  // squared element domain norms
+        CORE::LINALG::SerialDenseVector& ele_dom_norms,  // squared element domain norms
         const CORE::DRT::UTILS::GaussIntegration& intpoints)
     {
       // analytical solution
@@ -786,7 +788,7 @@ namespace DRT
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         Teuchos::RCP<MAT::Material>& mat,                          ///< material
-        Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+        CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
         const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
             bcells,  ///< boundary cells
         const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
@@ -831,7 +833,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      Epetra_SerialDenseMatrix ele_xyze(nsd_, nen_);
+      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; j++) ele_xyze(j, i) = my::xyze_(j, i);
@@ -925,7 +927,7 @@ namespace DRT
         DRT::Element::LocationArray coupl_la(1);
 
         // coordinates of boundary element
-        Epetra_SerialDenseMatrix side_xyze;
+        CORE::LINALG::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
@@ -938,7 +940,7 @@ namespace DRT
         DRT::Element* coupl_ele = NULL;
 
         // coupling element coordinates
-        Epetra_SerialDenseMatrix coupl_xyze;
+        CORE::LINALG::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -1285,13 +1287,15 @@ namespace DRT
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-        std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-            side_coupling,                         ///< side coupling matrices
-        Teuchos::ParameterList& params,            ///< parameter list
-        Teuchos::RCP<MAT::Material>& mat,          ///< material
-        Epetra_SerialDenseMatrix& elemat1_epetra,  ///< local system matrix of intersected element
-        Epetra_SerialDenseVector& elevec1_epetra,  ///< local element vector of intersected element
-        Epetra_SerialDenseMatrix& Cuiui,           ///< coupling matrix of a side with itself
+        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+            side_coupling,                 ///< side coupling matrices
+        Teuchos::ParameterList& params,    ///< parameter list
+        Teuchos::RCP<MAT::Material>& mat,  ///< material
+        CORE::LINALG::SerialDenseMatrix&
+            elemat1_epetra,  ///< local system matrix of intersected element
+        CORE::LINALG::SerialDenseVector&
+            elevec1_epetra,                      ///< local element vector of intersected element
+        CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
         const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
     )
     {
@@ -1359,7 +1363,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      Epetra_SerialDenseMatrix ele_xyze(nsd_, nen_);
+      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; j++) ele_xyze(j, i) = my::xyze_(j, i);
@@ -1467,7 +1471,7 @@ namespace DRT
       //-----------------------------------------------------------------------------------
 
       // map of boundary element gids and coupling matrices, [0]: Gsui, [1]: Guis
-      std::map<int, std::vector<Epetra_SerialDenseMatrix>> Cuiui_coupling;
+      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> Cuiui_coupling;
 
       std::vector<int> patchelementslm;
 
@@ -1495,7 +1499,7 @@ namespace DRT
               "PatchLocationVector for level-set coupling not supported for hybrid-lm methods yet");
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<Epetra_SerialDenseMatrix>& Cuiui_matrices =
+        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices =
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
@@ -1525,7 +1529,7 @@ namespace DRT
       std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype>>> si_nit;
 
       // map of boundary element gids and coupling contributions from convective stabilization terms
-      std::map<int, std::vector<Epetra_SerialDenseMatrix>> side_coupling_extra;
+      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> side_coupling_extra;
 
       // reshape coupling matrices for convective stabilization terms
       if (add_conv_stab || my::fldparatimint_->IsNewOSTImplementation())
@@ -1559,7 +1563,7 @@ namespace DRT
         DRT::Element* side = NULL;
 
         // coordinates of boundary element
-        Epetra_SerialDenseMatrix side_xyze;
+        CORE::LINALG::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
@@ -1568,7 +1572,7 @@ namespace DRT
         DRT::Element* coupl_ele = NULL;
 
         // coupling element coordinates
-        Epetra_SerialDenseMatrix coupl_xyze;
+        CORE::LINALG::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -1682,25 +1686,25 @@ namespace DRT
         }
         else  // coupling
         {
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
 
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices = c->second;
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
 
           if (side_matrices.size() != 3)
             dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
 
           // coupling matrices between background element and one! side
-          Epetra_SerialDenseMatrix& C_uiu = side_matrices[0];
-          Epetra_SerialDenseMatrix& C_uui = side_matrices[1];
-          Epetra_SerialDenseMatrix& rhC_ui = side_matrices[2];
+          CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices[0];
+          CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices[1];
+          CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
           // coupling matrices between one side and itself via the element Kss
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c2 =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c2 =
               Cuiui_coupling.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& Cuiui_matrices = c2->second;
-          Epetra_SerialDenseMatrix& eleGsui = Cuiui_matrices[0];
-          Epetra_SerialDenseMatrix& eleGuis = Cuiui_matrices[1];
+          std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = c2->second;
+          CORE::LINALG::SerialDenseMatrix& eleGsui = Cuiui_matrices[0];
+          CORE::LINALG::SerialDenseMatrix& eleGuis = Cuiui_matrices[1];
 
           if (averaging_strategy == INPAR::XFEM::Embedded_Sided or
               averaging_strategy == INPAR::XFEM::Mean)  // for coupling-sided and two-sided coupling
@@ -1736,7 +1740,7 @@ namespace DRT
 
 
         // define interface force vector w.r.t side
-        Epetra_SerialDenseVector iforce;
+        CORE::LINALG::SerialDenseVector iforce;
         iforce.Size(cutla[0].lm_.size());
 
         // we need an instance of Nitsche-evaluation class for evaluation of
@@ -1752,13 +1756,13 @@ namespace DRT
             if (cond_manager->IsCoupling(coup_sid, my::eid_))  //... for two-sided problems
             {
               // coupling matrices between background element and one! side
-              std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c =
+              std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
                   side_coupling_extra.find(coup_sid);
-              std::vector<Epetra_SerialDenseMatrix>& side_matrices_extra = c->second;
-              Epetra_SerialDenseMatrix& C_uiu = side_matrices_extra[0];
-              Epetra_SerialDenseMatrix& C_uui = side_matrices_extra[1];
-              Epetra_SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
-              Epetra_SerialDenseMatrix& C_uiui = side_matrices_extra[3];
+              std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = c->second;
+              CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices_extra[0];
+              CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices_extra[1];
+              CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
+              CORE::LINALG::SerialDenseMatrix& C_uiui = side_matrices_extra[3];
 
               si_nit[coup_sid] = DRT::ELEMENTS::XFLUID::NitscheInterface<
                   distype>::CreateNitscheCoupling_XFluidSided(side, side_xyze, elemat1_epetra,
@@ -2458,12 +2462,12 @@ namespace DRT
         // add contributions from convective stabilization, if active
         if (add_conv_stab)
         {
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices = c->second;
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator cc =
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices_extra = cc->second;
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
 #ifdef DEBUG
           if (side_matrices.size() != 3)
             dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
@@ -2492,12 +2496,12 @@ namespace DRT
         // add contributions from old time step to RHS
         if (my::fldparatimint_->IsNewOSTImplementation())
         {
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices = c->second;
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator cc =
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator cc =
               side_coupling_extra.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices_extra = cc->second;
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra = cc->second;
 #ifdef DEBUG
           if (side_matrices.size() != 3)
             dserror("Obtained only %d side coupling matrices. 3 required.", side_matrices.size());
@@ -2528,13 +2532,13 @@ namespace DRT
        * out of the element submatrices collected in vector 'Cuiui_matrices'.
        * In there, the G_sui & G_uis contributions from the sides are collected!
        */
-      Epetra_SerialDenseMatrix G_sui(numstressdof_ * nen_, patchelementslm.size());
-      Epetra_SerialDenseMatrix G_uis(patchelementslm.size(), numstressdof_ * nen_);
-      Epetra_SerialDenseMatrix Cuiui_conv(patchelementslm.size(), patchelementslm.size());
+      CORE::LINALG::SerialDenseMatrix G_sui(numstressdof_ * nen_, patchelementslm.size());
+      CORE::LINALG::SerialDenseMatrix G_uis(patchelementslm.size(), numstressdof_ * nen_);
+      CORE::LINALG::SerialDenseMatrix Cuiui_conv(patchelementslm.size(), patchelementslm.size());
 
       // transform the block matrix invK_ss to an EpetraSerialDenseMatrix,
       // to be later multiplied with G_sui & G_uis!
-      Epetra_SerialDenseMatrix InvKss(nen_ * numstressdof_, nen_ * numstressdof_);
+      CORE::LINALG::SerialDenseMatrix InvKss(nen_ * numstressdof_, nen_ * numstressdof_);
 
       //--------------------------------------------
       // Build InvKss ( K_ss^(-1) )
@@ -2564,11 +2568,11 @@ namespace DRT
       //--------------------------------------------
       int ipatchsizesbefore = 0;
 
-      for (std::map<int, std::vector<Epetra_SerialDenseMatrix>>::const_iterator m =
+      for (std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
            m != Cuiui_coupling.end(); ++m)
       {
-        const std::vector<Epetra_SerialDenseMatrix>& Cuiui_matrices = m->second;
+        const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = m->second;
 
         // assemble Gsui
         for (int ibc = 0; ibc < Cuiui_matrices[0].N(); ++ibc)
@@ -2591,9 +2595,9 @@ namespace DRT
         if (add_conv_stab)
         {
           const int coup_sid = m->first;
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::const_iterator c =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator c =
               side_coupling_extra.find(coup_sid);
-          const std::vector<Epetra_SerialDenseMatrix>& Cuiui_conv_matrices = c->second;
+          const std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_conv_matrices = c->second;
 
           for (int ibc = 0; ibc < Cuiui_conv_matrices[3].N(); ++ibc)
           {
@@ -2608,7 +2612,7 @@ namespace DRT
         ipatchsizesbefore += Cuiui_matrices[0].N();
       }
 
-      Epetra_SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
+      CORE::LINALG::SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
 
       // G_uis * K_ss^-1
       GuisInvKss.Multiply('N', 'N', 1.0, G_uis, InvKss, 1.0);
@@ -3188,10 +3192,11 @@ namespace DRT
         Teuchos::ParameterList& params,
         Teuchos::RCP<MAT::Material>& mat_master,  ///< material for the background
         Teuchos::RCP<MAT::Material>& mat_slave,   ///< material for the coupled side
-        Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+        CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+        CORE::LINALG::SerialDenseVector& elevec1_epetra,
         const CORE::GEO::CUT::plain_volumecell_set& vcSet,
-        std::map<int, std::vector<Epetra_SerialDenseMatrix>>& side_coupling,
-        Epetra_SerialDenseMatrix& Cuiui, bool evaluated_cut)
+        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>& side_coupling,
+        CORE::LINALG::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
 #ifdef DEBUG
       if (cond_manager == Teuchos::null) dserror("set the condition manager!");
@@ -3223,7 +3228,7 @@ namespace DRT
       // ---------------------------------------------------------------------
 
       /// element coordinates in EpetraMatrix
-      Epetra_SerialDenseMatrix ele_xyze(nsd_, nen_);
+      CORE::LINALG::SerialDenseMatrix ele_xyze(nsd_, nen_);
       for (int i = 0; i < nen_; ++i)
       {
         for (int j = 0; j < nsd_; ++j) ele_xyze(j, i) = my::xyze_(j, i);
@@ -3255,7 +3260,7 @@ namespace DRT
       //-----------------------------------------------------------------------------------
 
       // map of boundary element gids, to coupling matrices Cuiui
-      std::map<int, std::vector<Epetra_SerialDenseMatrix>> Cuiui_coupling;
+      std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> Cuiui_coupling;
 
       //-----------------------------------------------------------------------------------
       //            preparation of Cuiui-coupling matrices for each side
@@ -3275,7 +3280,7 @@ namespace DRT
           continue;  // no couplings to be evaluated for current side
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<Epetra_SerialDenseMatrix>& Cuiui_matrices =
+        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices =
             Cuiui_coupling[coup_sid];  // create new vector of Coupling matrices
 
         std::map<int, std::vector<int>>::const_iterator j = patchcouplm.find(coup_sid);
@@ -3356,7 +3361,7 @@ namespace DRT
         DRT::Element* side = NULL;
 
         // coordinates of boundary element
-        Epetra_SerialDenseMatrix side_xyze;
+        CORE::LINALG::SerialDenseMatrix side_xyze;
 
         //-----------------------------------------------------------------------------------
         // only used for couplings:
@@ -3369,7 +3374,7 @@ namespace DRT
         DRT::Element* coupl_ele = NULL;
 
         // coupling element coordinates
-        Epetra_SerialDenseMatrix coupl_xyze;
+        CORE::LINALG::SerialDenseMatrix coupl_xyze;
 
         //-----------------------------------------------------------------------------------
 
@@ -3499,21 +3504,21 @@ namespace DRT
         }
         else  // coupling
         {
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c =
               side_coupling.find(coup_sid);
 
-          std::vector<Epetra_SerialDenseMatrix>& side_matrices = c->second;
+          std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices = c->second;
 
           // coupling matrices between background element and one! side
-          Epetra_SerialDenseMatrix& C_uiu = side_matrices[0];
-          Epetra_SerialDenseMatrix& C_uui = side_matrices[1];
-          Epetra_SerialDenseMatrix& rhC_ui = side_matrices[2];
+          CORE::LINALG::SerialDenseMatrix& C_uiu = side_matrices[0];
+          CORE::LINALG::SerialDenseMatrix& C_uui = side_matrices[1];
+          CORE::LINALG::SerialDenseMatrix& rhC_ui = side_matrices[2];
 
           // coupling matrices between one side and itself via the element Kss
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>::iterator c2 =
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::iterator c2 =
               Cuiui_coupling.find(coup_sid);
-          std::vector<Epetra_SerialDenseMatrix>& Cuiui_matrices = c2->second;
-          Epetra_SerialDenseMatrix& eleCuiui = Cuiui_matrices[0];
+          std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_matrices = c2->second;
+          CORE::LINALG::SerialDenseMatrix& eleCuiui = Cuiui_matrices[0];
 
           if (non_xfluid_coupling)
           {
@@ -3591,7 +3596,7 @@ namespace DRT
             NIT_visc_stab_fac, NIT_visc_stab_fac_tang);
 
         // define interface force vector w.r.t side (for XFSI)
-        Epetra_SerialDenseVector iforce;
+        CORE::LINALG::SerialDenseVector iforce;
         iforce.Size(cutla[0].lm_.size());
 
         //---------------------------------------------------------------------------------
@@ -4308,9 +4313,9 @@ namespace DRT
      *--------------------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::NIT_BuildPatchCuiui(
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
-        std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
+        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
             Cuiui_coupling  ///< Cuiui matrices for all cutting sides
     )
     {
@@ -4318,12 +4323,12 @@ namespace DRT
 
       // build patch-Cuiui matrix
       int ipatchsizesbefore = 0;
-      for (std::map<int, std::vector<Epetra_SerialDenseMatrix>>::const_iterator m =
+      for (std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator m =
                Cuiui_coupling.begin();
            m != Cuiui_coupling.end(); ++m)
       {
         int coup_sid = m->first;
-        std::vector<Epetra_SerialDenseMatrix>& Cuiui_mats = Cuiui_coupling[coup_sid];
+        std::vector<CORE::LINALG::SerialDenseMatrix>& Cuiui_mats = Cuiui_coupling[coup_sid];
 
         // Cuiui matrices in Cuiui_mats[0]
 
@@ -4351,7 +4356,7 @@ namespace DRT
     void FluidEleCalcXFEM<distype>::HybridLM_CreateSpecialContributionMatrices(
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         std::set<int>& begids,  ///< ids of intersecting boundary elements
-        std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
+        std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
             side_coupling_extra  ///< contributions to coupling matrices from convective
                                  ///< stabilizations
     )
@@ -4385,7 +4390,8 @@ namespace DRT
         side->LocationVector(*cutter_dis, patchlm, patchlmowner, patchlmstride);
 
         // get coupling matrices for the current side (boundary element)
-        std::vector<Epetra_SerialDenseMatrix>& side_matrices_extra = side_coupling_extra[coup_sid];
+        std::vector<CORE::LINALG::SerialDenseMatrix>& side_matrices_extra =
+            side_coupling_extra[coup_sid];
 
         side_matrices_extra.resize(4);
         side_matrices_extra[0].Shape(patchlm.size(), nen_ * numdofpernode_);  // Cuiu
@@ -4452,10 +4458,10 @@ namespace DRT
      *----------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::AssembleInterfaceForce(
-        Teuchos::RCP<Epetra_Vector> iforcecol,  ///< interface force column vector
-        DRT::Discretization& cutdis,            ///< cut discretization
-        std::vector<int>& lm,                   ///< local dof map
-        Epetra_SerialDenseVector& iforce        ///< interface force vector
+        Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
+        DRT::Discretization& cutdis,             ///< cut discretization
+        std::vector<int>& lm,                    ///< local dof map
+        CORE::LINALG::SerialDenseVector& iforce  ///< interface force vector
     )
     {
       // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::AssembleInterfaceForce");
@@ -4481,7 +4487,7 @@ namespace DRT
         const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
         const CORE::LINALG::Matrix<nsd_, 1>&
             itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-        Epetra_SerialDenseMatrix& elevec1_epetra  ///< element vector
+        CORE::LINALG::SerialDenseMatrix::Base& elevec1_epetra  ///< element vector
     )
     {
       const int master_numdof = nsd_ + 1;
@@ -4520,7 +4526,7 @@ namespace DRT
         DRT::ELEMENTS::Fluid* ele,                           ///< fluid element
         DRT::Discretization& dis,                            ///< discretization
         const std::vector<int>& lm,                          ///< local map
-        Epetra_SerialDenseVector& elevec1_epetra,            ///< element vector
+        CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element vector
         const CORE::DRT::UTILS::GaussIntegration& intpoints  ///< integration points
     )
     {
@@ -4569,10 +4575,10 @@ namespace DRT
      *--------------------------------------------------------------------------------*/
     template <DRT::Element::DiscretizationType distype>
     void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
-        DRT::ELEMENTS::Fluid* ele,                ///< fluid element
-        DRT::Discretization& dis,                 ///< discretization
-        const std::vector<int>& lm,               ///< local map
-        Epetra_SerialDenseVector& elevec1_epetra  ///< element vector
+        DRT::ELEMENTS::Fluid* ele,                       ///< fluid element
+        DRT::Discretization& dis,                        ///< discretization
+        const std::vector<int>& lm,                      ///< local map
+        CORE::LINALG::SerialDenseVector& elevec1_epetra  ///< element vector
     )
     {
       CalculateContinuityXFEM(ele, dis, lm, elevec1_epetra, my::intpoints_);

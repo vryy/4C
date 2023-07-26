@@ -443,14 +443,14 @@ namespace MAT
     virtual double& HepDiss(int gp) { return (*HepDiss_)[gp]; }
 
     /// derivative of heating at this gp
-    virtual Epetra_SerialDenseVector& dHepDissDd(int gp) { return (*dHepDissdd_)[gp]; }
+    virtual CORE::LINALG::SerialDenseVector& dHepDissDd(int gp) { return (*dHepDissdd_)[gp]; }
 
     // derivative of heating w.r.t. temperature
     virtual double& dHepDT(int gp) { return (*dHepDissdT_)[gp]; }
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDTeas()
+    virtual Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDTeas()
     {
       return dHepDissdTeas_;
     }
@@ -465,7 +465,7 @@ namespace MAT
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateVtkOutputData(
-        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
+        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
     //! purely elastic material (input via negative initial yield stress
     bool AllElastic() { return Inityield() < 0.; }
@@ -608,7 +608,7 @@ namespace MAT
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. nodal
     /// displacements compute the complete derivative w.r.t. nodal displacements (not only RCG) to
     /// make sure, that the same element technology is used.
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDissdd_;
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDissdd_;
 
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. gp
     /// temperature
@@ -616,7 +616,7 @@ namespace MAT
 
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element
     /// temperature this is an additional term to dHepDissdT_ that only appears in EAS elements
-    Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDissdTeas_;
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDissdTeas_;
 
     //  private:
 

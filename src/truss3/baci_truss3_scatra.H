@@ -72,7 +72,8 @@ namespace DRT
       }
 
       void CalcInternalForceStiffTotLag(const std::map<std::string, std::vector<double>>& ele_state,
-          Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat) override;
+          CORE::LINALG::SerialDenseVector& forcevec,
+          CORE::LINALG::SerialDenseMatrix& stiffmat) override;
 
       void CalcGPStresses(Teuchos::ParameterList& params,
           const std::map<std::string, std::vector<double>>& ele_state) override;
@@ -86,7 +87,7 @@ namespace DRT
           std::map<std::string, std::vector<double>>& ele_state) override;
 
       void Energy(const std::map<std::string, std::vector<double>>& ele_state,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy) override;
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy) override;
 
      private:
       //! scalar transport implementation type (physics)

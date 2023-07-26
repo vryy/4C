@@ -41,12 +41,12 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac,        //!< domain integration factor times time integration factor
-    const double& conc,              //!< concentration
-    const double& diffcoeff,         //!< diffusion coefficient
-    const double& diffcoeffderiv,    //!< derivative of diffusion coefficient w.r.t. concentration
-    const double& temp,              //!< temperature
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac,      //!< domain integration factor times time integration factor
+    const double& conc,            //!< concentration
+    const double& diffcoeff,       //!< diffusion coefficient
+    const double& diffcoeffderiv,  //!< derivative of diffusion coefficient w.r.t. concentration
+    const double& temp,            //!< temperature
     const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
     const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
     const CORE::LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
@@ -81,11 +81,11 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac,        //!< time integration factor times domain integration factor
-    const double& concentration,     //!< concentration
-    const double& diffcoeff,         //!< diffusion coefficient
-    const double& temperature,       //!< temperature
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac,     //!< time integration factor times domain integration factor
+    const double& concentration,  //!< concentration
+    const double& diffcoeff,      //!< diffusion coefficient
+    const double& temperature,    //!< temperature
     const CORE::LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
     const CORE::LINALG::Matrix<nen_, 1>& funct,     //!< shape functions
     const CORE::LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
  *--------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& rhsfac,     //!< domain integration factor times time integration factor for
                               //!< right-hand side vector
     const double& conc,       //!< concentration
@@ -188,12 +188,12 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat,
-    const int& numdofpernode, const double& timefacfac, const double& invF,
-    const CORE::LINALG::Matrix<nsd_, 1>& gradconc, const CORE::LINALG::Matrix<nsd_, 1>& gradpot,
-    const double& tempderivisodiffcoef, const double& tempderivcond,
-    const CORE::LINALG::Matrix<nen_, 1>& funct, const CORE::LINALG::Matrix<nsd_, nen_>& derxy,
-    const double& scalefac)
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(
+    CORE::LINALG::SerialDenseMatrix& emat, const int& numdofpernode, const double& timefacfac,
+    const double& invF, const CORE::LINALG::Matrix<nsd_, 1>& gradconc,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
+    const double& tempderivcond, const CORE::LINALG::Matrix<nen_, 1>& funct,
+    const CORE::LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac)
 {
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {

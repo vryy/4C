@@ -110,7 +110,7 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
 // computes isotropic eplane strain, rotational symmetry
 // plane strain, rotational symmetry
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
+void MAT::StVenantKirchhoff::SetupCmat2d(CORE::LINALG::SerialDenseMatrix* cmat)
 {
   const double ym = params_->youngs_;
   const double pv = params_->poissonratio_;
@@ -189,8 +189,8 @@ void MAT::StVenantKirchhoff::FillCmat(
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-    Epetra_SerialDenseMatrix* cmat_e, Epetra_SerialDenseVector* stress_e)
+void MAT::StVenantKirchhoff::Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
+    CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e)
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface

@@ -623,7 +623,7 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   std::cout << "Check volumecell with moment-fitting." << std::endl;
 #endif
   VolumeIntegration vi(volcell_, elem1_, volcell_->Position(), 1);
-  Epetra_SerialDenseVector volMom = vi.compute_rhs_moment();
+  CORE::LINALG::SerialDenseVector volMom = vi.compute_rhs_moment();
   volMom(0) = volcell_->Volume();
 
   if (fabs(volGlobal - volMom(0)) > 1e-6)

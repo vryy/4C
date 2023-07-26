@@ -121,8 +121,8 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(const bool screenout)
   int nummethods = INPAR::XFEM::Xf_TimeInt_undefined +
                    1;  // has to be larger than the maximum of the enum INPAR::XFEM::XFluidTimeInt
 
-  Epetra_SerialDenseVector cpu_methods(nummethods);
-  Epetra_SerialDenseVector glob_methods(nummethods);
+  CORE::LINALG::SerialDenseVector cpu_methods(nummethods);
+  CORE::LINALG::SerialDenseVector glob_methods(nummethods);
 
   for (int i = 0; i < nummethods; ++i)
   {
@@ -1893,8 +1893,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   DRT::Node** nodes = side->Nodes();
 
 
-  Epetra_SerialDenseMatrix xyze_old(3, numnode);
-  Epetra_SerialDenseMatrix xyze_new(3, numnode);
+  CORE::LINALG::SerialDenseMatrix xyze_old(3, numnode);
+  CORE::LINALG::SerialDenseMatrix xyze_new(3, numnode);
 
   for (int i = 0; i < numnode; ++i)
   {

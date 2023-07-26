@@ -11,7 +11,7 @@
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 
@@ -33,8 +33,8 @@ namespace CORE::DRT::ELEMENTS
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param nodal_data (out) : Assembled data
    */
-  void ExtrapolateGaussPointQuantityToNodes(
-      ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& nodal_data);
+  void ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
+      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data);
 
   /*!
    * @brief Averaging of all Gauss point quantities in @data within the element @ele and assembly to
@@ -44,8 +44,8 @@ namespace CORE::DRT::ELEMENTS
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
-  void EvaluateGaussPointQuantityAtElementCenter(
-      ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& element_data);
+  void EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
+      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
 
   /*!

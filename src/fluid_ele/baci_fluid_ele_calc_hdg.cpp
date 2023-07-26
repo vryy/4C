@@ -29,7 +29,7 @@
 
 namespace
 {
-  void zeroMatrix(Epetra_SerialDenseMatrix& mat)
+  void zeroMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
   {
     // Fills a certain memory space (MxN) with zeros
     std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
@@ -53,10 +53,12 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepoly_(t
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::DRT::UTILS::GaussIntegration&,
+    bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -98,9 +100,9 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::InitializeShapes(const DRT::ELEMEN
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix&,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&,
-    bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
   InitializeShapes(ele);
 
@@ -208,8 +210,8 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::ReadGlobalVectors(const DRT::Eleme
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT::Element& ele,
-    DRT::Discretization& discretization, const Epetra_SerialDenseVector& updateG,
-    const Epetra_SerialDenseVector& updateUp)
+    DRT::Discretization& discretization, const CORE::LINALG::SerialDenseVector& updateG,
+    const CORE::LINALG::SerialDenseVector& updateUp)
 {
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(1, "intvelnp");
   std::vector<int> localDofs = discretization.Dof(1, &ele);
@@ -260,9 +262,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::UpdateSecondarySolution(const DRT:
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
@@ -318,7 +321,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateService(DRT::ELEMENTS::Flui
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec)
 {
   InitializeShapes(ele);
 
@@ -399,8 +403,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ComputeError(DRT::ELEMENTS::Fluid* 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   // Create the necessary objects to the solution of the problem as the solver
   // and the shape functions for both the interior, shapes_, and the trace, shapesface_.
@@ -425,7 +429,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   if (elevec2.M() > 0)
   {
     // Create the local matrix from starting at the addres where elevec2 is with the right shape
-    Epetra_SerialDenseMatrix localMat(
+    CORE::LINALG::SerialDenseMatrix localMat(
         View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
     // Initialize matrix to zeros
     zeroMatrix(localMat);
@@ -522,11 +526,11 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   // Here we have the projection of the field on the trace
   // mass is the mass matrix for the system to be solved
   // the dimension of the mass matrix is given by the number of shape functions
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // TRaceVEC is the vector of the trace values
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
-  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
   dsassert(elevec1.M() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
                elevec1.M() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
@@ -658,7 +662,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
   // Check if the vector has the correct size
@@ -666,14 +670,14 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations =
+  CORE::LINALG::SerialDenseMatrix locations =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
-  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
 
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
@@ -763,7 +767,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
     solvalues[i] = (*matrix_state)[lid];
   }
 
-  Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
@@ -843,7 +847,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionToNodes(DRT::ELE
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
   InitializeShapes(ele);
   // get coordinates of hex 8
@@ -856,8 +860,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
       "Vector does not have correct size");
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
-  Epetra_SerialDenseMatrix locations(3, 125);
-  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseMatrix locations(3, 125);
+  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
 
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -913,8 +917,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::InterpolateSolutionForHIT(DRT::ELEM
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2)
 {
   const int numsamppoints = 5;
   //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
@@ -922,7 +926,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
-  Epetra_SerialDenseMatrix locations;
+  CORE::LINALG::SerialDenseMatrix locations;
 #ifdef DEBUG
   locations.Shape(3, 125);
   int l = 0;
@@ -964,7 +968,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
 
   if (elevec1.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(
+    CORE::LINALG::SerialDenseMatrix localMat(
         View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
     zeroMatrix(localMat);
 
@@ -973,7 +977,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
     {
       CORE::LINALG::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
-      Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
       CORE::LINALG::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
@@ -1028,8 +1032,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   const int numsamppoints = 5;
   //  dsassert(elevec1.M() == numsamppoints*numsamppoints*numsamppoints*6, "Vector does not have
@@ -1037,7 +1041,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   // sampling locations in 1D in parent domain
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
-  Epetra_SerialDenseMatrix locations;
+  CORE::LINALG::SerialDenseMatrix locations;
 #ifdef DEBUG
   locations.Shape(3, 125);
   int l = 0;
@@ -1074,7 +1078,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
 
   if (elevec1.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(
+    CORE::LINALG::SerialDenseMatrix localMat(
         View, elevec1.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ * nsd_ + nsd_ + 1, false);
     zeroMatrix(localMat);
 
@@ -1083,7 +1087,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
     {
       CORE::LINALG::Matrix<nsd_, 1> f(false);
       const double fac = shapes_->jfac(q);
-      Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
       CORE::LINALG::Matrix<nsd_, 1> xsi(false);
       for (unsigned int sdm = 0; sdm < nsd_; sdm++) xsi(sdm) = shapes_->quadrature_->Point(q)[sdm];
 
@@ -1131,8 +1135,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
   }
 
   // traces
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
-  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
   dsassert(elevec3.M() == static_cast<int>(nsd_ * shapesface_->nfdofs_) ||
                elevec3.M() == 1 + static_cast<int>(nfaces_ * nsd_ * shapesface_->nfdofs_),
       "Wrong size in project vector 1");
@@ -1158,7 +1162,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
 
       CORE::LINALG::Matrix<nsd_, 1> u(false);
 
-      Epetra_SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
+      CORE::LINALG::SerialDenseVector values(numsamppoints * numsamppoints * numsamppoints);
 
       poly.Evaluate(xsi, values);
       // compute values for force and coordinates by summing over all basis functions
@@ -1321,7 +1325,7 @@ DRT::ELEMENTS::FluidEleCalcHDG<distype>* DRT::ELEMENTS::FluidEleCalcHDG<distype>
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluatePressureAverage(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    Epetra_SerialDenseVector& elevec)
+    CORE::LINALG::SerialDenseVector& elevec)
 {
   double pressureint = 0.;
   double volume = 0.;
@@ -1431,7 +1435,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorResidu
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
     const CORE::LINALG::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
-    Epetra_SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
+    CORE::LINALG::SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
     const std::vector<double>& interiorebodyforce)
 {
   // get physical type
@@ -1899,7 +1903,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(const int face,
     const Teuchos::RCP<MAT::Material>& mat, const std::vector<double>& val,
-    const std::vector<double>& traceval, Epetra_SerialDenseVector& elevec)
+    const std::vector<double>& traceval, CORE::LINALG::SerialDenseVector& elevec)
 {
   // get physical type
   INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
@@ -2054,7 +2058,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceResidual(c
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(const int face,
     const Teuchos::RCP<MAT::Material>& mat, const bool evaluateOnlyNonlinear,
-    Epetra_SerialDenseMatrix& elemat)
+    CORE::LINALG::SerialDenseMatrix& elemat)
 {
   // get physical type
   INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
@@ -2217,7 +2221,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeFaceMatrices(c
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGradient(
-    Epetra_SerialDenseMatrix& elemat)
+    CORE::LINALG::SerialDenseMatrix& elemat)
 {
   // get physical type
   INPAR::FLUID::PhysicalType physicaltype = fldpara_->PhysicalType();
@@ -2381,7 +2385,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::SolveResidual()
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
-    Epetra_SerialDenseMatrix& eleMat, Epetra_SerialDenseVector& eleVec)
+    CORE::LINALG::SerialDenseMatrix& eleMat, CORE::LINALG::SerialDenseVector& eleVec)
 {
   for (unsigned int i = 0; i < nfaces_ * nsd_ * shapesface_.nfdofs_; ++i)
     eleMat(0, 1 + i) = eleMat(1 + i, 0);
@@ -2450,7 +2454,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::CondenseLocalPart(
       fuMat.M(), ufMat.A(), ufMat.M(), 1., eleMat.A(), eleMat.M());
 
   // update gfMat and apply inverse mass matrix: GF <- M^{-1} (GF - GU * UF)
-  Epetra_SerialDenseVector gAux;
+  CORE::LINALG::SerialDenseVector gAux;
   gAux.Resize(nsd_ * nsd_ * ndofs_);
   for (unsigned int f = 1; f < 1 + nfaces_ * shapesface_.nfdofs_ * nsd_; ++f)
   {

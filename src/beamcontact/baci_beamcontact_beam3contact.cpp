@@ -2990,8 +2990,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
   // temporary vectors for contact forces, DOF-GIDs and owning procs
   CORE::LINALG::Matrix<dim1, 1, TYPE> fc1(true);
   CORE::LINALG::Matrix<dim2, 1, TYPE> fc2(true);
-  Epetra_SerialDenseVector fcontact1(dim1);
-  Epetra_SerialDenseVector fcontact2(dim2);
+  CORE::LINALG::SerialDenseVector fcontact1(dim1);
+  CORE::LINALG::SerialDenseVector fcontact2(dim2);
 
   // TODO: Introduce this quantities as class variables?
   std::vector<int> lm1(dim1);
@@ -3219,8 +3219,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact(
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2(true);
   CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
-  Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);
@@ -3708,8 +3708,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContactIntSe
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
-  Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);
@@ -5198,7 +5198,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::SetClassVariables(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::UpdateElePos(
-    Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos)
+    CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos)
 {
   for (int i = 0; i < 3 * numnodalvalues; i++)
   {

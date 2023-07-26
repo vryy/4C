@@ -15,8 +15,8 @@ surface meshes
 #include "baci_inpar_cut.H"
 
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_cut_clnwrapper.H"
 #include "baci_linalg_fixedsizematrix.H"
 
@@ -306,11 +306,11 @@ namespace CORE::GEO
     );
 
     //! Add this cutting side element with given global coordinates to the intersection class
-    void AddMeshCuttingSide(
-        int mi, ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze, const int start_ele_gid);
+    void AddMeshCuttingSide(int mi, ::DRT::Element* ele,
+        const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid);
 
     //! Add this background mesh element to the intersection class
-    void AddElement(const ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze,
+    void AddElement(const ::DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
         double* myphinp = NULL, bool ls_only_plus_domain = false);
 
     //@}

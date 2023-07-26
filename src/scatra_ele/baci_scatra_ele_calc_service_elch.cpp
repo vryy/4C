@@ -37,9 +37,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -240,9 +242,9 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele,          //!< element
-    Teuchos::ParameterList& params,   //!< parameter list
-    Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+    const DRT::Element* ele,                 //!< element
+    Teuchos::ParameterList& params,          //!< parameter list
+    CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
   // call base class routine
@@ -256,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnaly
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
     const DRT::Element* ele, const enum INPAR::ELCH::EquPot equpot,
-    Epetra_SerialDenseVector& sigma_domint, bool effCond, bool specresist)
+    CORE::LINALG::SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -323,12 +325,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKineticsPoint(
-    DRT::Element* ele,                         ///< current element
-    Teuchos::ParameterList& params,            ///< parameter list
-    DRT::Discretization& discretization,       ///< discretization
-    std::vector<int>& lm,                      ///< location vector
-    Epetra_SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-    Epetra_SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
+    DRT::Element* ele,                                ///< current element
+    Teuchos::ParameterList& params,                   ///< parameter list
+    DRT::Discretization& discretization,              ///< discretization
+    std::vector<int>& lm,                             ///< location vector
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -474,8 +476,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele,                                   ///< current element
-    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
-    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ehist,                          ///< history variables at element nodes
@@ -562,7 +564,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatusPoint(
     const DRT::Element* ele,                                   ///< current element
-    Epetra_SerialDenseVector& scalars,                         ///< scalars to be integrated
+    CORE::LINALG::SerialDenseVector& scalars,                  ///< scalars to be integrated
     Teuchos::ParameterList& params,                            ///< parameter list
     Teuchos::RCP<DRT::Condition> cond,                         ///< condition
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
@@ -667,8 +669,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* ele,
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    Epetra_SerialDenseVector& subgrdiff)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   // screen output
   std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
@@ -687,9 +689,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
   }
 
   // initialize element matrix and vectors for perturbed state
-  Epetra_SerialDenseMatrix emat_dummy(emat);
-  Epetra_SerialDenseVector erhs_perturbed(erhs);
-  Epetra_SerialDenseVector subgrdiff_dummy(subgrdiff);
+  CORE::LINALG::SerialDenseMatrix emat_dummy(emat);
+  CORE::LINALG::SerialDenseVector erhs_perturbed(erhs);
+  CORE::LINALG::SerialDenseVector subgrdiff_dummy(subgrdiff);
 
   // initialize counter for failed finite difference checks
   unsigned counter(0);

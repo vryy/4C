@@ -22,7 +22,7 @@
  *--------------------------------------------------------------------------*/
 int DRT::ELEMENTS::DiscSh3Line::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // do nothing for now
 
@@ -35,7 +35,7 @@ int DRT::ELEMENTS::DiscSh3Line::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::DiscSh3Line::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // do nothing for now
 
@@ -54,8 +54,8 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
     std::vector<int>& lm_faceToPatch,        ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-    std::vector<Epetra_SerialDenseVector>& elevec_blocks   ///< element vector blocks
+    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
 )
 {
   // Get master and slave element
@@ -337,7 +337,7 @@ gamma*BehaviorFunctCurvature.dx(i)*BehaviorFunctCurvature.dx(j)*v_FAD_curr[j];
   /*%%%%%%%%%%%%%%    DEBUG   %%%%%%%%%%%%%%%*/
   /*CORE::LINALG::Matrix<12,12> stiffmatrix_print(true);
  CORE::LINALG::Matrix<12,1> force_print(true);
-   Epetra_SerialDenseMatrix stiffmatrix_Epetra(12,12,true);
+   CORE::LINALG::SerialDenseMatrix stiffmatrix_Epetra(12,12,true);
 //   stiffmatrix_Epetra.
  for (int i=0; i<NUMDOF_DISCSH3+3; i++)
    for (int j=0; j<NUMDOF_DISCSH3+3; j++)
@@ -492,8 +492,8 @@ void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
   int numblocks = NODDOF_DISCSH3 * NODDOF_DISCSH3;
 
   // define element matrices and vectors
-  std::vector<Epetra_SerialDenseMatrix> elemat_blocks(numblocks);
-  std::vector<Epetra_SerialDenseVector> elevec_blocks(
+  std::vector<CORE::LINALG::SerialDenseMatrix> elemat_blocks(numblocks);
+  std::vector<CORE::LINALG::SerialDenseVector> elevec_blocks(
       NODDOF_DISCSH3);  // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
 

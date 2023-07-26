@@ -64,15 +64,15 @@ namespace
   TEST_F(StVenantKirchhoffTest, TestEvaluateEpetraSerialDenseMatrix)
   {
     // Input strain
-    const Epetra_SerialDenseVector input_glstrain(Copy, input_glstrain_.data(), 6);
+    const LINALG::SerialDenseVector input_glstrain(Copy, input_glstrain_.data(), 6);
 
     // Resulting material stiffness matrix
-    Teuchos::RCP<Epetra_SerialDenseMatrix> result_cmat =
-        Teuchos::rcp(new Epetra_SerialDenseMatrix(6, 6));
+    Teuchos::RCP<LINALG::SerialDenseMatrix> result_cmat =
+        Teuchos::rcp(new LINALG::SerialDenseMatrix(6, 6));
 
     // Resulting stress
-    Teuchos::RCP<Epetra_SerialDenseVector> result_stress =
-        Teuchos::rcp(new Epetra_SerialDenseVector(6));
+    Teuchos::RCP<LINALG::SerialDenseVector> result_stress =
+        Teuchos::rcp(new LINALG::SerialDenseVector(6));
 
     // Call evaluate function with test strain
     stvenantkirchhoff_->Evaluate(&input_glstrain, result_cmat.get(), result_stress.get());

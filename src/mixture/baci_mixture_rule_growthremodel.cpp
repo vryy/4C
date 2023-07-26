@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_rule_growthremodel.H"
 #include <Epetra_ConfigDefs.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include <cmath>
 #include <iosfwd>
 #include "baci_linalg_fixedsizematrix.H"
@@ -219,7 +219,7 @@ void MIXTURE::GrowthRemodelMixtureRule::RegisterVtkOutputDataNames(
 }
 
 bool MIXTURE::GrowthRemodelMixtureRule::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)
   {

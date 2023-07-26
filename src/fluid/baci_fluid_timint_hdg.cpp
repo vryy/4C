@@ -352,8 +352,8 @@ void FLD::TimIntHDG::SetInitialFlowField(
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
     initParams.set<int>("action", FLD::project_fluid_field);
     initParams.set("startfuncno", startfuncno);
@@ -479,9 +479,9 @@ namespace
     dis.SetState(1, "intvelnp", interiorValues);
     dis.SetState(0, "velnp", traceValues);
     std::vector<int> dummy;
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
     velocity->PutScalar(0.);
     pressure->PutScalar(0.);

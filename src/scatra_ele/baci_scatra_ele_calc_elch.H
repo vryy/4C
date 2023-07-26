@@ -48,16 +48,20 @@ namespace DRT
       //! evaluate the element
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      protected:
       /*========================================================================*/
@@ -65,17 +69,18 @@ namespace DRT
       /*========================================================================*/
 
       //! Prepare everything what is needed in CallMatAndRhs() to calculate the sysmat and the rhs
-      virtual void Sysmat(DRT::Element* ele,   //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,      //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,      //!< element rhs to calculate
-          Epetra_SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      virtual void Sysmat(DRT::Element* ele,          //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
+          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
       );
 
       //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-      virtual void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                         //!< element rhs to calculate+
-          const int k,                                            //!< index of current scalar
-          const double fac,                                       //!< domain-integration factor
+      virtual void CalcMatAndRhs(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -90,26 +95,26 @@ namespace DRT
 
       //! calculate contributions to matrix and rhs (outside of loop over all scalars)
       virtual void CalcMatAndRhsOutsideScalarLoop(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-          const double fac,                //!< domain-integration factor
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
+          const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
           ) = 0;
 
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       virtual void CorrectionForFluxAcrossDC(
-          DRT::Discretization& discretization,  //!< discretization
-          const std::vector<int>& lm,           //!< location vector
-          Epetra_SerialDenseMatrix& emat,       //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs        //!< element rhs to calculate
+          DRT::Discretization& discretization,    //!< discretization
+          const std::vector<int>& lm,             //!< location vector
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
           ) = 0;
 
       //! finite difference check for debugging purposes
-      void FDCheck(DRT::Element* ele,          //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,      //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,      //!< element rhs to calculate
-          Epetra_SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      void FDCheck(DRT::Element* ele,                 //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
+          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
       );
 
       //! get material parameters
@@ -139,17 +144,17 @@ namespace DRT
       /*========================================================================*/
 
       //! Potential equation ENC
-      void CalcMatPotEquENC(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                       //!< index of current scalar
-          const double fac,                                  //!< domain-integration factor
-          const double alphaf                                //!< time factor for ENC
+      void CalcMatPotEquENC(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                              //!< index of current scalar
+          const double fac,                                         //!< domain-integration factor
+          const double alphaf                                       //!< time factor for ENC
       );
 
       //! CalcRhs: Potential equation ENC
-      void CalcRhsPotEquENC(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                       //!< index of current scalar
-          const double fac,                                  //!< domain-integration factor
-          const double conint                                //!< concentration at GP
+      void CalcRhsPotEquENC(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                              //!< index of current scalar
+          const double fac,                                         //!< domain-integration factor
+          const double conint                                       //!< concentration at GP
       );
 
       //! process an electrode boundary kinetics point condition
@@ -157,16 +162,16 @@ namespace DRT
           Teuchos::ParameterList& params,                    ///< parameter list
           DRT::Discretization& discretization,               ///< discretization
           std::vector<int>& lm,                              ///< location vector
-          Epetra_SerialDenseMatrix& elemat1_epetra,          ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,          ///< element right-hand side vector
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,   ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,   ///< element right-hand side vector
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
       );
 
       //! evaluate an electrode boundary kinetics point condition
       virtual void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
-          Epetra_SerialDenseMatrix& emat,                                      ///< element matrix
-          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
+          CORE::LINALG::SerialDenseMatrix& emat,                               ///< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -184,7 +189,7 @@ namespace DRT
 
       //! evaluate status information on point electrode
       void EvaluateElectrodeStatusPoint(const DRT::Element* ele,  ///< current element
-          Epetra_SerialDenseVector& scalars,                      ///< scalars to be integrated
+          CORE::LINALG::SerialDenseVector& scalars,               ///< scalars to be integrated
           Teuchos::ParameterList& params,                         ///< parameter list
           Teuchos::RCP<DRT::Condition> cond,                      ///< condition
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -224,14 +229,14 @@ namespace DRT
       //! calculate error of numerical solution with respect to analytical solution
       virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
           Teuchos::ParameterList& params,                                     //!< parameter list
-          Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
       );
 
       //! calculate conductivity of electrolyte solution
       void CalculateConductivity(const DRT::Element* ele,  //!< the element we are dealing with
           const enum INPAR::ELCH::EquPot
               equpot,  //!< type of closing equation for electric potential
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               sigma,       //!< conductivity of all single ions + overall electrolyte solution
           bool effCond,    //!< flag if effective conductivity should be calculated
           bool specresist  //!< flag if inverse of conductivity should be calculated -> specific

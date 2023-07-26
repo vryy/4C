@@ -270,10 +270,10 @@ namespace MAT
     }
 
     /// derivative of heating at this gp
-    virtual Epetra_SerialDenseVector& dHepDissDd(int gp)
+    virtual CORE::LINALG::SerialDenseVector& dHepDissDd(int gp)
     {
       dserror("Don't need this for Variationally consistent constitutive update");
-      static Epetra_SerialDenseVector tmp(0);
+      static CORE::LINALG::SerialDenseVector tmp(0);
       return tmp;
     }
 
@@ -287,7 +287,7 @@ namespace MAT
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<Epetra_SerialDenseVector>> dHepDTeas()
+    virtual Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDTeas()
     {
       dserror("Don't need this for Variationally consistent constitutive update");
       return Teuchos::null;

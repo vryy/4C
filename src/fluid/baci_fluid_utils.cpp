@@ -935,7 +935,8 @@ std::map<int, double> FLD::UTILS::ComputeVolume(DRT::Discretization& dis,
   if (dispnp != Teuchos::null) dis.SetState("dispnp", dispnp);
   if (gridv != Teuchos::null) dis.SetState("gridv", gridv);
 
-  Teuchos::RCP<Epetra_SerialDenseVector> volumes = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> volumes =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
 
   // call loop over elements (assemble nothing)
   dis.EvaluateScalars(eleparams, volumes);

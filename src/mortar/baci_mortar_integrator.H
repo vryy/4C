@@ -58,8 +58,9 @@ namespace MORTAR
     virtual void IntegrateSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
         MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
 
-    virtual Teuchos::RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(MORTAR::MortarElement& sele,
-        double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib) = 0;
+    virtual Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> IntegrateMmod2D(
+        MORTAR::MortarElement& sele, double& sxia, double& sxib, MORTAR::MortarElement& mele,
+        double& mxia, double& mxib) = 0;
 
     virtual void IntegrateEleBased3D(MORTAR::MortarElement& sele,
         std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, const Epetra_Comm& comm) = 0;
@@ -146,7 +147,7 @@ namespace MORTAR
     the interface is curved (but only for mesh tying)!
 
     */
-    Teuchos::RCP<Epetra_SerialDenseMatrix> IntegrateMmod2D(MORTAR::MortarElement& sele,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> IntegrateMmod2D(MORTAR::MortarElement& sele,
         double& sxia, double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib);
 
     /*!
@@ -224,13 +225,13 @@ namespace MORTAR
         int& ncol, int& ndof, bool& bound);
     //@}
 
-    Teuchos::ParameterList imortar_;         // merged parameter list
-    INPAR::MORTAR::ShapeFcn shapefcn_;       // lm shape function type
-    INPAR::MORTAR::LagMultQuad lmquadtype_;  // type of quadratic lm interpolation
-    int ngp_;                                // number of Gauss points
-    Epetra_SerialDenseMatrix coords_;        // Gauss point coordinates
-    std::vector<double> weights_;            // Gauss point weights
-  };                                         // class MortarIntegrator
+    Teuchos::ParameterList imortar_;          // merged parameter list
+    INPAR::MORTAR::ShapeFcn shapefcn_;        // lm shape function type
+    INPAR::MORTAR::LagMultQuad lmquadtype_;   // type of quadratic lm interpolation
+    int ngp_;                                 // number of Gauss points
+    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    std::vector<double> weights_;             // Gauss point weights
+  };                                          // class MortarIntegrator
 }  // namespace MORTAR
 
 

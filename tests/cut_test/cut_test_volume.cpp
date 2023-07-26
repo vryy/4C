@@ -85,7 +85,7 @@ void test_cut_volumes3()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;

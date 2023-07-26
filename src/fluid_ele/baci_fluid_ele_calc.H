@@ -92,16 +92,16 @@ namespace DRT
 
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
 
       int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
 
       int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override
       {
@@ -116,9 +116,10 @@ namespace DRT
        */
       int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*! \brief Calculate a integrated divergence operator in vector form
        *
@@ -131,7 +132,7 @@ namespace DRT
       virtual int CalcDivOp(DRT::ELEMENTS::Fluid* ele,  //< current fluid element
           DRT::Discretization& discretization,          //< fluid discretization
           std::vector<int>& lm,                         //< some DOF management
-          Epetra_SerialDenseVector& elevec1             //< reference to element vector to be filled
+          CORE::LINALG::SerialDenseVector& elevec1      //< reference to element vector to be filled
       );
 
       /*! \brief Calculate element mass matrix
@@ -141,7 +142,7 @@ namespace DRT
       virtual int CalcMassMatrix(DRT::ELEMENTS::Fluid* ele,
           //    Teuchos::ParameterList&              params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra
           //    const CORE::DRT::UTILS::GaussIntegration & intpoints
       );
 
@@ -151,7 +152,8 @@ namespace DRT
        */
       int InterpolateVelocityGradientAndPressure(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra);
 
       /*! \brief Interpolate velocity to given point
        *
@@ -159,7 +161,8 @@ namespace DRT
        */
       int InterpolateVelocityToNode(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra);
 
       /*! \brief Interpolate velocity to given point
        *
@@ -167,8 +170,8 @@ namespace DRT
        */
       int CorrectImmersedBoundVelocities(Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra);
 
       /*---------------------------------------------------------------------*
        | Action type: interpolate_velocity_to_given_point                    |
@@ -176,7 +179,7 @@ namespace DRT
        *---------------------------------------------------------------------*/
       int InterpolateVelocityToPoint(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
       /*! \brief Interpolate pressure to given point
        *
@@ -184,7 +187,7 @@ namespace DRT
        */
       int InterpolatePressureToPoint(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
       /*! \brief Reset debug output of immersed element
        *
@@ -198,7 +201,7 @@ namespace DRT
        */
       virtual int CalcVelGradientEleCenter(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
 
       /*! \brief Calculate properties for adaptive time step based on CFL number
@@ -206,7 +209,7 @@ namespace DRT
        *  \author bk \date 08/2014
        */
       virtual int CalcTimeStep(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1);
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*! \brief Calculate channel statistics
        *
@@ -222,7 +225,7 @@ namespace DRT
        */
       virtual int CalcMassFlowPeriodicHill(DRT::ELEMENTS::Fluid* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           Teuchos::RCP<MAT::Material>& mat);
 
       /*! \brief Project velocity gradient to nodal level
@@ -232,7 +235,7 @@ namespace DRT
        */
       virtual int VelGradientProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
 
       /*! \brief Project pressure gradient to nodal level
@@ -242,7 +245,7 @@ namespace DRT
        */
       virtual int PresGradientProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
       /*! \brief Calculate a divergence of velocity at the element center
        *
@@ -252,7 +255,7 @@ namespace DRT
       virtual int ComputeDivU(DRT::ELEMENTS::Fluid* ele,  //< current fluid element
           DRT::Discretization& discretization,            //< fluid discretization
           std::vector<int>& lm,                           //< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1  //< reference to element vector to be filled
+          CORE::LINALG::SerialDenseVector& elevec1  //< reference to element vector to be filled
       );
 
       /// Evaluate element ERROR
@@ -261,11 +264,11 @@ namespace DRT
        */
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::DRT::UTILS::GaussIntegration& intpoints2) override;
 
       /*!
@@ -283,17 +286,20 @@ namespace DRT
        */
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false) override;
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false) override;
 
       int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
@@ -301,7 +307,7 @@ namespace DRT
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
-          Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+          CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
@@ -317,9 +323,11 @@ namespace DRT
       /// Evaluate the XFEM cut element
       int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override
       {
@@ -367,14 +375,15 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                         ///< side coupling matrices
-          Teuchos::ParameterList& params,            ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,          ///< material
-          Epetra_SerialDenseMatrix& elemat1_epetra,  ///< local system matrix of intersected element
-          Epetra_SerialDenseVector&
-              elevec1_epetra,               ///< local element vector of intersected element
-          Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                 ///< side coupling matrices
+          Teuchos::ParameterList& params,    ///< parameter list
+          Teuchos::RCP<MAT::Material>& mat,  ///< material
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1_epetra,  ///< local system matrix of intersected element
+          CORE::LINALG::SerialDenseVector&
+              elevec1_epetra,                      ///< local element vector of intersected element
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
           ) override
       {
@@ -395,12 +404,12 @@ namespace DRT
           Teuchos::ParameterList& params,                     ///< parameter list
           Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
           Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
-          Epetra_SerialDenseMatrix& elemat1_epetra,           ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,           ///< element vector
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                ///< side coupling matrices
-          Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                       ///< side coupling matrices
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) override
       {
@@ -409,7 +418,7 @@ namespace DRT
       }
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints) override
       {
         dserror("Implemented in derived xfem class!");
@@ -417,7 +426,7 @@ namespace DRT
       }
 
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra) override
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra) override
       {
         dserror("Implemented in derived xfem class!");
         return;
@@ -1319,7 +1328,7 @@ namespace DRT
       //! weights for nurbs elements
       CORE::LINALG::Matrix<nen_, 1> weights_;
       //! knot vector for nurbs elements
-      std::vector<Epetra_SerialDenseVector> myknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> myknots_;
       //! Gaussian integration points
       CORE::DRT::UTILS::GaussIntegration intpoints_;
       //! identify elements of inflow section

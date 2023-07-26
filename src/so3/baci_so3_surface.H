@@ -181,20 +181,22 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! Evaluate method for StructuralSurface-Elements
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elematrix1,
-          Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elematrix1,
+          CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseVector& elevector1,
+          CORE::LINALG::SerialDenseVector& elevector2,
+          CORE::LINALG::SerialDenseVector& elevector3) override;
 
       //! Evaluate method for StructuralSurface-Elements
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, Epetra_SerialDenseMatrix& elematrix1,
-          Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3) override;
+          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elematrix1,
+          CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseVector& elevector1,
+          CORE::LINALG::SerialDenseVector& elevector2,
+          CORE::LINALG::SerialDenseVector& elevector3) override;
 
       //! Evaluate trace inequality and return the maximal eigenvalue
       virtual double EstimateNitscheTraceMaxEigenvalueCombined(std::vector<double>& parent_disp);
@@ -264,7 +266,7 @@ namespace DRT
       \param deriv  (in)  : derivatives of shape functions
       */
       void SurfaceIntegration(double& detA, std::vector<double>& normal,
-          const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv);
+          const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -275,16 +277,16 @@ namespace DRT
       \param x      (in)  : nodal coords in either material or spatial frame
       \param deriv  (in)  : derivatives of shape functions
       */
-      void SurfaceIntegration(std::vector<double>& normal, const Epetra_SerialDenseMatrix& x,
-          const Epetra_SerialDenseMatrix& deriv);
+      void SurfaceIntegration(std::vector<double>& normal, const CORE::LINALG::SerialDenseMatrix& x,
+          const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Linearize a Neumann boundary condition analytically
 
       This method computes the analytical surface derivative if necessary (for follower loads).
       */
-      void analytical_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-          const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv);
+      void analytical_DSurfaceIntegration(CORE::LINALG::SerialDenseMatrix& d_normal,
+          const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Linearize a Neumann boundary condition with automatic differentiation
@@ -292,8 +294,8 @@ namespace DRT
       This method computes the automatic (Sacado) surface derivative if necessary (for follower
       loads). This method is for development purposes only, and currently not used.
       */
-      void automatic_DSurfaceIntegration(Epetra_SerialDenseMatrix& d_normal,
-          const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv);
+      void automatic_DSurfaceIntegration(CORE::LINALG::SerialDenseMatrix& d_normal,
+          const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv);
 
       /*!
       \brief Create matrix with material configuration
@@ -364,28 +366,28 @@ namespace DRT
       */
       void ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                           ///< number of nodes
-          const int ndof,                                       ///< number of degrees of freedom
-          double& A,                                            ///< area
-          const Teuchos::RCP<Epetra_SerialDenseVector>& Adiff,  ///< first derivative
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Adiff2  ///< second derivative
+          const int ndof,  ///< number of degrees of freedom
+          double& A,       ///< area
+          const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& Adiff,  ///< first derivative
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Adiff2  ///< second derivative
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
       //! displacements
       void ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                          ///< number of nodes
-          const int ndof,                                        ///< number of degrees of freedom
-          double& V,                                             ///< volume
-          const Teuchos::RCP<Epetra_SerialDenseVector>& Vdiff,   ///< first derivative
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Vdiff2,  ///< second derivative
+          const int ndof,  ///< number of degrees of freedom
+          double& V,       ///< volume
+          const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& Vdiff,   ///< first derivative
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );
 
       /// Submethod to compute normal vectors at nodes (for reference configuration) which can be
       /// assembled (i.e., added) to obtain averaged nodal normal vectors
-      void BuildNormalsAtNodes(
-          Epetra_SerialDenseVector& nodenormals, const std::vector<double>& mydisp, bool refconfig);
+      void BuildNormalsAtNodes(CORE::LINALG::SerialDenseVector& nodenormals,
+          const std::vector<double>& mydisp, bool refconfig);
 
       //! Submethod to compute surface porosity
       void CalculateSurfacePorosity(

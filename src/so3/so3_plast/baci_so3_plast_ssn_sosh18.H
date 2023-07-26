@@ -86,8 +86,8 @@ namespace DRT
         return So_sh18::VisData(name, data);
       }
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
         return So_sh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);
       }
@@ -143,13 +143,14 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               elemat1_epetra,  //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseMatrix&
+              elemat2_epetra,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
         return DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Evaluate(params, discretization, la,

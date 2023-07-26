@@ -126,8 +126,8 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
     bool assemblevec = rhs != Teuchos::null;
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elemass;
-    Epetra_SerialDenseVector elerhs;
+    CORE::LINALG::SerialDenseMatrix elemass;
+    CORE::LINALG::SerialDenseVector elerhs;
 
     std::vector<int> lm;
     std::vector<int> lmowner;
@@ -205,7 +205,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         const int dofblock = eledim / iel;
 
         // get node coordinates of element
-        Epetra_SerialDenseMatrix xyze(spacedim, iel);
+        CORE::LINALG::SerialDenseMatrix xyze(spacedim, iel);
         DRT::Node** nodes = actele->Nodes();
         for (int inode = 0; inode < iel; inode++)
         {
@@ -217,7 +217,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         }
 
         // aquire weights from nodes
-        Epetra_SerialDenseVector weights(iel);
+        CORE::LINALG::SerialDenseVector weights(iel);
 
         for (int inode = 0; inode < iel; ++inode)
         {
@@ -227,7 +227,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         }
 
         // access elements knot span
-        std::vector<Epetra_SerialDenseVector> eleknots(spacedim);
+        std::vector<CORE::LINALG::SerialDenseVector> eleknots(spacedim);
 
         bool zero_size = false;
         zero_size = knots->GetEleKnots(eleknots, actele->Id());
@@ -238,13 +238,13 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
           continue;
         }
 
-        Epetra_SerialDenseVector funct(iel);
-        Epetra_SerialDenseMatrix xjm(spacedim, spacedim);
-        Epetra_SerialDenseMatrix deriv(spacedim, iel);
-        Epetra_SerialDenseVector gp(spacedim);
-        Epetra_SerialDenseVector position(
+        CORE::LINALG::SerialDenseVector funct(iel);
+        CORE::LINALG::SerialDenseMatrix xjm(spacedim, spacedim);
+        CORE::LINALG::SerialDenseMatrix deriv(spacedim, iel);
+        CORE::LINALG::SerialDenseVector gp(spacedim);
+        CORE::LINALG::SerialDenseVector position(
             3);  // always three-dimensional coordinates for function evaluation!
-        Epetra_SerialDenseVector initialval(dofblock);
+        CORE::LINALG::SerialDenseVector initialval(dofblock);
 
         // depending on the spatial dimension, we need a different
         // integration scheme

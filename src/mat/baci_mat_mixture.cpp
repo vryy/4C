@@ -321,7 +321,7 @@ void MAT::Mixture::RegisterVtkOutputDataNames(
 }
 
 bool MAT::Mixture::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   bool out = mixture_rule_->EvaluateVtkOutputData(name, data);
   for (const auto& constituent : *constituents_)

@@ -137,8 +137,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-    Epetra_SerialDenseVector& eslaveresidual)
+    CORE::LINALG::SerialDenseMatrix& eslavematrix, CORE::LINALG::SerialDenseMatrix& emastermatrix,
+    CORE::LINALG::SerialDenseVector& eslaveresidual)
 {
   // safety checks
   if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
@@ -313,9 +313,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::EvaluateAction(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     SCATRA::BoundaryAction action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -363,7 +365,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -503,8 +505,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
-    Epetra_SerialDenseMatrix& emastermatrix)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+    CORE::LINALG::SerialDenseMatrix& emastermatrix)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -622,8 +624,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     probdim>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
-    Epetra_SerialDenseVector& eslaveresidual)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+    CORE::LINALG::SerialDenseVector& eslaveresidual)
 {
   // access material of parent element
   Teuchos::RCP<const MAT::Electrode> matelectrode =

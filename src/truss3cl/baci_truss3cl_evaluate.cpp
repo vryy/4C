@@ -22,9 +22,10 @@
  |  evaluate the element (public) mukherjee 01/14|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   const int nnode = 4;
   DRT::ELEMENTS::Truss3CL::ActionType act = Truss3CL::calc_none;
@@ -183,7 +184,7 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("This method is yet to be configured for bio-polymer networks!");
   // get element displacements
@@ -216,7 +217,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
   // declaration of variable in order to store shape function
-  Epetra_SerialDenseVector funct(NumNode());
+  CORE::LINALG::SerialDenseVector funct(NumNode());
 
   // get values and switches from the condition
 
@@ -268,7 +269,7 @@ int DRT::ELEMENTS::Truss3CL::EvaluateNeumann(Teuchos::ParameterList& params,
 template <int fnnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                           // space, number of degrees of freedom per node
 int DRT::ELEMENTS::Truss3CL::EvaluatePTC(
-    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
   for (int i = 0; i < elemat1.RowDim(); i++)
     for (int j = 0; j < elemat1.ColDim(); j++)
@@ -281,8 +282,8 @@ int DRT::ELEMENTS::Truss3CL::EvaluatePTC(
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                         mukherjee 01/14|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::t3_energy(
-    Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector* intenergy)
+void DRT::ELEMENTS::Truss3CL::t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseVector* intenergy)
 {
   dserror("This method is yet to be configured for bio-polymer networks!");
 
@@ -415,8 +416,9 @@ void DRT::ELEMENTS::Truss3CL::t3_energy(
  | switch between kintypes                                               mukherjee 01/14|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
-    std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force)
+    std::vector<double>& vel, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   const int fnnode = 2;
 
@@ -494,11 +496,11 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
           fvel(i + 3 * j) += Ibp[j](2 * l + r) * vel[i + 3 * r + 6 * l + 12 * j];
 
   // 12x12 Stiffness Matrix of the beam described by the two fictitious nodes
-  Epetra_SerialDenseMatrix fstiffmatrix;
+  CORE::LINALG::SerialDenseMatrix fstiffmatrix;
   fstiffmatrix.Shape(3 * fnnode, 3 * fnnode);
   fstiffmatrix.Scale(0);
   // 12x1 force vector of the beam described by the two fictitious nodes
-  Epetra_SerialDenseVector fforce;
+  CORE::LINALG::SerialDenseVector fforce;
   fforce.Size(3 * fnnode);
   fforce.Scale(0);
 
@@ -521,7 +523,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
 
   // internal force vector stored by class variable before application of stochastic excitations
   if (params.get<std::string>("internalforces", "no") == "yes")
-    f_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
+    f_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(fforce));
 
   /*the following function call applies statistical forces and damping matrix according to the
    * fluctuation dissipation theorem; it is dedicated to the application of Truss3CL elements in the
@@ -572,8 +574,8 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
  | nonlinear stiffness and mass matrix (private) mukherjee 01/14|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(CORE::LINALG::Matrix<6, 1>& fdisp,
-    Epetra_SerialDenseMatrix& fstiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector& fforce)
+    CORE::LINALG::SerialDenseMatrix& fstiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector& fforce)
 {
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   CORE::LINALG::Matrix<6, 1> xcurr;
@@ -687,8 +689,8 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(CORE::LINALG::Matrix<6, 1>&
  large displacements and rotations                                                |
   *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const CORE::LINALG::Matrix<6, 1>& fdisp,
-    Epetra_SerialDenseMatrix& stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector& force)
+    CORE::LINALG::SerialDenseMatrix& stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector& force)
 {
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   CORE::LINALG::Matrix<6, 1> xcurr;
@@ -780,7 +782,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const CORE::LINALG::Matrix<
 
 
 // lump mass matrix
-void DRT::ELEMENTS::Truss3CL::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Truss3CL::t3_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != NULL)
@@ -863,12 +865,12 @@ template <int fnnode, int ndim,
     int dof>  // number of nodes, number of dimensions of embedding space, number of degrees of
               // freedom per node
 inline void DRT::ELEMENTS::Truss3CL::MyTranslationalDamping(
-    Teuchos::ParameterList& params,           //!< parameter list
-    const CORE::LINALG::Matrix<6, 1>& fvel,   //!< element velocity vector
-    const std::vector<double>& disp,          //!< element real disp vector
-    const CORE::LINALG::Matrix<6, 1>& fdisp,  //!< element fictitious disp vector
-    Epetra_SerialDenseMatrix& fstiffmatrix,   //!< element stiffness matrix
-    Epetra_SerialDenseVector& fforce)         //!< element internal force vector
+    Teuchos::ParameterList& params,                 //!< parameter list
+    const CORE::LINALG::Matrix<6, 1>& fvel,         //!< element velocity vector
+    const std::vector<double>& disp,                //!< element real disp vector
+    const CORE::LINALG::Matrix<6, 1>& fdisp,        //!< element fictitious disp vector
+    CORE::LINALG::SerialDenseMatrix& fstiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector& fforce)        //!< element internal force vector
 {
   // get time step size
   double dt = params.get<double>("delta time", 0.0);
@@ -987,10 +989,10 @@ template <int fnnode, int ndim, int dof,
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
 inline void DRT::ELEMENTS::Truss3CL::MyStochasticForces(
-    Teuchos::ParameterList& params,           //!< parameter list
-    const CORE::LINALG::Matrix<6, 1>& fdisp,  //!< element disp vector
-    Epetra_SerialDenseMatrix& fstiffmatrix,   //!< element stiffness matrix
-    Epetra_SerialDenseVector& fforce)         //!< element internal force vector
+    Teuchos::ParameterList& params,                 //!< parameter list
+    const CORE::LINALG::Matrix<6, 1>& fdisp,        //!< element disp vector
+    CORE::LINALG::SerialDenseMatrix& fstiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector& fforce)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   CORE::LINALG::Matrix<3, 1> gamma(true);
@@ -1077,11 +1079,11 @@ template <int fnnode, int ndim, int dof,
                          // degrees of freedom per node, number of random numbers required per Gauss
                          // point
 inline void DRT::ELEMENTS::Truss3CL::CalcBrownian(Teuchos::ParameterList& params,
-    const CORE::LINALG::Matrix<6, 1>& fvel,   //!< element velocity vector
-    const std::vector<double>& disp,          //!< element real displacement vector
-    const CORE::LINALG::Matrix<6, 1>& fdisp,  //!< element fictitious displacement vector
-    Epetra_SerialDenseMatrix& fstiffmatrix,   //!< element stiffness matrix
-    Epetra_SerialDenseVector& fforce)         //!< element internal force vector
+    const CORE::LINALG::Matrix<6, 1>& fvel,         //!< element velocity vector
+    const std::vector<double>& disp,                //!< element real displacement vector
+    const CORE::LINALG::Matrix<6, 1>& fdisp,        //!< element fictitious displacement vector
+    CORE::LINALG::SerialDenseMatrix& fstiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector& fforce)        //!< element internal force vector
 {
   // if no random numbers for generation of stochastic forces are passed to the element no Brownian
   // dynamics calculations are conducted

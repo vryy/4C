@@ -930,7 +930,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
 
    if (modification)
    {
-   Teuchos::RCP<Epetra_SerialDenseMatrix> mmodseg =
+   Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> mmodseg =
    integrator.IntegrateMmod2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib);
    integrator.AssembleMmod(Comm(),SlaveElement(),MasterElement(),*mmodseg);
    }

@@ -86,7 +86,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor)
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
@@ -98,7 +98,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     // get diffusivity at ele center
     CORE::LINALG::Matrix<probdim, probdim> diff(true);
     actmat->Diffusivity(diff, 0);
-    Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
+    CORE::LINALG::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
     {
-      Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
+      CORE::LINALG::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
       CORE::LINALG::Matrix<probdim, probdim> diff(true);
       actmat->Diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
@@ -156,7 +156,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor)
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
     PrepareMaterialsTet(ele, material, k, difftensor);
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor)
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
   const Teuchos::RCP<MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<MAT::Myocard>(ele->Material());
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     // get diffusivity at ele center
     CORE::LINALG::Matrix<probdim, probdim> diff(true);
     actmat->Diffusivity(diff, 0);
-    Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
+    CORE::LINALG::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
     for (unsigned int i = 0; i < this->nsd_; ++i)
       for (unsigned int j = 0; j < this->nsd_; ++j) difftensortmp(i, j) = diff(i, j);
     (*difftensor).push_back(difftensortmp);
@@ -226,7 +226,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
 
     for (unsigned int q = 0; q < numgp; ++q)
     {
-      Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
+      CORE::LINALG::SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
       CORE::LINALG::Matrix<probdim, probdim> diff(true);
       actmat->Diffusivity(diff, q);
       for (unsigned int i = 0; i < this->nsd_; ++i)
@@ -246,8 +246,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Materials(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Epetra_SerialDenseMatrix& difftensor, Epetra_SerialDenseVector& ivecn,
-    Epetra_SerialDenseVector& ivecnp, Epetra_SerialDenseMatrix& ivecnpderiv)
+    CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
+    CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
   if (material->MaterialType() == INPAR::MAT::m_myocard)
     MatMyocard(material, k, difftensor, ivecn, ivecnp, ivecnpderiv);
@@ -265,8 +265,8 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyocard(
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Epetra_SerialDenseMatrix& difftensor, Epetra_SerialDenseVector& ivecn,
-    Epetra_SerialDenseVector& ivecnp, Epetra_SerialDenseMatrix& ivecnpderiv)
+    CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
+    CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv)
 {
   const Teuchos::RCP<const MAT::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
@@ -274,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
   // coordinate of material gauss points
   CORE::LINALG::Matrix<probdim, 1> mat_gp_coord(true);
   // values of shape function at material gauss points
-  Epetra_SerialDenseVector values_mat_gp(this->shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector values_mat_gp(this->shapes_->ndofs_);
 
   double imatgpnpderiv(0.);
   double imatgpnp(0.);
@@ -590,13 +590,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   shapes->Evaluate(*ele);
   shapes_old->Evaluate(*ele);
 
-  Epetra_SerialDenseMatrix massPartOld(shapes->ndofs_, shapes_old->nqpoints_);
-  Epetra_SerialDenseMatrix massPartOldW(shapes->ndofs_, shapes_old->nqpoints_);
-  Epetra_SerialDenseMatrix massPart(shapes->ndofs_, shapes->nqpoints_);
-  Epetra_SerialDenseMatrix massPartW(shapes->ndofs_, shapes->nqpoints_);
-  Epetra_SerialDenseMatrix Mmat(shapes->ndofs_, shapes->ndofs_);
+  CORE::LINALG::SerialDenseMatrix massPartOld(shapes->ndofs_, shapes_old->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPartOldW(shapes->ndofs_, shapes_old->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPart(shapes->ndofs_, shapes->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPartW(shapes->ndofs_, shapes->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix Mmat(shapes->ndofs_, shapes->ndofs_);
 
-  Epetra_SerialDenseMatrix state_variables(
+  CORE::LINALG::SerialDenseMatrix state_variables(
       shapes_old->nqpoints_, actmat->GetNumberOfInternalStateVariables());
 
   if (shapes->ndofs_ != shapes_old->ndofs_) dserror("Number of shape functions not identical!");
@@ -621,7 +621,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
       state_variables(q, k) = actmat->GetInternalState(k, q);
 
-  Epetra_SerialDenseMatrix tempMat1(shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
+  CORE::LINALG::SerialDenseMatrix tempMat1(
+      shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
   tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
 
   Epetra_SerialDenseSolver inverseMat;
@@ -632,7 +633,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   int err = inverseMat.Solve();
   if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
 
-  Epetra_SerialDenseMatrix tempMat2(shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
+  CORE::LINALG::SerialDenseMatrix tempMat2(
+      shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
   tempMat2.Multiply('T', 'N', 1.0, massPart, tempMat1, 0.0);
 
   actmat->SetGP(shapes->nqpoints_);
@@ -686,8 +688,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
       intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(deg));
 
 
-  std::vector<Epetra_SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
-  std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
+  std::vector<CORE::LINALG::SerialDenseVector> shape_gp_old(intpoints_old.IP().nquad);
+  std::vector<CORE::LINALG::SerialDenseVector> shape_gp(intpoints.IP().nquad);
 
   // coordinate of material gauss points
   CORE::LINALG::Matrix<probdim, 1> mat_gp_coord(true);
@@ -718,13 +720,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
 
 
-  Epetra_SerialDenseMatrix massPartOld(polySpace->Size(), shape_gp_old.size());
-  Epetra_SerialDenseMatrix massPartOldW(polySpace->Size(), shape_gp_old.size());
-  Epetra_SerialDenseMatrix massPart(polySpace->Size(), shape_gp.size());
-  Epetra_SerialDenseMatrix massPartW(polySpace->Size(), shape_gp.size());
-  Epetra_SerialDenseMatrix Mmat(polySpace->Size(), polySpace->Size());
+  CORE::LINALG::SerialDenseMatrix massPartOld(polySpace->Size(), shape_gp_old.size());
+  CORE::LINALG::SerialDenseMatrix massPartOldW(polySpace->Size(), shape_gp_old.size());
+  CORE::LINALG::SerialDenseMatrix massPart(polySpace->Size(), shape_gp.size());
+  CORE::LINALG::SerialDenseMatrix massPartW(polySpace->Size(), shape_gp.size());
+  CORE::LINALG::SerialDenseMatrix Mmat(polySpace->Size(), polySpace->Size());
 
-  Epetra_SerialDenseMatrix state_variables(
+  CORE::LINALG::SerialDenseMatrix state_variables(
       shape_gp_old.size(), actmat->GetNumberOfInternalStateVariables());
 
   for (unsigned int i = 0; i < polySpace->Size(); ++i)
@@ -747,7 +749,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
       state_variables(q, k) = actmat->GetInternalState(k, q);
 
-  Epetra_SerialDenseMatrix tempMat1(polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
+  CORE::LINALG::SerialDenseMatrix tempMat1(
+      polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
   tempMat1.Multiply('N', 'N', 1.0, massPartOldW, state_variables, 0.0);
 
   Epetra_SerialDenseSolver inverseMat;
@@ -758,7 +761,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
   int err = inverseMat.Solve();
   if (err != 0 || err2 != 0) dserror("Inversion of matrix failed with errorcode %d", err);
 
-  Epetra_SerialDenseMatrix tempMat2(shape_gp.size(), actmat->GetNumberOfInternalStateVariables());
+  CORE::LINALG::SerialDenseMatrix tempMat2(
+      shape_gp.size(), actmat->GetNumberOfInternalStateVariables());
   tempMat2.Multiply('T', 'N', 1.0, massPart, tempMat1, 0.0);
 
   actmat->SetGP(shape_gp.size());

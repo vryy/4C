@@ -14,6 +14,7 @@
 
 
 #include "baci_io_hdf.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -29,10 +30,13 @@ extern "C"
 
 class Epetra_Vector;
 class Epetra_MultiVector;
-class Epetra_SerialDenseMatrix;
 class Epetra_Map;
 class Epetra_BlockMap;
 class Epetra_BlockMapData;
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 namespace DRT
 {
   class Discretization;
@@ -133,9 +137,9 @@ namespace IO
      */
     void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
 
-    /// read into given std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >
+    /// read into given std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> >
     void ReadSerialDenseMatrix(
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
         std::string name);
 
     /// read an integer value from the control file

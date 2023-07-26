@@ -533,10 +533,10 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
       mhdbcparams.set<Teuchos::RCP<DRT::Condition>>("condition", thiscond);
 
       // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix dummymat;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector dummyvec;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix dummymat;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector dummyvec;
 
       // element matrices and vectors will be reshaped
       // during the element call!

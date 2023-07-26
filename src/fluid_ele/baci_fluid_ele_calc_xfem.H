@@ -123,26 +123,28 @@ namespace DRT
       /// evaluate the XFEM cut element
       int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false) override;
 
       /// evaluate the shape functions in the XFEM
       int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells) override;
 
       /// error computation
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& ele_dom_norms) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms) override;
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& ele_dom_norms,
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& ele_dom_norms,
           const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
       int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,           ///< fluid element
@@ -150,7 +152,7 @@ namespace DRT
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
-          Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+          CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
@@ -173,14 +175,15 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                         ///< side coupling matrices
-          Teuchos::ParameterList& params,            ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,          ///< material
-          Epetra_SerialDenseMatrix& elemat1_epetra,  ///< local system matrix of intersected element
-          Epetra_SerialDenseVector&
-              elevec1_epetra,               ///< local element vector of intersected element
-          Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                 ///< side coupling matrices
+          Teuchos::ParameterList& params,    ///< parameter list
+          Teuchos::RCP<MAT::Material>& mat,  ///< material
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1_epetra,  ///< local system matrix of intersected element
+          CORE::LINALG::SerialDenseVector&
+              elevec1_epetra,                      ///< local element vector of intersected element
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
           ) override;
 
@@ -197,12 +200,12 @@ namespace DRT
           Teuchos::ParameterList& params,                     ///< parameter list
           Teuchos::RCP<MAT::Material>& mat_master,            ///< material for the coupled side
           Teuchos::RCP<MAT::Material>& mat_slave,             ///< material for the coupled side
-          Epetra_SerialDenseMatrix& elemat1_epetra,           ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,           ///< element vector
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                ///< side coupling matrices
-          Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                       ///< side coupling matrices
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) override;
 
@@ -210,7 +213,7 @@ namespace DRT
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                            ///< discretization
           const std::vector<int>& lm,                          ///< local map
-          Epetra_SerialDenseVector& elevec1_epetra,            ///< element vector
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,     ///< element vector
           const CORE::DRT::UTILS::GaussIntegration& intpoints  ///< integration points
           ) override;
 
@@ -218,7 +221,7 @@ namespace DRT
       void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele,  ///< fluid element
           DRT::Discretization& dis,                            ///< discretization
           const std::vector<int>& lm,                          ///< local map
-          Epetra_SerialDenseVector& elevec1_epetra             ///< element vector
+          CORE::LINALG::SerialDenseVector& elevec1_epetra      ///< element vector
           ) override;
 
      private:
@@ -275,9 +278,9 @@ namespace DRT
 
       //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides
       void NIT_BuildPatchCuiui(
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               Cuiui,  ///< ui-ui patch coupling matrix containing Cuiui for all cutting sides
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
               Cuiui_coupling  ///< Cuiui matrices for all cutting sides
       );
 
@@ -299,7 +302,7 @@ namespace DRT
       void HybridLM_CreateSpecialContributionMatrices(
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           std::set<int>& begids,  ///< ids of intersecting boundary elements
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
               conv_side_coupling  ///< contributions to coupling matrices from convective
                                   ///< stabilizations
       );
@@ -309,7 +312,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& funct_m,  ///< coupling master shape functions
           const CORE::LINALG::Matrix<nsd_, 1>&
               itraction_jump,  ///< prescribed interface traction, jump height for coupled problems
-          Epetra_SerialDenseMatrix& elevec1_epetra  ///< element vector
+          CORE::LINALG::SerialDenseMatrix::Base& elevec1_epetra  ///< element vector
       );
 
       //! build traction vector w.r.t fluid domain
@@ -320,10 +323,10 @@ namespace DRT
 
       //! assemble side's interface force
       void AssembleInterfaceForce(
-          Teuchos::RCP<Epetra_Vector> iforcecol,  ///< interface force column vector
-          DRT::Discretization& cutdis,            ///< cut discretization
-          std::vector<int>& lm,                   ///< local dof map
-          Epetra_SerialDenseVector& iforce        ///< interface force vector
+          Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
+          DRT::Discretization& cutdis,             ///< cut discretization
+          std::vector<int>& lm,                    ///< local dof map
+          CORE::LINALG::SerialDenseVector& iforce  ///< interface force vector
       );
 
       //! evaluate shape function and derivative at point with local coordinates rst
@@ -443,7 +446,7 @@ namespace DRT
       CORE::LINALG::Matrix<nsd_, nsd_>
           LB_proj_matrix_;  ///< interface matrix jump (for Laplace-Beltrami) at t^n+1
 
-      std::vector<Epetra_SerialDenseMatrix>
+      std::vector<CORE::LINALG::SerialDenseMatrix>
           solid_stress_;  ///< hold information about solid stress ([0]...traction,
                           ///< [1]...dtraction_dv, [2-4]...d2traction_dv2)
 

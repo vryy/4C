@@ -39,7 +39,7 @@ namespace CORE::GEO
       /*!
       \brief Get the coordinates of the nodes of this side
        */
-      virtual void Coordinates(Epetra_SerialDenseMatrix& xyze) = 0;
+      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) = 0;
 
       /*!
       \brief Get the local coordinates "rst"from the global coordinates "xyz" with respect to this
@@ -155,7 +155,7 @@ namespace CORE::GEO
 
       virtual ::DRT::Element::DiscretizationType Shape() { return side_->Shape(); }
 
-      virtual void Coordinates(Epetra_SerialDenseMatrix& xyze)
+      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
       {
         xyze.Reshape(3, side_->Nodes().size());
         side_->Coordinates(xyze.A());
@@ -195,7 +195,7 @@ namespace CORE::GEO
     class QuadraticSideHandle : public SideHandle
     {
      public:
-      virtual void Coordinates(Epetra_SerialDenseMatrix& xyze)
+      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
       {
         xyze.Reshape(3, nodes_.size());
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)

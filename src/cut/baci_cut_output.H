@@ -70,7 +70,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 01/17 */
       void GmshCellDump(std::ofstream& file, ::DRT::Element::DiscretizationType shape,
-          const Epetra_SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
+          const CORE::LINALG::SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
           const int* value = NULL);
 
       /*!

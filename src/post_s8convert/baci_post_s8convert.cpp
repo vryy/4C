@@ -49,7 +49,7 @@ Converter::Converter(PostField* field) : field_(field)
 
   int numnodes = s8dis_->NumGlobalNodes();
 
-  Epetra_SerialDenseMatrix coords(2 * numnodes, 3);
+  CORE::LINALG::SerialDenseMatrix coords(2 * numnodes, 3);
   for (int i = 0; i < numnodes; ++i)
   {
     DRT::Node* actnode = s8dis_->lRowNode(i);
@@ -73,7 +73,7 @@ Converter::Converter(PostField* field) : field_(field)
     DRT::ELEMENTS::Shell8* actshell = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
     if (actshell == NULL) dserror("not a shell8 element");
 
-    const Epetra_SerialDenseMatrix* dirs = actshell->GetDirectors();
+    const CORE::LINALG::SerialDenseMatrix* dirs = actshell->GetDirectors();
     const std::vector<double>* thick = actshell->GetThickness();
     int enumnode = actshell->NumNode();
     for (int n = 0; n < enumnode; ++n)
@@ -208,7 +208,7 @@ void Converter::write_vector_result(std::string result_name, PostField* field, P
 
 void Converter::write_element_result(std::string result_name, PostField* field, PostResult* result)
 {
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> s8data =
+  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> s8data =
       result->read_result_serialdensematrix(result_name);
 
   const Epetra_Map* h8map = h8dis_->ElementRowMap();

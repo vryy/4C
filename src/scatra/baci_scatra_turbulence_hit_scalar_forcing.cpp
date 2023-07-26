@@ -222,8 +222,8 @@ namespace SCATRA
     }
 
     // linear compensation factor for isotropic forcing
-    force_fac_ =
-        Teuchos::rcp(new Epetra_SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    force_fac_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }

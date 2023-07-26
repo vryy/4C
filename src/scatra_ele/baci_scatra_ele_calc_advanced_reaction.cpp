@@ -171,9 +171,9 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::GetRhsInt(
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::CalcMatReact(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double taufac, const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
-    const CORE::LINALG::Matrix<nen_, 1>& diff)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double timetaufac, const double taufac, const double densnp,
+    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   // -----------------first care for 'easy' reaction terms K*(\partial_c
   // c)=Id*K-------------------------------------- NOTE: K_i must not depend on any concentrations!!

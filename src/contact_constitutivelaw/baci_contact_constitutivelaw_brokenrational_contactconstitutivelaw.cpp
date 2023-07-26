@@ -8,8 +8,8 @@
 
 
 #include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
 #include "baci_lib_globalproblem.H"
 

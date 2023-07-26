@@ -160,7 +160,7 @@ void MIXTURE::MixtureConstituent_SolidMaterial::RegisterVtkOutputDataNames(
 }
 
 bool MIXTURE::MixtureConstituent_SolidMaterial::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   return material_->EvaluateVtkOutputData(name, data);
 }

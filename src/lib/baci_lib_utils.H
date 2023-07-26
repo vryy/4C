@@ -17,8 +17,8 @@
 #include <stdio.h>
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_lib_node.H"
 #include "baci_lib_element.H"
@@ -51,8 +51,8 @@ namespace DRT
     void ExtractMyValues(
         const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-    void ExtractMyValues(
-        const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm);
+    void ExtractMyValues(const Epetra_Vector& global, CORE::LINALG::SerialDenseVector& local,
+        const std::vector<int>& lm);
 
     void ExtractMyValues(
         const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
@@ -134,7 +134,7 @@ namespace DRT
      *  \date 08/08
      */
     void ExtractMyNodeBasedValues(const DRT::Element* ele,  ///< pointer to current element
-        Epetra_SerialDenseVector& local,                    ///< local vector on element-level
+        CORE::LINALG::SerialDenseVector& local,             ///< local vector on element-level
         const Teuchos::RCP<Epetra_MultiVector>& global,     ///< global vector
         const int nsd                                       ///< number of space dimensions
     );
@@ -144,7 +144,7 @@ namespace DRT
      *  \date 12/16
      */
     void ExtractMyNodeBasedValues(const DRT::Node* node,  ///< pointer to current element
-        Epetra_SerialDenseVector& local,                  ///< local vector on node-level
+        CORE::LINALG::SerialDenseVector& local,           ///< local vector on node-level
         const Teuchos::RCP<Epetra_MultiVector>& global,   ///< global vector
         const int nsd                                     ///< number of space dimensions
     );

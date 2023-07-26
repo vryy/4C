@@ -12,9 +12,9 @@
 #define BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beamcontact_beam3contactnew.H"
@@ -59,7 +59,8 @@ class Beam3ContactOctTree
   /*!\brief intersection test of all elements in the octant in which a given bounding box lies
    * \param nodecoords  (in) nodal coordinates
    * \param nodeLID     (in) local Ids of the nodes */
-  bool IntersectBBoxesWith(Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID);
+  bool IntersectBBoxesWith(
+      CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID);
 
   /*!\brief output of octree discretization, bounding boxes and contact pairs
    * \param cpairs (in) vector with contact pairs
@@ -88,19 +89,19 @@ class Beam3ContactOctTree
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
-  void CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*!\brief create coylindrical oriented bounding boxes
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
-  void CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*! \brief create spherical bounding boxes for crosslinker
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id*/
-  void CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+  void CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
 
 
   //!\brief base call for octree build. Returns false if no bounding boxes exist
@@ -150,17 +151,17 @@ class Beam3ContactOctTree
    * existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs) \param
    * bboxlimits (in) limits of the bounding box */
   bool IntersectionAABB(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /*!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong
    * to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    * \param bboxlimits (in) limits of the bounding box */
   bool IntersectionCOBB(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
   /* !\brief intersection method applying spherical bounding boxes for crosslinker when both boxes
    * belong to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    *  \param bboxlimits (in) limits of the bounding box */
   bool IntersectionSPBB(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits = Teuchos::null);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits = Teuchos::null);
 
   /*! \brief communicate Vector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -184,7 +185,7 @@ class Beam3ContactOctTree
 
   /*! \brief Undo the shifts due periodic BCs and make coord continuous */
   void UndoEffectOfPeriodicBoundaryCondition(
-      Epetra_SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts);
+      CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts);
 
   /*! \brief Retrieve bounding box specific extrusion value*/
   double GetBoundingBoxExtrusionValue();

@@ -192,7 +192,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementDump(std::ofstream& file,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::OUTPUT::GmshCellDump(std::ofstream& file,
-    ::DRT::Element::DiscretizationType shape, const Epetra_SerialDenseMatrix& xyze,
+    ::DRT::Element::DiscretizationType shape, const CORE::LINALG::SerialDenseMatrix& xyze,
     const Point::PointPosition* position, const int* value)
 {
   char elementtype = GmshElementType(shape);
@@ -871,7 +871,7 @@ void CORE::GEO::CUT::OUTPUT::GmshLevelSetOrientationDump(
       bc->Normal(xsi, normal_bc);
 
       std::vector<std::vector<double>> coords_bc = bc->CoordinatesV();
-      // const Epetra_SerialDenseMatrix ls_coordEp = bc->Coordinates();
+      // const CORE::LINALG::SerialDenseMatrix ls_coordEp = bc->Coordinates();
       CORE::LINALG::Matrix<3, 1> ls_coord(true);
       ls_coord(0, 0) = coords_bc[1][0];
       ls_coord(1, 0) = coords_bc[1][1];
@@ -1218,7 +1218,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     {
       file << "  {"
            << "\n";
-      file << "    Epetra_SerialDenseMatrix tri3_xyze( 3, 3 );"
+      file << "    CORE::LINALG::SerialDenseMatrix tri3_xyze( 3, 3 );"
            << "\n";
       file << ""
            << "\n";
@@ -1263,7 +1263,7 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
     Element* aele = *eit;
     file << "  {"
          << "\n";
-    file << "  Epetra_SerialDenseMatrix hex" << aele->Nodes().size() << "_xyze( 3, "
+    file << "  linalg_serialdensematrix.Hex" << aele->Nodes().size() << "_xyze( 3, "
          << aele->Nodes().size() << " );"
          << "\n";
     file << ""

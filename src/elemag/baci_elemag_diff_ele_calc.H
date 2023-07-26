@@ -44,7 +44,7 @@ namespace DRT
       /// Integrate shape functions (not implemented)
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1)
+          CORE::LINALG::SerialDenseVector& elevec1)
       {
         dserror("Not implemented");
         return 1;
@@ -55,7 +55,7 @@ namespace DRT
 
       /// Interpolates an HDG solution to the element nodes for output.
       virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::ElemagDiff* ele,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1);
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
@@ -65,17 +65,20 @@ namespace DRT
       /// Generic virtual interface function.Called via base pointer.
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
 
       /// Evaluate the element at specified gauss points.
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
       /// Deconstructor
@@ -109,17 +112,19 @@ namespace DRT
             CORE::DRT::UTILS::ShapeValues<distype>& postproc_shapeValues);
 
         /// Compute the residual
-        void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& eleVec,
-            double dt, DRT::ELEMENTS::ElemagDiff& ele);
+        void ComputeResidual(Teuchos::ParameterList& params,
+            CORE::LINALG::SerialDenseVector& eleVec, double dt, DRT::ELEMENTS::ElemagDiff& ele);
 
         /// Computes the source term in the element.
         void ComputeSource(Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& interiorSourcen, Epetra_SerialDenseVector& interiorSourcenp);
+            CORE::LINALG::SerialDenseVector& interiorSourcen,
+            CORE::LINALG::SerialDenseVector& interiorSourcenp);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void ComputeAbsorbingBC(DRT::Discretization& discretization, DRT::ELEMENTS::ElemagDiff* ele,
             Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat, int face,
-            Epetra_SerialDenseMatrix& elemat, int indexstart, Epetra_SerialDenseVector& elevec1);
+            CORE::LINALG::SerialDenseMatrix& elemat, int indexstart,
+            CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void ComputeBoundaryIntegral(
@@ -139,7 +144,7 @@ namespace DRT
 
         /// Condense the local matrix into the element matrix for the trace and similarly for the
         /// residuals.
-        void CondenseLocalPart(Epetra_SerialDenseMatrix& elemat);
+        void CondenseLocalPart(CORE::LINALG::SerialDenseMatrix& elemat);
 
         /*!
         \brief Make the matrix symmetric in case of dirichlet boundary conditions in the element
@@ -147,22 +152,22 @@ namespace DRT
         \note So far the function only acts on the matrices and not on the RHS! This is ok for PEC
         boundary conditions because the DBC is anyway zero.
         */
-        void Symmetrify(
-            DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseMatrix& elemat, bool dodirich = true);
+        void Symmetrify(DRT::ELEMENTS::ElemagDiff& ele, CORE::LINALG::SerialDenseMatrix& elemat,
+            bool dodirich = true);
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
         int ProjectField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
+            CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
         /// Projection of scatra computed gradients into elements
         int ProjectElectricFieldFromScatra(DRT::ELEMENTS::ElemagDiff* ele,
             Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat,
-            Epetra_SerialDenseVector& elevec1);
+            CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Compute the error with respect to an analytical field.
         void ComputeError(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& elevec1);
+            CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Postprocess the solution to obtain a better approximation
         void PostProcessing(DRT::ELEMENTS::ElemagDiff& ele);
@@ -180,27 +185,27 @@ namespace DRT
          * needs.
          */
         int ProjectFieldTest(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
+            CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
         int ProjectFieldTestTrace(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& elevec1);
+            CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
         int ProjectDirichField(DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Epetra_SerialDenseVector& elevec1);
+            CORE::LINALG::SerialDenseVector& elevec1);
 
         /// Function evaluation routine
         void EvaluateAll(const int start_func, const double t,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseVector& v) const;
 
         /// Function gradient evaluation routine
         void ComputeFunctionGradient(int start_func, double t,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& v) const;
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& v) const;
 
         /// Function time derivative evaluation routine
         void ComputeFunctionTimeDerivative(int start_func, double t, double dt,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const;
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseVector& v) const;
 
         // convention: we sort the entries in the matrices the following way:
         // first comes the electric field then the magnetic one.
@@ -219,32 +224,32 @@ namespace DRT
 
         // System matrices
         /// u matrix
-        Epetra_SerialDenseMatrix Amat;
+        CORE::LINALG::SerialDenseMatrix Amat;
         /// Inverse of u matrix
-        Epetra_SerialDenseMatrix invAmat;
+        CORE::LINALG::SerialDenseMatrix invAmat;
         /// u electric
-        Epetra_SerialDenseMatrix Bmat;
+        CORE::LINALG::SerialDenseMatrix Bmat;
         /// u trace
-        Epetra_SerialDenseMatrix Cmat;
-        Epetra_SerialDenseMatrix Fmat;
+        CORE::LINALG::SerialDenseMatrix Cmat;
+        CORE::LINALG::SerialDenseMatrix Fmat;
         /// electric second time
-        Epetra_SerialDenseMatrix Dmat;
+        CORE::LINALG::SerialDenseMatrix Dmat;
         /// electric evolution
-        Epetra_SerialDenseMatrix Emat;
+        CORE::LINALG::SerialDenseMatrix Emat;
         /// electric electric
-        Epetra_SerialDenseMatrix Gmat;
+        CORE::LINALG::SerialDenseMatrix Gmat;
         /// electric trace
-        Epetra_SerialDenseMatrix Hmat;
+        CORE::LINALG::SerialDenseMatrix Hmat;
         /// trace trace
-        Epetra_SerialDenseMatrix Lmat;
+        CORE::LINALG::SerialDenseMatrix Lmat;
 
         // auxiliary stuff
         /// final mass matrix used for the projection
-        Epetra_SerialDenseMatrix massMat;
+        CORE::LINALG::SerialDenseMatrix massMat;
         /// part of the mass matrix (only contains the shape functions)
-        Epetra_SerialDenseMatrix massPart;
+        CORE::LINALG::SerialDenseMatrix massPart;
         /// other part of the mass matrix (with quadrature weights)
-        Epetra_SerialDenseMatrix massPartW;
+        CORE::LINALG::SerialDenseMatrix massPartW;
 
         /// Chosen dynamics/time integrator
         INPAR::ELEMAG::DynamicType& dyna_;
@@ -253,7 +258,7 @@ namespace DRT
       /// Updates interior variables and calculates residual.
       void UpdateInteriorVariablesAndComputeResidual(Teuchos::ParameterList& params,
           DRT::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<MAT::Material>& mat,
-          Epetra_SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
+          CORE::LINALG::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.
       void ReadGlobalVectors(
@@ -266,7 +271,7 @@ namespace DRT
       void ElementInitFromRestart(DRT::Element* ele, DRT::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
-      double EstimateError(DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseVector& p);
+      double EstimateError(DRT::ELEMENTS::ElemagDiff& ele, CORE::LINALG::SerialDenseVector& p);
 
       /// Local data object for element.
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;
@@ -283,12 +288,12 @@ namespace DRT
       std::vector<double> localtrace_;  /// extracted values from trace solution vector
 
       /// Local values from interior solution vector (electric and magnetic fields) at n
-      Epetra_SerialDenseVector interiorElectricnp_;
-      Epetra_SerialDenseVector interiorMagneticnp_;
-      Epetra_SerialDenseVector interiorauxiliaryPML_;
+      CORE::LINALG::SerialDenseVector interiorElectricnp_;
+      CORE::LINALG::SerialDenseVector interiorMagneticnp_;
+      CORE::LINALG::SerialDenseVector interiorauxiliaryPML_;
       /// Local values from interior solution vector (electric and magnetic fields) at n-1
-      Epetra_SerialDenseVector interiorElectricnm_;
-      Epetra_SerialDenseVector interiorMagneticnm_;
+      CORE::LINALG::SerialDenseVector interiorElectricnm_;
+      CORE::LINALG::SerialDenseVector interiorMagneticnm_;
 
 
       /// Chosen dynamics/time integrator

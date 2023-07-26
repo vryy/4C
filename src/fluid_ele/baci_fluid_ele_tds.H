@@ -13,7 +13,7 @@
 #define BACI_FLUID_ELE_TDS_H
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
 
@@ -110,24 +110,24 @@ namespace FLD
     /*!
     \brief Returns the subgrid velocity at time n (sveln_)
     */
-    Epetra_SerialDenseMatrix Sveln() const { return sveln_; }
+    CORE::LINALG::SerialDenseMatrix Sveln() const { return sveln_; }
 
     /*!
     \brief Returns the subgrid velocity at time n+1 (svelnp_)
     */
-    Epetra_SerialDenseMatrix Svelnp() const { return svelnp_; }
+    CORE::LINALG::SerialDenseMatrix Svelnp() const { return svelnp_; }
 
    private:
     //! matrices of subgrid-scale acceleration values at integration points of this element
-    Epetra_SerialDenseMatrix saccn_;
+    CORE::LINALG::SerialDenseMatrix saccn_;
 
     //! matrices of subgrid-scale velocity values, current iteration value, at integration points of
     //! this element
-    Epetra_SerialDenseMatrix svelnp_;
+    CORE::LINALG::SerialDenseMatrix svelnp_;
 
     //! matrices of subgrid-scale velocity values, last timestep, at integration points of this
     //! element
-    Epetra_SerialDenseMatrix sveln_;
+    CORE::LINALG::SerialDenseMatrix sveln_;
   };
 
 }  // namespace FLD

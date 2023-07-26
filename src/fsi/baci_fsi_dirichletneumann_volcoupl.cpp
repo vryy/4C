@@ -363,7 +363,7 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
       std::vector<int> dofs;
       for (int idof = 0; idof < dim_; idof++) dofs.push_back(temp2[idof]);
 
-      Epetra_SerialDenseVector gnode(dim_);
+      CORE::LINALG::SerialDenseVector gnode(dim_);
       std::vector<int> lmowner(dim_);
       for (int idof = 0; idof < dim_; idof++)
       {

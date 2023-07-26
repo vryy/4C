@@ -175,8 +175,8 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);

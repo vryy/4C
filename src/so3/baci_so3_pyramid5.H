@@ -288,11 +288,13 @@ namespace DRT
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
           std::vector<int>& lm,                 ///< location matrix for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    ///< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    ///< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  ///< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  ///< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
           ) override;
 
 
@@ -311,8 +313,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
@@ -368,7 +370,7 @@ namespace DRT
       void UpdateJacobianMapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd in all gp for given disp
-      void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
+      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
 

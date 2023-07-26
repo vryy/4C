@@ -48,7 +48,8 @@ namespace DRT
 
       virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
+          CORE::LINALG::SerialDenseVector& elevec1,
+          const CORE::DRT::UTILS::GaussIntegration& intpoints)
       {
         dserror("Not implemented!");
         return 1;
@@ -56,7 +57,7 @@ namespace DRT
 
       virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid* ele,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells)
       {
@@ -71,9 +72,9 @@ namespace DRT
        */
       virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       /*!
         \brief calculate dissipation of various terms (evaluation of turbulence models)
@@ -92,11 +93,11 @@ namespace DRT
        */
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
       virtual int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec,
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec,
           const CORE::DRT::UTILS::GaussIntegration&)
       {
         return ComputeError(ele, params, mat, discretization, lm, elevec);
@@ -105,18 +106,18 @@ namespace DRT
       /// Update local solution
       virtual int UpdateLocalSolution(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& interiorinc);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& interiorinc);
 
       /// projection of function field
       virtual int ProjectField(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2);
 
       /*! \brief Interpolates an HDG solution to the element nodes for output
        */
       virtual int InterpolateSolutionToNodes(DRT::ELEMENTS::Fluid* ele,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1);
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief Initialize the shape functions and solver to the given element (degree is runtime
@@ -130,17 +131,20 @@ namespace DRT
        */
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
 
       /// Evaluate the element at specified gauss points
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
       virtual int ComputeErrorInterface(DRT::ELEMENTS::Fluid* ele,   ///< fluid element
@@ -148,7 +152,7 @@ namespace DRT
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
           Teuchos::RCP<MAT::Material>& mat,                          ///< material
-          Epetra_SerialDenseVector& ele_interf_norms,  /// squared element interface norms
+          CORE::LINALG::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>&
               bcells,  ///< boundary cells
           const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>&
@@ -164,9 +168,11 @@ namespace DRT
       /// Evaluate the XFEM cut element
       virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const std::vector<CORE::DRT::UTILS::GaussIntegration>& intpoints,
           const CORE::GEO::CUT::plain_volumecell_set& cells, bool offdiag = false)
       {
@@ -187,14 +193,15 @@ namespace DRT
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                         ///< side coupling matrices
-          Teuchos::ParameterList& params,            ///< parameter list
-          Teuchos::RCP<MAT::Material>& mat,          ///< material
-          Epetra_SerialDenseMatrix& elemat1_epetra,  ///< local system matrix of intersected element
-          Epetra_SerialDenseVector&
-              elevec1_epetra,               ///< local element vector of intersected element
-          Epetra_SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                 ///< side coupling matrices
+          Teuchos::ParameterList& params,    ///< parameter list
+          Teuchos::RCP<MAT::Material>& mat,  ///< material
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1_epetra,  ///< local system matrix of intersected element
+          CORE::LINALG::SerialDenseVector&
+              elevec1_epetra,                      ///< local element vector of intersected element
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< coupling matrix of a side with itself
           const CORE::GEO::CUT::plain_volumecell_set& vcSet  ///< set of plain volume cells
       )
       {
@@ -214,12 +221,12 @@ namespace DRT
           Teuchos::ParameterList& params,                     ///< parameter list
           Teuchos::RCP<MAT::Material>& mat_master,            ///< material master side
           Teuchos::RCP<MAT::Material>& mat_slave,             ///< material slave side
-          Epetra_SerialDenseMatrix& elemat1_epetra,           ///< element matrix
-          Epetra_SerialDenseVector& elevec1_epetra,           ///< element vector
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,    ///< element matrix
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,    ///< element vector
           const CORE::GEO::CUT::plain_volumecell_set& vcSet,  ///< volumecell sets in this element
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>>&
-              side_coupling,                ///< side coupling matrices
-          Epetra_SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>&
+              side_coupling,                       ///< side coupling matrices
+          CORE::LINALG::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
       )
       {
@@ -228,7 +235,7 @@ namespace DRT
       }
 
       virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints)
       {
         dserror("Not implemented!");
@@ -236,7 +243,7 @@ namespace DRT
       }
 
       virtual void CalculateContinuityXFEM(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& dis,
-          const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra)
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra)
       {
         dserror("Not implemented!");
         return;
@@ -269,8 +276,8 @@ namespace DRT
 
         /// compute material matrix
         void ComputeMaterialMatrix(const Teuchos::RCP<MAT::Material>& mat,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseMatrix& D_L,
-            Epetra_SerialDenseMatrix& D_w);
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& D_L,
+            CORE::LINALG::SerialDenseMatrix& D_w);
 
         /// compute interior residual
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
@@ -310,14 +317,14 @@ namespace DRT
         void InvertLocalLocalMatrix();
 
         /// condense local residual
-        void CondenseLocalResidual(Epetra_SerialDenseVector& eleVec);
+        void CondenseLocalResidual(CORE::LINALG::SerialDenseVector& eleVec);
 
         /// condense local matrix
-        void CondenseLocalMatrix(Epetra_SerialDenseMatrix& eleMat);
+        void CondenseLocalMatrix(CORE::LINALG::SerialDenseMatrix& eleMat);
 
         // print matrices and residuals
-        void PrintMatricesAndResiduals(DRT::ELEMENTS::Fluid& ele, Epetra_SerialDenseVector& eleVec,
-            Epetra_SerialDenseMatrix& eleMat);
+        void PrintMatricesAndResiduals(DRT::ELEMENTS::Fluid& ele,
+            CORE::LINALG::SerialDenseVector& eleVec, CORE::LINALG::SerialDenseMatrix& eleMat);
 
         // number of degrees of freedom
         const unsigned int ndofs_;
@@ -348,61 +355,66 @@ namespace DRT
         double tau_w;  /// stabilization of momentum
 
         // Auxiliary matrices
-        Epetra_SerialDenseMatrix massPart;   /// temporary matrix for mass matrix
-        Epetra_SerialDenseMatrix massPartW;  /// temporary matrix for mass matrix with weights
-        Epetra_SerialDenseMatrix massMat;    /// local mass matrix
+        CORE::LINALG::SerialDenseMatrix massPart;  /// temporary matrix for mass matrix
+        CORE::LINALG::SerialDenseMatrix
+            massPartW;                            /// temporary matrix for mass matrix with weights
+        CORE::LINALG::SerialDenseMatrix massMat;  /// local mass matrix
 
         // Unknown variables
-        Epetra_SerialDenseMatrix Leg;  /// mixed variable evaluated on interior quadrature points
-        Epetra_SerialDenseVector reg;  /// density evaluated on interior quadrature points
-        Epetra_SerialDenseMatrix weg;  /// momentum evaluated on interior quadrature points
-        Epetra_SerialDenseVector rhatefg;  /// trace of density evaluated on face quadrature points
-        Epetra_SerialDenseMatrix whatefg;  /// trace of momentum evaluated on face quadrature points
+        CORE::LINALG::SerialDenseMatrix
+            Leg;  /// mixed variable evaluated on interior quadrature points
+        CORE::LINALG::SerialDenseVector reg;  /// density evaluated on interior quadrature points
+        CORE::LINALG::SerialDenseMatrix weg;  /// momentum evaluated on interior quadrature points
+        CORE::LINALG::SerialDenseVector
+            rhatefg;  /// trace of density evaluated on face quadrature points
+        CORE::LINALG::SerialDenseMatrix
+            whatefg;  /// trace of momentum evaluated on face quadrature points
 
         // ALE variables
-        Epetra_SerialDenseMatrix aeg;   /// ALE velocity evaluated on interior quadrature points
-        Epetra_SerialDenseMatrix aefg;  /// ALE velocity evaluated on face quadrature points
-        Epetra_SerialDenseMatrix
+        CORE::LINALG::SerialDenseMatrix
+            aeg;  /// ALE velocity evaluated on interior quadrature points
+        CORE::LINALG::SerialDenseMatrix aefg;  /// ALE velocity evaluated on face quadrature points
+        CORE::LINALG::SerialDenseMatrix
             dadxyzeg;  /// derivatives of ALE velocity evaluated on interior quadrature points
 
         // Matrices
-        Epetra_SerialDenseMatrix ALL;  /// matrix mixed variable - mixed variable
-        Epetra_SerialDenseMatrix ALr;  /// matrix mixed variable - density
-        Epetra_SerialDenseMatrix ALw;  /// matrix mixed variable - momentum
-        Epetra_SerialDenseMatrix ALR;  /// matrix mixed variable - trace of density
-        Epetra_SerialDenseMatrix ALW;  /// matrix mixed variable - trace of momentum
-        Epetra_SerialDenseMatrix Arr;  /// matrix density - density
-        Epetra_SerialDenseMatrix Arw;  /// matrix density - momentum
-        Epetra_SerialDenseMatrix ArR;  /// matrix density - trace of density
-        Epetra_SerialDenseMatrix ArW;  /// matrix density - trace of momentum
-        Epetra_SerialDenseMatrix AwL;  /// matrix momentum - mixed variable
-        Epetra_SerialDenseMatrix Awr;  /// matrix momentum - density
-        Epetra_SerialDenseMatrix Aww;  /// matrix momentum - momentum
-        Epetra_SerialDenseMatrix AwR;  /// matrix momentum - trace of density
-        Epetra_SerialDenseMatrix AwW;  /// matrix momentum - trace of momentum
-        Epetra_SerialDenseMatrix ARr;  /// matrix trace of density - densitym
-        Epetra_SerialDenseMatrix ARR;  /// matrix trace of density - trace of density
-        Epetra_SerialDenseMatrix AWL;  /// matrix trace of momentum - mixed variable
-        Epetra_SerialDenseMatrix AWw;  /// matrix trace of momentum - momentum
-        Epetra_SerialDenseMatrix AWR;  /// matrix trace of momentum - trace of density
-        Epetra_SerialDenseMatrix AWW;  /// matrix trace of momentum - trace of momentum
+        CORE::LINALG::SerialDenseMatrix ALL;  /// matrix mixed variable - mixed variable
+        CORE::LINALG::SerialDenseMatrix ALr;  /// matrix mixed variable - density
+        CORE::LINALG::SerialDenseMatrix ALw;  /// matrix mixed variable - momentum
+        CORE::LINALG::SerialDenseMatrix ALR;  /// matrix mixed variable - trace of density
+        CORE::LINALG::SerialDenseMatrix ALW;  /// matrix mixed variable - trace of momentum
+        CORE::LINALG::SerialDenseMatrix Arr;  /// matrix density - density
+        CORE::LINALG::SerialDenseMatrix Arw;  /// matrix density - momentum
+        CORE::LINALG::SerialDenseMatrix ArR;  /// matrix density - trace of density
+        CORE::LINALG::SerialDenseMatrix ArW;  /// matrix density - trace of momentum
+        CORE::LINALG::SerialDenseMatrix AwL;  /// matrix momentum - mixed variable
+        CORE::LINALG::SerialDenseMatrix Awr;  /// matrix momentum - density
+        CORE::LINALG::SerialDenseMatrix Aww;  /// matrix momentum - momentum
+        CORE::LINALG::SerialDenseMatrix AwR;  /// matrix momentum - trace of density
+        CORE::LINALG::SerialDenseMatrix AwW;  /// matrix momentum - trace of momentum
+        CORE::LINALG::SerialDenseMatrix ARr;  /// matrix trace of density - densitym
+        CORE::LINALG::SerialDenseMatrix ARR;  /// matrix trace of density - trace of density
+        CORE::LINALG::SerialDenseMatrix AWL;  /// matrix trace of momentum - mixed variable
+        CORE::LINALG::SerialDenseMatrix AWw;  /// matrix trace of momentum - momentum
+        CORE::LINALG::SerialDenseMatrix AWR;  /// matrix trace of momentum - trace of density
+        CORE::LINALG::SerialDenseMatrix AWW;  /// matrix trace of momentum - trace of momentum
 
         // Residuals
-        Epetra_SerialDenseVector RL;  /// residual vector for mixed variable
-        Epetra_SerialDenseVector Rr;  /// residual vector for density
-        Epetra_SerialDenseVector Rw;  /// residual vector for momentu
-        Epetra_SerialDenseVector RR;  /// residual vector for trace of density
-        Epetra_SerialDenseVector RW;  /// residual vector for trace of momentum
+        CORE::LINALG::SerialDenseVector RL;  /// residual vector for mixed variable
+        CORE::LINALG::SerialDenseVector Rr;  /// residual vector for density
+        CORE::LINALG::SerialDenseVector Rw;  /// residual vector for momentu
+        CORE::LINALG::SerialDenseVector RR;  /// residual vector for trace of density
+        CORE::LINALG::SerialDenseVector RW;  /// residual vector for trace of momentum
 
         // Local/Global matrices/vectors
-        Epetra_SerialDenseMatrix Klocallocal;           /// local-local matrix
-        Epetra_SerialDenseMatrix Klocalglobal;          /// local-global matrix
-        Epetra_SerialDenseMatrix Kgloballocal;          /// global-local matrix
-        Epetra_SerialDenseMatrix Kglobalglobal;         /// global-global matrix
-        Epetra_SerialDenseVector Rlocal;                /// local residual vector
-        Epetra_SerialDenseVector Rglobal;               /// global residual vector
-        Epetra_SerialDenseMatrix KlocallocalInv;        /// inverse local-local matrix
-        Epetra_SerialDenseSolver KlocallocalInvSolver;  /// solver for inverse local-local matrix
+        CORE::LINALG::SerialDenseMatrix Klocallocal;     /// local-local matrix
+        CORE::LINALG::SerialDenseMatrix Klocalglobal;    /// local-global matrix
+        CORE::LINALG::SerialDenseMatrix Kgloballocal;    /// global-local matrix
+        CORE::LINALG::SerialDenseMatrix Kglobalglobal;   /// global-global matrix
+        CORE::LINALG::SerialDenseVector Rlocal;          /// local residual vector
+        CORE::LINALG::SerialDenseVector Rglobal;         /// global residual vector
+        CORE::LINALG::SerialDenseMatrix KlocallocalInv;  /// inverse local-local matrix
+        Epetra_SerialDenseSolver KlocallocalInvSolver;   /// solver for inverse local-local matrix
 
         // Voigt related quantities
         int VoigtP[msd_ - nsd_][2];  /// pair of indices in Voigt notation

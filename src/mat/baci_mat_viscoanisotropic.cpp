@@ -637,11 +637,11 @@ void MAT::ViscoAnisotropic::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   const double expfac_fib = exp(-dt*0.5/tau_fib);
 
   // evaluate current Q's
-  Epetra_SerialDenseVector Q_nh(SisoEla_nh);
+  CORE::LINALG::SerialDenseVector Q_nh(SisoEla_nh);
   Q_nh.Scale(beta_nh*expfac_nh);
-  Epetra_SerialDenseVector Q_fib1(SisoEla_fib1);
+  CORE::LINALG::SerialDenseVector Q_fib1(SisoEla_fib1);
   Q_fib1.Scale(beta_fib*expfac_fib);
-  Epetra_SerialDenseVector Q_fib2(SisoEla_fib2);
+  CORE::LINALG::SerialDenseVector Q_fib2(SisoEla_fib2);
   Q_fib2.Scale(beta_fib*expfac_fib);
 
   // evaluate 'H' history summands

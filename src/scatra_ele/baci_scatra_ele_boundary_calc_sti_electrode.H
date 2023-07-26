@@ -86,8 +86,9 @@ namespace DRT
               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               funct_master,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          double timefacfac, double timefacrhsfac, double detF, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseVector& r_s);
+          double timefacfac, double timefacrhsfac, double detF,
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
+          CORE::LINALG::SerialDenseVector& r_s);
 
       /*!
        * \brief evaluate off-diagonal system matrix contributions associated with scatra-scatra
@@ -133,7 +134,7 @@ namespace DRT
           SCATRA::DifferentiationType differentiationtype,
           const CORE::LINALG::Matrix<nsd_, nen_>& dsqrtdetg_dd,
           const CORE::LINALG::Matrix<nsd_, nen_>& shape_spatial_derivatives,
-          Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm);
+          CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm);
 
      private:
       //! private constructor for singletons
@@ -146,9 +147,9 @@ namespace DRT
           Teuchos::ParameterList& params,                    ///< parameter list
           DRT::Discretization& discretization,               ///< discretization
           DRT::Element::LocationArray& la,                   ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,     ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,    ///< element matrix for master side
+          CORE::LINALG::SerialDenseVector& eslaveresidual    ///< element residual for slave side
           ) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
@@ -157,21 +158,21 @@ namespace DRT
           Teuchos::ParameterList& params,                      ///< parameter list
           DRT::Discretization& discretization,                 ///< discretization
           DRT::Element::LocationArray& la,                     ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,              ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix              ///< element matrix for master side
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,       ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix       ///< element matrix for master side
       );
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,      //!< boundary element
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          SCATRA::BoundaryAction action,             //!< action
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+          Teuchos::ParameterList& params,                   //!< parameter list
+          DRT::Discretization& discretization,              //!< discretization
+          SCATRA::BoundaryAction action,                    //!< action
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
           ) override;
 
       //! extract nodal state variables associated with boundary element

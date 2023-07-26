@@ -385,16 +385,16 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(Teuchos::RCP<DRT::Discre
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
-  zsumw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  zsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   zsumw_->Reshape(1, numzcoor_);
 
-  zsump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  zsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   zsump_->Reshape(1, numzcoor_);
 
-  rsumw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  rsumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   rsumw_->Reshape(numrstatlocations_, numPosEvaluation);
 
-  rsump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  rsump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   rsump_->Reshape(numrstatlocations_, numPosEvaluation);
 
 

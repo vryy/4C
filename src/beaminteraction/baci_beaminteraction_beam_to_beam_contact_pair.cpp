@@ -3663,8 +3663,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
-  Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);

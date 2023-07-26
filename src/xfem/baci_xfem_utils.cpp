@@ -142,7 +142,7 @@ void XFEM::UTILS::SafetyCheckMaterials(
 }
 
 //! Extract a quantity for an element
-void XFEM::UTILS::ExtractQuantityAtElement(Epetra_SerialDenseMatrix& element_vector,
+void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
     const DRT::Element* element, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd)
 {
@@ -170,7 +170,7 @@ void XFEM::UTILS::ExtractQuantityAtElement(Epetra_SerialDenseMatrix& element_vec
 
 
 //! Extract a quantity for a node
-void XFEM::UTILS::ExtractQuantityAtNode(Epetra_SerialDenseMatrix& element_vector,
+void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
     const DRT::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {

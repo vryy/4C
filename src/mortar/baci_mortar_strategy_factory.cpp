@@ -22,7 +22,7 @@
 
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -182,8 +182,8 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::DiscretizationInt
   if (nurbsdis == NULL) dserror("Dynamic cast failed!");
 
   Teuchos::RCP<const DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
-  std::vector<Epetra_SerialDenseVector> parentknots(Dim());
-  std::vector<Epetra_SerialDenseVector> mortarknots(Dim() - 1);
+  std::vector<CORE::LINALG::SerialDenseVector> parentknots(Dim());
+  std::vector<CORE::LINALG::SerialDenseVector> mortarknots(Dim() - 1);
 
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);

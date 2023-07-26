@@ -181,11 +181,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
       );
 
       virtual void PreEvaluate(
@@ -270,8 +272,9 @@ namespace DRT
       virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const std::vector<double>& pres,
           const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
-          double& cauchy_n_dir, Epetra_SerialDenseMatrix* d_cauchyndir_dd,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dp, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          double& cauchy_n_dir, CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dp,
+          CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
@@ -307,11 +310,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
       );
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
@@ -393,9 +398,9 @@ namespace DRT
       //! problems (pressure based formulation)
       virtual void CouplingPoroelastPressureBased(std::vector<int>& lm,  //!< location matrix
           CORE::LINALG::Matrix<numdim_, numnod_>& disp,                  //! current displacements
-          const std::vector<double>& ephi,     //! current primary variable for poro-multiphase flow
-          Epetra_SerialDenseMatrix& couplmat,  //!< element stiffness matrix
-          Teuchos::ParameterList& params       //!< algorithmic parameters e.g. time
+          const std::vector<double>& ephi,  //! current primary variable for poro-multiphase flow
+          CORE::LINALG::SerialDenseMatrix& couplmat,  //!< element stiffness matrix
+          Teuchos::ParameterList& params              //!< algorithmic parameters e.g. time
       );
 
       //! Calculate coupling stress for poroelasticity problems
@@ -403,8 +408,8 @@ namespace DRT
           CORE::LINALG::Matrix<numdim_, numnod_>& disp,    //! current displacements
           CORE::LINALG::Matrix<numdim_, numnod_>& evelnp,  //! fluid velocity of element
           CORE::LINALG::Matrix<numnod_, 1>& epreaf,        //! fluid pressure of element
-          Epetra_SerialDenseMatrix* elestress,             //! stresses at GP
-          Epetra_SerialDenseMatrix* elestrain,             //! strains at GP
+          CORE::LINALG::SerialDenseMatrix* elestress,      //! stresses at GP
+          CORE::LINALG::SerialDenseMatrix* elestrain,      //! strains at GP
           Teuchos::ParameterList& params,                  //! algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress            //! stress output option
       );
@@ -435,7 +440,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numdim_, numnod_>& xrefe,
           const CORE::LINALG::Matrix<numdim_, numnod_>& xcurr,
           const CORE::LINALG::Matrix<numdim_, numnod_>& nodaldisp, const std::vector<double>& ephi,
-          Epetra_SerialDenseMatrix& couplmat);
+          CORE::LINALG::SerialDenseMatrix& couplmat);
 
       //! fill stiffness matrix and rhs vector for darcy flow
       void FillMatrixAndVectors(const int& gp, const CORE::LINALG::Matrix<numnod_, 1>& shapefct,
@@ -499,7 +504,7 @@ namespace DRT
           const CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ, const double& J,
           const CORE::LINALG::Matrix<numstr_, numdof_>& bop,
           const CORE::LINALG::Matrix<numdim_, numdim_>& C_inv,
-          const std::vector<double>& solpressderiv, Epetra_SerialDenseMatrix& couplmat);
+          const std::vector<double>& solpressderiv, CORE::LINALG::SerialDenseMatrix& couplmat);
 
       //! fill stiffness matrix and rhs vector for darcy brinkman flow (off diagonal terms)
       void FillMatrixAndVectorsBrinkmanOD(const int& gp,
@@ -666,7 +671,7 @@ namespace DRT
       CORE::LINALG::Matrix<numnod_, 1> weights_;
 
       //! knot vector for nurbs elements
-      std::vector<Epetra_SerialDenseVector> myknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> myknots_;
 
       //! corresponding fluid material
       Teuchos::RCP<MAT::FluidPoro> fluid_mat_;

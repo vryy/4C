@@ -11,9 +11,9 @@
 #define BACI_BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include <Sacado.hpp>
 

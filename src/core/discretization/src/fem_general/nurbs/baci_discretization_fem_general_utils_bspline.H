@@ -37,7 +37,7 @@ namespace CORE::DRT::NURBS::UTILS
                                 degree of polynomial, for
                                 consistency checks
 
-        \param local_knotvector Epetra_SerialDenseVector (i)
+        \param local_knotvector CORE::LINALG::SerialDenseVector (i)
                                 knot range that contains
                                 the compact support of
                                 all bsplines which are
@@ -64,7 +64,7 @@ namespace CORE::DRT::NURBS::UTILS
 
     */
     //--------------------------------------------------
-    BsplinePolynomial(const int degree, const Epetra_SerialDenseVector local_knotvector);
+    BsplinePolynomial(const int degree, const CORE::LINALG::SerialDenseVector local_knotvector);
     //--------------------------------------------------
     //! \brief destructor
     //--------------------------------------------------
@@ -1428,7 +1428,7 @@ namespace CORE::DRT::NURBS::UTILS
    private:
     //! the part of the knotvector where bspline
     //! polynomials of the center-interval are non-zero
-    Epetra_SerialDenseVector myknotvector_;
+    CORE::LINALG::SerialDenseVector myknotvector_;
 
     //! a working array for the construction of bsplines
     std::vector<double> bspline_;

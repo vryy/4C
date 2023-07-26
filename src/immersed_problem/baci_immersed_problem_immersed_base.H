@@ -431,23 +431,23 @@ namespace IMMERSED
     xvec[2] = x[2];
 
     // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
-    Teuchos::RCP<Epetra_SerialDenseVector> vectofill =
-        Teuchos::rcp(new Epetra_SerialDenseVector(targetdata.size()));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> vectofill =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(targetdata.size()));
     (*vectofill)(0) = -1234.0;
 
     // save parameter space coordinate in serial dense vector
-    Teuchos::RCP<Epetra_SerialDenseVector> xi_dense =
-        Teuchos::rcp(new Epetra_SerialDenseVector(source_dim));
-    Teuchos::RCP<Epetra_SerialDenseVector> targetxi_dense =
-        Teuchos::rcp(new Epetra_SerialDenseVector(target_dim));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_dense =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(source_dim));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> targetxi_dense =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(target_dim));
 
-    Teuchos::RCP<Epetra_SerialDenseVector> normal_at_targetpoint =
-        Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> normal_at_targetpoint =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
     std::vector<double> normal_vec(3);
 
-    Epetra_SerialDenseMatrix dummy1;
-    Epetra_SerialDenseMatrix dummy2;
-    Epetra_SerialDenseVector dummy3;
+    CORE::LINALG::SerialDenseMatrix dummy1;
+    CORE::LINALG::SerialDenseMatrix dummy2;
+    CORE::LINALG::SerialDenseVector dummy3;
 
     Teuchos::ParameterList params;
 
@@ -644,10 +644,10 @@ namespace IMMERSED
             )
             {
               double scalarproduct = 0.0;
-              Teuchos::RCP<Epetra_SerialDenseVector> vector;
+              Teuchos::RCP<CORE::LINALG::SerialDenseVector> vector;
 
               // get nodal coords of source ele
-              vector = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+              vector = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
               std::vector<double> distances(sourceele->NumNode());
 
               // loop over source element nodes and calc distance from targetpoint to those nodes
@@ -953,8 +953,8 @@ namespace IMMERSED
     xvec[2] = x[2];
 
     // vector to be filled in sourcedis->Evaluate (needs to be resized in calc class)
-    Teuchos::RCP<Epetra_SerialDenseVector> vectofill =
-        Teuchos::rcp(new Epetra_SerialDenseVector(4));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> vectofill =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
     (*vectofill)(0) = -1234.0;
     if (match)  // was already matched, add no contribution
     {
@@ -965,8 +965,8 @@ namespace IMMERSED
     }
 
     // save parameter space coordinate in serial dense vector
-    Teuchos::RCP<Epetra_SerialDenseVector> xi_dense =
-        Teuchos::rcp(new Epetra_SerialDenseVector(source_dim));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_dense =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(source_dim));
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //////
@@ -1096,9 +1096,9 @@ namespace IMMERSED
               (*xi_dense)(1) = xi(1);
               (*xi_dense)(2) = xi(2);
 
-              Epetra_SerialDenseMatrix dummy1;
-              Epetra_SerialDenseMatrix dummy2;
-              Epetra_SerialDenseVector dummy3;
+              CORE::LINALG::SerialDenseMatrix dummy1;
+              CORE::LINALG::SerialDenseMatrix dummy2;
+              CORE::LINALG::SerialDenseVector dummy3;
 
               // check whether velocity or divergence should be interpolated
               int vel_or_div = 1;
@@ -1294,10 +1294,10 @@ namespace IMMERSED
     for (int idim = 0; idim < 3; ++idim) fluid_node_glob_coord[idim] = x_fluid_node[idim];
 
     // initialize vectors to fill
-    Teuchos::RCP<Epetra_SerialDenseVector> velnp_at_struct_point =
-        Teuchos::rcp(new Epetra_SerialDenseVector(3));
-    Teuchos::RCP<Epetra_SerialDenseVector> xi_pos_of_struct_point =
-        Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> velnp_at_struct_point =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> xi_pos_of_struct_point =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
     (*velnp_at_struct_point)(0) = -1234.0;
     (*xi_pos_of_struct_point)(0) = -1234.0;
 

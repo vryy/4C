@@ -925,7 +925,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
   // call contact function
   CONTACT::CoInterface::ExportNodalNormals();
 
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -965,7 +965,8 @@ void WEAR::WearInterface::ExportNodalNormals() const
       CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
       // fill nodal matrix
-      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 3));
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
       (*loc)(0, 0) = cnode->MoData().n()[0];
       (*loc)(1, 0) = cnode->MoData().n()[1];
       (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -1070,7 +1071,7 @@ void WEAR::WearInterface::ExportNodalNormals() const
       if (cnode->Owner() == Comm().MyPID()) continue;
 
       // extract info
-      Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
       cnode->MoData().n()[0] = (*loc)(0, 0);
       cnode->MoData().n()[1] = (*loc)(1, 0);
       cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -1392,7 +1393,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       }
 
       // Entries on right hand side ****************************
-      Epetra_SerialDenseVector rhsnode(Dim() - 1);
+      CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
       std::vector<int> lm(Dim() - 1);
       std::vector<int> lmowner(Dim() - 1);
       rhsnode(0) = frcoeff * (znor - cn * wgap) * ct * jumptxi;
@@ -1647,7 +1648,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
 
       // Entries on right hand side
       /************************************************ (-utxi, -uteta) ***/
-      Epetra_SerialDenseVector rhsnode(Dim() - 1);
+      CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
       std::vector<int> lm(Dim() - 1);
       std::vector<int> lmowner(Dim() - 1);
 
@@ -2130,7 +2131,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
         // 2) Entries on right hand side
         /******************************************************************/
 
-        Epetra_SerialDenseVector rhsnode(Dim() - 1);
+        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2247,7 +2248,7 @@ void WEAR::WearInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMg
 
         // 2) Entries on right hand side
         /******************************************************************/
-        Epetra_SerialDenseVector rhsnode(Dim() - 1);
+        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -3019,7 +3020,7 @@ void WEAR::WearInterface::AssembleWear(Epetra_Vector& wglobal)
     /**************************************************** w-vector ******/
     double wear = frinode->WearData().WeightedWear();
 
-    Epetra_SerialDenseVector wnode(1);
+    CORE::LINALG::SerialDenseVector wnode(1);
     std::vector<int> lm(1);
     std::vector<int> lmowner(1);
 
@@ -3516,7 +3517,7 @@ void WEAR::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      Epetra_SerialDenseVector w_i(1);
+      CORE::LINALG::SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
       w_i[0] =
@@ -3531,7 +3532,7 @@ void WEAR::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      Epetra_SerialDenseVector w_i(1);
+      CORE::LINALG::SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
       w_i[0] =
@@ -3578,7 +3579,7 @@ void WEAR::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& inacti
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      Epetra_SerialDenseVector w_i(1);
+      CORE::LINALG::SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();  // cnode->Owner();
       w_i[0] =
@@ -3593,7 +3594,7 @@ void WEAR::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& inacti
       std::vector<int> w_owner(1);
 
       // calculate the tangential rhs
-      Epetra_SerialDenseVector w_i(1);
+      CORE::LINALG::SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();  // cnode->Owner();
       w_i[0] =
@@ -3668,7 +3669,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        Epetra_SerialDenseVector w_i(1);
+        CORE::LINALG::SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
         w_i[0] = (-(csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
@@ -3699,7 +3700,7 @@ void WEAR::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        Epetra_SerialDenseVector w_i(1);
+        CORE::LINALG::SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
         w_i[0] = wcoeff * lmn * (p->second);
@@ -3760,7 +3761,7 @@ void WEAR::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        Epetra_SerialDenseVector w_i(1);
+        CORE::LINALG::SerialDenseVector w_i(1);
 
         w_owner[0] = Comm().MyPID();  // fnode->Owner();
         w_i[0] = (-(csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
@@ -3791,7 +3792,7 @@ void WEAR::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
         std::vector<int> w_gid(1);
         std::vector<int> w_owner(1);
 
-        Epetra_SerialDenseVector w_i(1);
+        CORE::LINALG::SerialDenseVector w_i(1);
 
         w_owner[0] = Comm().MyPID();  // fnode->Owner();
         w_i[0] = wcoeff * lmn * (p->second);

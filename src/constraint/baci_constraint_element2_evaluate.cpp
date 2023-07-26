@@ -18,9 +18,10 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   ActionType act = none;
 
@@ -105,7 +106,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
  * Evaluate Neumann (->dserror) */
 int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("You called Evaluate Neumann of constraint element.");
   return 0;
@@ -147,7 +148,7 @@ double DRT::ELEMENTS::ConstraintElement2::ComputeAngle(const CORE::LINALG::Matri
 /*----------------------------------------------------------------------*
  * second derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const CORE::LINALG::Matrix<3, 2>& xc,
-    Epetra_SerialDenseVector& elevector, const CORE::LINALG::Matrix<2, 1>& normal)
+    CORE::LINALG::SerialDenseVector& elevector, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   double normcube = pow(normal.Norm2(), 3);
 
@@ -179,7 +180,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivDist(const CORE::LINALG
 /*----------------------------------------------------------------------*
  * first derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivAngle(
-    const CORE::LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseVector& elevector)
+    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseVector& elevector)
 {
   CORE::LINALG::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);
@@ -251,7 +252,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeFirstDerivAngle(
 /*----------------------------------------------------------------------*
  * second derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const CORE::LINALG::Matrix<3, 2>& xc,
-    Epetra_SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<2, 1>& normal)
+    CORE::LINALG::SerialDenseMatrix& elematrix, const CORE::LINALG::Matrix<2, 1>& normal)
 {
   double normsquare = pow(normal.Norm2(), 2);
   double normcube = pow(normal.Norm2(), 3);
@@ -462,7 +463,7 @@ void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivDist(const CORE::LINAL
 /*----------------------------------------------------------------------*
  * second derivatives */
 void DRT::ELEMENTS::ConstraintElement2::ComputeSecondDerivAngle(
-    const CORE::LINALG::Matrix<3, 2>& xc, Epetra_SerialDenseMatrix& elematrix)
+    const CORE::LINALG::Matrix<3, 2>& xc, CORE::LINALG::SerialDenseMatrix& elematrix)
 {
   CORE::LINALG::SerialDenseVector vec1(2);
   vec1[1] = xc(0, 0) - xc(1, 0);

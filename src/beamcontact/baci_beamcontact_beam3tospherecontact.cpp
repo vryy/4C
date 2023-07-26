@@ -458,8 +458,8 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateFcContact(
   const int dim1 = 3 * numnodes * numnodalvalues;
 
   // temporary vectors for contact forces, DOF-GIDs and owning procs
-  Epetra_SerialDenseVector fc1_copy(dim1);
-  Epetra_SerialDenseVector fc2_copy(3);
+  CORE::LINALG::SerialDenseVector fc1_copy(dim1);
+  CORE::LINALG::SerialDenseVector fc2_copy(3);
   std::vector<int> lm1(dim1);
   std::vector<int> lm2(3);
   std::vector<int> lmowner1(dim1);
@@ -565,8 +565,8 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::EvaluateStiffcCont
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1;
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2;
-  Epetra_SerialDenseMatrix stiffc1_copy(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffc2_copy(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffc1_copy(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffc2_copy(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);
@@ -1194,7 +1194,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeLinNormal(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::UpdateElePos(
-    Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos)
+    CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos)
 {
   for (int i = 0; i < 3 * numnodalvalues; i++)
   {

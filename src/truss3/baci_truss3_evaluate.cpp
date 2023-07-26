@@ -22,9 +22,10 @@ adapts assembly automatically according to the thereby changed number of nodal d
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   SetParamsInterfacePtr(params);
 
@@ -153,7 +154,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("This method needs to be modified for bio-polymer networks!");
 
@@ -164,7 +165,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
     dserror("only linear elastic material supported for truss element");
@@ -218,8 +219,8 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::NlnStiffMass(
     const std::map<std::string, std::vector<double>>& ele_state,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   /*
    * It is observed that for mixed problems, such is the case for biopolymer network simulations
@@ -231,11 +232,11 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
    * element containing two nodes.
    */
   // 6x6 Stiffness Matrix of the Truss
-  Epetra_SerialDenseMatrix DummyStiffMatrix;
+  CORE::LINALG::SerialDenseMatrix DummyStiffMatrix;
   DummyStiffMatrix.Shape(6, 6);
   DummyStiffMatrix.Scale(0);
   // 6x6 force vector of the Truss
-  Epetra_SerialDenseVector DummyForce;
+  CORE::LINALG::SerialDenseVector DummyForce;
   DummyForce.Size(6);
   DummyForce.Scale(0);
 
@@ -299,8 +300,8 @@ void DRT::ELEMENTS::Truss3::NlnStiffMass(
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
     const std::map<std::string, std::vector<double>>& ele_state,
-    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector& DummyForce)
+    CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector& DummyForce)
 {
   // calculate force vector and stiffness matrix
   CalcInternalForceStiffTotLag(ele_state, DummyForce, DummyStiffMatrix);
@@ -329,8 +330,8 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     const std::map<std::string, std::vector<double>>& ele_state,
-    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector& DummyForce)
+    CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector& DummyForce)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
     dserror("only linear elastic material supported for truss element");
@@ -355,7 +356,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
 
   // displacement vector
-  Epetra_SerialDenseVector disp(ndof);
+  CORE::LINALG::SerialDenseVector disp(ndof);
 
   // computing linear stiffness matrix
   for (int i = 0; i < ndof; ++i)
@@ -428,8 +429,8 @@ void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
-    const std::map<std::string, std::vector<double>>& ele_state, Epetra_SerialDenseVector& forcevec,
-    Epetra_SerialDenseMatrix& stiffmat)
+    const std::map<std::string, std::vector<double>>& ele_state,
+    CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
@@ -502,7 +503,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
-  Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
+  CORE::LINALG::SerialDenseMatrix stress(intpoints.nquad, 1);
 
   static CORE::LINALG::Matrix<6, 1> curr_nodal_coords;
   static CORE::LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -553,7 +554,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::LumpMass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Truss3::LumpMass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)

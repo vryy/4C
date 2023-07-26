@@ -70,11 +70,11 @@ DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
 //  Teuchos::ParameterList&    params,
 //  DRT::Discretization&       discretization,
 //  const std::vector<int>&    lm,
-//  Epetra_SerialDenseMatrix&  elemat1_epetra,
-//  Epetra_SerialDenseMatrix&  elemat2_epetra,
-//  Epetra_SerialDenseVector&  elevec1_epetra,
-//  Epetra_SerialDenseVector&  elevec2_epetra,
-//  Epetra_SerialDenseVector&  elevec3_epetra
+//  CORE::LINALG::SerialDenseMatrix&  elemat1_epetra,
+//  CORE::LINALG::SerialDenseMatrix&  elemat2_epetra,
+//  CORE::LINALG::SerialDenseVector&  elevec1_epetra,
+//  CORE::LINALG::SerialDenseVector&  elevec2_epetra,
+//  CORE::LINALG::SerialDenseVector&  elevec3_epetra
 //  )
 //{
 //  // check for the action parameter
@@ -139,9 +139,11 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -457,8 +459,8 @@ double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
 | (overwrites method in ScaTraEleCalc)                                 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
-    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
+void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Element* ele,
+    CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(

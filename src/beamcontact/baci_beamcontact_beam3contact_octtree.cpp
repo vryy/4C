@@ -271,7 +271,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
  |  bounding box (public)                                  mueller 01/11|
  *----------------------------------------------------------------------*/
 bool Beam3ContactOctTree::IntersectBBoxesWith(
-    Epetra_SerialDenseMatrix& nodecoords, Epetra_SerialDenseMatrix& nodeLID)
+    CORE::LINALG::SerialDenseMatrix& nodecoords, CORE::LINALG::SerialDenseMatrix& nodeLID)
 {
   dserror("Not in use!");
 
@@ -289,8 +289,8 @@ bool Beam3ContactOctTree::IntersectBBoxesWith(
   bool intersection = false;
 
   // determine bounding box limits
-  Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits =
-      Teuchos::rcp(new Epetra_SerialDenseMatrix(1, 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
 
   // build bounding box according to given type
   switch (boundingbox_)
@@ -660,8 +660,8 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
 /*-----------------------------------------------------------------------------------------*
  |  Create an Axis Aligned Bounding Box   (private)                           mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateAABB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -767,8 +767,8 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
 /*-----------------------------------------------------------------------------------------*
  |  Create Cylindrical an Oriented Bounding Box   (private)                   mueller 11/11|
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateCOBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -870,8 +870,8 @@ void Beam3ContactOctTree::CreateCOBB(Epetra_SerialDenseMatrix& coord, const int&
 /*-----------------------------------------------------------------------------------------*
  |  Create Spherical Bounding Box   (private)                                  mueller 1/12|
  *-----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix& coord, const int& elecolid,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, const int& elecolid,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -1613,8 +1613,8 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
     DRT::Element* tempele1 = searchdis_.lColElement(collid1);
     DRT::Element* tempele2 = searchdis_.lColElement(collid2);
     // matrices to store nodal coordinates
-    Epetra_SerialDenseMatrix ele1pos(3, tempele1->NumNode());
-    Epetra_SerialDenseMatrix ele2pos(3, tempele2->NumNode());
+    CORE::LINALG::SerialDenseMatrix ele1pos(3, tempele1->NumNode());
+    CORE::LINALG::SerialDenseMatrix ele2pos(3, tempele2->NumNode());
     // store nodal coordinates of element 1
     for (int m = 0; m < tempele1->NumNode(); ++m)
     {
@@ -1656,7 +1656,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::IntersectionAABB(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -1717,7 +1717,7 @@ bool Beam3ContactOctTree::IntersectionAABB(
  |  represent actual finite elements  (private)                         mueller 11/11|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::IntersectionCOBB(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -1834,7 +1834,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
  |  for linkers                                       (private)        mueller 01/12|
  *----------------------------------------------------------------------------------*/
 bool Beam3ContactOctTree::IntersectionSPBB(
-    const std::vector<int>& bboxIDs, Teuchos::RCP<Epetra_SerialDenseMatrix> bboxlimits)
+    const std::vector<int>& bboxIDs, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> bboxlimits)
 {
   // Why bboxlimits separately: The idea is that we can use this method to check whether a
   // hypothetical bounding box (i.e. without an element) can be tested for intersection. Hence, we
@@ -1968,7 +1968,7 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
  | unshift coordinates               mueller 02/15 |
  *-----------------------------------------------------------------------*/
 void Beam3ContactOctTree::UndoEffectOfPeriodicBoundaryCondition(
-    Epetra_SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
+    CORE::LINALG::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
 {
   if (coord.M() != 3 || coord.N() != 2) dserror("coord must have the dimension M()==3, N()==2!");
   if ((int)cut.size() != 3) dserror("cut is of wrong size %i!", (int)cut.size());

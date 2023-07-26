@@ -136,7 +136,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -176,7 +176,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -231,7 +232,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -339,7 +341,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -381,7 +383,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -440,7 +443,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -547,7 +551,7 @@ namespace CORE::DRT
 
     template <int nsd_>
     void LagrangeBasisTet<nsd_>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       legendre_.Evaluate(point, values);
       vandermondeFactor_.SetVectors(values, values);
@@ -557,8 +561,8 @@ namespace CORE::DRT
 
 
     template <int nsd_>
-    void LagrangeBasisTet<nsd_>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+    void LagrangeBasisTet<nsd_>::Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv1(point, derivatives);
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -573,8 +577,8 @@ namespace CORE::DRT
 
 
     template <int nsd_>
-    void LagrangeBasisTet<nsd_>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+    void LagrangeBasisTet<nsd_>::Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv2(point, derivatives);
       for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
@@ -671,9 +675,9 @@ namespace CORE::DRT
     {
       vandermonde_.Shape(Size(), Size());
 
-      Epetra_SerialDenseVector values(Size());
-      Epetra_SerialDenseMatrix deriv1(nsd_, Size());
-      Epetra_SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
+      CORE::LINALG::SerialDenseVector values(Size());
+      CORE::LINALG::SerialDenseMatrix deriv1(nsd_, Size());
+      CORE::LINALG::SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
       CORE::LINALG::Matrix<nsd_, 1> point;
       for (unsigned int i = 0; i < Size(); ++i)
       {

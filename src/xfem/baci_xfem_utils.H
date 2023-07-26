@@ -54,7 +54,7 @@ namespace XFEM
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtElement(Epetra_SerialDenseMatrix& element_vector,
+    void ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
         const DRT::Element* element,
         const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd);
@@ -63,8 +63,8 @@ namespace XFEM
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
-    void ExtractQuantityAtNode(Epetra_SerialDenseMatrix& element_vector, const DRT::Node* node,
-        const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
+    void ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
+        const DRT::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
         Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd);
 
   }  // namespace UTILS

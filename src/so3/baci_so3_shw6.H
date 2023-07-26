@@ -220,9 +220,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! Compute stiffness and mass matrix
       virtual void soshw6_nlnstiffmass(std::vector<int>& lm,            // location matrix
@@ -262,8 +263,8 @@ namespace DRT
 
       //! EAS technology, setup necessary data
       void soshw6_eassetup(
-          std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
-          double& detJ0,                                 // det of Jacobian at origin
+          std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+          double& detJ0,                                        // det of Jacobian at origin
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe);  // material element coords

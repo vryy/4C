@@ -1084,7 +1084,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
 
   // temporary vector to store nodal normal
   std::array<double, 3> n_tmp = {0., 0., 0.};
-  Epetra_SerialDenseMatrix elens(6, nseg);
+  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
 
   // we need to store some stuff here
   //**********************************************************************
@@ -1208,7 +1208,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
  |  Build directional deriv. of nodal normal + tangents       popp 09/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoNode::DerivAveragedNormal(
-    Epetra_SerialDenseMatrix& elens, double length, double ltxi)
+    CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi)
 {
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();

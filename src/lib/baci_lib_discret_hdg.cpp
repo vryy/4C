@@ -556,8 +556,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
   // do we have faces?
   if (discret.NumMyRowFaces() > 0)
   {
-    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag)

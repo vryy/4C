@@ -16,22 +16,23 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& oldfeas,
-    Epetra_SerialDenseMatrix*& oldKaainv, Epetra_SerialDenseMatrix*& oldKad,
-    Epetra_SerialDenseMatrix*& oldKap, Teuchos::RCP<Epetra_SerialDenseVector>& feas,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa, Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap, Epetra_SerialDenseMatrix*& alpha,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& M, DRT::Container& data,
+void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMatrix*& oldfeas,
+    CORE::LINALG::SerialDenseMatrix*& oldKaainv, CORE::LINALG::SerialDenseMatrix*& oldKad,
+    CORE::LINALG::SerialDenseMatrix*& oldKap, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap, CORE::LINALG::SerialDenseMatrix*& alpha,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, DRT::Container& data,
     const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi, const CORE::LINALG::Matrix<NUMPRES_, 1>& presi)
 {
   // retrieve history
-  alpha = data.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
+  alpha = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
   // evaluate current (updated) EAS alphas (from history variables)
   // get stored EAS history
-  oldfeas = data.GetMutable<Epetra_SerialDenseMatrix>("feas");
-  oldKaainv = data.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-  oldKad = data.GetMutable<Epetra_SerialDenseMatrix>("Kda");  // actually k_ad
-  oldKap = data.GetMutable<Epetra_SerialDenseMatrix>("Kap");
+  oldfeas = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+  oldKaainv = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  oldKad = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");  // actually k_ad
+  oldKap = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kap");
   if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas) dserror("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
@@ -46,16 +47,16 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
       1.0, *alpha, -1.0, *oldKaainv, *oldfeas);
 
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
-  feas = Teuchos::rcp(new Epetra_SerialDenseVector(NUMEAS_T));
+  feas = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NUMEAS_T));
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  Kaa = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMEAS_T, NUMEAS_T));
+  Kaa = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(NUMEAS_T, NUMEAS_T));
   // EAS matrix K_{alpha disp}
-  Kad = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMEAS_T, NUMDISP_));
+  Kad = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(NUMEAS_T, NUMDISP_));
   // EAS matrix K_{alpha pres}
-  Kap = Teuchos::rcp(new Epetra_SerialDenseMatrix(NUMEAS_T, NUMPRES_));
+  Kap = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(NUMEAS_T, NUMPRES_));
 
   // M-operator, ie EAS shape functions
-  M = Teuchos::rcp(new Epetra_SerialDenseMatrix(MAT::NUM_STRESS_3D, NUMEAS_T));
+  M = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(MAT::NUM_STRESS_3D, NUMEAS_T));
 
   // see you
   return;
@@ -65,9 +66,9 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
 void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
-    const Epetra_SerialDenseMatrix& Mloc)
+    const CORE::LINALG::SerialDenseMatrix& Mloc)
 {
   // map local M to global, also enhancement is refered to element origin
   // M = detJ0/detJ T0^{-T} . M
@@ -82,7 +83,8 @@ void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
 void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M, const Epetra_SerialDenseMatrix* alpha)
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M,
+    const CORE::LINALG::SerialDenseMatrix* alpha)
 {
   // add enhanced strains = M . alpha to GL strains to "unlock" element
   CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, NUMEAS_T, 1>(
@@ -94,9 +96,11 @@ void DRT::ELEMENTS::So_sh8p8::EasAddStrain(CORE::LINALG::Matrix<MAT::NUM_STRESS_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_SerialDenseVector>& feas,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa, Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
-    Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,
+void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& defgradD,
     const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& invrgtstrD,
     const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& rcgbyrgtstr,
@@ -107,7 +111,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(Teuchos::RCP<Epetra_Serial
     const double& detJ_w, const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDISP_>& cb,
     const CORE::LINALG::Matrix<NUMDFGR_, NUMDISP_>& defgradbydisp,
     const CORE::LINALG::Matrix<NUMPRES_, 1>& prshfct,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M)
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M)
 {
   // derivative of assumed right stretch tensor w.r.t. EAS parameters
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, NUMEAS_T> rgtstrbyalpha;
@@ -216,12 +220,12 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
     CORE::LINALG::Matrix<NUMPRES_, 1>* incomp,              ///< incompressibility residual
     CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>* dargmatrix,   // 'transposed' element gradient matrix
     CORE::LINALG::Matrix<NUMPRES_, NUMPRES_>* stabmatrix,   // element stabilisation matrix
-    Epetra_SerialDenseMatrix*& oldfeas, Epetra_SerialDenseMatrix*& oldKaainv,
-    Epetra_SerialDenseMatrix*& oldKad, Epetra_SerialDenseMatrix*& oldKap,
-    const Teuchos::RCP<Epetra_SerialDenseVector>& feas,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap)
+    CORE::LINALG::SerialDenseMatrix*& oldfeas, CORE::LINALG::SerialDenseMatrix*& oldKaainv,
+    CORE::LINALG::SerialDenseMatrix*& oldKad, CORE::LINALG::SerialDenseMatrix*& oldKap,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseVector>& feas,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap)
 {
   // we need the inverse of Kaa
   Epetra_SerialDenseSolver solve_for_inverseKaa;

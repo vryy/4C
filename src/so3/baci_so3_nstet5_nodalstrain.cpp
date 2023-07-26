@@ -384,8 +384,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
-    Epetra_SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+    CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
     const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
@@ -477,8 +477,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   //-----------------------------------------------------------------------
   // build B operator
 
-  Epetra_SerialDenseMatrix bopbar(6, ndofinpatch);
-  Epetra_SerialDenseMatrix nxyzbar(9, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bopbar(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix nxyzbar(9, ndofinpatch);
 
   // loop elements in patch
   for (int ele = 0; ele < neleinpatch; ++ele)
@@ -652,13 +652,13 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
     force->Multiply('T', 'N', Vnode, bopbar, stress_epetra, 0.0);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(
+    CORE::LINALG::SerialDenseMatrix cmat_epetra(
         ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);

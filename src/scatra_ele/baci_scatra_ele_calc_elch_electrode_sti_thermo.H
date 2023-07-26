@@ -50,16 +50,16 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(DRT::Element* ele,        //!< current element
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          const SCATRA::Action& action,              //!< action parameter
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int EvaluateActionOD(DRT::Element* ele,               //!< current element
+          Teuchos::ParameterList& params,                   //!< parameter list
+          DRT::Discretization& discretization,              //!< discretization
+          const SCATRA::Action& action,                     //!< action parameter
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
       );
 
       //! extract quantities for element evaluation
@@ -79,10 +79,10 @@ namespace DRT
       );
 
       //! calculate element matrix and element right-hand side vector
-      void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                 //!< element rhs to calculate+
-          const int k,                                    //!< index of current scalar
-          const double fac,                               //!< domain-integration factor
+      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate+
+          const int k,                                           //!< index of current scalar
+          const double fac,                                      //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -97,7 +97,7 @@ namespace DRT
 
       //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs
       void SysmatODScatraThermo(DRT::Element* ele,  //!< current element
-          Epetra_SerialDenseMatrix& emat            //!< element matrix
+          CORE::LINALG::SerialDenseMatrix& emat     //!< element matrix
       );
 
       //! set internal variables for element evaluation

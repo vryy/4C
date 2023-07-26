@@ -654,7 +654,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegra
         "action", SCATRA::BoundaryAction::calc_boundary_integral, condparams);
 
     // integrated domain of this condition
-    auto domainintegral_cond = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    auto domainintegral_cond = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
 
     scatra_->ScaTraField()->Discretization()->EvaluateScalars(
         condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
@@ -679,7 +679,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegra
 
   // integrated scalars of this condition
   auto inflow_cond =
-      Teuchos::rcp(new Epetra_SerialDenseVector(scatra_->ScaTraField()->NumDofPerNode()));
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(scatra_->ScaTraField()->NumDofPerNode()));
 
   scatra_->ScaTraField()->Discretization()->EvaluateScalars(
       condparams, inflow_cond, "SSISurfaceManifold", kineticsID);

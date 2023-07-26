@@ -57,7 +57,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
         probdim, num_nodes_ele, xyze.M(), xyze.N());
 
   const double* xyze_ptr = xyze.A();
-  Epetra_SerialDenseMatrix xyze_eptra;
+  CORE::LINALG::SerialDenseMatrix xyze_eptra;
   if (rdim > probdim)
   {
     xyze_eptra.Shape(probdim, num_nodes_ele);
@@ -79,7 +79,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
@@ -94,7 +94,7 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
         probdim, num_nodes_ele, xyze.M(), xyze.N());
 
   const double* xyze_ptr = xyze.A();
-  Epetra_SerialDenseMatrix xyze_eptra;
+  CORE::LINALG::SerialDenseMatrix xyze_eptra;
   if (static_cast<unsigned>(xyze.M()) > probdim)
   {
     xyze_eptra.Shape(probdim, num_nodes_ele);
@@ -492,10 +492,10 @@ template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 

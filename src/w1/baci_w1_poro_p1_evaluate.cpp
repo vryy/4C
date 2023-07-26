@@ -52,9 +52,11 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearizationOD(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   this->SetParamsInterfacePtr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -106,11 +108,11 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
       // in some cases we need to write/change some data before evaluating
       Base::PreEvaluate(params, discretization, la);
 
-      Epetra_SerialDenseMatrix elemat1_sub;
-      Epetra_SerialDenseMatrix elemat2_sub;
-      Epetra_SerialDenseVector elevec1_sub;
-      Epetra_SerialDenseVector elevec2_sub;
-      Epetra_SerialDenseVector elevec3_sub;
+      CORE::LINALG::SerialDenseMatrix elemat1_sub;
+      CORE::LINALG::SerialDenseMatrix elemat2_sub;
+      CORE::LINALG::SerialDenseVector elevec1_sub;
+      CORE::LINALG::SerialDenseVector elevec2_sub;
+      CORE::LINALG::SerialDenseVector elevec3_sub;
 
       if (elemat1_epetra.A()) elemat1_sub.Shape(Base::numdof_, Base::numdof_);
       if (elemat2_epetra.A()) elemat2_sub.Shape(Base::numdof_, Base::numdof_);
@@ -193,9 +195,11 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   this->SetParamsInterfacePtr(params);
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -875,7 +879,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(Teuchos::Parameter
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   CORE::LINALG::Matrix<Base::numdim_, Base::numnod_> disp(true);
   CORE::LINALG::Matrix<Base::numnod_, 1> myporosity(true);

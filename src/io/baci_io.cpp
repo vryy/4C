@@ -124,7 +124,8 @@ void IO::DiscretizationReader::ReadMultiVector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadSerialDenseMatrix(
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata, std::string name)
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
+    std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
@@ -144,7 +145,8 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(
   std::vector<char>::size_type position = 0;
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
-    Teuchos::RCP<Epetra_SerialDenseMatrix> matrix = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }

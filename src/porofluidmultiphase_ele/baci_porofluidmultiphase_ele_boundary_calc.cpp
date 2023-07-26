@@ -82,8 +82,8 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::SetupCalc(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, std::vector<Epetra_SerialDenseMatrix*>& elemat,
-    std::vector<Epetra_SerialDenseVector*>& elevec)
+    DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -147,7 +147,8 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     POROFLUIDMULTIPHASE::BoundaryAction action, DRT::Element::LocationArray& la,
-    std::vector<Epetra_SerialDenseMatrix*>& elemat, std::vector<Epetra_SerialDenseVector*>& elevec)
+    std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+    std::vector<CORE::LINALG::SerialDenseVector*>& elevec)
 {
   // switch over action type
   switch (action)
@@ -174,7 +175,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(

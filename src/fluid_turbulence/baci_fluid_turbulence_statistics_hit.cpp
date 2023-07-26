@@ -1884,12 +1884,12 @@ namespace FLD
     discret_->SetState(1, "intvelnp", velnp);
 
     std::vector<int> dummy;
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
 
     for (int el = 0; el < discret_->NumMyRowElements(); ++el)
     {
-      Epetra_SerialDenseVector interpolVec;
+      CORE::LINALG::SerialDenseVector interpolVec;
       DRT::Element* ele = discret_->lRowElement(el);
 
       interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z

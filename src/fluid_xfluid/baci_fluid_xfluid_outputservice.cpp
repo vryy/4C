@@ -799,9 +799,9 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
     DRT::UTILS::ExtractMyValues(*accvec, m_acc, la[0].lm_);
   }
 
-  Epetra_SerialDenseMatrix vel(3, actele->NumNode());
-  Epetra_SerialDenseMatrix press(1, actele->NumNode());
-  Epetra_SerialDenseMatrix acc(3, actele->NumNode());
+  CORE::LINALG::SerialDenseMatrix vel(3, actele->NumNode());
+  CORE::LINALG::SerialDenseMatrix press(1, actele->NumNode());
+  CORE::LINALG::SerialDenseMatrix acc(3, actele->NumNode());
 
   for (int i = 0; i < actele->NumNode(); ++i)
   {
@@ -976,7 +976,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputVolumeCell(
       CORE::GEO::CUT::IntegrationCell* ic = *i;
 
       const std::vector<CORE::GEO::CUT::Point*>& points = ic->Points();
-      //    Epetra_SerialDenseMatrix values( 4, points.size() );
+      //    CORE::LINALG::SerialDenseMatrix values( 4, points.size() );
 
       switch (ic->Shape())
       {
@@ -1191,7 +1191,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
 
     const int numnodes = side->NumNode();
     DRT::Node** nodes = side->Nodes();
-    Epetra_SerialDenseMatrix side_xyze(3, numnodes);
+    CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
       const double* x = nodes[i]->X();

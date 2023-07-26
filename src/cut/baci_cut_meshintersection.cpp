@@ -17,7 +17,7 @@
  * If it is not within BB, this element is never cut
  *-----------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int eid,
-    const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
+    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
     ::DRT::Element::DiscretizationType distype, const double* lsv)
 {
   for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
@@ -68,7 +68,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(
  * sidehandle for quadratic sides)
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid,
-    const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
+    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
     ::DRT::Element::DiscretizationType distype, int mi)
 {
   Mesh& cut_mesh = CutMesh(mi);

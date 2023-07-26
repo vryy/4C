@@ -138,7 +138,8 @@ namespace MORTAR
     \brief Return directional derivative of matrix of dual shape function coefficients
 
     */
-    virtual Teuchos::RCP<CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>>& DerivDualShape()
+    virtual Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>&
+    DerivDualShape()
     {
       return derivdualshapecoeff_;
     }
@@ -240,7 +241,8 @@ namespace MORTAR
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> dualshapecoeff_;
 
     // derivative of coefficient matrix for dual shape functions
-    Teuchos::RCP<CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>> derivdualshapecoeff_;
+    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
+        derivdualshapecoeff_;
 
     // coefficient matrix for boundary trafo
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> trafocoeff_;
@@ -635,9 +637,9 @@ namespace MORTAR
     \return 0 if successful, negative otherwise
     */
     virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3);
+        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
     /*!
     \brief Evaluate a Neumann boundary condition dummy
@@ -659,8 +661,8 @@ namespace MORTAR
     \return 0 if successful, negative otherwise
     */
     virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseMatrix* elemat1 = NULL)
+        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseMatrix* elemat1 = NULL)
     {
       return 0;
     }
@@ -678,14 +680,15 @@ namespace MORTAR
     /*!
     \brief Build element normal at node passed in
     */
-    virtual void BuildNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens);
+    virtual void BuildNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens);
 
     /*!
     \brief Compute element normal at local coordinate xi
            Caution: This function cannot be called stand-alone! It is
            integrated into the whole nodal normal calculation process.
     */
-    virtual void ComputeNormalAtXi(const double* xi, int& i, Epetra_SerialDenseMatrix& elens);
+    virtual void ComputeNormalAtXi(
+        const double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens);
 
     /*!
     \brief Compute averaged nodal normal at local coordinate xi
@@ -799,7 +802,7 @@ namespace MORTAR
                            (= derivatives of the dual coefficient matrix Ae)
     */
     void ShapeFunctionLinearizations(MortarElement::ShapeType shape,
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivdual);
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Evaluate displacement shape functions and derivatives
@@ -890,7 +893,8 @@ namespace MORTAR
     \param derivdual (in): derivative maps to be filled
                            (= derivatives of the dual coefficient matrix Ae)
     */
-    virtual bool DerivShapeDual(CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivdual);
+    virtual bool DerivShapeDual(
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivdual);
 
     /*!
     \brief Interpolate global coordinates for given local element coordinates
@@ -981,7 +985,7 @@ namespace MORTAR
     \brief get knot vectors for this mortar element
 
     */
-    virtual std::vector<Epetra_SerialDenseVector>& Knots() { return mortarknots_; };
+    virtual std::vector<CORE::LINALG::SerialDenseVector>& Knots() { return mortarknots_; };
 
     /*!
     \brief Get the linearization of the spatial position of the Nodes for this Ele.
@@ -1034,8 +1038,8 @@ namespace MORTAR
 
     // nurbs specific:
     bool nurbs_;
-    std::vector<Epetra_SerialDenseVector> mortarknots_;  // mortar element knot vector
-    double normalfac_;                                   // factor for normal orientation
+    std::vector<CORE::LINALG::SerialDenseVector> mortarknots_;  // mortar element knot vector
+    double normalfac_;                                          // factor for normal orientation
     bool zero_sized_;  // zero-sized element: if true: no integration for this element
 
     // h.Willmann
@@ -1107,9 +1111,9 @@ namespace MORTAR
     ElementIntegrator operator=(const ElementIntegrator& old);
     ElementIntegrator(const ElementIntegrator& old);
 
-    int ngp_;                          // number of Gauss points
-    Epetra_SerialDenseMatrix coords_;  // Gauss point coordinates
-    std::vector<double> weights_;      // Gauss point weights
+    int ngp_;                                 // number of Gauss points
+    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    std::vector<double> weights_;             // Gauss point weights
 
   };  // class ElementIntegrator
 }  // namespace MORTAR

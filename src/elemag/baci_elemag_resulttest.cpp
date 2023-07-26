@@ -22,7 +22,7 @@ ELEMAG::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
 {
   dis_ = elemagalgo.Discretization();
   // mysol_ = CORE::LINALG::CreateVector(*(dis_->NodeRowMap()), true);
-  error_ = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+  error_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
   error_ = elemagalgo.ComputeError();
   // elemagalgo.NodalPressureField(mysol_);
 }

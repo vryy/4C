@@ -857,7 +857,7 @@ void StructMonWriter::WriteStrResult(std::ofstream& outfile, PostField*& field, 
     const std::string groupname, const std::string name, const int numdf, const int node) const
 {
   // get stresses/strains at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
@@ -1512,7 +1512,7 @@ void ThermoMonWriter::WriteThrResult(std::ofstream& outfile, PostField*& field, 
     const std::string groupname, const std::string name, const int dim, const int node) const
 {
   // get heatfluxes/temperature gradients at Gauss points
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> data =
+  const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> data =
       result.read_result_serialdensematrix(groupname);
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();

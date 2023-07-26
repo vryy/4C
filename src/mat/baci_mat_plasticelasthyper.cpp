@@ -306,12 +306,12 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
     int ngp = last_alpha_isotropic_.size();
     HepDiss_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
     int numdofperelement = ExtractInt(position, data);
-    dHepDissdd_ = Teuchos::rcp(
-        new std::vector<Epetra_SerialDenseVector>(ngp, Epetra_SerialDenseVector(numdofperelement)));
+    dHepDissdd_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+        ngp, CORE::LINALG::SerialDenseVector(numdofperelement)));
     dHepDissdT_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
     if (tsi_eas)
-      dHepDissdTeas_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>(
-          ngp, Epetra_SerialDenseVector(numdofperelement / 3)));
+      dHepDissdTeas_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+          ngp, CORE::LINALG::SerialDenseVector(numdofperelement / 3)));
   }
 
   // dissipation mode
@@ -394,12 +394,12 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp, const int numdofperelemen
 
   // allocate memory
   HepDiss_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
-  dHepDissdd_ = Teuchos::rcp(
-      new std::vector<Epetra_SerialDenseVector>(numgp, Epetra_SerialDenseVector(numdofperelement)));
+  dHepDissdd_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+      numgp, CORE::LINALG::SerialDenseVector(numdofperelement)));
   dHepDissdT_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
   if (eas)
-    dHepDissdTeas_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseVector>(
-        numgp, Epetra_SerialDenseVector(numdofperelement / 3)));
+    dHepDissdTeas_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseVector>(
+        numgp, CORE::LINALG::SerialDenseVector(numdofperelement / 3)));
 
   // no TSI with kinematic hardening yet
   // be aware that in that case, another dependency of the NCP function on the
@@ -2382,7 +2382,7 @@ void MAT::PlasticElastHyper::RegisterVtkOutputDataNames(
 /*---------------------------------------------------------------------*
  *---------------------------------------------------------------------*/
 bool MAT::PlasticElastHyper::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "accumulated_plastic_strain")
   {

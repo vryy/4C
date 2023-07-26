@@ -19,8 +19,8 @@ the input line should read
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 
 namespace MAT
@@ -155,8 +155,9 @@ namespace MAT
     }
 
     // THE material routine
-    void Evaluate(const Epetra_SerialDenseVector* glstrain_e, Epetra_SerialDenseMatrix* cmat_e,
-        Epetra_SerialDenseVector* stress_e, double elelocalrad);
+    void Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
+        CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e,
+        double elelocalrad);
 
     // THE material routine
     virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,

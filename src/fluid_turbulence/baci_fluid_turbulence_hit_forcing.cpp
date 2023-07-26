@@ -232,8 +232,8 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ =
-        Teuchos::rcp(new Epetra_SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    force_fac_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }
@@ -1218,8 +1218,8 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ =
-        Teuchos::rcp(new Epetra_SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    force_fac_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
   }
@@ -1300,12 +1300,12 @@ namespace FLD
         dserror("it seems like you need velaf_ here, which is not implemented for hit and hdg yet");
 
       std::vector<int> dummy;
-      Epetra_SerialDenseMatrix dummyMat;
-      Epetra_SerialDenseVector dummyVec;
+      CORE::LINALG::SerialDenseMatrix dummyMat;
+      CORE::LINALG::SerialDenseVector dummyVec;
 
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
-        Epetra_SerialDenseVector interpolVec;
+        CORE::LINALG::SerialDenseVector interpolVec;
         DRT::Element* ele = discret_->lRowElement(el);
 
         interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
@@ -1742,13 +1742,13 @@ namespace FLD
       discret_->SetState(1, "intvelnp", velnp_);
 
       std::vector<int> dummy;
-      Epetra_SerialDenseMatrix dummyMat;
-      Epetra_SerialDenseVector dummyVec;
+      CORE::LINALG::SerialDenseMatrix dummyMat;
+      CORE::LINALG::SerialDenseVector dummyVec;
 
 
       for (int el = 0; el < discret_->NumMyRowElements(); ++el)
       {
-        Epetra_SerialDenseVector interpolVec;
+        CORE::LINALG::SerialDenseVector interpolVec;
         DRT::Element* ele = discret_->lRowElement(el);
 
         interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
@@ -1919,8 +1919,8 @@ namespace FLD
 
       // for 2nd evaluate
       const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-      Epetra_SerialDenseVector elevec1, elevec3;
-      Epetra_SerialDenseMatrix elemat1, elemat2;
+      CORE::LINALG::SerialDenseVector elevec1, elevec3;
+      CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
       initParams.set<int>("action", FLD::project_hdg_force_on_dof_vec_for_hit);
 
@@ -1932,9 +1932,9 @@ namespace FLD
         DRT::Element* ele = discret_->lRowElement(el);
 
         std::vector<int> dummy;
-        Epetra_SerialDenseMatrix dummyMat;
-        Epetra_SerialDenseVector dummyVec;
-        Epetra_SerialDenseVector interpolVec;
+        CORE::LINALG::SerialDenseMatrix dummyMat;
+        CORE::LINALG::SerialDenseVector dummyVec;
+        CORE::LINALG::SerialDenseVector interpolVec;
         interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
         ele->Evaluate(

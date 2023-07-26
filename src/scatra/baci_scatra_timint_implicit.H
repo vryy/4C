@@ -30,7 +30,7 @@
 #include "baci_adapter_scatra_wrapper.H"
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
@@ -1184,7 +1184,7 @@ namespace SCATRA
     Teuchos::RCP<CORE::LINALG::MultiMapExtractor> flux_boundary_maps_;
 
     //! vector for statistical evaluation of normal fluxes
-    Teuchos::RCP<Epetra_SerialDenseVector> sumnormfluxintegral_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> sumnormfluxintegral_;
 
     //! the last step number when fluxes have been computed
     int lastfluxoutputstep_;

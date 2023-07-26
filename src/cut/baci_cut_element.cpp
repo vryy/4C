@@ -998,7 +998,7 @@ bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
       //      if(intcells.size() != 1) dserror("there is not a unique integration cell");
       //      if(this->Shape() == intcells[0]->Shape())
       //      {
-      //        Epetra_SerialDenseMatrix xyze(3, intcells[0]->Points().size());
+      //        CORE::LINALG::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
       //        this->Coordinates(xyze.A());
       //
       //        double vol_diff = vc->Volume() - GEO::ElementVolume( this->Shape(), xyze );

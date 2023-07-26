@@ -49,9 +49,11 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ComputePorosityAndLinearizati
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
   typename Base::ActionType act = Base::none;
@@ -105,11 +107,11 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::Evaluate(Teuchos::ParameterLis
       // in some cases we need to write/change some data before evaluating
       PreEvaluate(params, discretization, la);
 
-      Epetra_SerialDenseMatrix elemat1_sub;
-      Epetra_SerialDenseMatrix elemat2_sub;
-      Epetra_SerialDenseVector elevec1_sub;
-      Epetra_SerialDenseVector elevec2_sub;
-      Epetra_SerialDenseVector elevec3_sub;
+      CORE::LINALG::SerialDenseMatrix elemat1_sub;
+      CORE::LINALG::SerialDenseMatrix elemat2_sub;
+      CORE::LINALG::SerialDenseVector elevec1_sub;
+      CORE::LINALG::SerialDenseVector elevec2_sub;
+      CORE::LINALG::SerialDenseVector elevec3_sub;
 
       if (elemat1_epetra.A()) elemat1_sub.Shape(Base::numdof_, Base::numdof_);
       if (elemat2_epetra.A()) elemat2_sub.Shape(Base::numdof_, Base::numdof_);
@@ -206,9 +208,11 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::PreEvaluate(Teuchos::Paramete
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // start with "none"
   typename Base::ActionType act = Base::none;

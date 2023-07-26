@@ -40,9 +40,11 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // call base class routine
   my::Evaluate(ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra,
@@ -62,10 +64,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* e
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
-    DRT::Element* ele,                   ///< the element whose matrix is calculated
-    Epetra_SerialDenseMatrix& emat,      ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,      ///< element rhs to calculate
-    Epetra_SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+    DRT::Element* ele,                          ///< the element whose matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
+    CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
 )
 {
   //----------------------------------------------------------------------
@@ -162,10 +164,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
 *-----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain-integration factor
-    const double alphaf              //!< time factor for ENC
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const double fac,                       //!< domain-integration factor
+    const double alphaf                     //!< time factor for ENC
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -189,10 +191,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain-integration factor
-    const double conint              //!< concentration at GP
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
+    const double fac,                       //!< domain-integration factor
+    const double conint                     //!< concentration at GP
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)

@@ -146,7 +146,8 @@ void SCATRA::TimIntLomaGenAlpha::ComputeThermPressure()
   SetElementTimeParameter();
 
   // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
   // evaluate domain and bodyforce integral
   discret_->EvaluateScalars(eleparams, scalars);

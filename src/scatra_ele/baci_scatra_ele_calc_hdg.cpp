@@ -32,7 +32,7 @@
 
 namespace
 {
-  void zeroMatrix(Epetra_SerialDenseMatrix& mat)
+  void zeroMatrix(CORE::LINALG::SerialDenseMatrix::Base& mat)
   {
     std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
   }
@@ -139,8 +139,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::InitializeShapes(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix&,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&)
 {
   // check if this is an hdg element
   const DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<const DRT::ELEMENTS::ScaTraHDG*>(ele);
@@ -172,9 +173,11 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Evaluate(DRT::Element* el
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // check if this is an hdg element
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
@@ -308,13 +311,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
  | Calculate node based values                           hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
-    DRT::Element* ele, DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1)
+int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(DRT::Element* ele,
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1)
 {
   dsassert(elevec1.M() == (int)nen_ * (2 + nsd_), "Vector does not have correct size");
-  Epetra_SerialDenseMatrix locations =
+  CORE::LINALG::SerialDenseMatrix locations =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
-  Epetra_SerialDenseVector values(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
 
   DRT::ELEMENTS::ScaTraHDG* hdgele = dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(ele);
 
@@ -343,8 +346,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
       CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape);
 
 
-  Epetra_SerialDenseVector touchcount(nen_);
-  Epetra_SerialDenseVector fvalues(1);
+  CORE::LINALG::SerialDenseVector touchcount(nen_);
+  CORE::LINALG::SerialDenseVector fvalues(1);
   int sumindex = 0;
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
@@ -384,7 +387,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::NodeBasedValues(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // get actual time
   const double time = params.get<double>("time");
@@ -399,8 +402,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectDirichField(DRT::E
 
   shapesface_->EvaluateFace(*ele, face);
 
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
-  Epetra_SerialDenseVector trVec(shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseVector trVec(shapesface_->nfdofs_);
 
   // integration loop
   for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
@@ -639,7 +642,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeFace
 
   // Add convection term (velocity at quadrature points on face)
   // at the moment it is set to zero
-  Epetra_SerialDenseMatrix velface(nsd_, shapesface_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix velface(nsd_, shapesface_->nqpoints_);
 
   // loop over number of shape functions (scalar dofs per element)
   for (unsigned int q = 0; q < hdgele->ndofs_; ++q)
@@ -732,14 +735,14 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesTet(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
-  Epetra_SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix gradPart(hdgele->ndofs_ * nsd_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix gradPartVel(hdgele->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix gradPart(hdgele->ndofs_ * nsd_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix gradPartVel(hdgele->ndofs_, shapes_->nqpoints_);
 
-  Epetra_SerialDenseMatrix massPart(hdgele->ndofs_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix massPartW(hdgele->ndofs_, shapes_->nqpoints_);
-  std::vector<Epetra_SerialDenseMatrix> DW(
-      nsd_ * nsd_, Epetra_SerialDenseMatrix(hdgele->ndofs_, hdgele->ndofs_));
+  CORE::LINALG::SerialDenseMatrix massPart(hdgele->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPartW(hdgele->ndofs_, shapes_->nqpoints_);
+  std::vector<CORE::LINALG::SerialDenseMatrix> DW(
+      nsd_ * nsd_, CORE::LINALG::SerialDenseMatrix(hdgele->ndofs_, hdgele->ndofs_));
 
 
   // polynomial space to get the value of the shape function at the material gauss points
@@ -751,9 +754,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
   const CORE::DRT::UTILS::IntPointsAndWeights<CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
       intpoints(SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
 
-  std::vector<Epetra_SerialDenseVector> shape_gp(intpoints.IP().nquad);
-  std::vector<Epetra_SerialDenseMatrix> massPartDW(
-      nsd_ * nsd_, Epetra_SerialDenseMatrix(hdgele->ndofs_, intpoints.IP().nquad));
+  std::vector<CORE::LINALG::SerialDenseVector> shape_gp(intpoints.IP().nquad);
+  std::vector<CORE::LINALG::SerialDenseMatrix> massPartDW(
+      nsd_ * nsd_, CORE::LINALG::SerialDenseMatrix(hdgele->ndofs_, intpoints.IP().nquad));
 
 
   // coordinate of gauss points
@@ -771,7 +774,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
   double jacdet = shapes_->xjm.Determinant();
 
-  Epetra_SerialDenseMatrix massPartD(hdgele->ndofs_, shape_gp.size());
+  CORE::LINALG::SerialDenseMatrix massPartD(hdgele->ndofs_, shape_gp.size());
 
   // loop over quadrature points
   for (unsigned int q = 0; q < shape_gp.size(); ++q)
@@ -866,16 +869,16 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInteriorMatricesAll(
     DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
-  Epetra_SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix gradPart(hdgele->ndofs_ * nsd_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix gradPartVel(hdgele->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix vel(nsd_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix gradPart(hdgele->ndofs_ * nsd_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix gradPartVel(hdgele->ndofs_, shapes_->nqpoints_);
 
-  Epetra_SerialDenseMatrix massPart(hdgele->ndofs_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix massPartW(hdgele->ndofs_, shapes_->nqpoints_);
-  std::vector<Epetra_SerialDenseMatrix> massPartDW(
-      nsd_ * nsd_, Epetra_SerialDenseMatrix(hdgele->ndofs_, shapes_->nqpoints_));
-  std::vector<Epetra_SerialDenseMatrix> DW(
-      nsd_ * nsd_, Epetra_SerialDenseMatrix(hdgele->ndofs_, hdgele->ndofs_));
+  CORE::LINALG::SerialDenseMatrix massPart(hdgele->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPartW(hdgele->ndofs_, shapes_->nqpoints_);
+  std::vector<CORE::LINALG::SerialDenseMatrix> massPartDW(
+      nsd_ * nsd_, CORE::LINALG::SerialDenseMatrix(hdgele->ndofs_, shapes_->nqpoints_));
+  std::vector<CORE::LINALG::SerialDenseMatrix> DW(
+      nsd_ * nsd_, CORE::LINALG::SerialDenseMatrix(hdgele->ndofs_, hdgele->ndofs_));
 
   // loop over quadrature points
   for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
@@ -946,9 +949,9 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResidual(
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& interiorPhin,
-    Epetra_SerialDenseVector& tracen, Epetra_SerialDenseVector& tracenp,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& interiorPhin,
+    CORE::LINALG::SerialDenseVector& tracen, CORE::LINALG::SerialDenseVector& tracenp,
     const DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ScaTraEleCalcHDG::ComputeResidual");
@@ -1001,10 +1004,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
        AM = (1/(dt*theta)M + A)
    */
 
-  Epetra_SerialDenseVector tempinteriorphin(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempinteriorphin(hdgele->ndofs_);
   for (unsigned int i = 0; i < hdgele->ndofs_; i++) tempinteriorphin(i) = interiorPhin(i);
 
-  Epetra_SerialDenseVector tempinteriorgradphin(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempinteriorgradphin(hdgele->ndofs_ * nsd_);
   for (unsigned int i = 0; i < hdgele->ndofs_ * nsd_; i++)
     tempinteriorgradphin(i) = interiorPhin(hdgele->ndofs_ + i);
 
@@ -1013,8 +1016,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
   const double time = scatraparatimint_->Time();
   bool source = scatrapara_->IsEMD();
 
-  Epetra_SerialDenseVector tempVec1(hdgele->ndofs_);
-  Epetra_SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec1(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
 
   if (theta != 1.0)
   {
@@ -1026,7 +1029,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
   tempVec1.Multiply('N', 'N', -1.0, hdgele->Mmat_, tempinteriorphin,
       1.0);  // = s = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
 
-  Epetra_SerialDenseVector tempVecI(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVecI(hdgele->ndofs_);
   if (!scatrapara_->SemiImplicit())
   {
     // Reaction term
@@ -1070,12 +1073,12 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
 
   tempVec2.Multiply('N', 'N', -1.0, hdgele->BTAMmat_, tempVec1, 1.0);  // = t - (-B^T) AM^{-1} s
 
-  Epetra_SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
   tempVec3.Multiply('N', 'N', 1.0, hdgele->invCondmat_, tempVec2,
       0.0);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
 
   tempVec1.Multiply('N', 'N', -1.0, hdgele->Bmat_, tempVec3, 1.0);  // = ( s - B y)
-  Epetra_SerialDenseVector tempVec4(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVec4(hdgele->ndofs_);
   tempVec4.Multiply(
       'N', 'N', 1.0, hdgele->invAMmat_, tempVec1, 0.0);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
 
@@ -1103,13 +1106,13 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeSource(
-    const DRT::Element* ele, Epetra_SerialDenseVector& elevec1, const double time)
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1, const double time)
 {
   const int funcno = scatrapara_->EMDSource();
 
   shapes_->Evaluate(*ele);
 
-  // Epetra_SerialDenseVector source(nsd_);
+  // CORE::LINALG::SerialDenseVector source(nsd_);
   if (nsd_ != DRT::Problem::Instance()
                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(funcno - 1)
                   .NumberComponents())
@@ -1182,16 +1185,16 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
   double dt = scatraparatimint_->Dt();
   double theta = scatraparatimint_->TimeFac() * (1 / dt);
 
-  Epetra_SerialDenseMatrix tempMat1(hdgele->ndofs_ * nsd_, hdgele->ndofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat1(hdgele->ndofs_ * nsd_, hdgele->ndofs_);
   tempMat1.Multiply('N', 'N', 1.0, hdgele->BmatMT_, hdgele->invAMmat_, 0.0);  // =  (-B^T) AM^{-1}
 
   hdgele->BTAMmat_ = tempMat1;
 
-  Epetra_SerialDenseMatrix tempMat2(hdgele->ndofs_ * nsd_, hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempMat2(hdgele->ndofs_ * nsd_, hdgele->ndofs_ * nsd_);
   tempMat2 = hdgele->Dmat_;
 
   tempMat2.Multiply('N', 'N', -1.0, tempMat1, hdgele->Bmat_, 1.0);  // = D - (-B^T) AM^{-1} B
-  Epetra_SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, onfdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, onfdofs);
   tempMat3 = hdgele->Emat_;
   tempMat3.Multiply('N', 'N', -1.0, tempMat1, hdgele->Cmat_, 1.0);  // = E - (-B^T) AM^{-1} C
 
@@ -1206,15 +1209,15 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
 
   hdgele->Kmat_ = hdgele->Hmat_;  // = H
 
-  Epetra_SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, onfdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, onfdofs);
   tempMat4.Multiply('N', 'N', 1.0, tempMat2, tempMat3, 0.0);              // = y
   hdgele->Kmat_.Multiply('N', 'N', -1.0, hdgele->EmatT_, tempMat4, 1.0);  // = - E^T y + H
 
-  Epetra_SerialDenseMatrix tempMat5(hdgele->ndofs_, onfdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat5(hdgele->ndofs_, onfdofs);
   tempMat5 = hdgele->Cmat_;
   tempMat5.Multiply('N', 'N', -1.0, hdgele->Bmat_, tempMat4, 1.0);  // = C -B y
 
-  Epetra_SerialDenseMatrix tempMat6(hdgele->ndofs_, onfdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat6(hdgele->ndofs_, onfdofs);
   tempMat6.Multiply('N', 'N', 1.0, hdgele->invAMmat_, tempMat5, 0.0);  // = x = AM^{-1} ( C - B y )
 
   // save for later use
@@ -1232,7 +1235,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddDiffMat(
-    Epetra_SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
+    CORE::LINALG::SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   eleMat = hdgele->Kmat_;
   eleMat.Scale(-1.0);
@@ -1246,28 +1249,28 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddDiffMat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
-    Epetra_SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
+    CORE::LINALG::SerialDenseMatrix& eleMat, const DRT::ELEMENTS::ScaTraHDG* hdgele)
 {
   double dt = scatraparatimint_->Dt();
   double theta = scatraparatimint_->TimeFac() * (1 / dt);
 
   // add derivative of reaction term
-  Epetra_SerialDenseMatrix tempMat1(hdgele->ndofs_, hdgele->ndofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat1(hdgele->ndofs_, hdgele->ndofs_);
   tempMat1 = hdgele->Imatnpderiv_;  // = I'
 
-  Epetra_SerialDenseMatrix tempMat2(hdgele->ndofs_, hdgele->onfdofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat2(hdgele->ndofs_, hdgele->onfdofs_);
   tempMat2.Multiply('N', 'N', -1.0, tempMat1, hdgele->Xmat_, 0.0);  // = I' * (-x1)
 
-  Epetra_SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
   tempMat3.Multiply(
       'N', 'N', -1.0, hdgele->BTAMmat_, tempMat2, 0.0);  // = NULL*y1 - (-B^T) AM^{-1} I'* (-x1)
-  Epetra_SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
   tempMat4.Multiply('N', 'N', 1.0, hdgele->invCondmat_, tempMat3,
       0.0);  // = y2 = ( D - (-B^T) AM^{-1} B)^-1  (NULL*y1 - (-B^T) AM^{-1} I'* (-x1))
 
   tempMat2.Multiply('N', 'N', -1.0, hdgele->Bmat_, tempMat4, 1.0);  // = I'*(-x1) -B y2
 
-  Epetra_SerialDenseMatrix tempMat5(hdgele->ndofs_, hdgele->onfdofs_);
+  CORE::LINALG::SerialDenseMatrix tempMat5(hdgele->ndofs_, hdgele->onfdofs_);
   tempMat5.Multiply(
       'N', 'N', 1.0, hdgele->invAMmat_, tempMat2, 0.0);  // = x2 = AM^{-1} ( I'*(-x1) - B y2 )
 
@@ -1282,8 +1285,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeumannBC(
-    DRT::Element* ele, Teuchos::ParameterList& params, int face, Epetra_SerialDenseVector& elevec,
-    int indexstart)
+    DRT::Element* ele, Teuchos::ParameterList& params, int face,
+    CORE::LINALG::SerialDenseVector& elevec, int indexstart)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ScaTraHDGEleCalc::ComputeNeumannBC");
 
@@ -1355,8 +1358,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterialParams(
     DRT::Element* ele  //!< the element we are dealing with
 )
 {
-  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor =
-      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>);
+  Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor =
+      Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>);
 
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -1397,10 +1400,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
     DRT::Element* ele  //!< the element we are dealing with
 )
 {
-  Epetra_SerialDenseMatrix difftensor(nsd_, nsd_);
-  Epetra_SerialDenseVector ivecn(shapes_->ndofs_);
-  Epetra_SerialDenseVector ivecnp(shapes_->ndofs_);
-  Epetra_SerialDenseMatrix ivecnpderiv(shapes_->ndofs_, shapes_->ndofs_);
+  CORE::LINALG::SerialDenseMatrix difftensor(nsd_, nsd_);
+  CORE::LINALG::SerialDenseVector ivecn(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector ivecnp(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseMatrix ivecnpderiv(shapes_->ndofs_, shapes_->ndofs_);
 
   // get the material
   Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -1437,7 +1440,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::GetMaterialParams(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
     DRT::ELEMENTS::ScaTraHDG* hdgele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec
+    CORE::LINALG::SerialDenseVector& elevec
     //    double dt
 )
 {
@@ -1492,10 +1495,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
    */
 
-  Epetra_SerialDenseVector tempinteriorphin(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempinteriorphin(hdgele->ndofs_);
   for (unsigned int i = 0; i < hdgele->ndofs_; ++i) tempinteriorphin(i) = interiorPhin_(i);
 
-  Epetra_SerialDenseVector tempinteriorgradphin(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempinteriorgradphin(hdgele->ndofs_ * nsd_);
   for (unsigned int i = 0; i < hdgele->ndofs_ * nsd_; ++i)
     tempinteriorgradphin(i) = interiorPhin_(hdgele->ndofs_ + i);
 
@@ -1504,7 +1507,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   const double time = localSolver_->scatraparatimint_->Time();
   bool source = localSolver_->scatrapara_->IsEMD();
 
-  Epetra_SerialDenseVector tempVec1(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVec1(hdgele->ndofs_);
   if (theta != 1.0)
   {
     tempVec1.Multiply('N', 'N', 1.0, hdgele->Amat_, tempinteriorphin, 0.0);
@@ -1517,7 +1520,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
 
   // Reaction term
-  Epetra_SerialDenseVector tempVecI(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVecI(hdgele->ndofs_);
   if (!localSolver_->scatrapara_->SemiImplicit())
   {
     tempVecI = hdgele->Ivecnp_;
@@ -1554,7 +1557,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
       1.0);  //= s = -M * U^n + dt*(1-theta) * (A U^n + B Q^n + C L^n) - dt*theta I^n+1
              //-dt*(1-theta) I^n - dt* theta C L^n+1
 
-  Epetra_SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
   if (theta != 1.0)
   {
     tempVec2.Multiply('N', 'N', 1.0, hdgele->BmatMT_, tempinteriorphin, 0.0);
@@ -1572,12 +1575,12 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
 
   tempVec2.Multiply('N', 'N', -1.0, hdgele->BTAMmat_, tempVec1, 1.0);  // = t - (-B^T) AM^{-1} s
 
-  Epetra_SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
   tempVec3.Multiply('N', 'N', 1.0, hdgele->invCondmat_, tempVec2,
       0.0);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
 
   tempVec1.Multiply('N', 'N', -1.0, hdgele->Bmat_, tempVec3, 1.0);  // = ( s - B y)
-  Epetra_SerialDenseVector tempVec4(hdgele->ndofs_);
+  CORE::LINALG::SerialDenseVector tempVec4(hdgele->ndofs_);
   tempVec4.Multiply(
       'N', 'N', 1.0, hdgele->invAMmat_, tempVec1, 0.0);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
 
@@ -1597,14 +1600,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT::Element* ele,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2)
 {
   shapes_->Evaluate(*ele);
 
-  Epetra_SerialDenseMatrix Mmat(shapes_->ndofs_, shapes_->ndofs_);
-  Epetra_SerialDenseMatrix massPart(shapes_->ndofs_, shapes_->nqpoints_);
-  Epetra_SerialDenseMatrix massPartW(shapes_->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix Mmat(shapes_->ndofs_, shapes_->ndofs_);
+  CORE::LINALG::SerialDenseMatrix massPart(shapes_->ndofs_, shapes_->nqpoints_);
+  CORE::LINALG::SerialDenseMatrix massPartW(shapes_->ndofs_, shapes_->nqpoints_);
 
   // reshape elevec2 as matrix
   dsassert(elevec2.M() == 0 || unsigned(elevec2.M()) == shapes_->ndofs_ * (nsd_ + 1),
@@ -1616,7 +1619,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
   // internal variables
   if (elevec2.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(
+    CORE::LINALG::SerialDenseMatrix localMat(
         View, elevec2.A(), shapes_->ndofs_, shapes_->ndofs_, nsd_ + 1, false);
     zeroMatrix(localMat);
 
@@ -1686,8 +1689,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
     shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, face);
 
-    Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
-    Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, 1);
+    CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, 1);
 
     // loop over quadrature points
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
@@ -1736,7 +1739,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
     DRT::Element* ele,                                 //!< the element we are dealing with
     const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
     const int k,                                       //!< id of current scalar
-    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor  //!< diffusion tensor
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor  //!< diffusion tensor
 )
 {
   const Teuchos::RCP<const MAT::ScatraMat>& actmat =
@@ -1747,7 +1750,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
   // get constant diffusivity
   diffscalar = actmat->Diffusivity();
 
-  Epetra_SerialDenseMatrix difftensortmp(nsd_, nsd_);
+  CORE::LINALG::SerialDenseMatrix difftensortmp(nsd_, nsd_);
 
   for (unsigned int i = 0; i < nsd_; ++i) difftensortmp(i, i) = diffscalar;
 
@@ -1762,10 +1765,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::PrepareMaterials(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterialParameter(
-    DRT::ELEMENTS::ScaTraHDG* hdgele,      //!< hdg element
-    Epetra_SerialDenseVector& ivecn,       //!< reaction term at time n
-    Epetra_SerialDenseVector& ivecnp,      //!< reaction term at time n+1
-    Epetra_SerialDenseMatrix& ivecnpderiv  //!< reaction term derivaitve
+    DRT::ELEMENTS::ScaTraHDG* hdgele,             //!< hdg element
+    CORE::LINALG::SerialDenseVector& ivecn,       //!< reaction term at time n
+    CORE::LINALG::SerialDenseVector& ivecnp,      //!< reaction term at time n+1
+    CORE::LINALG::SerialDenseMatrix& ivecnpderiv  //!< reaction term derivaitve
 )
 {
   // Initialize reaction and diffusion matrices
@@ -1784,8 +1787,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::SetMaterial
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::PrepareMaterialParameter(
-    DRT::ELEMENTS::ScaTraHDG* hdgele,     //!< hdg element
-    Epetra_SerialDenseMatrix& difftensor  //!< diffusion tensor
+    DRT::ELEMENTS::ScaTraHDG* hdgele,            //!< hdg element
+    CORE::LINALG::SerialDenseMatrix& difftensor  //!< diffusion tensor
 )
 {
   Epetra_SerialDenseSolver inverseindifftensor;
@@ -1837,7 +1840,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ElementInit(DRT::Element
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::Element* ele,
     DRT::Discretization& discretization, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
     DRT::Element::LocationArray& la)
 {
   int nds_var_old = params.get<int>("nds_var_old");
@@ -1862,7 +1865,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
   Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<probdim>> polySpace_old =
       CORE::DRT::UTILS::PolynomialSpaceCache<probdim>::Instance().Create(params_old);
 
-  Epetra_SerialDenseVector interiorPhi_old(shapes_old->ndofs_ * (nsd_ + 1));
+  CORE::LINALG::SerialDenseVector interiorPhi_old(shapes_old->ndofs_ * (nsd_ + 1));
 
   // get node based values!
   Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("phi");
@@ -1888,12 +1891,12 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
     {
       // set change of element degree to true
       hdgele->SetPadaptEle(true);
-      Epetra_SerialDenseMatrix tempMat(
+      CORE::LINALG::SerialDenseMatrix tempMat(
           shapes_->ndofs_ * (nsd_ + 1), shapes_old->ndofs_ * (nsd_ + 1));
 
       for (unsigned int i = 0; i < shapes_->ndofs_; i++)
       {
-        Epetra_SerialDenseVector tempVec(shapes_old->ndofs_);
+        CORE::LINALG::SerialDenseVector tempVec(shapes_old->ndofs_);
         CORE::LINALG::Matrix<nsd_, 1> point(shapes_->nodexyzunit[i]);
         polySpace_old->Evaluate(point, tempVec);
         for (unsigned int j = 0; j < nsd_ + 1; j++)
@@ -1931,7 +1934,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
       Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
           CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
-      Epetra_SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
+      CORE::LINALG::SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
 
       for (unsigned int i = 0; i < shapesface_old->nfdofs_; i++)
         tracePhi_face_old(i) = tracephi[nfdofs_old + i];
@@ -1944,13 +1947,13 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
         // set change of element degree to true
         hdgele->SetPadaptEle(true);
 
-        Epetra_SerialDenseMatrix tempMat1(shapesface_->nfdofs_, shapesface_old->nfdofs_);
+        CORE::LINALG::SerialDenseMatrix tempMat1(shapesface_->nfdofs_, shapesface_old->nfdofs_);
 
-        Epetra_SerialDenseVector tempVec2(shapesface_->nfdofs_);
+        CORE::LINALG::SerialDenseVector tempVec2(shapesface_->nfdofs_);
 
         for (unsigned int i = 0; i < shapesface_->nfdofs_; i++)
         {
-          Epetra_SerialDenseVector tempVec(shapesface_old->nfdofs_);
+          CORE::LINALG::SerialDenseVector tempVec(shapesface_old->nfdofs_);
           CORE::LINALG::Matrix<nsd_ - 1, 1> point(shapesface_->nodexyzunit[i]);
 
           polySpaceFace_old->Evaluate(point, tempVec);
@@ -2002,7 +2005,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
       Teuchos::RCP<CORE::DRT::UTILS::PolynomialSpace<nsd_ - 1>> polySpaceFace_old =
           CORE::DRT::UTILS::PolynomialSpaceCache<nsd_ - 1>::Instance().Create(polyparams);
 
-      //      Epetra_SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
+      //      CORE::LINALG::SerialDenseVector tracePhi_face_old(shapesface_old->nfdofs_);
 
       if (ele->Faces()[face]->Degree() != hdgeleface->DegreeOld())
         hdgele->SetPadaptEle(true);  // set change of element degree to true
@@ -2030,7 +2033,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
   DRT::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
 
-  Epetra_SerialDenseVector tempinteriorgradphinp(hdgele->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempinteriorgradphinp(hdgele->ndofs_ * nsd_);
   for (unsigned int i = 0; i < hdgele->ndofs_ * nsd_; ++i)
     tempinteriorgradphinp(i) = interiorPhinp_(hdgele->ndofs_ + i);
 
@@ -2044,12 +2047,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
     shapesface_ = CORE::DRT::UTILS::ShapeValuesFaceCache<distype>::Instance().Create(svfparams);
     shapesface_->EvaluateFace(*ele, nface);
 
-    Epetra_SerialDenseMatrix QMat(shapesface_->nqpoints_, hdgele->ndofs_ * nsd_);
-    Epetra_SerialDenseMatrix QMatW(shapesface_->nqpoints_, hdgele->ndofs_ * nsd_);
-    Epetra_SerialDenseMatrix UMat(shapesface_->nqpoints_, hdgele->ndofs_ + shapesface_->nfdofs_);
-    Epetra_SerialDenseMatrix UMatW(shapesface_->nqpoints_, hdgele->ndofs_ + shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseMatrix QMat(shapesface_->nqpoints_, hdgele->ndofs_ * nsd_);
+    CORE::LINALG::SerialDenseMatrix QMatW(shapesface_->nqpoints_, hdgele->ndofs_ * nsd_);
+    CORE::LINALG::SerialDenseMatrix UMat(
+        shapesface_->nqpoints_, hdgele->ndofs_ + shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseMatrix UMatW(
+        shapesface_->nqpoints_, hdgele->ndofs_ + shapesface_->nfdofs_);
 
-    Epetra_SerialDenseVector tempinteriorphinp(hdgele->ndofs_ + shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseVector tempinteriorphinp(hdgele->ndofs_ + shapesface_->nfdofs_);
     for (unsigned int i = 0; i < hdgele->ndofs_; i++) tempinteriorphinp(i) = interiorPhinp_(i);
     for (unsigned int i = 0; i < shapesface_->nfdofs_; i++)
       tempinteriorphinp(hdgele->ndofs_ + i) = tracen_(sumindex + i);
@@ -2078,10 +2083,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
     }
     sumindex += shapesface_->nfdofs_;
 
-    Epetra_SerialDenseVector tempVec1(shapesface_->nqpoints_);
-    Epetra_SerialDenseVector tempVec2(shapesface_->nqpoints_);
-    Epetra_SerialDenseVector tempVec3(shapesface_->nqpoints_);
-    Epetra_SerialDenseVector tempVec4(shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseVector tempVec1(shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseVector tempVec2(shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseVector tempVec3(shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseVector tempVec4(shapesface_->nqpoints_);
 
 
     tempVec1.Multiply('N', 'N', 1.0, QMatW, tempinteriorgradphinp, 0.0);
@@ -2113,8 +2118,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
  * Calc Error
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
-    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec)
+int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(const DRT::Element* ele,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec)
 {
   DRT::ELEMENTS::ScaTraHDG* hdgele =
       dynamic_cast<DRT::ELEMENTS::ScaTraHDG*>(const_cast<DRT::Element*>(ele));
@@ -2140,7 +2145,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
 
   CORE::LINALG::Matrix<nsd_, 1> xsi;
   double phi(nsd_);
-  Epetra_SerialDenseVector gradPhi(nsd_);
+  CORE::LINALG::SerialDenseVector gradPhi(nsd_);
 
   for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
   {

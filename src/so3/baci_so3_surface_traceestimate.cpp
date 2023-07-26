@@ -96,8 +96,9 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  Epetra_SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
-  Epetra_SerialDenseMatrix surf_red_sd(::View, surf_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix surf_red_sd(
+      ::View, surf_red.A(), dim_image, dim_image, dim_image);
 
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
@@ -209,8 +210,8 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
     double normalfac = 1.;
     if (Shape() == DRT::Element::nurbs9)
     {
-      std::vector<Epetra_SerialDenseVector> parentknots(dim);
-      std::vector<Epetra_SerialDenseVector> boundaryknots(dim - 1);
+      std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
+      std::vector<CORE::LINALG::SerialDenseVector> boundaryknots(dim - 1);
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
           DRT::Problem::Instance()->GetDis("structure").get())
           ->GetKnotVector()
@@ -275,7 +276,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
 
   if (dt_vol == DRT::Element::nurbs27)
   {
-    std::vector<Epetra_SerialDenseVector> knots;
+    std::vector<CORE::LINALG::SerialDenseVector> knots;
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
         DRT::Problem::Instance()->GetDis("structure").get())
         ->GetKnotVector()
@@ -490,8 +491,9 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
   tmp.Multiply(surf, proj);
   surf_red.MultiplyTN(proj, tmp);
 
-  Epetra_SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
-  Epetra_SerialDenseMatrix surf_red_sd(::View, surf_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix vol_red_sd(::View, vol_red.A(), dim_image, dim_image, dim_image);
+  CORE::LINALG::SerialDenseMatrix surf_red_sd(
+      ::View, surf_red.A(), dim_image, dim_image, dim_image);
 
   return CORE::LINALG::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }

@@ -345,11 +345,11 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   const double time = params.get("total time", -1.0);
   const int numcolele = disc->NumMyColElements();
@@ -437,11 +437,11 @@ void UTILS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop over column elements
   const double time = params.get("total time", -1.0);

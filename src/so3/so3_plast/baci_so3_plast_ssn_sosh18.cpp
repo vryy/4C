@@ -299,8 +299,8 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   std::vector<CORE::LINALG::Matrix<6, num_eas>> M_gp(num_eas);
   CORE::LINALG::Matrix<3, 1> G3_0_contra;
   CORE::LINALG::Matrix<6, num_eas> M;
-  Epetra_SerialDenseMatrix M_ep(View, M.A(), 6, 6, num_eas);
-  Epetra_SerialDenseMatrix Kda(numdofperelement_, num_eas);
+  CORE::LINALG::SerialDenseMatrix M_ep(View, M.A(), 6, 6, num_eas);
+  CORE::LINALG::SerialDenseMatrix Kda(numdofperelement_, num_eas);
 
   // prepare EAS***************************************
   if (eas_)

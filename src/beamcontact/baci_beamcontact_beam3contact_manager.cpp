@@ -1097,8 +1097,8 @@ void CONTACT::Beam3cmanager::SetState(
   for (int i = 0; i < (int)pairs_.size(); ++i)
   {
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
     // Positions: Loop over all nodes of element 1
     /* be careful here: beam eles (such as beam3k, beam3r) may have intermediate
      * nodes which are not used for centerline interpolation and thus do not have
@@ -1165,8 +1165,8 @@ void CONTACT::Beam3cmanager::SetState(
   {
     int numnodessol = ((btsolpairs_[i])->Element2())->NumNode();
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3, numnodessol);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele2pos(3, numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
     {
@@ -1208,8 +1208,8 @@ void CONTACT::Beam3cmanager::SetState(
     int numnodessol = ((btsolmtgroups_[i])->Element2()[0])->NumNode();
     int numele2 = (int)(btsolmtgroups_[i]->Element2().size());
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    std::vector<Epetra_SerialDenseMatrix> ele2pos(numele2);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    std::vector<CORE::LINALG::SerialDenseMatrix> ele2pos(numele2);
     for (int e = 0; e < numele2; e++) ele2pos[e].Shape(3, numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
@@ -1253,8 +1253,8 @@ void CONTACT::Beam3cmanager::SetState(
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
   {
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3, 1);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele2pos(3, 1);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
     {
@@ -1291,8 +1291,8 @@ void CONTACT::Beam3cmanager::SetState(
   for (int i = 0; i < (int)btbpotpairs_.size(); ++i)
   {
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
     // Positions: Loop over all nodes of element 1
     for (int m = 0; m < numnodes_; m++)
     {
@@ -1344,8 +1344,8 @@ void CONTACT::Beam3cmanager::SetState(
   for (int i = 0; i < (int)btsphpotpairs_.size(); ++i)
   {
     // temporary matrices to store nodal coordinates of each element
-    Epetra_SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    Epetra_SerialDenseMatrix ele2pos(3, 1);
+    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
+    CORE::LINALG::SerialDenseMatrix ele2pos(3, 1);
     // Positions: Loop over all nodes of element 1 (beam element)
     for (int m = 0; m < numnodes_; m++)
     {
@@ -3545,21 +3545,21 @@ void CONTACT::Beam3cmanager::GmshOutput(
  |  Compute rotation matrix R                                cyron 01/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::TransformAngleToTriad(
-    Epetra_SerialDenseVector& theta, Epetra_SerialDenseMatrix& R)
+    CORE::LINALG::SerialDenseVector& theta, CORE::LINALG::SerialDenseMatrix& R)
 {
   // compute spin matrix according to Crisfield Vol. 2, equation (16.8)
-  Epetra_SerialDenseMatrix spin(3, 3);
+  CORE::LINALG::SerialDenseMatrix spin(3, 3);
   ComputeSpin(spin, theta);
 
   // nompute norm of theta
   double theta_abs = theta.Norm2();
 
   // build an identity matrix
-  Epetra_SerialDenseMatrix identity(3, 3);
+  CORE::LINALG::SerialDenseMatrix identity(3, 3);
   for (int i = 0; i < 3; i++) identity(i, i) = 1.0;
 
   // square of spin matrix
-  Epetra_SerialDenseMatrix spin2(3, 3);
+  CORE::LINALG::SerialDenseMatrix spin2(3, 3);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
       for (int k = 0; k < 3; k++) spin2(i, k) += spin(i, j) * spin(j, k);
@@ -3578,7 +3578,7 @@ void CONTACT::Beam3cmanager::TransformAngleToTriad(
  |  Compute spin (private)                                    cyron 01/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::ComputeSpin(
-    Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle)
+    CORE::LINALG::SerialDenseMatrix& spin, CORE::LINALG::SerialDenseVector& rotationangle)
 {
   // initialization
   const double spinscale = 1.0;
@@ -4207,17 +4207,18 @@ void CONTACT::Beam3cmanager::Reactions(
 /*----------------------------------------------------------------------*
  |  Compute gmsh output for 2-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord,
-    const DRT::Element* thisele, std::stringstream& gmshfilecontent)
+void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
+    const CORE::LINALG::SerialDenseMatrix& coord, const DRT::Element* thisele,
+    std::stringstream& gmshfilecontent)
 {
   // some local variables
-  Epetra_SerialDenseMatrix prism(3, 6);
-  Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);
-  Epetra_SerialDenseVector radiusvec2(3);
-  Epetra_SerialDenseVector auxvec(3);
-  Epetra_SerialDenseVector theta(3);
-  Epetra_SerialDenseMatrix R(3, 3);
+  CORE::LINALG::SerialDenseMatrix prism(3, 6);
+  CORE::LINALG::SerialDenseVector axis(3);
+  CORE::LINALG::SerialDenseVector radiusvec1(3);
+  CORE::LINALG::SerialDenseVector radiusvec2(3);
+  CORE::LINALG::SerialDenseVector auxvec(3);
+  CORE::LINALG::SerialDenseVector theta(3);
+  CORE::LINALG::SerialDenseMatrix R(3, 3);
 
   double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
 
@@ -4376,18 +4377,19 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n, const Epetra_SerialDense
 /*----------------------------------------------------------------------*
  |  Compute gmsh output for 3-noded elements (private)        popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
-    const DRT::Element* thisele, std::stringstream& gmshfilecontent)
+void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    std::stringstream& gmshfilecontent)
 {
   // some local variables
-  Epetra_SerialDenseMatrix prism(3, 6);
-  Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);
-  Epetra_SerialDenseVector radiusvec2(3);
-  Epetra_SerialDenseVector auxvec(3);
-  Epetra_SerialDenseVector theta(3);
-  Epetra_SerialDenseMatrix R(3, 3);
-  Epetra_SerialDenseMatrix coord(3, 2);
+  CORE::LINALG::SerialDenseMatrix prism(3, 6);
+  CORE::LINALG::SerialDenseVector axis(3);
+  CORE::LINALG::SerialDenseVector radiusvec1(3);
+  CORE::LINALG::SerialDenseVector radiusvec2(3);
+  CORE::LINALG::SerialDenseVector auxvec(3);
+  CORE::LINALG::SerialDenseVector theta(3);
+  CORE::LINALG::SerialDenseMatrix R(3, 3);
+  CORE::LINALG::SerialDenseMatrix coord(3, 2);
 
   double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
 
@@ -4561,18 +4563,19 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n, const Epetra_SerialDense
 /*----------------------------------------------------------------------*
  |  Compute gmsh output for 3-noded elements (private)       meier 04/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
-    const DRT::Element* thisele, std::stringstream& gmshfilecontent)
+void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    std::stringstream& gmshfilecontent)
 {
   // some local variables
-  Epetra_SerialDenseMatrix prism(3, 6);
-  Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);
-  Epetra_SerialDenseVector radiusvec2(3);
-  Epetra_SerialDenseVector auxvec(3);
-  Epetra_SerialDenseVector theta(3);
-  Epetra_SerialDenseMatrix R(3, 3);
-  Epetra_SerialDenseMatrix coord(3, 2);
+  CORE::LINALG::SerialDenseMatrix prism(3, 6);
+  CORE::LINALG::SerialDenseVector axis(3);
+  CORE::LINALG::SerialDenseVector radiusvec1(3);
+  CORE::LINALG::SerialDenseVector radiusvec2(3);
+  CORE::LINALG::SerialDenseVector auxvec(3);
+  CORE::LINALG::SerialDenseVector theta(3);
+  CORE::LINALG::SerialDenseMatrix R(3, 3);
+  CORE::LINALG::SerialDenseMatrix coord(3, 2);
 
 
   // get radius of element
@@ -4763,18 +4766,18 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n, const Epetra_SerialDense
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
-    const Epetra_SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // some local variables
-  Epetra_SerialDenseMatrix prism(3, 6);
-  Epetra_SerialDenseVector axis(3);
-  Epetra_SerialDenseVector radiusvec1(3);
-  Epetra_SerialDenseVector radiusvec2(3);
-  Epetra_SerialDenseVector auxvec(3);
-  Epetra_SerialDenseVector theta(3);
-  Epetra_SerialDenseMatrix R(3, 3);
-  Epetra_SerialDenseMatrix coord(3, 2);
+  CORE::LINALG::SerialDenseMatrix prism(3, 6);
+  CORE::LINALG::SerialDenseVector axis(3);
+  CORE::LINALG::SerialDenseVector radiusvec1(3);
+  CORE::LINALG::SerialDenseVector radiusvec2(3);
+  CORE::LINALG::SerialDenseVector auxvec(3);
+  CORE::LINALG::SerialDenseVector theta(3);
+  CORE::LINALG::SerialDenseMatrix R(3, 3);
+  CORE::LINALG::SerialDenseMatrix coord(3, 2);
 
   // get radius of element
   const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
@@ -4975,7 +4978,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
  |  Compute gmsh output for N-noded elements (private)       meier 02/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n, const int& n_axial,
-    const Epetra_SerialDenseMatrix& allcoord, const DRT::Element* thisele,
+    const CORE::LINALG::SerialDenseMatrix& allcoord, const DRT::Element* thisele,
     std::stringstream& gmshfilecontent)
 {
   // declaring variable for color of elements
@@ -5032,7 +5035,7 @@ void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n, const int& n_axial,
 /*----------------------------------------------------------------------*
  |  Compute gmsh output for sphere elements (private)        grill 03/14|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::GMSH_sphere(const Epetra_SerialDenseMatrix& coord,
+void CONTACT::Beam3cmanager::GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& coord,
     const DRT::Element* thisele, std::stringstream& gmshfilecontent)
 {
   double eleradius = 0.0;

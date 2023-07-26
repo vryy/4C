@@ -13,10 +13,10 @@
 #include <cmath>
 
 // solve the rectangular system with linear least squares
-Epetra_SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
+CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
 {
-  Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
-  Epetra_SerialDenseVector rhs(matri_[0].size());
+  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  CORE::LINALG::SerialDenseVector rhs(matri_[0].size());
   sqr = get_square_matrix(rhs);
   unknown_.Size(matri_[0].size());
 
@@ -32,9 +32,9 @@ Epetra_SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
         "conditioned matrix in least square");
 
 
-  /*  Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());
-    Epetra_SerialDenseVector unn(sqr.size());
-    Epetra_SerialDenseVector rrr(sqr.size());
+  /*  CORE::LINALG::SerialDenseMatrix matt(sqr.size(),sqr.size());
+    CORE::LINALG::SerialDenseVector unn(sqr.size());
+    CORE::LINALG::SerialDenseVector rrr(sqr.size());
     for(unsigned i=0;i<sqr.size();i++)
     {
       for(unsigned j=0;j<sqr.size();j++)
@@ -49,10 +49,10 @@ Epetra_SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
 
 // premultiplying the matrix with its transpose to get the square matrix
 // the source terms also get multiplied
-Epetra_SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
-    Epetra_SerialDenseVector &rhs)
+CORE::LINALG::SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
+    CORE::LINALG::SerialDenseVector &rhs)
 {
-  Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
 
   for (unsigned i = 0; i < matri_[0].size(); i++)
   {

@@ -31,9 +31,10 @@ using FAD = Sacado::Fad::DFad<double>;
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   SetParamsInterfacePtr(params);
 
@@ -239,7 +240,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
 
@@ -594,8 +595,9 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
-    std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force)
+    std::vector<double>& vel, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   // number of nodes fixed for these element
   const int nnode = 2;
@@ -1896,7 +1898,7 @@ void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag(
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode>
 void DRT::ELEMENTS::Beam3eb::EvaluatePTC(
-    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
   if (nnode > 2) dserror("PTC implemented for 2-noded elements only");
   for (int node = 0; node < nnode; node++)
@@ -1952,7 +1954,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluatePTC(
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3eb::lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Beam3eb::lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   std::cout << "\n\nWarning: Massmatrix not implemented yet!";
 }
@@ -1980,8 +1982,8 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
     Teuchos::ParameterList& params,  //!< parameter list
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // get time step size
   double dt = 1000;
@@ -2096,8 +2098,8 @@ template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned
 void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
     Teuchos::ParameterList& params,  //!< parameter list
     const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   CORE::LINALG::Matrix<3, 1> gamma(true);
@@ -2193,10 +2195,10 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
 void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
-    std::vector<double>& vel,               //!< element velocity vector
-    std::vector<double>& disp,              //!< element displacement vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    std::vector<double>& vel,                      //!< element velocity vector
+    std::vector<double>& disp,                     //!< element displacement vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
@@ -2264,18 +2266,19 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
  *----------------------------------------------------------------------------------------------------------*/
 // explicit template instantations
 template void DRT::ELEMENTS::Beam3eb::EvaluatePTC<2>(
-    Teuchos::ParameterList&, Epetra_SerialDenseMatrix&);
+    Teuchos::ParameterList&, CORE::LINALG::SerialDenseMatrix&);
 
 template void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping<2, 2, 3>(Teuchos::ParameterList&,
     const CORE::LINALG::Matrix<12, 1>&, const CORE::LINALG::Matrix<12, 1>&,
-    Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
+    CORE::LINALG::SerialDenseMatrix*, CORE::LINALG::SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces<2, 2, 3, 3>(Teuchos::ParameterList&,
-    const CORE::LINALG::Matrix<12, 1>&, Epetra_SerialDenseMatrix*, Epetra_SerialDenseVector*);
+    const CORE::LINALG::Matrix<12, 1>&, CORE::LINALG::SerialDenseMatrix*,
+    CORE::LINALG::SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3eb::CalcBrownianForcesAndStiff<2, 2, 3>(Teuchos::ParameterList&,
-    std::vector<double>&, std::vector<double>&, Epetra_SerialDenseMatrix*,
-    Epetra_SerialDenseVector*);
+    std::vector<double>&, std::vector<double>&, CORE::LINALG::SerialDenseMatrix*,
+    CORE::LINALG::SerialDenseVector*);
 
 template void DRT::ELEMENTS::Beam3eb::UpdateDispTotlag<2, 6>(
     const std::vector<double>&, CORE::LINALG::Matrix<12, 1>&) const;

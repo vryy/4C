@@ -27,8 +27,8 @@ CORE::DRT::UTILS::ShapeValues<distype>::ShapeValues(
   polySpace_ = CORE::DRT::UTILS::PolynomialSpaceCache<nsd_>::Instance().Create(params);
   ndofs_ = polySpace_->Size();
 
-  Epetra_SerialDenseVector values(ndofs_);
-  Epetra_SerialDenseMatrix derivs(nsd_, ndofs_);
+  CORE::LINALG::SerialDenseVector values(ndofs_);
+  CORE::LINALG::SerialDenseMatrix derivs(nsd_, ndofs_);
 
   xyzreal.Shape(nsd_, nqpoints_);
 
@@ -482,7 +482,7 @@ void CORE::DRT::UTILS::ShapeValuesFace<distype>::ComputeFaceReferenceSystem(
   // In the case in which the element is not the master element for the face there is the need to
   // find the master element and build the face reference system from the master side.
 
-  Epetra_SerialDenseVector norm(nsd_ - 1);
+  CORE::LINALG::SerialDenseVector norm(nsd_ - 1);
 
   if (ele.Faces()[face]->ParentMasterElement() != &ele)
   {

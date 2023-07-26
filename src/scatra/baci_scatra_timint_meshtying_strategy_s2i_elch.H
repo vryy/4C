@@ -138,16 +138,16 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master,                  //!< master-side location array
         const Teuchos::ParameterList& params,                    //!< parameter list
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-        Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-        Epetra_SerialDenseVector& r_m   //!< master-side residual vector
+        CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
+        CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
     );
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
@@ -162,16 +162,16 @@ namespace SCATRA
             ephinp_slave,  //!< state variables at slave-side nodes
         const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>&
             ephinp_master,  //!< state variables at master-side nodes
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-        Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-        Epetra_SerialDenseVector& r_m   //!< master-side residual vector
+        CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
+        CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
     );
 
     //! evaluate factor F/RT
@@ -203,12 +203,12 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,          //!< slave-side location array
         DRT::Element::LocationArray& la_master,         //!< master-side location array
         const Teuchos::ParameterList& params,           //!< parameter list
-        Epetra_SerialDenseMatrix& cellmatrix1,          //!< cell matrix 1
-        Epetra_SerialDenseMatrix& cellmatrix2,          //!< cell matrix 2
-        Epetra_SerialDenseMatrix& cellmatrix3,          //!< cell matrix 3
-        Epetra_SerialDenseMatrix& cellmatrix4,          //!< cell matrix 4
-        Epetra_SerialDenseVector& cellvector1,          //!< cell vector 1
-        Epetra_SerialDenseVector& cellvector2           //!< cell vector 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
+        CORE::LINALG::SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
+        CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
+        CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
+        CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
     );
 
    private:
@@ -236,9 +236,9 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
         DRT::Element::LocationArray& la_master,                    //!< master-side location array
         const Teuchos::ParameterList& params,                      //!< parameter list
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ms  //!< linearizations of master-side residuals w.r.t. slave-side dofs
     );
 
@@ -279,12 +279,12 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,          //!< slave-side location array
         DRT::Element::LocationArray& la_master,         //!< master-side location array
         const Teuchos::ParameterList& params,           //!< parameter list
-        Epetra_SerialDenseMatrix& cellmatrix1,          //!< cell matrix 1
-        Epetra_SerialDenseMatrix& cellmatrix2,          //!< cell matrix 2
-        Epetra_SerialDenseMatrix& cellmatrix3,          //!< cell matrix 3
-        Epetra_SerialDenseMatrix& cellmatrix4,          //!< cell matrix 4
-        Epetra_SerialDenseVector& cellvector1,          //!< cell vector 1
-        Epetra_SerialDenseVector& cellvector2           //!< cell vector 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
+        CORE::LINALG::SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
+        CORE::LINALG::SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
+        CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
+        CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
+        CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
     );
 
    private:
@@ -311,9 +311,9 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master,                  //!< master-side location array
         const Teuchos::ParameterList& params,                    //!< parameter list
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseVector& r_s  //!< slave-side residual vector
+        CORE::LINALG::SerialDenseVector& r_s  //!< slave-side residual vector
     );
 
     //! evaluate and assemble off-diagonal interface linearizations
@@ -324,9 +324,9 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,                     //!< slave-side location array
         DRT::Element::LocationArray& la_master,                    //!< master-side location array
         const Teuchos::ParameterList& params,                      //!< parameter list
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-        Epetra_SerialDenseMatrix&
+        CORE::LINALG::SerialDenseMatrix&
             k_sm  //!< linearizations of slave-side residuals w.r.t. master-side dofs
     );
 

@@ -11,8 +11,6 @@
 #define BACI_BEAMCONTACT_BEAM3TOSPHERECONTACT_H
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
 
 #include "baci_beaminteraction_beam3contact_defines.H"
@@ -101,8 +99,8 @@ namespace CONTACT
     \brief Get coordinates of contact point of element1 and element2
 
     */
-    virtual const Epetra_SerialDenseVector GetX1() = 0;
-    virtual const Epetra_SerialDenseVector GetX2() = 0;
+    virtual const CORE::LINALG::SerialDenseVector GetX1() = 0;
+    virtual const CORE::LINALG::SerialDenseVector GetX2() = 0;
 
     //@}
 
@@ -123,8 +121,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements
     */
-    virtual void UpdateElePos(
-        Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos) = 0;
+    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        CORE::LINALG::SerialDenseMatrix& newele2pos) = 0;
 
     virtual void Print() const = 0;
     //@}
@@ -222,18 +220,18 @@ namespace CONTACT
     /*!
     \brief Get coordinates of contact point of element1 and element2
     */
-    const Epetra_SerialDenseVector GetX1()
+    const CORE::LINALG::SerialDenseVector GetX1()
     {
-      Epetra_SerialDenseVector r1;
+      CORE::LINALG::SerialDenseVector r1;
       r1.Resize(3);
       for (int i = 0; i < 3; i++) r1(i) = CORE::FADUTILS::CastToDouble(x1_(i));
 
       return r1;
     };
 
-    const Epetra_SerialDenseVector GetX2()
+    const CORE::LINALG::SerialDenseVector GetX2()
     {
-      Epetra_SerialDenseVector r2;
+      CORE::LINALG::SerialDenseVector r2;
       r2.Resize(3);
       for (int i = 0; i < 3; i++) r2(i) = CORE::FADUTILS::CastToDouble(x2_(i));
 
@@ -253,7 +251,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements
     */
-    void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos);
+    void UpdateElePos(
+        CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos);
 
     //@}
 

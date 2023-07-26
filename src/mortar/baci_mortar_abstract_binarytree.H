@@ -9,7 +9,7 @@
 #ifndef BACI_MORTAR_ABSTRACT_BINARYTREE_H
 #define BACI_MORTAR_ABSTRACT_BINARYTREE_H
 
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace MORTAR
 {

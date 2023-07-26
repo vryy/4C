@@ -34,9 +34,11 @@
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine size of each element matrix
   CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
@@ -396,8 +398,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
      *===============================================================================*/
     case ELEMENTS::struct_postprocess_thickness:
     {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpthickmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+      const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpthickmap =
+          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
               "gpthickmap", Teuchos::null);
       if (gpthickmap == Teuchos::null) dserror("no gp thickness map available for postprocessing");
 
@@ -470,7 +472,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseMatrix* elemat1_epetra)
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // set params interface pointer
   SetParamsInterfacePtr(params);

@@ -145,8 +145,8 @@ double FLD::Vreman::DynVremanComputeCv()
 
 
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<Epetra_SerialDenseVector> Cv_num_denom =
-      Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> Cv_num_denom =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
 
   // call loop over elements (assemble nothing)
@@ -199,8 +199,8 @@ void FLD::Vreman::DynVremanComputeDt(Teuchos::ParameterList& extraparams)
   calc_vreman_params_scatra.set("col_filtered_phiexpression", col_filtered_phiexpression_);
   calc_vreman_params_scatra.set("col_filtered_alphaijsc", col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
-  Teuchos::RCP<Epetra_SerialDenseVector> Dt_num_denom =
-      Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> Dt_num_denom =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
   // call loop over elements (assemble nothing)
   scatradiscret_->EvaluateScalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->ClearState();

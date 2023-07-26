@@ -34,7 +34,7 @@ void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod
 
     int dim = cnode->NumDof();
 
-    Epetra_SerialDenseVector xspatial(dim);
+    CORE::LINALG::SerialDenseVector xspatial(dim);
     std::vector<int> dof(dim);
     std::vector<int> owner(dim);
 
@@ -214,7 +214,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
-    Epetra_SerialDenseMatrix lmuzawa(dim, 1);
+    CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
     for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
@@ -222,7 +222,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
     // tangential plane
-    Epetra_SerialDenseMatrix tanplane(dim, dim);
+    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
     if (dim == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -248,12 +248,12 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
       dserror("Error in AssembleTangentForces: Unknown dimension.");
 
     // evaluate traction
-    Epetra_SerialDenseMatrix jumpvec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
 
     for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
-    Epetra_SerialDenseMatrix temptrac(dim, 1);
+    CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
     temptrac.Multiply('N', 'N', kappa * pptan, tanplane, jumpvec, 0.0);
 
     // fill vector tractionold
@@ -570,7 +570,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
     double* n = cnode->MoData().n();
 
     // Lagrange multiplier from Uzawa algorithm
-    Epetra_SerialDenseMatrix lmuzawa(dim, 1);
+    CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
     for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in normal direction
@@ -578,7 +578,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
     for (int k = 0; k < dim; ++k) lmuzawan += cnode->MoData().lmuzawa()[k] * cnode->MoData().n()[k];
 
     // tangential plane
-    Epetra_SerialDenseMatrix tanplane(dim, dim);
+    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
     if (dim == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -604,16 +604,16 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
       dserror("Error in AssembleTangentForces: Unknown dimension.");
 
     // Lagrange multiplier in tangential direction
-    Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
+    CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
     lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
 
     // evaluate traction
-    Epetra_SerialDenseMatrix jumpvec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
 
     for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate kappa.pptan.jumptan
-    Epetra_SerialDenseMatrix temptrac(dim, 1);
+    CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
     temptrac.Multiply('N', 'N', kappa * pptan, tanplane, jumpvec, 0.0);
 
     // Evaluate trailtraction
@@ -992,7 +992,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          Epetra_SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
+          CORE::LINALG::SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
           for (int i = 0; i < cnode->NumDof(); ++i)
           {
             lmrowT[i] = cnode->Dofs()[i];
@@ -1011,7 +1011,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           std::vector<int> lmrowownerT(cnode->NumDof());
           std::vector<int> lmcol(cnode->NumDof());
 
-          Epetra_SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
+          CORE::LINALG::SerialDenseMatrix Tnode(cnode->NumDof(), cnode->NumDof());
 
           for (int i = 0; i < cnode->NumDof(); ++i)
           {
@@ -1043,7 +1043,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           lmrowownerT[0] = cnode->Owner();
 
           /**************************************************** T-matrix ******/
-          Epetra_SerialDenseMatrix Tnode(1, colsize);
+          CORE::LINALG::SerialDenseMatrix Tnode(1, colsize);
 
           for (int j = 0; j < colsize; ++j)
           {
@@ -1069,7 +1069,7 @@ void CONTACT::CoInterface::AssembleTN(Teuchos::RCP<CORE::LINALG::SparseMatrix> t
           lmrowownerT[1] = cnode->Owner();
 
           /**************************************************** T-matrix ******/
-          Epetra_SerialDenseMatrix Tnode(2, colsize);
+          CORE::LINALG::SerialDenseMatrix Tnode(2, colsize);
 
           for (int j = 0; j < colsize; ++j)
           {
@@ -1545,7 +1545,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
 
       if (constr_direction_ == INPAR::CONTACT::constr_xyz)
       {
-        Epetra_SerialDenseVector gnode(Dim());
+        CORE::LINALG::SerialDenseVector gnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int i = 0; i < Dim(); i++)
@@ -1558,7 +1558,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
       }
       else
       {
-        static Epetra_SerialDenseVector gnode(1);
+        static CORE::LINALG::SerialDenseVector gnode(1);
         static std::vector<int> lm(1);
         static std::vector<int> lmowner(1);
 
@@ -1587,7 +1587,7 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
 
   static std::vector<int> lm_gid(Dim());
   static std::vector<int> lm_owner(Dim());
-  static Epetra_SerialDenseVector lm_i(Dim());
+  static CORE::LINALG::SerialDenseVector lm_i(Dim());
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
@@ -1635,7 +1635,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
 {
   static std::vector<int> lm_gid(Dim() - 1);
   static std::vector<int> lm_owner(Dim() - 1);
-  static Epetra_SerialDenseVector lm_t(Dim() - 1);
+  static CORE::LINALG::SerialDenseVector lm_t(Dim() - 1);
 
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
@@ -1651,7 +1651,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
       {
         std::vector<int> lm_gid(2);
         std::vector<int> lm_owner(2);
-        Epetra_SerialDenseVector lm_t(2);
+        CORE::LINALG::SerialDenseVector lm_t(2);
         for (int i = 0; i < Dim(); ++i)
         {
           lm_gid[i] = cnode->Dofs()[i];
@@ -1669,7 +1669,7 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
       {
         std::vector<int> lm_gid(3);
         std::vector<int> lm_owner(3);
-        Epetra_SerialDenseVector lm_t(3);
+        CORE::LINALG::SerialDenseVector lm_t(3);
 
         for (int i = 0; i < Dim(); ++i)
         {
@@ -1885,7 +1885,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       /******************************************************************/
       if (constr_direction_ == INPAR::CONTACT::constr_xyz)
       {
-        Epetra_SerialDenseVector rhsnode(Dim());
+        CORE::LINALG::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int j = 0; j < Dim(); j++)
@@ -1899,7 +1899,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       }
       else
       {
-        Epetra_SerialDenseVector rhsnode(Dim() - 1);
+        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2057,7 +2057,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       // Entries on right hand side ****************************
       if (constr_direction_ == INPAR::CONTACT::constr_xyz)
       {
-        Epetra_SerialDenseVector rhsnode(Dim());
+        CORE::LINALG::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
 
@@ -2072,7 +2072,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       }
       else
       {
-        Epetra_SerialDenseVector rhsnode(Dim() - 1);
+        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
         rhsnode(0) = frcoeff * (znor - cn * wgap) * ct * jumptxi;
@@ -2369,7 +2369,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       /************************************************ (-utxi, -uteta) ***/
       if (constr_direction_ == INPAR::CONTACT::constr_xyz)
       {
-        Epetra_SerialDenseVector rhsnode(Dim());
+        CORE::LINALG::SerialDenseVector rhsnode(Dim());
         std::vector<int> lm(Dim());
         std::vector<int> lmowner(Dim());
         for (int j = 0; j < Dim(); j++)
@@ -2383,7 +2383,7 @@ void CONTACT::CoInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstick
       }
       else
       {
-        Epetra_SerialDenseVector rhsnode(Dim() - 1);
+        CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
         std::vector<int> lm(Dim() - 1);
         std::vector<int> lmowner(Dim() - 1);
 
@@ -2755,7 +2755,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         /******************************************************************/
         if (constr_direction_ == INPAR::CONTACT::constr_xyz)
         {
-          Epetra_SerialDenseVector rhsnode(Dim());
+          CORE::LINALG::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
           for (int j = 0; j < Dim(); j++)
@@ -2769,7 +2769,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         }
         else
         {
-          Epetra_SerialDenseVector rhsnode(Dim() - 1);
+          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 
@@ -2916,7 +2916,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         /******************************************************************/
         if (constr_direction_ == INPAR::CONTACT::constr_xyz)
         {
-          Epetra_SerialDenseVector rhsnode(Dim());
+          CORE::LINALG::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -2951,7 +2951,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         }
         else
         {
-          Epetra_SerialDenseVector rhsnode(Dim() - 1);
+          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 #ifdef CONSISTENTSLIP
@@ -3719,7 +3719,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         // 2) Entries on right hand side
         /******************************************************************/
 
-        Epetra_SerialDenseVector rhsnode(1);
+        CORE::LINALG::SerialDenseVector rhsnode(1);
         std::vector<int> lm(1);
         std::vector<int> lmowner(1);
 
@@ -3784,7 +3784,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
 
         if (constr_direction_ == INPAR::CONTACT::constr_xyz)
         {
-          Epetra_SerialDenseVector rhsnode(Dim());
+          CORE::LINALG::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -3799,7 +3799,7 @@ void CONTACT::CoInterface::AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLM
         }
         else
         {
-          Epetra_SerialDenseVector rhsnode(1);
+          CORE::LINALG::SerialDenseVector rhsnode(1);
           rhsnode(0) = value1;
 
           std::vector<int> lm(1);
@@ -4514,7 +4514,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
         /******************************************************************/
         if (constr_direction_ == INPAR::CONTACT::constr_xyz)
         {
-          Epetra_SerialDenseVector rhsnode(Dim());
+          CORE::LINALG::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
           for (int j = 0; j < Dim(); j++)
@@ -4528,7 +4528,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
         }
         else
         {
-          Epetra_SerialDenseVector rhsnode(Dim() - 1);
+          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
 
@@ -4654,7 +4654,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
         /******************************************************************/
         if (constr_direction_ == INPAR::CONTACT::constr_xyz)
         {
-          Epetra_SerialDenseVector rhsnode(Dim());
+          CORE::LINALG::SerialDenseVector rhsnode(Dim());
           std::vector<int> lm(Dim());
           std::vector<int> lmowner(Dim());
 
@@ -4677,7 +4677,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
         }
         else
         {
-          Epetra_SerialDenseVector rhsnode(Dim() - 1);
+          CORE::LINALG::SerialDenseVector rhsnode(Dim() - 1);
           std::vector<int> lm(Dim() - 1);
           std::vector<int> lmowner(Dim() - 1);
           double valuetxi1 = -(euclidean)*ztxi + (frbound) * (ztxi + ct * jumptxi);
@@ -5144,7 +5144,7 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
     {
       double nCoup = mrtnode->CoPoroData().GetnCoup();
 
-      Epetra_SerialDenseVector gnode(1);
+      CORE::LINALG::SerialDenseVector gnode(1);
       std::vector<int> lm(1);
       std::vector<int> lmowner(1);
 

@@ -297,9 +297,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
       /*!
@@ -318,7 +318,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
       //@}
@@ -333,9 +334,9 @@ namespace DRT
       /*!
       \brief Get reference to directors
       */
-      const Epetra_SerialDenseMatrix* GetDirectors()
+      const CORE::LINALG::SerialDenseMatrix* GetDirectors()
       {
-        return data_.Get<Epetra_SerialDenseMatrix>("a3ref");
+        return data_.Get<CORE::LINALG::SerialDenseMatrix>("a3ref");
       }
 
       //@}
@@ -407,40 +408,41 @@ namespace DRT
           std::vector<int>& lm, std::vector<double>& disp, std::vector<double>& residual);
 
       void s8_nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
-          std::vector<double>& residual, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force,
+          std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force,
           struct _MATERIAL* material);
 
       //! lump mass matrix (bborn 07/08)
-      void s8_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
+      void s8_lumpmass(CORE::LINALG::SerialDenseMatrix* emass);  //!< element mass matrix
 
       void s8stress(struct _MATERIAL* material, std::vector<double>& mydisp);
 
-      void s8_surfaceload(Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec1,
+      void s8_surfaceload(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1,
           const std::vector<double>& disp);
 
       void s8_integration_points(struct _S8_DATA& data);
 
-      void s8BtDB(Epetra_SerialDenseMatrix& estif, const Epetra_SerialDenseMatrix& bop,
-          const double D[][12], const int iel, const int numdf, const double weight);
+      void s8BtDB(CORE::LINALG::SerialDenseMatrix& estif,
+          const CORE::LINALG::SerialDenseMatrix& bop, const double D[][12], const int iel,
+          const int numdf, const double weight);
 
-      void s8tvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
-          const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv, const int numdf,
-          const int iel, const double weight, const double e1, const double e2);
+      void s8tvkg(CORE::LINALG::SerialDenseMatrix& estif, double stress_r[],
+          const std::vector<double>& funct, const CORE::LINALG::SerialDenseMatrix& deriv,
+          const int numdf, const int iel, const double weight, const double e1, const double e2);
 
-      void s8anstvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
-          const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv, const int numdf,
-          const int iel, const double weight, const double e1, const double e2, const double frq[],
-          const double fsq[], const std::vector<double> funct1q[],
-          const std::vector<double> funct2q[], const Epetra_SerialDenseMatrix deriv1q[],
-          const Epetra_SerialDenseMatrix deriv2q[], const int ansq, const int nsansq);
+      void s8anstvkg(CORE::LINALG::SerialDenseMatrix& estif, double stress_r[],
+          const std::vector<double>& funct, const CORE::LINALG::SerialDenseMatrix& deriv,
+          const int numdf, const int iel, const double weight, const double e1, const double e2,
+          const double frq[], const double fsq[], const std::vector<double> funct1q[],
+          const std::vector<double> funct2q[], const CORE::LINALG::SerialDenseMatrix deriv1q[],
+          const CORE::LINALG::SerialDenseMatrix deriv2q[], const int ansq, const int nsansq);
 
-      void s8intforce(Epetra_SerialDenseVector& intforce, const double stress_r[],
-          const Epetra_SerialDenseMatrix& bop, const int iel, const int numdf, const int nstress_r,
-          const double weight);
+      void s8intforce(CORE::LINALG::SerialDenseVector& intforce, const double stress_r[],
+          const CORE::LINALG::SerialDenseMatrix& bop, const int iel, const int numdf,
+          const int nstress_r, const double weight);
 
       void s8tmas(const std::vector<double>& funct, const std::vector<double>& thick,
-          Epetra_SerialDenseMatrix& emass, const int iel, const int numdf, const double facv,
+          CORE::LINALG::SerialDenseMatrix& emass, const int iel, const int numdf, const double facv,
           const double facw, const double facvw);
 
       void s8tmat(struct _MATERIAL* material, double stress[], double strain[], double** C,
@@ -452,10 +454,11 @@ namespace DRT
       void s8tvma(double D[][12], double** C, double stress[], double stress_r[], const double e3,
           const double fact, const double condfac);
 
-      void s8_YpluseqAx(std::vector<double>& y, const Epetra_SerialDenseMatrix& A,
+      void s8_YpluseqAx(std::vector<double>& y, const CORE::LINALG::SerialDenseMatrix& A,
           const std::vector<double>& x, const double factor, const bool init);
-      void s8_YpluseqAx(Epetra_SerialDenseVector& y, const Epetra_SerialDenseMatrix& A,
-          const std::vector<double>& x, const double factor, const bool init);
+      void s8_YpluseqAx(CORE::LINALG::SerialDenseVector& y,
+          const CORE::LINALG::SerialDenseMatrix& A, const std::vector<double>& x,
+          const double factor, const bool init);
 
       void s8inv3(double a[][3], double* det);
 
@@ -463,51 +466,53 @@ namespace DRT
 
       void s8unvc(double* enorm, double vec[], const int n);
 
-      void s8matmatdense(Epetra_SerialDenseMatrix& R, const Epetra_SerialDenseMatrix& A,
-          const Epetra_SerialDenseMatrix& B, const int ni, const int nk, const int nj,
+      void s8matmatdense(CORE::LINALG::SerialDenseMatrix& R,
+          const CORE::LINALG::SerialDenseMatrix& A, const CORE::LINALG::SerialDenseMatrix& B,
+          const int ni, const int nk, const int nj, const int init, const double factor);
+      void s8matmatdense(CORE::LINALG::SerialDenseMatrix& R, const double A[][12],
+          const CORE::LINALG::SerialDenseMatrix& B, const int ni, const int nk, const int nj,
           const int init, const double factor);
-      void s8matmatdense(Epetra_SerialDenseMatrix& R, const double A[][12],
-          const Epetra_SerialDenseMatrix& B, const int ni, const int nk, const int nj,
-          const int init, const double factor);
-      void s8mattrnmatdense(Epetra_SerialDenseMatrix& R, const Epetra_SerialDenseMatrix& A,
-          const Epetra_SerialDenseMatrix& B, const int ni, const int nk, const int nj,
-          const int init, const double factor);
-      void s8mattrnvecdense(std::vector<double>& r, const Epetra_SerialDenseMatrix& A,
+      void s8mattrnmatdense(CORE::LINALG::SerialDenseMatrix& R,
+          const CORE::LINALG::SerialDenseMatrix& A, const CORE::LINALG::SerialDenseMatrix& B,
+          const int ni, const int nk, const int nj, const int init, const double factor);
+      void s8mattrnvecdense(std::vector<double>& r, const CORE::LINALG::SerialDenseMatrix& A,
           const double b[], const int ni, const int nk, const int init, const double factor);
 
       double s8_localcoordsofnode(const int node, const int flag, const int numnode) const;
 
-      void s8_shapefunctions(std::vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
+      void s8_shapefunctions(std::vector<double>& funct, CORE::LINALG::SerialDenseMatrix& deriv,
           const double r, const double s, const int numnode, const int doderiv) const;
 
-      void s8tvbo(const double e1, const double e2, Epetra_SerialDenseMatrix& bop,
-          const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv, const int iel,
-          const int numdf, const double akov[][3], const double a3kvp[][2], const int nsansq);
+      void s8tvbo(const double e1, const double e2, CORE::LINALG::SerialDenseMatrix& bop,
+          const std::vector<double>& funct, const CORE::LINALG::SerialDenseMatrix& deriv,
+          const int iel, const int numdf, const double akov[][3], const double a3kvp[][2],
+          const int nsansq);
 
       void s8tvmr(const double x[][MAXNOD_SHELL8], const double a3[][MAXNOD_SHELL8],
           double akov[][3], double akon[][3], double amkov[][3], double amkon[][3], double* det,
-          const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv, const int iel,
-          double a3kvp[][2], const int flag);
+          const std::vector<double>& funct, const CORE::LINALG::SerialDenseMatrix& deriv,
+          const int iel, double a3kvp[][2], const int flag);
 
       void s8tmtr(const double x[][MAXNOD_SHELL8], const double a3[][MAXNOD_SHELL8],
           const double e3, double gkov[][3], double gkon[][3], double gmkov[][3], double gmkon[][3],
-          double* det, const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
-          const int iel, const double condfac, const int flag);
+          double* det, const std::vector<double>& funct,
+          const CORE::LINALG::SerialDenseMatrix& deriv, const int iel, const double condfac,
+          const int flag);
 
       void s8tvhe(double gmkovr[][3], double gmkovc[][3], double gmkonr[][3], double gmkonc[][3],
           double gkovr[][3], double gkovc[][3], double* detr, double* detc, double amkovc[][3],
           double amkovr[][3], double akovc[][3], double akovr[][3], double a3kvpc[][2],
           double a3kvpr[][2], const double e3, const double condfac);
 
-      void s8_jaco(const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+      void s8_jaco(const std::vector<double>& funct, const CORE::LINALG::SerialDenseMatrix& deriv,
           const double x[][MAXNOD_SHELL8], double xjm[][3], const std::vector<double>& hte,
           const double a3ref[][MAXNOD_SHELL8], const double e3, const int iel, double* det,
           double* deta);
 
       void s8_ans_colloquationpoints(const int nsansq, const int iel, const int ans, double xr1[],
           double xs1[], double xr2[], double xs2[], std::vector<double> funct1q[],
-          Epetra_SerialDenseMatrix deriv1q[], std::vector<double> funct2q[],
-          Epetra_SerialDenseMatrix deriv2q[], const double xrefe[][MAXNOD_SHELL8],
+          CORE::LINALG::SerialDenseMatrix deriv1q[], std::vector<double> funct2q[],
+          CORE::LINALG::SerialDenseMatrix deriv2q[], const double xrefe[][MAXNOD_SHELL8],
           const double a3r[][MAXNOD_SHELL8], const double xcure[][MAXNOD_SHELL8],
           const double a3c[][MAXNOD_SHELL8], double akovr1q[][3][3], double akonr1q[][3][3],
           double amkovr1q[][3][3], double amkonr1q[][3][3], double a3kvpr1q[][3][2],
@@ -524,10 +529,11 @@ namespace DRT
       void s8_ansqshapefunctions(double frq[], double fsq[], const double r, const double s,
           const int iel, const int nsansq);
 
-      void s8ansbbarq(Epetra_SerialDenseMatrix& bop, const double frq[], const double fsq[],
+      void s8ansbbarq(CORE::LINALG::SerialDenseMatrix& bop, const double frq[], const double fsq[],
           const std::vector<double> funct1q[], const std::vector<double> funct2q[],
-          const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
-          const double akovc1q[][3][3], const double akovc2q[][3][3], const double a3kvpc1q[][3][2],
+          const CORE::LINALG::SerialDenseMatrix deriv1q[],
+          const CORE::LINALG::SerialDenseMatrix deriv2q[], const double akovc1q[][3][3],
+          const double akovc2q[][3][3], const double a3kvpc1q[][3][2],
           const double a3kvpc2q[][3][2], const int& iel, const int& numdf, const int& nsansq);
 
       void s8anstvheq(double gmkovr[][3], double gmkovc[][3], double gmkonr[][3],
@@ -541,10 +547,10 @@ namespace DRT
           const double e3, const int nansq, const int iel, const double condfac);
 
       void s8eas(const int nhyb, const double e1, const double e2, const int iel, const int* eas,
-          Epetra_SerialDenseMatrix& P);
+          CORE::LINALG::SerialDenseMatrix& P);
 
-      void s8transeas(Epetra_SerialDenseMatrix& P, Epetra_SerialDenseMatrix& transP,
-          Epetra_SerialDenseMatrix& T, const double akovr[][3], const double akonr0[][3],
+      void s8transeas(CORE::LINALG::SerialDenseMatrix& P, CORE::LINALG::SerialDenseMatrix& transP,
+          CORE::LINALG::SerialDenseMatrix& T, const double akovr[][3], const double akonr0[][3],
           const double detr, const double detr0, const int nhyb);
 
       void s8vthv(double gmkovc[][3], double gmkonc[][3], const std::vector<double>& epsh,
@@ -736,7 +742,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 

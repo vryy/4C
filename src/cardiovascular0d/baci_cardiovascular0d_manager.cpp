@@ -641,8 +641,8 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
         params.get<Teuchos::RCP<const Epetra_Vector>>("new disp");
     actdisc_->SetState("displacement new", disp);
 
-    Epetra_SerialDenseVector elevector;
-    Epetra_SerialDenseMatrix elematrix;
+    CORE::LINALG::SerialDenseVector elevector;
+    CORE::LINALG::SerialDenseMatrix elematrix;
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = coupcond->Geometry();
 
     std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;

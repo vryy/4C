@@ -94,7 +94,7 @@ namespace MIXTURE
         std::unordered_map<std::string, int>& names_and_size) const override;
 
     bool EvaluateVtkOutputData(
-        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
+        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
     void IntegrateLocalEvolutionEquations(double dt, int gp, int eleGID);

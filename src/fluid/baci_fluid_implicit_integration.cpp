@@ -4849,8 +4849,8 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
       // 3: analytical velocity for L2 norm
       // 4: analytical p for L2 norm
       // 5: analytical velocity for H1 norm
-      Teuchos::RCP<Epetra_SerialDenseVector> errors =
-          Teuchos::rcp(new Epetra_SerialDenseVector(3 + 3));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3 + 3));
 
       // call loop over elements (assemble nothing)
       discret_->EvaluateScalars(eleparams, errors);
@@ -6062,11 +6062,11 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     double global_sumVol = 0.0;
 
     // define element matrices and vectors --- dummies
-    Epetra_SerialDenseMatrix emat1;
-    Epetra_SerialDenseMatrix emat2;
-    Epetra_SerialDenseVector evec1;
-    Epetra_SerialDenseVector evec2;
-    Epetra_SerialDenseVector evec3;
+    CORE::LINALG::SerialDenseMatrix emat1;
+    CORE::LINALG::SerialDenseMatrix emat2;
+    CORE::LINALG::SerialDenseVector evec1;
+    CORE::LINALG::SerialDenseVector evec2;
+    CORE::LINALG::SerialDenseVector evec3;
 
     // generate a parameterlist for communication and control
     Teuchos::ParameterList myparams;

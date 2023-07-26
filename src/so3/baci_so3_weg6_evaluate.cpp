@@ -31,9 +31,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -463,13 +465,15 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstressmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
           dserror("no gp stress map available for writing gpstresses");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstrainmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstrainmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
@@ -499,8 +503,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         // add stresses to global map
         // get EleID Id()
         int gid = Id();
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
         gpstress->Shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
@@ -513,8 +517,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         }
 
         // strains
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstrain =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
         gpstrain->Shape(NUMGPT_WEG6, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
@@ -564,7 +568,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_weg6::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("Body force of wedge6 not implemented");
   return 0;
@@ -1182,7 +1186,7 @@ int DRT::ELEMENTS::So_weg6Type::Initialize(DRT::Discretization& dis)
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
@@ -1350,7 +1354,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
 
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-      //    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+      //    CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
       //    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
       CORE::LINALG::Matrix<6, 1> glstrain(false);
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);

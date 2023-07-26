@@ -176,14 +176,14 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          DRT::Discretization& discretization,      ///< discretization
-          std::vector<int>& lm,                     ///< location vector
-          Epetra_SerialDenseMatrix& elemat1,        ///< first matrix to be filled by element
-          Epetra_SerialDenseMatrix& elemat2,        ///< second matrix to be filled by element
-          Epetra_SerialDenseVector& elevec1,        ///< third matrix to be filled by element
-          Epetra_SerialDenseVector& elevec2,        ///< first vector to be filled by element
-          Epetra_SerialDenseVector& elevec3         ///< second vector to be filled by element
+      int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
+          DRT::Discretization& discretization,       ///< discretization
+          std::vector<int>& lm,                      ///< location vector
+          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< third matrix to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< first vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   ///< second vector to be filled by element
       );
 
 
@@ -195,12 +195,12 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(
-          Teuchos::ParameterList& params,       ///< ParameterList for communication
-          DRT::Discretization& discretization,  ///< discretization
-          DRT::Condition& condition,            ///< Neumann condition to evaluate
-          std::vector<int>& lm,                 ///< location vector
-          Epetra_SerialDenseVector& elevec1,    ///< vector to be filled by element
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+          Teuchos::ParameterList& params,            ///< ParameterList for communication
+          DRT::Discretization& discretization,       ///< discretization
+          DRT::Condition& condition,                 ///< Neumann condition to evaluate
+          std::vector<int>& lm,                      ///< location vector
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
      private:
@@ -294,14 +294,14 @@ namespace DRT
       /// Compute first derivative of normal distance with respect to the nodal displacements
       void ComputeFirstDeriv(
           const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector,         ///< vector to store results into
+          CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
           const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
       /// Compute first derivative of normal distance with respect to the nodal displacements
       void ComputeSecondDeriv(
           const CORE::LINALG::Matrix<4, 3>& xc,        ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elematrix,         ///< vector to store results into
+          CORE::LINALG::SerialDenseMatrix& elematrix,  ///< vector to store results into
           const CORE::LINALG::Matrix<3, 1>& elenormal  ///< element normal
       );
 
@@ -313,8 +313,8 @@ namespace DRT
 
       /// Compute first derivatives nodal displacement to masternode in given direction
       void ComputeFirstDerivWeightedDistance(
-          Epetra_SerialDenseVector& elevector,  ///< vector to store results into
-          const std::vector<double> direct      ///< direction to weight with
+          CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
+          const std::vector<double> direct             ///< direction to weight with
       );
 
       /// Compute difference of spatial configuration to masternode in given direction

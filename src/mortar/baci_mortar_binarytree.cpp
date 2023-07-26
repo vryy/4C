@@ -21,7 +21,7 @@
  *----------------------------------------------------------------------*/
 MORTAR::BinaryTreeNode::BinaryTreeNode(MORTAR::BinaryTreeNodeType type,
     DRT::Discretization& discret, Teuchos::RCP<BinaryTreeNode> parent, std::vector<int> elelist,
-    const Epetra_SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
+    const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
     const bool& useauxpos, const int layer,
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& streenodesmap,
     std::vector<std::vector<Teuchos::RCP<BinaryTreeNode>>>& mtreenodesmap,
@@ -194,7 +194,7 @@ void MORTAR::BinaryTreeNode::DivideTreeNode()
       DRT::Node** nodes = element->Points();
 
       // vector of values of Hesse-Normalform of nodes of elements
-      Epetra_SerialDenseVector axbycz;
+      CORE::LINALG::SerialDenseVector axbycz;
       axbycz.Resize(element->NumPoint());
 
       for (int k = 0; k < element->NumPoint(); ++k)

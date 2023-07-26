@@ -135,13 +135,14 @@ namespace DRT
       //! @name Evaluation
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       /// Read input for this element
       virtual bool ReadElement(const std::string& eletype, const std::string& distype,
@@ -228,10 +229,10 @@ namespace DRT
       //! displacements
       void ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                          ///< number of nodes
-          const int ndof,                                 ///< number of degrees of freedom
-          double& V,                                      ///< volume
-          Teuchos::RCP<Epetra_SerialDenseVector> Vdiff,   ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2,  ///< second derivative
+          const int ndof,                                        ///< number of degrees of freedom
+          double& V,                                             ///< volume
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff,   ///< first derivative
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );
@@ -354,15 +355,16 @@ namespace DRT
       //! @name Evaluation
 
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       //! @name Evaluate methods
 
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 
@@ -388,8 +390,8 @@ namespace DRT
 
 
       //! compute infintesimal line element dr for integration along the line
-      double f2_substitution(
-          const Epetra_SerialDenseMatrix xyze, const Epetra_SerialDenseMatrix deriv, const int iel);
+      double f2_substitution(const CORE::LINALG::SerialDenseMatrix xyze,
+          const CORE::LINALG::SerialDenseMatrix deriv, const int iel);
 
       //! Get Rule for Gaussintegration according to DRT::UTIL
       CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
@@ -397,7 +399,7 @@ namespace DRT
       //! integrate shape functions over a line
       void IntegrateShapeFunction(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const std::vector<double>& edispnp);
+          CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
 
 
     };  // class Bele3Line

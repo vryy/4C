@@ -120,8 +120,8 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
 
       // build coefficient matrix and right-hand side
       const unsigned N = X_.size() - 2;
-      Epetra_SerialDenseMatrix A(N, N);
-      Epetra_SerialDenseVector M(N), B(N);
+      CORE::LINALG::SerialDenseMatrix A(N, N);
+      CORE::LINALG::SerialDenseVector M(N), B(N);
       for (unsigned i = 0; i < N; ++i)
       {
         const double Xm = X_[i + 1] - X_[i], Xp = X_[i + 2] - X_[i + 1], ocpm = ocp[i + 1] - ocp[i],

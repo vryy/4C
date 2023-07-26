@@ -85,7 +85,7 @@ namespace STRUMULTI
 
     */
     void ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
         Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name);
 
     /*!
@@ -151,11 +151,11 @@ namespace STRUMULTI
     void SetState(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> disn,
         Teuchos::RCP<UTILS::SurfStressManager> surfman, Teuchos::RCP<std::vector<char>> stress,
         Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda);
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv,
+        Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda);
 
     /*!
     \brief Set time and step
@@ -304,11 +304,11 @@ namespace STRUMULTI
     Teuchos::RCP<std::vector<char>> plstrain_;
 
     // EAS history data
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv_;
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda_;
 
     Teuchos::RCP<Epetra_MultiVector> D_;    //!< D Matrix following Miehe et al., 2002
     Teuchos::RCP<Epetra_MultiVector> rhs_;  //!< exported transpose of D (pdof -> dofrowmap)

@@ -26,7 +26,7 @@ namespace CORE::GEO
     class LeastSquares
     {
      public:
-      LeastSquares(std::vector<std::vector<double>> matri, Epetra_SerialDenseVector sourc)
+      LeastSquares(std::vector<std::vector<double>> matri, CORE::LINALG::SerialDenseVector sourc)
           : matri_(matri), sourc_(sourc)
       {
       }
@@ -36,17 +36,17 @@ namespace CORE::GEO
       \brief Performs the linear least squares. The resulting equations are solved using
       non-iterative method because the least squares produces full matrix
       */
-      Epetra_SerialDenseVector linear_least_square();
+      CORE::LINALG::SerialDenseVector linear_least_square();
 
      private:
       /*!
       \brief Construct the square matrix by multiplying the transpose of the original system matrix
       */
-      Epetra_SerialDenseMatrix get_square_matrix(Epetra_SerialDenseVector &rhs);
+      CORE::LINALG::SerialDenseMatrix get_square_matrix(CORE::LINALG::SerialDenseVector &rhs);
 
       std::vector<std::vector<double>> matri_;
-      Epetra_SerialDenseVector sourc_;
-      Epetra_SerialDenseVector unknown_;
+      CORE::LINALG::SerialDenseVector sourc_;
+      CORE::LINALG::SerialDenseVector unknown_;
     };
   }  // namespace CUT
 }  // namespace CORE::GEO

@@ -415,10 +415,10 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
   // Define the matricese and the vectors that are needed to solve the
   // nonlinear problem at the junction
   //----------------------------------------------------------------------
-  Epetra_SerialDenseMatrix Jacobian(ProbSize_, ProbSize_);
-  Epetra_SerialDenseVector f(ProbSize_);
-  Epetra_SerialDenseVector x(ProbSize_);
-  Epetra_SerialDenseVector dx(ProbSize_);
+  CORE::LINALG::SerialDenseMatrix Jacobian(ProbSize_, ProbSize_);
+  CORE::LINALG::SerialDenseVector f(ProbSize_);
+  CORE::LINALG::SerialDenseVector x(ProbSize_);
+  CORE::LINALG::SerialDenseVector dx(ProbSize_);
 
   //----------------------------------------------------------------------
   // Read the element information at the node of the bifurcation
@@ -546,12 +546,12 @@ int ART::UTILS::ArtJunctionBc::Solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::Jacobian_Eval(Epetra_SerialDenseMatrix &Jacobian,
+void ART::UTILS::ArtJunctionBc::Jacobian_Eval(CORE::LINALG::SerialDenseMatrix &Jacobian,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // empty the Jacobian
-  Jacobian = Epetra_SerialDenseMatrix(ProbSize_, ProbSize_);
+  Jacobian = CORE::LINALG::SerialDenseMatrix(ProbSize_, ProbSize_);
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
@@ -589,12 +589,12 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval(Epetra_SerialDenseMatrix &Jacobian
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void ART::UTILS::ArtJunctionBc::Residual_Eval(Epetra_SerialDenseVector &f, std::vector<double> &A,
-    std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
+void ART::UTILS::ArtJunctionBc::Residual_Eval(CORE::LINALG::SerialDenseVector &f,
+    std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
   // initialize the residual
-  f = Epetra_SerialDenseVector(f.Length());
+  f = CORE::LINALG::SerialDenseVector(f.Length());
 
   // fill the entities that have to do with forward charachteristic speeds
   for (unsigned int i = 0; i < nodes_.size(); i++)
@@ -626,7 +626,7 @@ void ART::UTILS::ArtJunctionBc::Residual_Eval(Epetra_SerialDenseVector &f, std::
  |  Update Residual (public)                                ismail 09/09|
  *----------------------------------------------------------------------*/
 void ART::UTILS::ArtJunctionBc::Update_Result(
-    Epetra_SerialDenseVector &xn, Epetra_SerialDenseVector &dx)
+    CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
 {
 #if DEBUG
   if (xn.Length() != dx.Length())

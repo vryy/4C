@@ -377,9 +377,10 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3) override;
+        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2,
+        CORE::LINALG::SerialDenseVector& elevec3) override;
 
     /*!
     \brief Evaluate a Neumann boundary condition
@@ -401,8 +402,8 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseMatrix* elemat1 = NULL) override;
 
     /*!
     \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -418,7 +419,7 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     template <int nnode>
-    void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
+    void EvaluatePTC(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1);
 
     //@}
 
@@ -512,7 +513,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! vector storing the internal force vector
-    Epetra_SerialDenseVector internalforces_;
+    CORE::LINALG::SerialDenseVector internalforces_;
 
     //! variable saving whether element has already been initialized (then isinit_ == true)
     bool isinit_;
@@ -562,23 +563,24 @@ namespace DRT::ELEMENTS
 
     //! calculation of nonlinear stiffness and mass matrix
     void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
-        std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-        Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force);
+        std::vector<double>& vel, std::vector<double>& disp,
+        CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+        CORE::LINALG::SerialDenseVector* force);
 
     template <unsigned int nnode, unsigned int dofpn>
     void UpdateDispTotlag(
         const std::vector<double>& disp, CORE::LINALG::Matrix<dofpn * nnode, 1>& disp_totlag) const;
 
     //! lump mass matrix
-    void lumpmass(Epetra_SerialDenseMatrix* emass);
+    void lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
 
     //! computes translational damping forces and stiffness
     template <unsigned int nnode, unsigned int vpernode, int ndim>
     void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& vel,
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        Epetra_SerialDenseVector* force);       //!< element internal force vector
+        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
 
     //! computes stochastic forces and resulting stiffness
@@ -586,8 +588,8 @@ namespace DRT::ELEMENTS
         unsigned int randompergauss>
     void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
         const CORE::LINALG::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
-        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        Epetra_SerialDenseVector* force);       //!< element internal force vector
+        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
 
     /*! \brief Assemble stochastic and viscous forces and respective stiffness according to
@@ -595,10 +597,10 @@ namespace DRT::ELEMENTS
      */
     template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
     void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params,
-        std::vector<double>& vel,               //!< element velocity vector
-        std::vector<double>& disp,              //!< element displacement vector
-        Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-        Epetra_SerialDenseVector* force);       //!< element internal force vector
+        std::vector<double>& vel,                      //!< element velocity vector
+        std::vector<double>& disp,                     //!< element displacement vector
+        CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+        CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
     // don't want = operator
     Beam3eb& operator=(const Beam3eb& old) = delete;

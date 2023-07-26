@@ -3129,7 +3129,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
     // update element geometry
     const int numnode = actele->NumNode();
     const int numdof = 3;
-    Epetra_SerialDenseMatrix xcurr(numnode, 3);  // material coord. of element
+    CORE::LINALG::SerialDenseMatrix xcurr(numnode, 3);  // material coord. of element
     for (int i = 0; i < numnode; ++i)
     {
       xcurr(i, 0) = actele->Nodes()[i]->X()[0] + mydisp[i * numdof + 0];
@@ -3137,7 +3137,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
       xcurr(i, 2) = actele->Nodes()[i]->X()[2] + mydisp[i * numdof + 2];
     }
     const DRT::Element::DiscretizationType distype = actele->Shape();
-    Epetra_SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
 
     // define gauss rule
     CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
@@ -3172,7 +3172,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
     {
       CORE::DRT::UTILS::shape_function_3D(
           funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
-      Epetra_SerialDenseMatrix point(1, 3);
+      CORE::LINALG::SerialDenseMatrix point(1, 3);
       point.Multiply('T', 'N', 1.0, funct, xcurr, 0.0);
 
       // write mandel stress

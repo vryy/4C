@@ -12,8 +12,8 @@
 #define BACI_LIB_CUBIC_SPLINE_INTERPOLATION_H
 
 #include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 /*----------------------------------------------------------------------*/
 
@@ -108,8 +108,8 @@ namespace DRT
        * @note The first and last line of the implementation represent the so-called natural
        * boundary conditions, i.e. that the second derivative equals zero at the boundary
        */
-      void BuildMatrixAndRhs(
-          const int N, Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& b) const;
+      void BuildMatrixAndRhs(const int N, CORE::LINALG::SerialDenseMatrix& A,
+          CORE::LINALG::SerialDenseVector& b) const;
 
       /*!
        * @brief Calculates the coefficient vectors
@@ -124,7 +124,7 @@ namespace DRT
        * @param[in] c  solution vector of linear system that defines the polynomial coefficients of
        *               the cubic spline interpolation, i.e. coefficient vector #c_
        */
-      void SetupInternalVectors(const Epetra_SerialDenseVector& c);
+      void SetupInternalVectors(const CORE::LINALG::SerialDenseVector& c);
 
       /*!
        * @brief solves linear system \f$ \boldsymbol{A} \vec{c} = \vec{b} \f$
@@ -133,8 +133,8 @@ namespace DRT
        * @param[out] c solution vector, equals coefficient vector #c_
        * @param[in]  b right-hand side vector
        */
-      void SolveLinearSystem(Epetra_SerialDenseMatrix& A, Epetra_SerialDenseVector& c,
-          Epetra_SerialDenseVector& b) const;
+      void SolveLinearSystem(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseVector& c,
+          CORE::LINALG::SerialDenseVector& b) const;
 
       //! zeroth-order coefficients for cubic spline interpolation
       std::vector<double> a_;

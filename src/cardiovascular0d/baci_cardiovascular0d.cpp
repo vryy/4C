@@ -321,7 +321,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      Epetra_SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseVector elevector;
       elevector.Size(eledim);
 
       DRT::Element* element = curr->second.get();
@@ -380,7 +380,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         // set gausspoints from integration rule
-        Epetra_SerialDenseVector e(2);
+        CORE::LINALG::SerialDenseVector e(2);
         e(0) = intpoints.qxg[gp][0];
         e(1) = intpoints.qxg[gp][1];
 

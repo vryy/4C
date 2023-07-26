@@ -59,7 +59,7 @@ namespace SCATRA
      * Effects: Faster assembly and a more sparse global matrix (and graph)
      */
     void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
     {
       const int lrowdim = (int)lmrow.size();

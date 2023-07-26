@@ -35,7 +35,7 @@ void test_bacigenerated_26182()
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
   nids.clear();
   tri3_xyze(0, 0) = 0.04671595760969209;

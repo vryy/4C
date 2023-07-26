@@ -334,7 +334,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Surfaces()
 | Map plane Green-Lagrange strains to 3d                       mayr.mt 05/2014 |
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::GreenLagrangePlane3d(
-    const Epetra_SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
+    const CORE::LINALG::SerialDenseVector& glplane, CORE::LINALG::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}
   gl3d(1) = glplane(1);               // E_{22}

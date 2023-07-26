@@ -175,8 +175,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
   std::array<CORE::LINALG::Matrix<n_dof_rot_, 1, int>, 2> gid_rot;
   std::array<CORE::LINALG::Matrix<4, 1, double>, 2> quaternion_ref;
   std::array<CORE::LINALG::Matrix<4, 1, scalar_type_rot>, 2> quaternion;
-  std::array<Epetra_SerialDenseVector, 2> L_i = {
-      Epetra_SerialDenseVector(3), Epetra_SerialDenseVector(3)};
+  std::array<CORE::LINALG::SerialDenseVector, 2> L_i = {
+      CORE::LINALG::SerialDenseVector(3), CORE::LINALG::SerialDenseVector(3)};
   std::array<CORE::LINALG::Matrix<3, n_dof_rot_, double>, 2> T_times_I_tilde_full;
   std::array<CORE::LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot>, 2> moment_nodal_load;
   std::array<std::array<CORE::LINALG::Matrix<n_dof_rot_, 3, double>, 2>, 2>

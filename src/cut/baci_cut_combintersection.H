@@ -17,7 +17,10 @@
 #include "baci_cut_levelsetintersection.H"
 
 
-class Epetra_SerialDenseMatrix;
+namespace LINALG
+{
+  class SerialDenseMatrix;
+}
 
 namespace CORE::GEO
 {
@@ -41,14 +44,15 @@ namespace CORE::GEO
 
       void FindNodePositions();
 
-      void AddElement(int eid, const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
-          ::DRT::Element::DiscretizationType distype, const double* lsv,
-          const bool lsv_only_plus_domain);
+      void AddElement(int eid, const std::vector<int>& nids,
+          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          const double* lsv, const bool lsv_only_plus_domain);
 
       void AddLevelSetSide(int levelset_sid);
 
       void AddMeshCuttingSide(int sid, const std::vector<int>& nids,
-          const Epetra_SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype, int mi);
+          const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
+          int mi);
     };
 
   }  // namespace CUT

@@ -401,50 +401,50 @@ FLD::TurbulenceStatisticsPh::TurbulenceStatisticsPh(Teuchos::RCP<DRT::Discretiza
   //----------------------------------------------------------------------
 
   // x1-direction
-  x1sump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x1sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x1sump_->Reshape(numx1statlocations_, 2);
 
-  x1sumu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x1sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x1sumu_->Reshape(numx1statlocations_, 1);
 
-  x1sumf_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x1sumf_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x1sumf_->Reshape(numx1statlocations_, 3);
 
 
   // x2-direction
   // first-order moments
-  x2sumu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumu_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumv_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumw_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sump_->Reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumsqu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumsqu_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumsqv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumsqv_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumsqw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumsqw_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqp_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumsqp_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumsqp_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumuv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumuv_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumuw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumuw_->Reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  x2sumvw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   x2sumvw_->Reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero

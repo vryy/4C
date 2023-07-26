@@ -877,7 +877,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < 3; ++d) gmcs[d] += nodemoment[d];
 
       // weighted gap
-      Epetra_SerialDenseVector posnode(Dim());
+      CORE::LINALG::SerialDenseVector posnode(Dim());
       std::vector<int> lm(Dim());
       std::vector<int> lmowner(Dim());
       for (int d = 0; d < Dim(); ++d)
@@ -918,7 +918,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < 3; ++d) gmcm[d] += nodemoment[d];
 
       // weighted gap
-      Epetra_SerialDenseVector posnode(Dim());
+      CORE::LINALG::SerialDenseVector posnode(Dim());
       std::vector<int> lm(Dim());
       std::vector<int> lmowner(Dim());
       for (int d = 0; d < Dim(); ++d)
@@ -1255,7 +1255,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
     MORTAR::MortarNode* mtnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     // prepare assembly
-    Epetra_SerialDenseVector val(Dim());
+    CORE::LINALG::SerialDenseVector val(Dim());
     std::vector<int> lm(Dim());
     std::vector<int> lmowner(Dim());
 

@@ -32,8 +32,8 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateGP_3D(MORTAR::MortarElement& sele
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -52,8 +52,8 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateGP_2D(MORTAR::MortarElement& sele
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -789,7 +789,8 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(MORTAR::MortarElement& moEle,
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt;
-  Epetra_SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT, dsntdT;
+  CORE::LINALG::SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT,
+      dsntdT;
   CORE::LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
       ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
@@ -996,7 +997,7 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalAdjointTest(const double f
 
 template <int dim>
 void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestTsi(MORTAR::MortarElement& moEle,
-    const double fac, const Epetra_SerialDenseMatrix& d2sntDdDT,
+    const double fac, const CORE::LINALG::SerialDenseMatrix& d2sntDdDT,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>& deriv_adjoint_test_T)
 {
   if (moEle.MoData().ParentTempDof().size())
@@ -1084,7 +1085,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
   DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
 
   double q = 0;
-  Epetra_SerialDenseMatrix dq_dT_ele, dq_dd_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi;
+  CORE::LINALG::SerialDenseMatrix dq_dT_ele, dq_dd_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi;
   CORE::LINALG::Matrix<dim, 1> dq_dn, dq_dpxi;
 
   switch (distype)
@@ -1165,9 +1166,10 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
 
 template <int dim>
 void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarElement& moEle,
-    const double fac, const Epetra_SerialDenseMatrix& dq_dT_ele,
-    const Epetra_SerialDenseMatrix& d2q_dT_dd, const Epetra_SerialDenseMatrix& d2q_dT_dn,
-    const Epetra_SerialDenseMatrix& d2q_dT_dpxi,
+    const double fac, const CORE::LINALG::SerialDenseMatrix& dq_dT_ele,
+    const CORE::LINALG::SerialDenseMatrix& d2q_dT_dd,
+    const CORE::LINALG::SerialDenseMatrix& d2q_dT_dn,
+    const CORE::LINALG::SerialDenseMatrix& d2q_dT_dpxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
     const std::vector<CORE::GEN::pairedvector<int, double>>& boundary_gpcoord_lin,
     CORE::LINALG::Matrix<dim, dim>& derivtravo_slave, CORE::LINALG::SerialDenseVector& adjoint_test,
@@ -1194,8 +1196,8 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarEleme
     }
   }
 
-  Epetra_SerialDenseMatrix tmp(moEle.ParentElement()->NumNode(), dim, false);
-  Epetra_SerialDenseMatrix deriv_trafo(::View, derivtravo_slave.A(), derivtravo_slave.Rows(),
+  CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode(), dim, false);
+  CORE::LINALG::SerialDenseMatrix deriv_trafo(::View, derivtravo_slave.A(), derivtravo_slave.Rows(),
       derivtravo_slave.Rows(), derivtravo_slave.Columns());
   if (tmp.Multiply('N', 'N', 1., d2q_dT_dpxi, deriv_trafo, 0.)) dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)

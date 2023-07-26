@@ -536,13 +536,13 @@ void SCATRA::LEVELSET::Intersection::packBoundaryIntCells(
       DRT::ParObject::AddtoPack(dataSend, distype);
 
       // coordinates of cell vertices in (scatra) element parameter space
-      //      const Epetra_SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
+      //      const CORE::LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       //      const CORE::LINALG::SerialDenseMatrix& vertices_xi = cell.CellNodalPosXiDomain();
       const CORE::LINALG::SerialDenseMatrix vertices_xi = cell.CellNodalPosXiDomain();
       DRT::ParObject::AddtoPack(dataSend, vertices_xi);
 
       // coordinates of cell vertices in physical space
-      //      const Epetra_SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
+      //      const CORE::LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       //      const CORE::LINALG::SerialDenseMatrix& vertices_xyz = cell.CellNodalPosXYZ();
       const CORE::LINALG::SerialDenseMatrix vertices_xyz = cell.CellNodalPosXYZ();
       DRT::ParObject::AddtoPack(dataSend, vertices_xyz);

@@ -321,8 +321,8 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
   // initialize result vector: first component = concentration integral, second component = domain
   // integral
-  const Teuchos::RCP<Epetra_SerialDenseVector> integrals =
-      Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  const Teuchos::RCP<CORE::LINALG::SerialDenseVector> integrals =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
   // evaluate concentration and domain integrals on micro scale
   discret.EvaluateScalars(eleparams, integrals);
@@ -352,8 +352,8 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 
   // initialize result vector: first component = integral of concentration time derivative, second
   // component = integral of domain
-  const Teuchos::RCP<Epetra_SerialDenseVector> integrals =
-      Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  const Teuchos::RCP<CORE::LINALG::SerialDenseVector> integrals =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
   // evaluate integrals of domain and time derivative of concentration on micro scale
   discret.EvaluateScalars(eleparams, integrals);

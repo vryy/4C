@@ -122,7 +122,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::MatScaTraAniso(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcRHSDiff(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::CalcMatDiff(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {

@@ -1186,8 +1186,8 @@ namespace FLD
     params.set<int>("action", FLD::interpolate_hdg_for_hit);
 
     std::vector<int> dummy;
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
     // this is a dummy, should be zero is written in the first components of interpolVec
     intvelnp_->PutScalar(0.0);
     // set dummy
@@ -1195,8 +1195,8 @@ namespace FLD
 
     // for 2nd evaluate
     const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-    Epetra_SerialDenseVector elevec1, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     Teuchos::ParameterList initParams;
     initParams.set<int>("action", FLD::project_hdg_initial_field_for_hit);
 
@@ -1208,7 +1208,7 @@ namespace FLD
       // 1st evaluate
       DRT::Element* ele = discret_->lRowElement(el);
 
-      Epetra_SerialDenseVector interpolVec;
+      CORE::LINALG::SerialDenseVector interpolVec;
       interpolVec.Resize(5 * 5 * 5 * 6);  // 5*5*5 points: velx, vely, velz, x, y, z
 
       ele->Evaluate(params, *discret_, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);

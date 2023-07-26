@@ -77,9 +77,9 @@ namespace DRT
 
       void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3);
 
       //! number of element nodes
       static const int bdrynen_ =
@@ -97,7 +97,8 @@ namespace DRT
       //! Evaluate a Neumann boundary condition
       virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseMatrix* elemat1);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseMatrix* elemat1);
 
      protected:
       /*!
@@ -111,7 +112,7 @@ namespace DRT
       */
       virtual void IntegrateShapeFunction(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const std::vector<double>& edispnp);
+          CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp);
 
       /*!
         \brief Calculate mean curvature H. Interpolate the results to achieve better
@@ -123,7 +124,7 @@ namespace DRT
       */
       void ElementMeanCurvature(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const std::vector<double>& edispnp,
+          CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
           std::vector<double>& enormals);
 
       /*!
@@ -136,7 +137,7 @@ namespace DRT
       */
       void ElementSurfaceTension(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, const std::vector<double>& edispnp,
+          CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
           std::vector<double>& enormals, std::vector<double>& ecurvature);
 
       /*!
@@ -183,7 +184,7 @@ namespace DRT
       */
       void CalcTractionVelocityComponent(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief calculate the integral of the neumann inflow component
@@ -196,7 +197,7 @@ namespace DRT
       */
       void ComputeNeumannUvIntegral(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
        brief integrate elemental flow rates over a surface
@@ -208,7 +209,7 @@ namespace DRT
        */
       void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief determine elemental flow rate and its derivatives wrt dofs
@@ -226,9 +227,9 @@ namespace DRT
       */
       void FlowRateDeriv(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3);
 
       /*!
       \brief apply impedance boundary condition (outlet pressures)
@@ -241,7 +242,7 @@ namespace DRT
       */
       void ImpedanceIntegration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief linearisation of flux w.r.t velocities on boundary elements
@@ -254,7 +255,7 @@ namespace DRT
       */
       void dQdu(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply outflow boundary condition which is necessary for the conservative
@@ -269,7 +270,7 @@ namespace DRT
       */
       void ConservativeOutflowConsistency(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief compute potential Neumann inflow
@@ -285,7 +286,7 @@ namespace DRT
       */
       void NeumannInflow(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
      protected:
       void CreateLinesTri(const int& nline, const int& nnode);

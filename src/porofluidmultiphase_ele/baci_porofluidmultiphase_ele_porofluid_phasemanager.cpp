@@ -624,13 +624,15 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
 {
   const int numfluidphases = phasemanager_->NumFluidPhases();
   // initialize matrixes and vectors
-  pressurederiv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
-  saturationderiv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
-  saturationderivderiv_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(
-      numfluidphases, Epetra_SerialDenseMatrix(numfluidphases, numfluidphases)));
-  solidpressurederiv_ = Teuchos::rcp(new Epetra_SerialDenseVector(numfluidphases));
+  pressurederiv_ =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
+  saturationderiv_ =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
+  saturationderivderiv_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
+      numfluidphases, CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases)));
+  solidpressurederiv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numfluidphases));
   solidpressurederivderiv_ =
-      Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
 
   return;
 }
@@ -689,7 +691,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   }
 
   // calculate derivatives of saturation w.r.t. pressure
-  Epetra_SerialDenseMatrix deriv(numfluidphases, numfluidphases);
+  CORE::LINALG::SerialDenseMatrix deriv(numfluidphases, numfluidphases);
   multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv, pressure);
 
   // chain rule: the derivative of saturation w.r.t. dof =
@@ -699,9 +701,9 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // calculate 2nd derivatives of saturation w.r.t. pressure
   // TODO: this should work for pressure und diffpressure DOFs, however not for
   //       saturation DOFs
-  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> dummyderiv =
-      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(
-          numfluidphases, Epetra_SerialDenseMatrix(numfluidphases, numfluidphases)));
+  Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> dummyderiv =
+      Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
+          numfluidphases, CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases)));
   multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
@@ -825,7 +827,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDeriv
 {
   const int totalnumdof = phasemanager_->TotalNumDof();
   // initialize matrixes and vectors
-  porosityderiv_ = Teuchos::rcp(new Epetra_SerialDenseVector(totalnumdof));
+  porosityderiv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(totalnumdof));
 
   return;
 }

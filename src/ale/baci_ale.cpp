@@ -846,11 +846,11 @@ bool ALE::Ale::EvaluateElementQuality()
       actele->LocationVector(*Discretization(), la, false);
 
       // only two entries per element necessary (detJ and quality measure)
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1(2);
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1(2);
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
 
       actele->Evaluate(
           eleparams, *discret_, la, elematrix1, elematrix2, elevector1, elevector2, elevector3);

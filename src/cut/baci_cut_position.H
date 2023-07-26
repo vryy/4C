@@ -110,9 +110,9 @@ namespace CORE::GEO
           const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
-      /// \brief build variant #3-1 (Epetra_SerialDenseMatrix)
+      /// \brief build variant #3-1 (CORE::LINALG::SerialDenseMatrix)
       template <unsigned rdim>
-      static Teuchos::RCP<Position> Create(const Epetra_SerialDenseMatrix& xyze,
+      static Teuchos::RCP<Position> Create(const CORE::LINALG::SerialDenseMatrix& xyze,
           const CORE::LINALG::Matrix<rdim, 1>& xyz,
           const ::DRT::Element::DiscretizationType& distype,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);

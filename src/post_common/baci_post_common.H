@@ -37,7 +37,7 @@ extern "C"
 #include <Teuchos_CommandLineProcessor.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 class Epetra_Comm;
 class PostField;
@@ -451,8 +451,8 @@ class PostResult
    *
    * \returns vector with results read
    */
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> read_result_serialdensematrix(
-      const std::string name);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+  read_result_serialdensematrix(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
    *

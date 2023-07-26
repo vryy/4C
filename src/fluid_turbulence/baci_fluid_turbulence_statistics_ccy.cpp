@@ -159,7 +159,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       DRT::Node** nodes = actele->Nodes();
 
       // acquire weights from nodes
-      Epetra_SerialDenseVector weights(numnp);
+      CORE::LINALG::SerialDenseVector weights(numnp);
 
       for (int inode = 0; inode < numnp; ++inode)
       {
@@ -177,7 +177,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       knots->ConvertEleGidToKnotIds(gid, patchid, ele_cart_id);
 
       // access elements knot span
-      std::vector<Epetra_SerialDenseVector> knots(3);
+      std::vector<CORE::LINALG::SerialDenseVector> knots(3);
       bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
       // zero sized elements have to be skipped
@@ -187,7 +187,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
       }
 
       // get shapefunctions, compute all visualisation point positions
-      Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+      CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
 
       switch (actele->Shape())
       {
@@ -195,7 +195,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
         case DRT::Element::nurbs27:
         {
           // element local point position
-          Epetra_SerialDenseVector uv(3);
+          CORE::LINALG::SerialDenseVector uv(3);
 
           {
             // standard
@@ -630,7 +630,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     DRT::Node** nodes = actele->Nodes();
 
     // acquire weights from nodes
-    Epetra_SerialDenseVector weights(numnp);
+    CORE::LINALG::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
     {
@@ -647,7 +647,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     knots->ConvertEleGidToKnotIds(gid, patchid, ele_cart_id);
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> knots(3);
+    std::vector<CORE::LINALG::SerialDenseVector> knots(3);
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
     // zero sized elements have to be skipped
@@ -657,7 +657,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     }
 
     // get shapefunctions, compute all visualisation point positions
-    Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+    CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
 
     // extract local values from the global vectors
     std::vector<int> lm;
@@ -739,7 +739,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
         CORE::LINALG::Matrix<3, 1> vel;
 
         // element local point position
-        Epetra_SerialDenseVector uv(3);
+        CORE::LINALG::SerialDenseVector uv(3);
 
         {
           // standard
@@ -1508,8 +1508,8 @@ void FLD::TurbulenceStatisticsCcy::AddScaTraResults(
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
-    pointsumphi_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(size, numscatradofpernode_));
-    pointsumphiphi_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(size, numscatradofpernode_));
+    pointsumphi_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(size, numscatradofpernode_));
+    pointsumphiphi_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(size, numscatradofpernode_));
 
     if (discret_->Comm().MyPID() == 0)
     {

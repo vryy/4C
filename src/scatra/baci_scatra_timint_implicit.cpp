@@ -432,7 +432,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // initialize vector for statistics (assume a maximum of 10 conditions)
-  sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
+  sumnormfluxintegral_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(10));
 
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
@@ -673,8 +673,8 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
 
   // calculate mean concentrations

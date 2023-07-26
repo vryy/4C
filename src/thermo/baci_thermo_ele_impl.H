@@ -48,17 +48,17 @@ namespace DRT
       //! Evaluate the element
       //!  This class does not provide a definition for this function, it
       //!  must be defined in TemperImpl.
-      virtual int Evaluate(DRT::Element* ele,        //!< current element
-          Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
-          DRT::Discretization& discretization,       //!< current discretisation
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
-          Epetra_SerialDenseVector&
+      virtual int Evaluate(DRT::Element* ele,               //!< current element
+          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
+          DRT::Discretization& discretization,              //!< current discretisation
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+          CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               elevec2_epetra,  //!< external force, view on heat flux in y-direction
-          Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
+          CORE::LINALG::SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
           ) = 0;
 
       //! Evaluate the element
@@ -70,8 +70,8 @@ namespace DRT
           DRT::Discretization& discretization,        //!< current discretisation
           std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
-          Epetra_SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
+          CORE::LINALG::SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
           ) = 0;
 
       //! Internal implementation class for thermo elements
@@ -132,17 +132,17 @@ namespace DRT
       static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
       //! Evaluate for multiple dofsets
-      int Evaluate(DRT::Element* ele,                //!< current element
-          Teuchos::ParameterList& params,            //!< parameter list, containing e.g., dt
-          DRT::Discretization& discretization,       //!< current discretisation
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
-          Epetra_SerialDenseVector&
+      int Evaluate(DRT::Element* ele,                       //!< current element
+          Teuchos::ParameterList& params,                   //!< parameter list, containing e.g., dt
+          DRT::Discretization& discretization,              //!< current discretisation
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< conductivity matrix
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< capacity matrix
+          CORE::LINALG::SerialDenseVector&
               elevec1_epetra,  //!< internal force, view on heat flux in x-direction
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               elevec2_epetra,  //!< external force, view on heat flux in y-direction
-          Epetra_SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
+          CORE::LINALG::SerialDenseVector& elevec3_epetra  //!< view on heat flux in z-direction
           ) override;
 
       //! Evaluate the element
@@ -151,8 +151,8 @@ namespace DRT
           DRT::Discretization& discretization,  //!< current discretisation
           std::vector<int>&
               lm,  //!< location vector, EvalNeumann is called only on own discretisation
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< view on external force vector
-          Epetra_SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< view on external force vector
+          CORE::LINALG::SerialDenseMatrix* elemat1_epetra   //!< matrix is not needed
           ) override;
 
      private:
@@ -408,7 +408,7 @@ namespace DRT
 
       //! integral of shape functions over the element
       void IntegrateShapeFunctions(const DRT::Element* ele,  //!< current element
-          Epetra_SerialDenseVector& elevec1,                 //!< result vector (to be assembled)
+          CORE::LINALG::SerialDenseVector& elevec1,          //!< result vector (to be assembled)
           const Epetra_IntSerialDenseVector& dofids  //!< for which dof we need to integrate?
       );
 
@@ -496,7 +496,7 @@ namespace DRT
       bool plasticmat_;
 
       //! nurbs specific: element knots
-      std::vector<Epetra_SerialDenseVector> myknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> myknots_;
       //! nurbs specific: control point weights
       CORE::LINALG::Matrix<nen_, 1> weights_;
 

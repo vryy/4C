@@ -741,7 +741,7 @@ void CORE::GEO::CUT::FacetIntegration::GenerateDivergenceCells(
 void CORE::GEO::CUT::FacetIntegration::TemporaryTri3(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
-  Epetra_SerialDenseMatrix xyz(3, 3);
+  CORE::LINALG::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i) corners[i]->Coordinates(&xyz(0, i));
   Tri3BoundaryCell *bc = new Tri3BoundaryCell(xyz, face1_, corners);
   divCells.push_back(Teuchos::rcp(bc));
@@ -754,7 +754,7 @@ void CORE::GEO::CUT::FacetIntegration::TemporaryTri3(
 void CORE::GEO::CUT::FacetIntegration::TemporaryQuad4(
     const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
 {
-  Epetra_SerialDenseMatrix xyz(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i) corners[i]->Coordinates(&xyz(0, i));
   Quad4BoundaryCell *bc = new Quad4BoundaryCell(xyz, face1_, corners);
   divCells.push_back(Teuchos::rcp(bc));

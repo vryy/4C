@@ -71,9 +71,9 @@ namespace DRT
       /// determines which boundary integral is to be evaluated
       void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3);
 
      protected:
       /// protected constructor since we are singleton
@@ -100,7 +100,7 @@ namespace DRT
       */
       void PoroBoundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply boundary integral (mass flux over boundary in continuity equation) for porous
@@ -109,7 +109,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void PoroBoundary(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply boundary pressure for porous media problems
@@ -126,7 +126,7 @@ namespace DRT
       */
       void PressureCoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply boundary coupling terms for FPSI problems
@@ -144,7 +144,7 @@ namespace DRT
       */
       void FPSICoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply boundary coupling terms for FPSI problems
@@ -153,7 +153,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void FPSICoupling(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition
@@ -187,8 +187,8 @@ namespace DRT
       */
       void NoPenetration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition
@@ -207,7 +207,7 @@ namespace DRT
                                   in this vector otherwise 0.0
       */
       void NoPenetrationIDs(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& elevec1,
           std::vector<int>& lm);
 
       /*!
@@ -222,7 +222,7 @@ namespace DRT
       */
       void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief compute flow rate over boundary for porous media problems
@@ -232,7 +232,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition
@@ -249,7 +249,7 @@ namespace DRT
       */
       void NoPenetrationMatAndRHS(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition
@@ -258,7 +258,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatAndRHS(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -274,7 +274,7 @@ namespace DRT
       */
       void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -283,7 +283,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatOD(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2);
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -298,7 +298,7 @@ namespace DRT
       */
       void NoPenetrationMatODPoroPres(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& elemat1);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -307,7 +307,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatODPoroPres(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& elemat1);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -322,7 +322,7 @@ namespace DRT
       */
       void NoPenetrationMatODPoroDisp(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& elemat1);
 
       /*!
       \brief apply no penetration boundary condition (Off Diagonal terms)
@@ -331,7 +331,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType pdistype>
       void NoPenetrationMatODPoroDisp(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1);
+          CORE::LINALG::SerialDenseMatrix& elemat1);
 
 
       /*!

@@ -349,10 +349,10 @@ namespace CORE::GEO
      *   since a vector can be corrected by using the view constructor of a new
      *   CORE::LINALG::(T)Matrix.
      *
-     *  \param wrong_shape   (in) : matrix with the wrong shape (Epetra_SerialDenseMatrix
+     *  \param wrong_shape   (in) : matrix with the wrong shape (CORE::LINALG::SerialDenseMatrix
      *                              or CORE::LINALG::(T)Matrix)
      *  \param correct_shape (out): matrix with the desired number of rows and columns.
-     *                              (Epetra_SerialDenseMatrix or CORE::LINALG::(T)Matrix)
+     *                              (CORE::LINALG::SerialDenseMatrix or CORE::LINALG::(T)Matrix)
      *
      *  \author hiermeier \date 11/16 */
     template <class T1, class T2>

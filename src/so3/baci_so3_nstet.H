@@ -188,19 +188,20 @@ namespace DRT
 
       void ElementDeformationGradient(DRT::Discretization& dis);
 
-      void NodalIntegration(Epetra_SerialDenseMatrix* stiff, Epetra_SerialDenseVector* force,
-          std::map<int, DRT::Node*>& adjnode, std::vector<DRT::ELEMENTS::NStet*>& adjele,
+      void NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+          CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+          std::vector<DRT::ELEMENTS::NStet*>& adjele, std::vector<int>& lm,
+          const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
+          std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
+          const INPAR::STR::StrainType iostrain);
+
+
+      void MISNodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+          CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+          std::vector<DRT::ELEMENTS::NStet*>& adjele, std::vector<double>& weight,
           std::vector<int>& lm, const Epetra_Vector& disp, DRT::Discretization& dis,
           std::vector<double>* nodalstress, std::vector<double>* nodalstrain,
           const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain);
-
-
-      void MISNodalIntegration(Epetra_SerialDenseMatrix* stiff, Epetra_SerialDenseVector* force,
-          std::map<int, DRT::Node*>& adjnode, std::vector<DRT::ELEMENTS::NStet*>& adjele,
-          std::vector<double>& weight, std::vector<int>& lm, const Epetra_Vector& disp,
-          DRT::Discretization& dis, std::vector<double>* nodalstress,
-          std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
-          const INPAR::STR::StrainType iostrain);
 
       void SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
           CORE::LINALG::Matrix<6, 1>& stress, CORE::LINALG::Matrix<6, 6>& cmat, double& density,
@@ -386,9 +387,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -406,8 +408,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      protected:

@@ -90,8 +90,8 @@ namespace DRT
        */
       virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,
-          std::vector<Epetra_SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
      protected:
       /*========================================================================*/
@@ -105,8 +105,8 @@ namespace DRT
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
-          DRT::Element::LocationArray& la, std::vector<Epetra_SerialDenseMatrix*>& elemat,
-          std::vector<Epetra_SerialDenseVector*>& elevec);
+          DRT::Element::LocationArray& la, std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
 
       //! extract element based or nodal values
       //  return extracted values of phinp
@@ -121,52 +121,58 @@ namespace DRT
       void GaussPointLoop(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           DRT::Element* ele,                                             //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       void GaussPointLoopODStruct(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           DRT::Element* ele,                                             //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       void GaussPointLoopODScatra(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           DRT::Element* ele,                                             //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      void GaussPointLoop(DRT::Element* ele,               //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void GaussPointLoop(DRT::Element* ele,                      //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       //! calculate off-diagonal fluid-struct-coupling matrix. Here the whole thing is hidden.
-      void GaussPointLoopODStruct(DRT::Element* ele,       //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void GaussPointLoopODStruct(DRT::Element* ele,              //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       //! calculate off-diagonal fluid-scatra-coupling matrix. Here the whole thing is hidden.
-      void GaussPointLoopODScatra(DRT::Element* ele,       //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void GaussPointLoopODScatra(DRT::Element* ele,              //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
       //! evaluate shape functions and their derivatives at current integration point
@@ -187,20 +193,22 @@ namespace DRT
       /*========================================================================*/
 
       //! loop over nodes and evaluate element
-      void NodeLoop(DRT::Element* ele,                     //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la,                 //!< location array
-          const bool jacobian_needed  //!< necessary to compute Jacobian at node
+      void NodeLoop(DRT::Element* ele,                            //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la,      //!< location array
+          const bool jacobian_needed            //!< necessary to compute Jacobian at node
       );
 
       //! evaluate just the element
-      void EvaluateOnlyElement(DRT::Element* ele,          //!< current element
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
-          std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element rhs vectors to calculate
-          DRT::Discretization& discretization,             //!< discretization
-          DRT::Element::LocationArray& la                  //!< location array
+      void EvaluateOnlyElement(DRT::Element* ele,                 //!< current element
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrixes to calculate
+          std::vector<CORE::LINALG::SerialDenseVector*>&
+              elevec,                           //!< element rhs vectors to calculate
+          DRT::Discretization& discretization,  //!< discretization
+          DRT::Element::LocationArray& la       //!< location array
       );
 
      private:

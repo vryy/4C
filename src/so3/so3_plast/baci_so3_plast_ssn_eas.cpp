@@ -207,13 +207,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
 {
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
 
   // fill up M at each gp
   if (eastype_ == soh8p_easmild)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_mild(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_mild(numgpt_);
     static bool M_mild_eval;
     /* easmild is the EAS interpolation of 9 modes, based on
      **            r 0 0   0 0 0 0 0 0
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   }
   else if (eastype_ == soh8p_easfull)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_full(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_full(numgpt_);
     static bool M_full_eval;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   }
   else if (eastype_ == soh8p_eassosh8)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_sosh8(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(numgpt_);
     static bool M_sosh8_eval;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
      ** consisting of 7 modes, based on

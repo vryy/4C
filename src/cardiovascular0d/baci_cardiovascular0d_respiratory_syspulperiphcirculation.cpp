@@ -388,7 +388,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
 
 
   // Cardiovascular0D stiffness
-  Epetra_SerialDenseMatrix wkstiff(num_dof_, num_dof_);
+  CORE::LINALG::SerialDenseMatrix wkstiff(num_dof_, num_dof_);
 
   // contributions to total residuals r:
   // r_m = df_m              - f_m
@@ -940,13 +940,13 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
     const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector2a;
-    Epetra_SerialDenseVector elevector2b;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector2a;
+    CORE::LINALG::SerialDenseVector elevector2b;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
     // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -1093,7 +1093,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Evaluate(
 
 void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::EvaluateRespiratory(
     Teuchos::ParameterList& params, std::vector<double>& df_np, std::vector<double>& f_np,
-    Epetra_SerialDenseMatrix& wkstiff, Teuchos::RCP<Epetra_Vector> dofvec,
+    CORE::LINALG::SerialDenseMatrix& wkstiff, Teuchos::RCP<Epetra_Vector> dofvec,
     Teuchos::RCP<Epetra_Vector> volvec, bool evalstiff)
 {
   // get time-integrator dependent values
@@ -9101,11 +9101,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::Initialize(
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     const std::string* conditiontype = cardiovascular0dcond_[i]->Get<std::string>("type");
 

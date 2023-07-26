@@ -869,14 +869,14 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     auto EvaluateGaussPointData = [&](const std::vector<char>& raw_data)
     {
       // Get the values at the Gauss-points.
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> mapdata{};
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> mapdata{};
       std::vector<char>::size_type position = 0;
       for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
       {
         if (DoPostprocessingOnElement(*Discret().lRowElement(i)))
         {
-          Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-              Teuchos::rcp(new Epetra_SerialDenseMatrix);
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+              Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
           DRT::ParObject::ExtractfromPack(position, raw_data, *gpstress);
           mapdata[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
         }
@@ -885,7 +885,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     };
 
     auto PostprocessGaussPointDataToNodes =
-        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
       DiscretPtr()->Evaluate(
@@ -898,7 +898,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     };
 
     auto PostprocessGaussPointDataToElementCenter =
-        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
       DiscretPtr()->Evaluate(
@@ -915,7 +915,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     // Postprocess the result vectors.
     if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
     {
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_stress_data =
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*EvalData().GetStressData());
 
       DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
@@ -936,7 +936,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     }
     if (not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
     {
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_strain_data =
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*EvalData().GetStrainData());
 
       DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());

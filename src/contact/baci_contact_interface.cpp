@@ -3932,7 +3932,7 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
 
     // build normal at node for 1. ele
     CoElement* sele0 = dynamic_cast<CoElement*>(cnode->Elements()[0]);
-    Epetra_SerialDenseMatrix elen0(6, 1);
+    CORE::LINALG::SerialDenseMatrix elen0(6, 1);
     sele0->BuildNormalAtNode(cnode->Id(), loc, elen0);
 
     // create 1. unit normal
@@ -3943,7 +3943,7 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
     // build normal at node for 2. ele
     loc = 0;
     CoElement* sele1 = dynamic_cast<CoElement*>(cnode->Elements()[1]);
-    Epetra_SerialDenseMatrix elen1(6, 1);
+    CORE::LINALG::SerialDenseMatrix elen1(6, 1);
     sele1->BuildNormalAtNode(cnode->Id(), loc, elen1);
 
     // create 2. unit normal
@@ -4281,7 +4281,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   // elens(4,i): length of element normal
   // elens(5,i): length/area of element itself
   //**********************************************************************
-  Epetra_SerialDenseMatrix elens(6, nseg);
+  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
   MORTAR::MortarElement* adjmrtrele = dynamic_cast<MORTAR::MortarElement*>(adjeles[0]);
 
   // build element normal at current node
@@ -4409,7 +4409,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
   // elens(4,i): length of element normal
   // elens(5,i): length/area of element itself
   //**********************************************************************
-  Epetra_SerialDenseMatrix elens(6, nseg);
+  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
   MORTAR::MortarElement* adjmrtrele = dynamic_cast<MORTAR::MortarElement*>(adjeles[0]);
 
   // build element normal at current node
@@ -4544,7 +4544,7 @@ void CONTACT::CoInterface::EvaluateCPPNormals()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::ExportMasterNodalNormals()
 {
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -4579,7 +4579,8 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 3));
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
     (*loc)(0, 0) = cnode->MoData().n()[0];
     (*loc)(1, 0) = cnode->MoData().n()[1];
     (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -4684,7 +4685,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
     if (cnode->Owner() == Comm().MyPID()) continue;
 
     // extract info
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
     cnode->MoData().n()[0] = (*loc)(0, 0);
     cnode->MoData().n()[1] = (*loc)(1, 0);
     cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -5202,7 +5203,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //      // create element normal:
   //      int loc = 0;
   //      CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[n]);
-  //      Epetra_SerialDenseMatrix elens(6,1);
+  //      CORE::LINALG::SerialDenseMatrix elens(6,1);
   //      seleaux->BuildNormalAtNode(cnode->Id(),loc,elens);
   //
   //      double normalsele[3] = {0.0, 0.0, 0.0};
@@ -5373,7 +5374,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
       // create element normal:
       int loc = 0;
       CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[n]);
-      Epetra_SerialDenseMatrix elens(6, 1);
+      CORE::LINALG::SerialDenseMatrix elens(6, 1);
       seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
       std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
@@ -5415,7 +5416,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
     // create element normal:
     int loc = 0;
     CoElement* seleaux = dynamic_cast<CoElement*>(cnode->Elements()[localid]);
-    Epetra_SerialDenseMatrix elens(6, 1);
+    CORE::LINALG::SerialDenseMatrix elens(6, 1);
     seleaux->BuildNormalAtNode(cnode->Id(), loc, elens);
 
     std::array<double, 3> normalsele = {0.0, 0.0, 0.0};
@@ -6442,7 +6443,7 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
 void CONTACT::CoInterface::ExportNodalNormals() const
 {
   // create empty data objects
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -6476,7 +6477,8 @@ void CONTACT::CoInterface::ExportNodalNormals() const
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 3));
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 3));
     (*loc)(0, 0) = cnode->MoData().n()[0];
     (*loc)(1, 0) = cnode->MoData().n()[1];
     (*loc)(2, 0) = cnode->MoData().n()[2];
@@ -6583,7 +6585,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
 
     // extract info
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
     cnode->MoData().n()[0] = (*loc)(0, 0);
     cnode->MoData().n()[1] = (*loc)(1, 0);
     cnode->MoData().n()[2] = (*loc)(2, 0);
@@ -7935,8 +7937,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
     {
       // do the element integration of kappa and store into gap
       int nrow = sele.NumNode();
-      Teuchos::RCP<Epetra_SerialDenseVector> gseg =
-          Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
 
       // create a CONTACT integrator instance with correct NumGP and Dim
       CONTACT::CoIntegrator integrator(imortar_, sele.Shape(), Comm());
@@ -7953,8 +7955,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
       {
         // do the int element integration of kappa and store into gap
         int nrow = sauxelements[i]->NumNode();
-        Teuchos::RCP<Epetra_SerialDenseVector> gseg =
-            Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
 
         // create a CONTACT integrator instance with correct NumGP and Dim
         CONTACT::CoIntegrator integrator(imortar_, sauxelements[i]->Shape(), Comm());
@@ -7976,7 +7978,8 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   {
     // do the element integration of kappa and store into gap
     int nrow = sele.NumNode();
-    Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> gseg =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nrow));
 
     // create a CONTACT integrator instance with correct NumGP and Dim
     CONTACT::CoIntegrator integrator(imortar_, sele.Shape(), Comm());
@@ -8612,7 +8615,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
     int dim = cnode->NumDof();
 
     // tangential plane
-    Epetra_SerialDenseMatrix tanplane(dim, dim);
+    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
     if (dim == 3)
     {
       tanplane(0, 0) = 1 - (n[0] * n[0]);
@@ -8638,15 +8641,15 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
       dserror("Error in AssembleTangentForces: Unknown dimension.");
 
     // jump vector
-    Epetra_SerialDenseMatrix jumpvec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
     for (int i = 0; i < dim; i++) jumpvec(i, 0) = cnode->FriData().jump()[i];
 
     // evaluate jump in tangential direction
-    Epetra_SerialDenseMatrix jumptan(dim, 1);
+    CORE::LINALG::SerialDenseMatrix jumptan(dim, 1);
     jumptan.Multiply('N', 'N', 1, tanplane, jumpvec, 0.0);
 
     // force vector
-    Epetra_SerialDenseMatrix forcevec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix forcevec(dim, 1);
     for (int i = 0; i < dim; i++) forcevec(i, 0) = cnode->MoData().lm()[i];
 
     // evaluate force in normal direction

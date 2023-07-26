@@ -114,8 +114,8 @@ int DRT::ELEMENTS::ElemagIntFaceImpl<distype>::EvaluateInternalFaces(
     std::vector<int>& lm_faceToPatch,        // local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  // local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   // local map between slave nodes and nodes in patch
-    std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  // element matrix blocks
-    std::vector<Epetra_SerialDenseVector>& elevec_blocks   // element vector blocks
+    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  // element matrix blocks
+    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   // element vector blocks
 )
 {
   return 0;

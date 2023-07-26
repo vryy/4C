@@ -32,9 +32,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -233,7 +235,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
@@ -537,7 +539,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(CORE::LINALG::Matrix<81, 81
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
@@ -574,7 +576,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
@@ -679,7 +681,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
@@ -749,7 +751,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 {
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
@@ -850,7 +852,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(6);
+    CORE::LINALG::SerialDenseVector glstrain_epetra(6);
     CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -981,7 +983,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
  *----------------------------------------------------------------------*/
 const std::vector<CORE::LINALG::Matrix<27, 1>>
 DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
-    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
@@ -1009,7 +1011,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
 const std::vector<CORE::LINALG::Matrix<3, 27>> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
-    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const CORE::LINALG::Matrix<27, 1>& weights)
 {
   const int numgp = 27;
@@ -1080,7 +1082,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   // for isogeometric elements:
   //     o get knots
@@ -1173,7 +1175,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(6);
+    CORE::LINALG::SerialDenseVector glstrain_epetra(6);
     CORE::LINALG::Matrix<6, 1> glstrain(glstrain_epetra.A(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -1223,7 +1225,7 @@ void EvalNurbs3DInterpolation(CORE::LINALG::Matrix<n_val, 1, double>& r,
     const CORE::LINALG::Matrix<n_points * n_val, 1, double>& q,
     const CORE::LINALG::Matrix<3, 1, double>& xi,
     const CORE::LINALG::Matrix<n_points, 1, double>& weights,
-    const std::vector<Epetra_SerialDenseVector>& myknots,
+    const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
     const DRT::Element::DiscretizationType& distype)
 {
   // Get the shape functions.
@@ -1261,7 +1263,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationGeometry(
   {
     // Get the knots and weights for this element.
     CORE::LINALG::Matrix<27, 1, double> weights(true);
-    std::vector<Epetra_SerialDenseVector> myknots(true);
+    std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
     if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 
@@ -1314,7 +1316,7 @@ unsigned int DRT::ELEMENTS::NURBS::So_nurbs27::AppendVisualizationDofBasedResult
   {
     // Get the knots and weights for this element.
     CORE::LINALG::Matrix<27, 1, double> weights(true);
-    std::vector<Epetra_SerialDenseVector> myknots(true);
+    std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
     const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discret, this, myknots, weights);
     if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
 

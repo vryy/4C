@@ -14,8 +14,8 @@
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 

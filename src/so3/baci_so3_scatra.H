@@ -237,11 +237,13 @@ namespace DRT
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      ///< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    ///< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    ///< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  ///< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  ///< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
           ) override;
 
       //! init the inverse of the jacobian and its determinant in the material configuration
@@ -296,7 +298,8 @@ namespace DRT
           const std::vector<double>& disp_nodal_values,
           const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_ds,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
@@ -313,7 +316,7 @@ namespace DRT
       //! Calculate mechanical scalar stiffness term needed for monolithic SSI K_dS
       void nln_kdS_ssi(DRT::Element::LocationArray& la,  //!< (i): location array
           std::vector<double>& disp,                     //!< (i): current displacement
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               stiffmatrix_kdS,            //!< (o): mechanical scalar stiffness term at current gp
           Teuchos::ParameterList& params  //!< parameter list
       );

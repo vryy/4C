@@ -31,8 +31,8 @@ namespace
   }
 }  // namespace
 
-void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
-    ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& nodal_data)
+void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data)
 {
   switch (ele.Shape())
   {
@@ -133,8 +133,8 @@ void CORE::DRT::ELEMENTS::ExtrapolateGaussPointQuantityToNodes(
   }
 }
 
-void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(
-    ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& element_data)
+void CORE::DRT::ELEMENTS::EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
+    const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
 {
   AssembleAveragedElementValues(element_data, data, ele);
 }

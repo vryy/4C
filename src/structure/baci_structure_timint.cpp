@@ -11,8 +11,9 @@
 /* headers */
 #include <iostream>
 #include "baci_io_pstream.H"
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_genalpha.H"
@@ -2569,8 +2570,8 @@ void STR::TimInt::DetermineEnergy()
       discret_->ClearState();
       discret_->SetState("displacement", disn_);
       // get energies
-      Teuchos::RCP<Epetra_SerialDenseVector> energies =
-          Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
       discret_->EvaluateScalars(p, energies);
       discret_->ClearState();
       intergy_ = (*energies)(0);
@@ -2875,7 +2876,8 @@ void STR::TimInt::OutputContact()
     p.set("action", "calc_struct_energy");
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
-    Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
     energies->Scale(0.0);
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
@@ -2974,7 +2976,8 @@ void STR::TimInt::OutputErrorNorms()
   if (entype == INPAR::CONTACT::errornorms_none) return;
 
   // initialize variables
-  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
   norms->Scale(0.0);
 
   // vector for output
@@ -3037,7 +3040,8 @@ void STR::TimInt::OutputVolumeMass()
   if (!massvol) return;
 
   // initialize variables
-  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(6));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(6));
   norms->Scale(0.0);
 
   // call discretization to evaluate error norms

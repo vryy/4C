@@ -630,7 +630,7 @@ namespace XFEM
     void EvaluateStructuralCauchyStress(DRT::Element* coupl_ele,
         CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
         const CORE::LINALG::Matrix<3, 1>& normal,
-        std::vector<Epetra_SerialDenseMatrix>& solid_stress);
+        std::vector<CORE::LINALG::SerialDenseMatrix>& solid_stress);
 
     void SetTimeFac(double timefac) { timefac_ = timefac; }
 

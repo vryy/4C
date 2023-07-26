@@ -537,8 +537,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
-    Epetra_SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+    CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet*>& adjele, std::vector<int>& lm, const Epetra_Vector& disp,
     DRT::Discretization& dis, std::vector<double>* nodalstress, std::vector<double>* nodalstrain,
     const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain)
@@ -625,7 +625,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
 
   //-----------------------------------------------------------------------
   // build B operator
-  Epetra_SerialDenseMatrix bop(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bop(6, ndofinpatch);
   // loop elements in patch
   for (int ele = 0; ele < neleinpatch; ++ele)
   {
@@ -711,7 +711,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
   //-------------------------------------------------------------------------
   // build a second B-operator from the averaged strains that are based on
   // the averaged F
-  Epetra_SerialDenseMatrix bopbar(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bopbar(6, ndofinpatch);
   for (int i = 0; i < ndofinpatch; ++i)
     for (int k = 0; k < 6; ++k) bopbar(k, i) = Ebar[k].fastAccessDx(i);
 
@@ -792,14 +792,14 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
     force->Multiply('T', 'N', VnodeL, bop, stress_epetra, 0.0);  // bop
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(
+    CORE::LINALG::SerialDenseMatrix cmat_epetra(
         ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);
@@ -845,8 +845,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
 /*----------------------------------------------------------------------*
  |                                                             gee 10/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* stiff,
-    Epetra_SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+    CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet*>& adjele, std::vector<double>& weight, std::vector<int>& lm,
     const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
     std::vector<double>* nodalstrain, const INPAR::STR::StressType iostress,
@@ -937,7 +937,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
 
   //-----------------------------------------------------------------------
   // build \delta B operator, this is the unmodified operator
-  Epetra_SerialDenseMatrix bop(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bop(6, ndofinpatch);
   for (int ele = 0; ele < neleinpatch; ++ele)
   {
     // current element
@@ -1012,7 +1012,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
   //-------------------------------------------------------------------------
   // build a second B-operator from the volumetric averaged strains that are based on
   // the averaged F
-  Epetra_SerialDenseMatrix bopbar(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bopbar(6, ndofinpatch);
   for (int i = 0; i < ndofinpatch; ++i)
     for (int k = 0; k < 6; ++k) bopbar(k, i) = Ebar[k].fastAccessDx(i);
 
@@ -1085,14 +1085,14 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
+    CORE::LINALG::SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
     force->Multiply('T', 'N', VnodeL, bop, stress_epetra, 0.0);
   }
 
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(
+    CORE::LINALG::SerialDenseMatrix cmat_epetra(
         ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
     cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);

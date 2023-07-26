@@ -684,7 +684,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
-      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
       discret_->EvaluateScalars(eleparams, errors);
 
       double conerr1 = 0.0;
@@ -731,7 +732,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
-      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
       discret_->EvaluateScalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
@@ -762,7 +764,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
-      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
       discret_->EvaluateScalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
@@ -939,7 +942,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
       // result vector
       // physical meaning of vector components is described in PostProcessSingleElectrodeInfo
       // routine
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars;
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars;
 
       // electrode boundary kinetics line/surface condition
       if (!cond.empty())
@@ -972,7 +975,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfo(
+Teuchos::RCP<CORE::LINALG::SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfo(
     const int condid, const std::string& condstring)
 {
   // set vector values needed by elements
@@ -1014,7 +1017,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
   // initialize result vector
   // physical meaning of vector components is described in PostProcessSingleElectrodeInfo routine
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(11));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(11));
 
   // evaluate relevant boundary integrals
   discret_->EvaluateScalars(eleparams, scalars, condstring, condid);
@@ -1024,8 +1028,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(
-    Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<CORE::LINALG::SerialDenseVector>
+SCATRA::ScaTraTimIntElch::EvaluateSingleElectrodeInfoPoint(Teuchos::RCP<DRT::Condition> condition)
 {
   // add state vectors to discretization
   discret_->SetState("phinp", phinp_);
@@ -1039,8 +1043,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
   // initialize result vector
   // physical meaning of vector components is described in PostProcessSingleElectrodeInfo routine
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(numscalars));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numscalars));
 
   // extract nodal cloud of current condition
   const std::vector<int>* nodeids = condition->Nodes();
@@ -1096,8 +1100,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
     element->LocationVector(*discret_, la, false);
 
     // dummy matrix and right-hand side vector
-    Epetra_SerialDenseMatrix elematrix_dummy;
-    Epetra_SerialDenseVector elevector_dummy;
+    CORE::LINALG::SerialDenseMatrix elematrix_dummy;
+    CORE::LINALG::SerialDenseVector elevector_dummy;
 
     // evaluate electrode kinetics point boundary conditions
     const int error = element->Evaluate(condparams, *discret_, la, elematrix_dummy, elematrix_dummy,
@@ -1121,9 +1125,10 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(Epetra_SerialDenseVector& scalars,
-    const int id, const bool print, double& currentsum, double& currtangent, double& currresidual,
-    double& electrodeint, double& electrodepot, double& meanoverpot)
+void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
+    CORE::LINALG::SerialDenseVector& scalars, const int id, const bool print, double& currentsum,
+    double& currtangent, double& currresidual, double& electrodeint, double& electrodepot,
+    double& meanoverpot)
 {
   // get total integral of current
   double currentintegral = scalars(0);
@@ -1243,7 +1248,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
       // extract condition ID
       const int condid = condition->GetInt("ConditionID");
 
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars =
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
           EvaluateSingleElectrodeInfo(condid, condstring);
 
       // initialize unused dummy variable
@@ -1358,7 +1363,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeInfoInterior()
       // fourth component = integral of velocity divergence (ALE only)
       // fifth component  = integral of concentration times velocity divergence (ALE only)
       // sixth component  = integral of velocity times concentration gradient (ALE only)
-      auto scalars = Teuchos::rcp(new Epetra_SerialDenseVector(isale_ ? 6 : 3));
+      auto scalars = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(isale_ ? 6 : 3));
 
       // evaluate current condition for electrode state of charge
       discret_->EvaluateScalars(condparams, scalars, "ElectrodeSOC", condid);
@@ -1474,8 +1479,8 @@ void SCATRA::ScaTraTimIntElch::EvaluateCellVoltage()
 
         // initialize result vector
         // first component = electric potential integral, second component = domain integral
-        Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-            Teuchos::rcp(new Epetra_SerialDenseVector(2));
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
         // evaluate current condition for electrode state of charge
         discret_->EvaluateScalars(condparams, scalars, "CellVoltage", condid);
@@ -1629,8 +1634,8 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumDofPerNode() + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumDofPerNode() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
 
   // calculate mean concentration
@@ -2062,7 +2067,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double SCATRA::ScaTraTimIntElch::ComputeConductivity(
-    Epetra_SerialDenseVector& sigma, bool effCond, bool specresist)
+    CORE::LINALG::SerialDenseVector& sigma, bool effCond, bool specresist)
 {
   // we perform the calculation on element level hiding the material access!
   // the initial concentration distribution has to be uniform to do so!!
@@ -2081,8 +2086,8 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   AddTimeIntegrationSpecificVectors();
 
   // evaluate integrals of scalar(s) and domain
-  Teuchos::RCP<Epetra_SerialDenseVector> sigma_domint =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 2));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> sigma_domint =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 2));
   discret_->EvaluateScalars(eleparams, sigma_domint);
   const double domint = (*sigma_domint)[NumScal() + 1];
 
@@ -2218,7 +2223,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         // result vector
         // physical meaning of vector components is described in PostProcessSingleElectrodeInfo
         // routine
-        Teuchos::RCP<Epetra_SerialDenseVector> scalars;
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars;
 
         // electrode boundary kinetics line/surface condition
         if (condstring != "ElchBoundaryPointKinetics")
@@ -2390,7 +2395,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         //            -> use approxelctresist_efflenintegcond or approxelctresist_relpotcur
 
         // initialize conductivity vector
-        Epetra_SerialDenseVector sigma(NumDofPerNode());
+        CORE::LINALG::SerialDenseVector sigma(NumDofPerNode());
 
         // compute conductivity
         ComputeConductivity(sigma);
@@ -2444,7 +2449,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
                conditions.size() == 2)
       {
         // dummy conductivity vector
-        Epetra_SerialDenseVector sigma;
+        CORE::LINALG::SerialDenseVector sigma;
 
         const double specificresistance = ComputeConductivity(sigma, true, true);
 
@@ -2666,22 +2671,22 @@ void SCATRA::ScaTraTimIntElch::EvaluateElectrodeBoundaryKineticsPointConditions(
 
       // initialize element matrix
       const int size = (int)la[0].lm_.size();
-      Epetra_SerialDenseMatrix elematrix;
+      CORE::LINALG::SerialDenseMatrix elematrix;
       if (elematrix.M() != size)
         elematrix.Shape(size, size);
       else
         memset(elematrix.A(), 0, size * size * sizeof(double));
 
       // initialize element right-hand side vector
-      Epetra_SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseVector elevector;
       if (elevector.Length() != size)
         elevector.Size(size);
       else
         memset(elevector.Values(), 0, size * sizeof(double));
 
       // dummy matrix and right-hand side vector
-      Epetra_SerialDenseMatrix elematrix_dummy;
-      Epetra_SerialDenseVector elevector_dummy;
+      CORE::LINALG::SerialDenseMatrix elematrix_dummy;
+      CORE::LINALG::SerialDenseVector elevector_dummy;
 
       // evaluate electrode kinetics point boundary conditions
       const int error = element->Evaluate(condparams, *discret_, la, elematrix, elematrix_dummy,
@@ -2954,7 +2959,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
               iterator->second->LocationVector(*discret_, lm, lmowner, lmstride);
 
               // initialize element-based vector of Neumann loads
-              Epetra_SerialDenseVector elevector(static_cast<int>(lm.size()));
+              CORE::LINALG::SerialDenseVector elevector(static_cast<int>(lm.size()));
 
               // evaluate Neumann boundary condition
               iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);

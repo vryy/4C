@@ -54,17 +54,17 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(Teuchos::ParameterList& params)
 {
   if (eastype_ != soh8_easnone)
   {
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldfeas", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldKaainv", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldKda", Teuchos::null);
 
     if (oldalpha == Teuchos::null || oldfeas == Teuchos::null || oldKaainv == Teuchos::null ||
@@ -87,27 +87,27 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(Teuchos::ParameterList& params)
 {
   if (eastype_ != soh8_easnone)
   {
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "lastalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldalpha", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldfeas", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldKaainv", Teuchos::null);
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda =
+        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
             "oldKda", Teuchos::null);
 
-    (*lastalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldfeas)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-    (*oldKaainv)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
-    (*oldKda)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
+    (*lastalpha)[Id()] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, 1));
+    (*oldalpha)[Id()] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, 1));
+    (*oldfeas)[Id()] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, 1));
+    (*oldKaainv)[Id()] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, neas_));
+    (*oldKda)[Id()] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(neas_, NUMDOF_SOH8));
   }
   return;
 }

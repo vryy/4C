@@ -14,7 +14,7 @@
 #define BACI_LUBRICATION_TIMINT_IMPLICIT_H
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 #include <Epetra_Map.h>
 
 #include <Teuchos_ParameterList.hpp>

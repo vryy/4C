@@ -51,9 +51,11 @@ namespace DRT
 
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      private:
       /*========================================================================*/
@@ -172,8 +174,9 @@ namespace DRT
       );
 
       //! calculation of convective element matrix: add conservative contributions
-      void CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                         //!< index of current scalar
+      void CalcMatConvAddCons(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& convelint,  //!< convective velocity at Gauss point
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
@@ -199,7 +202,8 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate domain integral
-      void CalculateDomainAndBodyforce(Epetra_SerialDenseVector& scalars, const DRT::Element* ele);
+      void CalculateDomainAndBodyforce(
+          CORE::LINALG::SerialDenseVector& scalars, const DRT::Element* ele);
 
       //! extract element based or nodal values and return extracted values of phinp
       void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,

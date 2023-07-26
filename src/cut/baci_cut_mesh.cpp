@@ -433,7 +433,7 @@ CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::point1>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
-  Epetra_SerialDenseMatrix xyz(3, 1);
+  CORE::LINALG::SerialDenseMatrix xyz(3, 1);
   points[0]->Coordinates(&xyz(0, 0));
 
   Point1BoundaryCell* bc = new Point1BoundaryCell(xyz, facet, points);
@@ -451,7 +451,7 @@ CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
-  Epetra_SerialDenseMatrix xyze(3, num_nodes);
+  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -478,7 +478,7 @@ CORE::GEO::CUT::Tri3BoundaryCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
     throw std::runtime_error("point used more than once in boundary cell");
   }
 #endif
-  Epetra_SerialDenseMatrix xyz(3, 3);
+  CORE::LINALG::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -506,7 +506,7 @@ CORE::GEO::CUT::Quad4BoundaryCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
     throw std::runtime_error("point used more than once in boundary cell");
   }
 #endif
-  Epetra_SerialDenseMatrix xyz(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -534,7 +534,7 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
     throw std::runtime_error("point used more than once in boundary cell");
   }
 #endif
-  Epetra_SerialDenseMatrix xyz(3, points.size());
+  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -555,7 +555,7 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
-  Epetra_SerialDenseMatrix xyze(3, num_nodes);
+  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -575,7 +575,7 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::tri3>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
-  Epetra_SerialDenseMatrix xyze(3, num_nodes);
+  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -595,7 +595,7 @@ CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::quad4>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
-  Epetra_SerialDenseMatrix xyze(3, num_nodes);
+  CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
   for (unsigned i = 0; i < static_cast<unsigned>(xyze.N()); ++i)
   {
     points[i]->Coordinates(&xyze(0, i));
@@ -612,7 +612,7 @@ CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
 CORE::GEO::CUT::Hex8IntegrationCell* CORE::GEO::CUT::Mesh::NewHex8Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  Epetra_SerialDenseMatrix xyz(3, points.size());
+  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -632,7 +632,7 @@ CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
   if (points.size() != 4) throw std::runtime_error("wrong number of cell points");
-  Epetra_SerialDenseMatrix xyz(3, points.size());
+  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -649,7 +649,7 @@ CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
  * creates a new tet4 integration cell, based on xyz coordinates
  *-------------------------------------------------------------------------------------*/
 CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
-    Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz, VolumeCell* cell)
+    Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz, VolumeCell* cell)
 {
   std::vector<Point*> points;  // empty list of points
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
@@ -664,7 +664,7 @@ CORE::GEO::CUT::Tet4IntegrationCell* CORE::GEO::CUT::Mesh::NewTet4Cell(
 CORE::GEO::CUT::Wedge6IntegrationCell* CORE::GEO::CUT::Mesh::NewWedge6Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  Epetra_SerialDenseMatrix xyz(3, points.size());
+  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -683,7 +683,7 @@ CORE::GEO::CUT::Wedge6IntegrationCell* CORE::GEO::CUT::Mesh::NewWedge6Cell(
 CORE::GEO::CUT::Pyramid5IntegrationCell* CORE::GEO::CUT::Mesh::NewPyramid5Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  Epetra_SerialDenseMatrix xyz(3, points.size());
+  CORE::LINALG::SerialDenseMatrix xyz(3, points.size());
   for (unsigned i = 0; i < points.size(); ++i)
   {
     points[i]->Coordinates(&xyz(0, i));
@@ -1672,7 +1672,7 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(::DRT::Element::DiscretizationType 
   if (e.IsCut())
   {
     const std::vector<Node*>& nodes = e.Nodes();
-    Epetra_SerialDenseMatrix xyze(3, nodes.size());
+    CORE::LINALG::SerialDenseMatrix xyze(3, nodes.size());
     double max_norm = 0.0;
     for (unsigned i = 0; i < nodes.size(); ++i)
     {
@@ -3139,7 +3139,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
 /*----------------------------------------------------------------------------*
  * check if xyz-coordinates lie within the mesh's bounding box
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::Mesh::WithinBB(const Epetra_SerialDenseMatrix& xyz)
+bool CORE::GEO::CUT::Mesh::WithinBB(const CORE::LINALG::SerialDenseMatrix& xyz)
 {
   return bb_->Within(norm_, xyz);
 }

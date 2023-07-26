@@ -90,8 +90,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    virtual void UpdateElePos(
-        Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos) = 0;
+    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        CORE::LINALG::SerialDenseMatrix& newele2pos) = 0;
 
   };  // class Beam3tobeampotentialinterface
 
@@ -175,7 +175,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos);
+    void UpdateElePos(
+        CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos);
 
     //@}
    private:

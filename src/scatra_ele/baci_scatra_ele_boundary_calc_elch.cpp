@@ -39,16 +39,16 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::ScaTraEleBoundaryCal
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
-    DRT::FaceElement* ele,                     //!< boundary element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    SCATRA::BoundaryAction action,             //!< action
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    DRT::FaceElement* ele,                            //!< boundary element
+    Teuchos::ParameterList& params,                   //!< parameter list
+    DRT::Discretization& discretization,              //!< discretization
+    SCATRA::BoundaryAction action,                    //!< action
+    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
@@ -86,12 +86,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateAction(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundaryKinetics(
-    DRT::FaceElement* ele,                     ///< current element
-    Teuchos::ParameterList& params,            ///< parameter list
-    DRT::Discretization& discretization,       ///< discretization
-    DRT::Element::LocationArray& la,           ///< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-    Epetra_SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
+    DRT::FaceElement* ele,                            ///< current element
+    Teuchos::ParameterList& params,                   ///< parameter list
+    DRT::Discretization& discretization,              ///< discretization
+    DRT::Element::LocationArray& la,                  ///< location array
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  ///< element right-hand side vector
     const double scalar  ///< scaling factor for element matrix and right-hand side contributions
 )
 {
@@ -216,8 +216,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinearization(
     DRT::FaceElement* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
   if (cond == Teuchos::null) dserror("Cannot access condition 'ElchBoundaryKinetics'");
@@ -316,11 +316,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage(
-    const DRT::Element* ele,              //!< the element we are dealing with
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la,      //!< location array
-    Epetra_SerialDenseVector& scalars     //!< result vector for scalar integrals to be computed
+    const DRT::Element* ele,                  //!< the element we are dealing with
+    Teuchos::ParameterList& params,           //!< parameter list
+    DRT::Discretization& discretization,      //!< discretization
+    DRT::Element::LocationArray& la,          //!< location array
+    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // extract local nodal values of electric potential from global state vector
@@ -366,9 +366,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcCellVoltage
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBoundaryKinetics(
-    const DRT::Element* ele,         ///< current element
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix
-    Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
+    const DRT::Element* ele,                ///< current element
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist,  ///< nodal history vector
@@ -437,10 +437,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElchBou
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectrodeStatus(
-    const DRT::Element* ele,            ///< current element
-    Epetra_SerialDenseVector& scalars,  ///< scalars to be integrated
-    Teuchos::ParameterList& params,     ///< parameter list
-    Teuchos::RCP<DRT::Condition> cond,  ///< condition
+    const DRT::Element* ele,                   ///< current element
+    CORE::LINALG::SerialDenseVector& scalars,  ///< scalars to be integrated
+    Teuchos::ParameterList& params,            ///< parameter list
+    Teuchos::RCP<DRT::Condition> cond,         ///< condition
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector

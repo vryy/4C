@@ -140,10 +140,11 @@ namespace MAT
     /*!
        \brief
      */
-    virtual void Evaluate(Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn,
-        Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-        Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
-        const double NumOfAcini, const double Vo, double time, double dt);
+    virtual void Evaluate(CORE::LINALG::SerialDenseVector& epnp,
+        CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
+        CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
+        const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+        double time, double dt);
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string, int>& names);

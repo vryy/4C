@@ -15,8 +15,8 @@ passive-scalar transport
 #define BACI_SCATRA_TURBULENCE_HIT_SCALAR_FORCING_H
 
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_RCP.hpp>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
@@ -114,7 +114,7 @@ namespace SCATRA
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<Epetra_SerialDenseVector> force_fac_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> force_fac_;
 
     //! interpolation function
     static double Interpolate(

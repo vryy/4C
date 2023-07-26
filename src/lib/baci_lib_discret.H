@@ -1545,9 +1545,10 @@ namespace DRT
      * actual Element's Evaluate call.
      */
     virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
-        const std::function<void(DRT::Element&, Element::LocationArray&, Epetra_SerialDenseMatrix&,
-            Epetra_SerialDenseMatrix&, Epetra_SerialDenseVector&, Epetra_SerialDenseVector&,
-            Epetra_SerialDenseVector&)>& element_action);
+        const std::function<void(DRT::Element&, Element::LocationArray&,
+            CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
+            CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&,
+            CORE::LINALG::SerialDenseVector&)>& element_action);
 
     /// Call elements to evaluate
     /*!
@@ -1715,8 +1716,8 @@ namespace DRT
      *
      * \author bborn \date 08/08
      */
-    void EvaluateScalars(
-        Teuchos::ParameterList& params, Teuchos::RCP<Epetra_SerialDenseVector> scalars) override;
+    void EvaluateScalars(Teuchos::ParameterList& params,
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars) override;
 
     /*!
      * \brief Assemble scalar quantities across conditioned elements
@@ -1731,7 +1732,7 @@ namespace DRT
      * \author fang \date 02/15
      */
     void EvaluateScalars(Teuchos::ParameterList& params,  //! (in) parameter list
-        Teuchos::RCP<Epetra_SerialDenseVector>
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector>
             scalars,                    //! (out) result vector for scalar quantities to be computed
         const std::string& condstring,  //! (in) name of condition to be evaluated
         const int condid = -1           //! (in) condition ID (optional)

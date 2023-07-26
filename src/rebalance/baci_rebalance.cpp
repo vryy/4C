@@ -124,8 +124,8 @@ std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE
     }
 
     // element vector and matrix for weights of nodes and edges
-    Epetra_SerialDenseMatrix edgeweigths_ele;
-    Epetra_SerialDenseVector nodeweights_ele;
+    CORE::LINALG::SerialDenseMatrix edgeweigths_ele;
+    CORE::LINALG::SerialDenseVector nodeweights_ele;
 
     // evaluate elements to get their evaluation cost
     ele->NodalConnectivity(edgeweigths_ele, nodeweights_ele);

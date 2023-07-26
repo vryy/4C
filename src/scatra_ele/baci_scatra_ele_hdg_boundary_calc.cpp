@@ -110,10 +110,11 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::EvaluateNeumann(
     DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
-  Epetra_SerialDenseVector dummy_vec2, dummy_vec3;
-  Epetra_SerialDenseMatrix dummy_mat2;
+  CORE::LINALG::SerialDenseVector dummy_vec2, dummy_vec3;
+  CORE::LINALG::SerialDenseMatrix dummy_mat2;
 
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::project_neumann_field, params);

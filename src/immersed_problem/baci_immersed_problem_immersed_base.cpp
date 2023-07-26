@@ -341,8 +341,8 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
         dserror("no corresponding immerseddisname set for this type of backgrounddis!");
 
       // evaluate the element
-      Epetra_SerialDenseMatrix dummymat;
-      Epetra_SerialDenseVector dummyvec;
+      CORE::LINALG::SerialDenseMatrix dummymat;
+      CORE::LINALG::SerialDenseVector dummyvec;
 
       DRT::Element::LocationArray la(1);
       immersedelebase->LocationVector(*dis, la, false);
@@ -581,8 +581,8 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
     {
       ele = dis->gElement(*eleIter);
 
-      Epetra_SerialDenseMatrix dummymatrix;
-      Epetra_SerialDenseVector dummyvector;
+      CORE::LINALG::SerialDenseMatrix dummymatrix;
+      CORE::LINALG::SerialDenseVector dummyvector;
       ele->Evaluate(
           params, *dis, la, dummymatrix, dummymatrix, dummyvector, dummyvector, dummyvector);
     }

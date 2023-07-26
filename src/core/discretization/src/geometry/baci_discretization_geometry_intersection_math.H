@@ -17,7 +17,8 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 #include <Epetra_SerialDenseSolver.h>
-#include <Epetra_SerialDenseVector.h>
+#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 
 namespace CORE::GEO
@@ -149,8 +150,8 @@ namespace CORE::GEO
 
   // Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
 
-  void svdcmpSerialDense(
-      Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& W, Epetra_SerialDenseMatrix& V);
+  void svdcmpSerialDense(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& W,
+      CORE::LINALG::SerialDenseMatrix& V);
 
 
   /*!

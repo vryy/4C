@@ -16,7 +16,7 @@
 #include <string>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_parobject.H"
 #include "baci_utils_exceptions.H"
@@ -261,24 +261,24 @@ namespace DRT
     }
 
     /*!
-    \brief Add a Epetra_SerialDenseMatrix to the container
+    \brief Add a CORE::LINALG::SerialDenseMatrix to the container
 
     \param name : Name of data to store data with
     \param data : matrix to store
 
     \note If record with name name already exists, it will be overwritten
     */
-    void Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix);
+    void Add(const std::string& name, const CORE::LINALG::SerialDenseMatrix& matrix);
 
     /*!
-   \brief Add Teuchos::rcp to Epetra_SerialDenseMatrix to the container
+   \brief Add Teuchos::rcp to CORE::LINALG::SerialDenseMatrix to the container
 
    \param name : Name of data to store data with
-   \param data : Teuchos::rcp to Epetra_SerialDenseMatrix to be added
+   \param data : Teuchos::rcp to CORE::LINALG::SerialDenseMatrix to be added
 
    \note If record with name name already exists, it will be overwritten
    */
-    void Add(const std::string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> data);
+    void Add(const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> data);
 
     /*!
    \brief Add Teuchos::rcp to Epetra_MultiVector to the container
@@ -315,26 +315,26 @@ namespace DRT
     \param name : Name of data to store data with
     \param data : matrix to store
 
-    \note Internally transformed into a Epetra_SerialDenseMatrix.
+    \note Internally transformed into a CORE::LINALG::SerialDenseMatrix.
 
     Usage is<br>
     \code
       DRT::Container->Add<6,6>("mfool_name", CORE::LINALG::Matrix<6,6>);
     \endcode
 
-    \note Extracting only possible via Epetra_SerialDenseMatrix, which then
+    \note Extracting only possible via CORE::LINALG::SerialDenseMatrix, which then
           can be used to set a view on the data:
 
     Usage is<br>
     \code
-          CORE::LINALG::Matrix<6,6> xyz(*(const_cast<Epetra_SerialDenseMatrix*>(Container::
-          Get<Epetra_SerialDenseMatrix>("mfool_name"))), true);
+          CORE::LINALG::Matrix<6,6> xyz(*(const_cast<CORE::LINALG::SerialDenseMatrix*>(Container::
+          Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"))), true);
     \endcode
     */
     template <int row, int col>
     void Add(const std::string& name, const CORE::LINALG::Matrix<row, col>& matrix)
     {
-      Epetra_SerialDenseMatrix data(row, col);
+      CORE::LINALG::SerialDenseMatrix data(row, col);
       for (int i = 0; i < row; i++)
         for (int j = 0; j < col; j++) data(i, j) = matrix(i, j);
 
@@ -347,9 +347,9 @@ namespace DRT
     //! @name Access methods
 
     /*!
-    \brief Get data of type int, double, string or Epetra_SerialDenseMatrix, read only
+    \brief Get data of type int, double, string or CORE::LINALG::SerialDenseMatrix, read only
 
-    Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.
+    Receive <int>, <double>, <string>, <CORE::LINALG::SerialDenseMatrix> data of a given name.
 
     \param name (in): Name of data to receive
 
@@ -367,8 +367,8 @@ namespace DRT
       \endcode
       or <br>
       \code
-      const Epetra_SerialDenseMatrix* mfool =
-    Container::Get<Epetra_SerialDenseMatrix>("mfool_name"); \endcode
+      const CORE::LINALG::SerialDenseMatrix* mfool =
+    Container::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
 
     \note This template will let you experience one of the most kryptic error messages
           (at link time) you have ever seen if you try to use it with other data types than
@@ -415,9 +415,9 @@ namespace DRT
     double GetDouble(const std::string& name) const;
 
     /*!
-    \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
+    \brief Get data of type int, double, string or CORE::LINALG::SerialDenseMatrix
 
-    Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.
+    Receive <int>, <double>, <string>, <CORE::LINALG::SerialDenseMatrix> data of a given name.
 
     \param name (in): Name of data to receive
 
@@ -435,8 +435,8 @@ namespace DRT
       \endcode
       or <br>
       \code
-      Epetra_SerialDenseMatrix* mfool = Container::Get<Epetra_SerialDenseMatrix>("mfool_name");
-      \endcode
+      CORE::LINALG::SerialDenseMatrix* mfool =
+    Container::Get<CORE::LINALG::SerialDenseMatrix>("mfool_name"); \endcode
 
     \note This template will let you experience one of the most kryptic error messages
           (at link time) you have ever seen if you try to use it with other data types than
@@ -512,8 +512,8 @@ namespace DRT
       return std::make_pair(stringdata_.begin(), stringdata_.end());
     }
 
-    std::pair<std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator,
-        std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator>
+    std::pair<std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator,
+        std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator>
     MatRange()
     {
       return std::make_pair(matdata_.begin(), matdata_.end());
@@ -546,7 +546,7 @@ namespace DRT
     std::map<std::string, std::string> stringdata_;
 
     //! a map to store matrices in
-    std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>> matdata_;
+    std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> matdata_;
 
     //! a map to store epetra vectors in
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> evecdata_;

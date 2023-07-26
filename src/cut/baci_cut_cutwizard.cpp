@@ -379,7 +379,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
     const int numnode = element->NumNode();
     ::DRT::Node** nodes = element->Nodes();
 
-    Epetra_SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     for (int i = 0; i < numnode; ++i)
     {
@@ -451,8 +451,8 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(
-    int mi, ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze, const int start_ele_gid)
+void CORE::GEO::CutWizard::AddMeshCuttingSide(int mi, ::DRT::Element* ele,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
   const int numnode = ele->NumNode();
   const int* nodeids = ele->NodeIds();
@@ -587,7 +587,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
  * Add this background mesh element to the intersection class
  *--------------------------------------------------------------*/
 void CORE::GEO::CutWizard::AddElement(const ::DRT::Element* ele,
-    const Epetra_SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
+    const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
   const int numnode = ele->NumNode();
   const int* nodeids = ele->NodeIds();
@@ -910,7 +910,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
     const int numnode = element->NumNode();
     ::DRT::Node** nodes = element->Nodes();
 
-    Epetra_SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
     std::vector<int> dofs;
 
     for (int i = 0; i < numnode; ++i)

@@ -213,7 +213,7 @@ namespace CORE::GEO
           plain_boundarycell_set& bcells);
 
       //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const
-      //  std::vector<Epetra_SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
+      //  std::vector<CORE::LINALG::SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
 
       /*!
       \brief Create new quad4 boundary cell associated with this facet
