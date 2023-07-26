@@ -114,9 +114,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid, &normal);
     const double detF = my::CalculateDetFOfParentElement(ele, intpoints.Point(gpid));
 
-    if (differentiationtype == SCATRA::DifferentiationType::disp)
-      my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
-
     const double pseudo_contact_fac = my::CalculatePseudoContactFactor(
         is_pseudo_contact, eslavestress_vector, normal, my::funct_);
 
