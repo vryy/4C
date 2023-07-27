@@ -278,7 +278,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
         // at electrode surface
         const double epd =
             matelectrode->ComputeOpenCircuitPotential(ed_conc, faraday, frt, dummy_detF);
-        const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+        const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
             ed_conc, faraday, frt, dummy_detF);
 
         // overpotential

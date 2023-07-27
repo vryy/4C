@@ -304,8 +304,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
       if (std::isinf(epd)) break;
 
       const double depd_ddetF =
-          matelectrode->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
-              eslavephiint, faraday, frt, detF);
+          matelectrode->ComputeDOpenCircuitPotentialDDetF(eslavephiint, faraday, frt, detF);
 
       // Butler-Volmer exchange mass flux density
       const double j0 = kr;
@@ -356,7 +355,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
         case SCATRA::DifferentiationType::temp:
         {
           // derivative of epd w.r.t temperature
-          const double depddT = matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
+          const double depddT = matelectrode->ComputeDOpenCircuitPotentialDTemperature(
               eslavephiint, faraday, gasconstant);
 
           // forward declarations

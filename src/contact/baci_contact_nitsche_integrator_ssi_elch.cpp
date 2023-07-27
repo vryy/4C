@@ -378,7 +378,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
       // physically meaningful range
       if (not std::isinf(epd))
       {
-        const double d_epd_dc = electrode_material->ComputeFirstDerivOpenCircuitPotentialConc(
+        const double d_epd_dc = electrode_material->ComputeDOpenCircuitPotentialDConcentration(
             electrode_conc, faraday, frt, detF);
 
         // Butler-Volmer exchange mass flux density
@@ -420,9 +420,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
         const double dj_depd = dj_dpot_electrolyte;
 
-        const double depd_ddetF =
-            electrode_material->ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
-                electrode_conc, faraday, frt, detF);
+        const double depd_ddetF = electrode_material->ComputeDOpenCircuitPotentialDDetF(
+            electrode_conc, faraday, frt, detF);
         const double dj_ddetF = dj_depd * depd_ddetF;
 
         // initialize derivatives of flux w.r.t. electrochemistry dofs

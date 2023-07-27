@@ -704,7 +704,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
   // get polynomial and derivatives
   const double polynomValue = EvaluatePolynomial(concentration, detjacobian);
   const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
-  const double dChidc = MAT::Electrode::ComputeIntercalationFractionConcDerivative(
+  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
@@ -737,7 +737,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivativ
   // calculate the scale factor needed to get the derivative later
   const double denominator = 1.0 / (polynomReferenceValue + 1.0);
   const double base = (polynomValue + 1.0) * denominator;
-  const double dChidc = MAT::Electrode::ComputeIntercalationFractionConcDerivative(
+  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
   const double scalefac =
       1.0 / 3.0 * std::pow(base, -2.0 / 3.0) * polynomDerivativeValue * denominator * dChidc;
@@ -843,7 +843,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
   // get derivatives
   const double polynomDerivativeValue =
       EvaluatePolynomialDerivative(GetConcentrationGP().at(sc1 - 1), detjacobian);
-  const double dChidc = MAT::Electrode::ComputeIntercalationFractionConcDerivative(
+  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
@@ -871,7 +871,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivat
   // get polynomial derivative
   const double polynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
 
-  const double dChidc = MAT::Electrode::ComputeIntercalationFractionConcDerivative(
+  const double dChidc = MAT::Electrode::ComputeDIntercalationFractionDConcentration(
       Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
   const double scalefac = polynomDerivativeValue / (polynomReferenceValue + 1.0) * dChidc;
 

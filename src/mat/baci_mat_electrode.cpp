@@ -245,10 +245,6 @@ DRT::ParObject* MAT::ElectrodeType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::Electrode::Electrode() : params_(nullptr) {}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::Electrode::Electrode(MAT::PAR::Electrode* params) : params_(params) {}
 
 /*----------------------------------------------------------------------*
@@ -424,21 +420,21 @@ double MAT::Electrode::ComputeOpenCircuitPotential(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialConc(
-    const double concentration, const double faraday, const double frt, const double detF) const
+double MAT::Electrode::ComputeDOpenCircuitPotentialDConcentration(
+    double concentration, double faraday, double frt, double detF) const
 {
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_ocp_dX =
-      ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(X, faraday, frt);
-  const double d_X_dc = ComputeIntercalationFractionConcDerivative(ChiMax(), CMax(), detF);
+  const double d_ocp_dX = ComputeDOpenCircuitPotentialDIntercalationFraction(X, faraday, frt);
+  const double d_X_dc = ComputeDIntercalationFractionDConcentration(ChiMax(), CMax(), detF);
 
   return d_ocp_dX * d_X_dc;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(
-    const double X, const double faraday, const double frt) const
+double MAT::Electrode::ComputeDOpenCircuitPotentialDIntercalationFraction(
+    double X, double faraday, double frt) const
+
 {
   double d_ocp_dX(0.0);
 
@@ -543,28 +539,26 @@ double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialIntercalationFractio
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialDefGradDeterminant(
+double MAT::Electrode::ComputeDOpenCircuitPotentialDDetF(
     const double concentration, const double faraday, const double frt, const double detF) const
 {
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_OCP_dX =
-      ComputeFirstDerivOpenCircuitPotentialIntercalationFraction(X, faraday, frt);
-  const double d_X_ddetF =
-      ComputeIntercalationFractionDetFDerivative(concentration, ChiMax(), CMax());
+  const double d_OCP_dX = ComputeDOpenCircuitPotentialDIntercalationFraction(X, faraday, frt);
+  const double d_X_ddetF = ComputeDIntercalationFractionDDetF(concentration, ChiMax(), CMax());
 
   return d_OCP_dX * d_X_ddetF;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
-    const double concentration, const double faraday, const double frt, const double detF) const
+double MAT::Electrode::ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
+    double concentration, double faraday, double frt, double detF) const
 {
   double d2_ocp_dX2(0.0), d2_ocp_dc2(0.0);
 
   // intercalation fraction
   const double X = ComputeIntercalationFraction(concentration, ChiMax(), CMax(), detF);
-  const double d_X_dc = ComputeIntercalationFractionConcDerivative(ChiMax(), CMax(), detF);
+  const double d_X_dc = ComputeDIntercalationFractionDConcentration(ChiMax(), CMax(), detF);
 
   // physically reasonable intercalation fraction
   if (X > 0.0 and X < 1.0)
@@ -674,7 +668,7 @@ double MAT::Electrode::ComputeSecondDerivOpenCircuitPotentialConc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::Electrode::ComputeFirstDerivOpenCircuitPotentialTemp(
+double MAT::Electrode::ComputeDOpenCircuitPotentialDTemperature(
     const double concentration, const double faraday, const double gasconstant) const
 {
   double ocpderiv = 0.0;

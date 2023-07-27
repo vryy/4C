@@ -3253,7 +3253,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // at electrode surface
               const double epd =
                   matelectrode->ComputeOpenCircuitPotential(conc_ed, faraday, frt, dummy_detF);
-              const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(
+              const double epdderiv = matelectrode->ComputeDOpenCircuitPotentialDConcentration(
                   conc_ed, faraday, frt, dummy_detF);
 
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
