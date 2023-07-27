@@ -12,7 +12,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_so3_plast_ssn.H"
 
-#include "so3_ssn_plast_fwd.hpp"
+#include "baci_so3_ssn_plast_fwd.hpp"
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_voigt_notation.H"

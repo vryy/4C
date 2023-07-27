@@ -2837,4 +2837,4 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeAnisotropicPermeabilityCoeffsA
   return anisotropic_permeability_coeffs;
 }
 
-#include "so3_poro_fwd.hpp"
+#include "baci_so3_poro_fwd.hpp"

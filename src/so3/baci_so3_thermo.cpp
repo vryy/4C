@@ -288,4 +288,4 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::VisData(
 
 /*----------------------------------------------------------------------*/
 // include the file at the end of so3_thermo.cpp
-#include "so3_thermo_fwd.hpp"
+#include "baci_so3_thermo_fwd.hpp"

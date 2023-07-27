@@ -2037,4 +2037,4 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDissipation(
 
 // template classes
 
-#include "scatra_ele_calc_fwd.hpp"
+#include "baci_scatra_ele_calc_fwd.hpp"

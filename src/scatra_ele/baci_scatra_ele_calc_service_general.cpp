@@ -2353,4 +2353,4 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
 
 // template classes
 
-#include "scatra_ele_calc_fwd.hpp"
+#include "baci_scatra_ele_calc_fwd.hpp"

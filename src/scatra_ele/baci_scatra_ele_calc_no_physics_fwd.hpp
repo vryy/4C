@@ -1,5 +1,5 @@
-#ifndef SCATRA_ELE_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
-#define SCATRA_ELE_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
+#ifndef BACI_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
+#define BACI_SCATRA_ELE_CALC_NO_PHYSICS_FWD_HPP
 
 /*----------------------------------------------------------------------*/
 /*! \file

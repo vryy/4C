@@ -46,4 +46,4 @@ int DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::EvaluateAction(DRT:
 }
 
 // include forward declaration of template classes
-#include "scatra_ele_calc_no_physics_fwd.hpp"
+#include "baci_scatra_ele_calc_no_physics_fwd.hpp"
