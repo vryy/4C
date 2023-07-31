@@ -144,8 +144,8 @@ namespace NOX
       /// @name access the eigenvalue data
       /// @{
 
-      const CORE::LINALG::SerialDenseVector& getJacoianRealEigenvalues() const;
-      const CORE::LINALG::SerialDenseVector& getJacoianImaginaryEigenvalues() const;
+      const CORE::LINALG::SerialDenseVector& getJacobianRealEigenvalues() const;
+      const CORE::LINALG::SerialDenseVector& getJacobianImaginaryEigenvalues() const;
       double getJacobianMaxRealEigenvalue() const;
       double getJacobianMinRealEigenvalue() const;
 

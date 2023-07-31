@@ -789,7 +789,7 @@ bool NOX::NLN::Group::isEigenvalues() const { return ev_.isvalid_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianRealEigenvalues() const
+const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianRealEigenvalues() const
 {
   if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
   return ev_.realpart_;
@@ -797,7 +797,7 @@ const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianRealEigenvalue
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacoianImaginaryEigenvalues() const
+const CORE::LINALG::SerialDenseVector& NOX::NLN::Group::getJacobianImaginaryEigenvalues() const
 {
   if (not isEigenvalues()) dserror("The eigenvalues has not yet been computed!");
   return ev_.imaginarypart_;
